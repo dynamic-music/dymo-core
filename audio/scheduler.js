@@ -1,12 +1,17 @@
 function Scheduler($scope) {
 	
+	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
+	
 	var buffers = {};
 	var sources = {};
+	var nextSources = {};
+	var endTimes = {};
 	
 	var convolverSend = $scope.audioContext.createConvolver();
 	convolverSend.connect($scope.audioContext.destination);
 	
 	var numCurrentlyLoading = 0;
+	var timeoutID;
 	
 	//load reverb impulse response
 	numCurrentlyLoading++;
@@ -34,73 +39,109 @@ function Scheduler($scope) {
 	}
 	
 	this.play = function(dmo) {
-		source = getSource(dmo);
-		if (source) {
-			if (!source.hasAudioBuffer()) {
-				source.setAudioBuffer(buffers[dmo.getSourcePath()]);
-			}
-			source.play();
+		internalPlay(dmo);
+	}
+	
+	function internalPlay(dmo) {
+		var uri = dmo.getUri();
+		if (!sources[uri]) {
+			//initially create sources
+			sources[uri] = createNextSource(dmo);
+		} else {
+			//switch source
+			sources[uri] = nextSources[uri];
+		}
+		if (!endTimes[uri]) {
+			delay = SCHEDULE_AHEAD_TIME;
+		} else {
+			delay = endTimes[uri]-$scope.audioContext.currentTime;
+		}
+		currentDmo = sources[uri].getDmo();
+		var startTime = $scope.audioContext.currentTime+delay;
+		sources[uri].play(startTime);//, currentPausePosition); //% audioSource.loopEnd-audioSource.loopStart);
+		setTimeout(function() {
+			dmo.updatePlayingDmos(currentDmo);
+		}, delay);
+		endTimes[uri] = startTime+sources[uri].getDuration();
+		nextSources[uri] = createNextSource(dmo);
+		if (nextSources[uri] && endTimes[uri]) {
+			timeoutID = setTimeout(function() { internalPlay(dmo); }, (endTimes[uri]-$scope.audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
+		} else {
+			setTimeout(function() { reset(dmo); }, (endTimes[uri]-$scope.audioContext.currentTime)*1000);
 		}
 	}
 	
 	this.pause = function(dmo) {
-		source = getSource(dmo);
+		var source = sources[dmo.getUri()];
 		if (source) {
 			source.pause();
 		}
 	}
 	
 	this.stop = function(dmo) {
-		source = getSource(dmo);
+		var source = sources[dmo.getUri()];
 		if (source) {
 			source.stop();
 		}
+		reset(dmo);
+	}
+	
+	function reset(dmo) {
+		window.clearTimeout(timeoutID);
+		var uri = dmo.getUri();
+		sources[uri] = null;
+		nextSources[uri] = null;
+		endTimes[uri] = null;
+		dmo.resetPartsPlayed();
+		dmo.updatePlayingDmos(null);
 	}
 	
 	this.updateAmplitude = function(dmo, change) {
-		source = getSource(dmo);
+		var source = sources[dmo.getUri()];
 		if (source) {
 			source.changeAmplitude(change);
 		}
 	}
 	
 	this.updatePlaybackRate = function(dmo, change) {
-		source = getSource(dmo);
+		var source = sources[dmo.getUri()];
 		if (source) {
 			source.changePlaybackRate(change);
 		}
 	}
 	
 	this.updatePan = function(dmo, change) {
-		source = getSource(dmo);
+		var source = sources[dmo.getUri()];
 		if (source) {
 			source.changePosition(change, 0, 0);
 		}
 	}
 	
 	this.updateDistance = function(dmo, change) {
-		source = getSource(dmo);
+		var source = sources[dmo.getUri()];
 		if (source) {
 			source.changePosition(0, 0, change);
 		}
 	}
 	
 	this.updateReverb = function(dmo, change) {
-		source = getSource(dmo);
+		var source = sources[dmo.getUri()];
 		if (source) {
 			source.changeReverb(change);
 		}
 	}
 	
-	function getSource(dmo) {
+	/*function getSource(dmo) {
 		if (!sources[dmo.getUri()] && dmo.getSourcePath()) {
-			//currently reverb works only for one channel on android!?!
-			//TODO make a send channel for reverb for everything
-			reverbAllowed = sources.length < 1;
+			//currently reverb works only for one channel on android :( send channel solves it
 			sources[dmo.getUri()] = new Source($scope.audioContext, dmo, convolverSend);
 		}
 		return sources[dmo.getUri()];
 	}
+	
+	function getNextSource(dmo) {
+		return nextSources[dmo.getUri()];
+	}*/
 	
 	function loadAudio(path, audioLoader, onload) {
 		audioLoader.src = path;
@@ -110,6 +151,14 @@ function Scheduler($scope) {
 			console.log("Error loading audio");
 		};
 		audioLoader.send();
+	}
+	
+	function createNextSource(dmo) {
+		nextPart = dmo.getNextPart();
+		if (nextPart) {
+			var buffer = buffers[dmo.getSourcePath()];
+			return new Source(nextPart, $scope.audioContext, buffer, convolverSend);
+		}
 	}
 	
 }
