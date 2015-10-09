@@ -22,5 +22,6 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "moduleType": []
 }
