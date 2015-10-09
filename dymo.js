@@ -1,13 +1,14 @@
-function DynamicMusicObject(uri, scheduler, type) {
+function DynamicMusicObject(uri, scheduler, type, manager) {
 	
 	var parentDMO = null;
-	var children = [];
+	var parts = [];
+	var partsPlayed = 0;
+	var isPlaying = false;
 	var sourcePath;
 	var graph = null;
-	var segmentsPlayed = 0;
 	var skipProportionAdjustment = false;
 	var previousIndex = null;
-	var segmentStart, segmentDuration;
+	var features = [];
 	
 	this.getUri = function() {
 		return uri;
@@ -17,13 +18,36 @@ function DynamicMusicObject(uri, scheduler, type) {
 		parentDMO = dmo;
 	}
 	
-	this.addChild = function(dmo) {
+	this.getParent = function() {
+		return parentDMO;
+	}
+	
+	this.getLevel = function() {
+		if (parentDMO) {
+			return parentDMO.getLevel()+1;
+		}
+		return 0;
+	}
+	
+	this.addPart = function(dmo) {
 		dmo.setParent(this);
-		children.push(dmo);
+		parts.push(dmo);
 	}
 	
 	this.setSourcePath = function(path) {
 		sourcePath = path;
+	}
+	
+	this.setFeature = function(name, value) {
+		features[name] = value;
+	}
+	
+	this.getFeature = function(name) {
+		return features[name];
+	}
+	
+	this.getSegment = function() {
+		return [this.getFeature("time"), this.durationRatio.value*this.getFeature("duration")];
 	}
 	
 	this.setGraph = function(g) {
@@ -41,15 +65,15 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return sourcePath;
 	}
 	
-	//positive change in play affects children
+	//positive change in play affects parts
 	this.updatePlay = function(change) {
-		//ask their children to get appropriate segment
+		//ask their parts to get appropriate segment
 		if (type == DmoTypes.SEQUENCE) {
 			
 		}
-		if (children.length > 0) {
-			for (var i = 0; i < children.length; i++) {
-				children[i].updatePlay(change);
+		if (parts.length > 0) {
+			for (var i = 0; i < parts.length; i++) {
+				parts[i].updatePlay(change);
 			}
 		} else {
 			if (change > 0) {
@@ -60,111 +84,97 @@ function DynamicMusicObject(uri, scheduler, type) {
 		}
 	}
 	
-	//change in amplitude does not affect children
+	//change in amplitude does not affect parts
 	this.updateAmplitude = function(change) {
 		scheduler.updateAmplitude(this, change);
 		if (!sourcePath) {
-			for (var i = 0; i < children.length; i++) {
-				children[i].amplitude.relativeUpdate(change);
+			for (var i = 0; i < parts.length; i++) {
+				parts[i].amplitude.relativeUpdate(change);
 			}
 		}
 	}
 	
-	//change in amplitude does not affect children
+	//change in amplitude does not affect parts
 	this.updatePlaybackRate = function(change) {
 		scheduler.updatePlaybackRate(this, change);
 		if (!sourcePath) {
-			for (var i = 0; i < children.length; i++) {
-				children[i].playbackRate.relativeUpdate(change);
+			for (var i = 0; i < parts.length; i++) {
+				parts[i].playbackRate.relativeUpdate(change);
 			}
 		}
 	}
 	
-	//change in pan affects pan of children
+	//change in pan affects pan of parts
 	this.updatePan = function(change) {
 		scheduler.updatePan(this, change);
-		for (var i = 0; i < children.length; i++) {
-			children[i].pan.relativeUpdate(change);
+		for (var i = 0; i < parts.length; i++) {
+			parts[i].pan.relativeUpdate(change);
 		}
 	}
 	
-	//change in distance affects distance of children
+	//change in distance affects distance of parts
 	this.updateDistance = function(change) {
 		scheduler.updateDistance(this, change);
-		for (var i = 0; i < children.length; i++) {
-			children[i].distance.relativeUpdate(change);
+		for (var i = 0; i < parts.length; i++) {
+			parts[i].distance.relativeUpdate(change);
 		}
 	}
 	
-	//change in reverb affects reverb of children
+	//change in reverb affects reverb of parts
 	this.updateReverb = function(change) {
 		scheduler.updateReverb(this, change);
-		for (var i = 0; i < children.length; i++) {
-			children[i].reverb.relativeUpdate(change);
+		for (var i = 0; i < parts.length; i++) {
+			parts[i].reverb.relativeUpdate(change);
 		}
 	}
 	
-	//change in segment affects only segment of children if any
-	this.updateSegmentIndex = function(value) {
-		var start = segmentation[value];
-		var end = segmentation[value+1];
-		//scheduler.updateSegment(this, segmentStart, segmentEnd);
-		for (var i = 0; i < children.length; i++) {
-			children[i].jumpToSegment(start);
+	this.updatePartIndex = function(value) {
+		partsPlayed = value;
+	}
+	
+	this.resetPartsPlayed = function() {
+		partsPlayed = 0;
+		for (var i = 0; i < parts.length; i++) {
+			parts[i].resetPartsPlayed();
 		}
 	}
 	
-	this.jumpToSegment = function(time) {
-		if (segmentation.length == 0) {
-			return true;
-		} else {
-			var index = segmentation.indexOf(time);
-			if (index >= 0) {
-				this.segmentIndex.update(undefined, index);
-				//ADJUST CHILDREN!!!!!
-				return true;
-			}
-		}
-		return false;
+	this.updatePartOrder = function(featureName) {
+		parts.sort(function(p,q) {
+			return p.getFeature(featureName) - q.getFeature(featureName);
+		});
 	}
 	
-	this.getNextSegment = function() {
-		
-		var index = this.segmentIndex.value;
-		if (index == previousIndex || previousIndex == null) {
-			index = this.segmentIndex.requestValue();
-		}
-		previousIndex = index;
-		
-		var start = segmentation[index];
-		var duration = segmentation[index+1]-start;
-		
-		//try to adjust parent segmentation
-		if (parentDMO.jumpToSegment(start)) {
-			segmentsPlayed = 0;
-		}
-		//console.log(sourcePath, index, segmentation.length);
-		if (segmentsPlayed < this.segmentCount.value) {
-			duration *= this.segmentDurationRatio.value;
-			if (!skipProportionAdjustment) {
-				duration *= this.segmentProportion.value;
-			}
-			skipProportionAdjustment = !skipProportionAdjustment;
-			if (start >= 0) {
-				segmentsPlayed++;
-				if (duration > 0) {
-					//console.log(segmentsPlayed, this.segmentCount.value, [start, duration]);
-					return [start, duration];
+	this.getNextPart = function() {
+		if (parts.length > 0) {
+			isPlaying = true;
+			while (partsPlayed < parts.length && partsPlayed < this.partCount.value) {
+				var nextPart = parts[partsPlayed].getNextPart();
+				if (nextPart) {
+					return nextPart;
 				} else {
-					return this.getNextSegment();
+					partsPlayed++;
 				}
-			} else {
-				return [0, undefined];
 			}
+			//done playing
+			partsPlayed = 0;
+			isPlaying = false;
+			return null;
 		} else {
-			return this.getNextSegment();
+			if (!isPlaying) {
+				isPlaying = true;
+				return this;
+			} else {
+				isPlaying = false;
+				return null;
+			}
 		}
 	}
+	
+	this.updatePlayingDmos = function(dmo) {
+		manager.updatePlayingDmos(dmo);
+	}
+	
 	
 	this.play = new Parameter(this, this.updatePlay, 0, true);
 	this.amplitude = new Parameter(this, this.updateAmplitude, 1);
@@ -172,9 +182,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.pan = new Parameter(this, this.updatePan, 0);
 	this.distance = new Parameter(this, this.updateDistance, 0);
 	this.reverb = new Parameter(this, this.updateReverb, 0);
-	this.segmentIndex = new Parameter(this, this.updateSegmentIndex, 0, true, true);
-	this.segmentDurationRatio = new Parameter(this, undefined, 1, false, true);
-	this.segmentProportion = new Parameter(this, undefined, 1, false, true);
-	this.segmentCount = new Parameter(this, undefined, 4, true, true);
+	this.partIndex = new Parameter(this, this.updatePartIndex, 0, true, true);
+	this.durationRatio = new Parameter(this, undefined, 1, false, true);
+	this.partCount = new Parameter(this, undefined, Number.POSITIVE_INFINITY, true, true);
 	
 }
