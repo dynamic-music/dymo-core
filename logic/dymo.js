@@ -1,4 +1,4 @@
-function DynamicMusicObject(uri, scheduler, type, manager) {
+function DynamicMusicObject(uri, scheduler, type) {
 	
 	var parentDMO = null;
 	var parts = [];
@@ -169,10 +169,6 @@ function DynamicMusicObject(uri, scheduler, type, manager) {
 				return null;
 			}
 		}
-	}
-	
-	this.updatePlayingDmos = function(dmo) {
-		manager.updatePlayingDmos(dmo);
 	}
 	
 	

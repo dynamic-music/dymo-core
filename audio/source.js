@@ -19,6 +19,9 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	var segment = dmo.getSegment();
 	var time = segment[0];
 	var duration = segment[1];
+	if (!time) {
+		time = 0;
+	}
 	if (!duration) {
 		duration = buffer.duration-time;
 	}

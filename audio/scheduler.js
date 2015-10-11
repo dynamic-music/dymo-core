@@ -1,28 +1,29 @@
-function Scheduler($scope) {
+function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
 	
+	var self = this;
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 	
 	var buffers = {};
 	var sources = {};
 	var nextSources = {};
 	var endTimes = {};
+	this.urisOfPlayingDmos = [];
 	
-	var convolverSend = $scope.audioContext.createConvolver();
-	convolverSend.connect($scope.audioContext.destination);
+	var convolverSend = audioContext.createConvolver();
+	convolverSend.connect(audioContext.destination);
 	
 	var numCurrentlyLoading = 0;
-	var timeoutID;
+	var timeoutID;//TODO MAKE TIMEOUT IDS FOR EACH DMO!!!!!
 	
-	//load reverb impulse response
-	numCurrentlyLoading++;
-	var audioLoader2 = new AudioSampleLoader();
-	loadAudio("audio/impulse_rev.wav", audioLoader2, function() {
-		convolverSend.buffer = audioLoader2.response;
-		sourceReady();
-	});
+	this.setReverbFile = function(filePath) {
+		var audioLoader = new AudioSampleLoader();
+		loadAudio(filePath, audioLoader, function() {
+			convolverSend.buffer = audioLoader.response;
+			sourceReady();
+		});
+	}
 	
 	this.addSourceFile = function(filePath) {
-		numCurrentlyLoading++;
 		var audioLoader = new AudioSampleLoader();
 		loadAudio(filePath, audioLoader, function() {
 			buffers[filePath] = audioLoader.response;
@@ -32,9 +33,8 @@ function Scheduler($scope) {
 	
 	function sourceReady() {
 		numCurrentlyLoading--;
-		if (numCurrentlyLoading == 0) {
-			$scope.sourcesReady = true;
-			$scope.$apply();
+		if (numCurrentlyLoading == 0 && allSourcesReadyCallback) {
+			allSourcesReadyCallback();
 		}
 	}
 	
@@ -54,20 +54,21 @@ function Scheduler($scope) {
 		if (!endTimes[uri]) {
 			delay = SCHEDULE_AHEAD_TIME;
 		} else {
-			delay = endTimes[uri]-$scope.audioContext.currentTime;
+			delay = endTimes[uri]-audioContext.currentTime;
 		}
 		currentDmo = sources[uri].getDmo();
-		var startTime = $scope.audioContext.currentTime+delay;
+		var startTime = audioContext.currentTime+delay;
 		sources[uri].play(startTime);//, currentPausePosition); //% audioSource.loopEnd-audioSource.loopStart);
 		setTimeout(function() {
-			dmo.updatePlayingDmos(currentDmo);
+			updatePlayingDmos(currentDmo);
 		}, delay);
 		endTimes[uri] = startTime+sources[uri].getDuration();
 		nextSources[uri] = createNextSource(dmo);
 		if (nextSources[uri] && endTimes[uri]) {
-			timeoutID = setTimeout(function() { internalPlay(dmo); }, (endTimes[uri]-$scope.audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
+			//TODO MAKE TIMEOUT IDS FOR EACH DMO!!!!!
+			timeoutID = setTimeout(function() { internalPlay(dmo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
 		} else {
-			setTimeout(function() { reset(dmo); }, (endTimes[uri]-$scope.audioContext.currentTime)*1000);
+			timeoutID = setTimeout(function() { reset(dmo); }, (endTimes[uri]-audioContext.currentTime)*1000);
 		}
 	}
 	
@@ -93,7 +94,20 @@ function Scheduler($scope) {
 		nextSources[uri] = null;
 		endTimes[uri] = null;
 		dmo.resetPartsPlayed();
-		dmo.updatePlayingDmos(null);
+		updatePlayingDmos(null);
+	}
+	
+	function updatePlayingDmos(dmo) {
+		var newDmos = [];
+		var currentDmo = dmo;
+		while (currentDmo != null) {
+			newDmos.push(currentDmo.getUri());
+			currentDmo = currentDmo.getParent();
+		}
+		self.urisOfPlayingDmos = newDmos;
+		if (onPlaybackChange) {
+			onPlaybackChange();
+		}
 	}
 	
 	this.updateAmplitude = function(dmo, change) {
@@ -131,21 +145,10 @@ function Scheduler($scope) {
 		}
 	}
 	
-	/*function getSource(dmo) {
-		if (!sources[dmo.getUri()] && dmo.getSourcePath()) {
-			//currently reverb works only for one channel on android :( send channel solves it
-			sources[dmo.getUri()] = new Source($scope.audioContext, dmo, convolverSend);
-		}
-		return sources[dmo.getUri()];
-	}
-	
-	function getNextSource(dmo) {
-		return nextSources[dmo.getUri()];
-	}*/
-	
 	function loadAudio(path, audioLoader, onload) {
+		numCurrentlyLoading++;
 		audioLoader.src = path;
-		audioLoader.ctx = $scope.audioContext;
+		audioLoader.ctx = audioContext;
 		audioLoader.onload = onload;
 		audioLoader.onerror = function() {
 			console.log("Error loading audio");
@@ -157,7 +160,7 @@ function Scheduler($scope) {
 		nextPart = dmo.getNextPart();
 		if (nextPart) {
 			var buffer = buffers[dmo.getSourcePath()];
-			return new Source(nextPart, $scope.audioContext, buffer, convolverSend);
+			return new Source(nextPart, audioContext, buffer, convolverSend);
 		}
 	}
 	
