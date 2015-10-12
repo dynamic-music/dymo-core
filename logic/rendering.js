@@ -1,8 +1,19 @@
-function Rendering() {
+function Rendering(label) {
 	
 	var self = this;
 	
+	this.label = label;
 	this.mappings = [];
+	
+	this.dmo = null;
+	
+	this.play = function() {
+		this.dmo.play.update(undefined, 1);
+	}
+	
+	this.stop = function() {
+		this.dmo.play.update(undefined, 0);
+	}
 	
 	this.addFeatureMapping = function(dmo, feature, mappingFunction, parameter, level) {
 		for (var i = 0; i < dmo.graph.nodes.length; i++) {
