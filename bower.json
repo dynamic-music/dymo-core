@@ -1,6 +1,6 @@
 {
   "name": "dymo-core",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "homepage": "https://github.com/florianthalmann/dymo-core",
   "description": "package that manages and plays back dynamic music objects and their renderings",
   "main": "dymo.js",
@@ -24,5 +24,12 @@
     "tests",
     "spec"
   ],
-  "moduleType": []
+  "moduleType": [],
+  "devDependencies": {
+    "jasmine-core": "jasmine#~2.3.4"
+  },
+  "dependencies": {
+    "jsonld": "jsonld.js#~0.4.2",
+    "rdfstore": "~0.9.7"
+  }
 }
