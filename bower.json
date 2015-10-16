@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "jsonld": "jsonld.js#~0.4.2",
-    "rdfstore": "~0.9.7"
+    "rdfstore": "~0.9.7",
+    "n3": "*"
   }
 }
