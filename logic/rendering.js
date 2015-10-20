@@ -15,7 +15,12 @@ function Rendering(label) {
 		this.dmo.play.update(undefined, 0);
 	}
 	
-	this.addFeatureMapping = function(dmo, feature, mappingFunction, parameter, level) {
+	this.addMapping = function(mapping) {
+		this.mappings.push(mapping);
+		mapping.updateParameter();
+	}
+	
+	/*this.addFeatureMapping = function(dmo, feature, mappingFunction, parameter, level) {
 		for (var i = 0; i < dmo.graph.nodes.length; i++) {
 			var currentDmo = dmo.getRealDmo(dmo.graph.nodes[i]);
 			if (isNaN(level) || currentDmo.getLevel() == level) {
@@ -41,9 +46,6 @@ function Rendering(label) {
 				}
 			}
 		}
-	}
-	
-	this.addControlMapping = function(control, mappingFunction, parameter) {
-	}
+	}*/
 
 }

@@ -150,7 +150,7 @@ function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
 	
 	this.updateListenerOrientation = function() {
 		var angleInRadians = this.listenerOrientation.value * (Math.PI/180);
-		$scope.audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
+		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
 	}
 	
 	function loadAudio(path, audioLoader, onload) {

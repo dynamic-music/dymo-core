@@ -50,6 +50,28 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return [this.getFeature("time"), this.durationRatio.value*this.getFeature("duration")];
 	}
 	
+	this.getParameter = function(parameterName) {
+		if (parameterName == "Amplitude") {
+			return this.amplitude;
+		} else if (parameterName == "Pan") {
+			return this.pan;
+		} else if (parameterName == "Distance") {
+			return this.distance;
+		} else if (parameterName == "PlaybackRate") {
+			return this.playbackRate;
+		} else if (parameterName == "Reverb") {
+			return this.reverb;
+		} else if (parameterName == "DurationRatio") {
+			return this.durationRatio;
+		} else if (parameterName == "PartIndex") {
+			return this.partIndex;
+		} else if (parameterName == "PartCount") {
+			return this.partCount;
+		} else if (parameterName == "PartOrder") {
+			return undefined;//this.updatePartOrder(feature.name);
+		}
+	}
+	
 	this.setGraph = function(g) {
 		graph = g;
 	}

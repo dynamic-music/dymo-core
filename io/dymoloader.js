@@ -7,6 +7,10 @@ function DymoLoader(dmoPath, $scope, $interval) {
 	var dmos = {}; //dmos at all hierarchy levels for quick access during mapping assignment
 	var features = {};
 	
+	this.loadDymoFromJson(jsonUri) {
+		
+	}
+	
 	this.loadDmo = function(rdfUri) {
 		$http.get(dmoPath+rdfUri).success(function(data) {
 			rdfstore.create(function(err, store) {

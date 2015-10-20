@@ -1,4 +1,4 @@
-function Control(referenceAverageOf, label, type, $scope, requestValueFunction, resetFunction, updateFunction) {
+function Control(referenceAverageOf, label, type, scope, requestValueFunction, resetFunction, updateFunction) {
 	
 	this.referenceValue;
 	this.value;
@@ -31,13 +31,6 @@ function Control(referenceAverageOf, label, type, $scope, requestValueFunction, 
 		this.value = value;
 		if (updateFunction) {
 			updateFunction(value);
-		}
-		if ($scope) {
-			//scope apply here whenever something changes
-			setTimeout(function() {
-				$scope.$apply();
-			}, 10);
-			//$scope.$apply(); //LEADS TO Error: [$rootScope:inprog] $digest already in progress
 		}
 	}
 	

@@ -1,89 +1,78 @@
-function Mapping(type, controls, functions, multipliers, addends, moduli, parameter) {
+function Mapping(domainDims, domainFunctions, mappingFunction, dmos, parameterName) {
 	
-	var currentFunctionValues = [];
+	var currentControlValues = [];
 	
 	this.updateParameter = function(value, control) {
-		var controlIndex = controls.indexOf(control);
-		currentFunctionValues[controlIndex] = getFunctionValue(value, controlIndex);
-		parameter.update(this, calculateParameter());
-	}
-	
-	function calculateParameter() {
-		if (type == MappingTypes.PRODUCT_MAPPING) {
-			var product = 1;
-			for (var i = 0; i < controls.length; i++) {
-				product *= currentFunctionValues[i];
-			}
-			return product;
-		} else {
-			var sum = 0;
-			for (var i = 0; i < controls.length; i++) {
-				sum += currentFunctionValues[i];
-			}
-			return sum;
+		if (value && control) {
+			//TODO REMOVE WITH currentControlValues..
+			var controlIndex = domainDims.indexOf(control);
+			currentControlValues[controlIndex] = getDomainValue(value, controlIndex);
+		}
+		for (var i = 0; i < dmos.length; i++) {
+			dmos[i].getParameter(parameterName).update(this, calculateParameter(dmos[i]));
 		}
 	}
 	
-	function getFunctionValue(value, i) {
-		value = functions[i].getValue(value);
-		if (multipliers[i]) {
-			value *= multipliers[i];
+	function calculateParameter(dmo) {
+		var currentDomainValues = [];
+		//ADJUST WITH REMOVAL OF currentControlValues
+		for (var i = 0; i < domainDims.length; i++) {
+			if (typeof domainDims[i] === 'string' || domainDims[i] instanceof String) {
+				currentDomainValues[i] = dmo.getFeature(domainDims[i]);
+			} else {
+				currentDomainValues[i] = currentControlValues[i];
+			}
 		}
-		if (moduli[i]) {
-			value = moduloAsItShouldBe(value, moduli[i]);
-		}
-		if (addends[i]) {
-			value += addends[i];
+		return mappingFunction.apply(this, currentDomainValues);
+	}
+	
+	function getDomainValue(value, i) {
+		if (domainFunctions && domainFunctions[i]) {
+			return domainFunctions[i].getValue(value);
 		}
 		return value;
 	}
 	
 	this.updateControl = function(value) {
 		//TODO MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
-		if (controls.length <= 1) {
-			for (var i = 0; i < controls.length; i++) {
-				if (addends[i]) {
-					value -= addends[i];
-				}
-				if (moduli[i]) {
-					value = moduloAsItShouldBe(value, moduli[i]);
-				}
-				if (multipliers[i]) {
-					value /= multipliers[i];
-				}
-				controls[i].updateValue(value);
-			}
+		if (domainDims.length == 1 && domainDims[0].updateValue) {
+			//CALCULATE INVERSE FUNCTION :)
+			domainDims[0].updateValue(value);
 		}
 	}
 	
-	this.requestValue = function() {
-		for (var i = 0; i < controls.length; i++) {
-			if (controls[i].requestValue) {
-				var value = controls[i].requestValue();
+	this.requestValue = function(dmo) {
+		for (var i = 0; i < domainDims.length; i++) {
+			if (domainDims[i].requestValue) {
+				var value = domainDims[i].requestValue();
 				if (value || value == 0) {
-					currentFunctionValues[i] = getFunctionValue(value, i);
+					currentControlValues[i] = getDomainValue(value, i);
 				}
 			}
 		}
-		return calculateParameter();
+		return calculateParameter(dmo);
 	}
 	
 	this.reset = function() {
-		for (var i = 0; i < controls.length; i++) {
-			if (controls[i].reset) {
-				controls[i].reset();
+		for (var i = 0; i < domainDims.length; i++) {
+			if (domainDims[i].reset) {
+				domainDims[i].reset();
 			}
 		}
 	}
-	
-	for (var i = 0; i < controls.length; i++) {
-		controls[i].addMapping(this);
-	}
-	parameter.addMapping(this);
 	
 	//javascript modulo sucks
 	function moduloAsItShouldBe(m, n) {
 		return ((m % n) + n) % n;
+	}
+	
+	for (var i = 0; i < domainDims.length; i++) {
+		if (domainDims[i].addMapping) {
+			domainDims[i].addMapping(this);
+		}
+	}
+	for (var i = 0; i < dmos.length; i++) {
+		dmos[i].getParameter(parameterName).addMapping(this);
 	}
 	
 }
