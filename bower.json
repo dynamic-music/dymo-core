@@ -1,6 +1,6 @@
 {
   "name": "dymo-core",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "homepage": "https://github.com/florianthalmann/dymo-core",
   "description": "package that manages and plays back dynamic music objects and their renderings",
   "main": "dymo.js",
