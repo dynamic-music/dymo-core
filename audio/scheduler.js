@@ -7,6 +7,7 @@ function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
 	var sources = {};
 	var nextSources = {};
 	var endTimes = {};
+	var previousOnsets = {};
 	this.urisOfPlayingDmos = [];
 	
 	//horizontal listener orientation in degrees
@@ -49,7 +50,9 @@ function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
 		var uri = dmo.getUri();
 		if (!sources[uri]) {
 			//initially create sources
-			sources[uri] = createNextSource(dmo);
+			var newSource = createNextSource(dmo);
+			sources[uri] = newSource[0];
+			previousOnsets[uri] = newSource[1].getFeature("onset");
 		} else {
 			//switch source
 			sources[uri] = nextSources[uri];
@@ -65,11 +68,22 @@ function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
 		setTimeout(function() {
 			updatePlayingDmos(currentDmo);
 		}, delay);
-		endTimes[uri] = startTime+sources[uri].getDuration();
-		nextSources[uri] = createNextSource(dmo);
-		if (nextSources[uri] && endTimes[uri]) {
-			//TODO MAKE TIMEOUT IDS FOR EACH DMO!!!!!
-			timeoutID = setTimeout(function() { internalPlay(dmo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
+		var nextSourceAndDmo = createNextSource(dmo);
+		if (nextSourceAndDmo) {
+			nextSources[uri] = nextSourceAndDmo[0];
+			//REALLY BAD QUICKFIX! REDESIGN!!!
+			var nextOnset = nextSourceAndDmo[1].getFeature("onset");
+			var timeToNextOnset = nextOnset-previousOnsets[uri];
+			if (nextOnset && !timeToNextOnset || timeToNextOnset < sources[uri].getDuration()) {
+				endTimes[uri] = startTime+timeToNextOnset;
+				previousOnsets[uri] = nextOnset;
+			} else {
+				endTimes[uri] = startTime+sources[uri].getDuration();
+			}
+			if (endTimes[uri]) {
+				//TODO MAKE TIMEOUT IDS FOR EACH DYMO!!!!!
+				timeoutID = setTimeout(function() { internalPlay(dmo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
+			}
 		} else {
 			timeoutID = setTimeout(function() { reset(dmo); }, (endTimes[uri]-audioContext.currentTime)*1000);
 		}
@@ -167,8 +181,8 @@ function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
 	function createNextSource(dmo) {
 		nextPart = dmo.getNextPart();
 		if (nextPart) {
-			var buffer = buffers[dmo.getSourcePath()];
-			return new Source(nextPart, audioContext, buffer, convolverSend);
+			var buffer = buffers[nextPart.getSourcePath()];
+			return [new Source(nextPart, audioContext, buffer, convolverSend), nextPart];
 		}
 	}
 	

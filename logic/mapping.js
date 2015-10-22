@@ -1,6 +1,7 @@
-function Mapping(domainDims, domainFunctions, mappingFunction, dmos, parameterName) {
+function Mapping(domainDims, domainFunctions, functionString, dmos, parameterName) {
 	
 	var currentControlValues = [];
+	var mappingFunction = eval(functionString);
 	
 	this.updateParameter = function(value, control) {
 		if (value && control) {
@@ -58,6 +59,15 @@ function Mapping(domainDims, domainFunctions, mappingFunction, dmos, parameterNa
 			if (domainDims[i].reset) {
 				domainDims[i].reset();
 			}
+		}
+	}
+	
+	this.toJson = function() {
+		return {
+			"domainDims": domainDims,
+			"function": functionString,
+			"dmos": dmos.map(function (d) { return d.getUri(); }),
+			"parameter": parameterName
 		}
 	}
 	

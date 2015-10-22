@@ -8,7 +8,9 @@ function DynamicMusicObject(uri, scheduler, type) {
 	var graph = null;
 	var skipProportionAdjustment = false;
 	var previousIndex = null;
-	var features = [];
+	var features = {};
+	
+	features["level"] = 0;
 	
 	this.getUri = function() {
 		return uri;
@@ -32,10 +34,22 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.addPart = function(dmo) {
 		dmo.setParent(this);
 		parts.push(dmo);
+		dmo.setFeature("level", this.getLevel()+1);
+	}
+	
+	this.getParts = function() {
+		return parts;
 	}
 	
 	this.setSourcePath = function(path) {
 		sourcePath = path;
+	}
+	
+	this.getSourcePath = function() {
+		if (parentDMO && !sourcePath) {
+			return parentDMO.getSourcePath();
+		}
+		return sourcePath;
 	}
 	
 	this.setFeature = function(name, value) {
@@ -63,6 +77,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 			return this.reverb;
 		} else if (parameterName == "DurationRatio") {
 			return this.durationRatio;
+		} else if (parameterName == "Onset") {
+			return this.onset;
 		} else if (parameterName == "PartIndex") {
 			return this.partIndex;
 		} else if (parameterName == "PartCount") {
@@ -78,13 +94,6 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	this.getGraph = function() {
 		return graph;
-	}
-	
-	this.getSourcePath = function() {
-		if (parentDMO && !sourcePath) {
-			return parentDMO.getSourcePath();
-		}
-		return sourcePath;
 	}
 	
 	//positive change in play affects parts
@@ -201,7 +210,38 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.distance = new Parameter(this, this.updateDistance, 0);
 	this.reverb = new Parameter(this, this.updateReverb, 0);
 	this.partIndex = new Parameter(this, this.updatePartIndex, 0, true, true);
+	this.onset = new Parameter(this, undefined, -1, false, true);
 	this.durationRatio = new Parameter(this, undefined, 1, false, true);
 	this.partCount = new Parameter(this, undefined, Number.POSITIVE_INFINITY, true, true);
+	
+	//creates a hierarchical json of this (recursively containing parts)
+	this.toJsonHierarchy = function() {
+		var jsonDymo = this.toFlatJson();
+		for (var i = 0; i < parts.length; i++) {
+			jsonDymo["parts"].push(parts[i].toJsonHierarchy());
+		}
+		return jsonDymo;
+	}
+	
+	//creates basic representation of this with empty parts
+	this.toFlatJson = function() {
+		var jsonDymo = {
+			"@id": uri,
+			"@type": "DYMO",
+			"parts": [],
+			"source": sourcePath
+		}
+		for (featureName in features) {
+			jsonDymo[featureName] = this.getFeatureJson(featureName);
+		}
+		return jsonDymo;
+	}
+	
+	this.getFeatureJson = function(featureName) {
+		return {
+			"value" : features[featureName],
+			"adt" : featureName.charAt(0).toUpperCase() + featureName.slice(1),
+		};
+	}
 	
 }
