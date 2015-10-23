@@ -43,6 +43,9 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	this.setSourcePath = function(path) {
 		sourcePath = path;
+		if (path) {
+			scheduler.addSourceFile(path);
+		}
 	}
 	
 	this.getSourcePath = function() {

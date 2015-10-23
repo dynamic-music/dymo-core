@@ -1,4 +1,4 @@
-function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
+function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	var self = this;
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
@@ -28,17 +28,22 @@ function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
 	}
 	
 	this.addSourceFile = function(filePath) {
-		var audioLoader = new AudioSampleLoader();
-		loadAudio(filePath, audioLoader, function() {
-			buffers[filePath] = audioLoader.response;
-			sourceReady();
-		});
+		//only add if not there yet..
+		if (!buffers[filePath]) {
+			var audioLoader = new AudioSampleLoader();
+			loadAudio(filePath, audioLoader, function() {
+				buffers[filePath] = audioLoader.response;
+				sourceReady();
+			});
+		}
 	}
 	
 	function sourceReady() {
-		numCurrentlyLoading--;
-		if (numCurrentlyLoading == 0 && allSourcesReadyCallback) {
-			allSourcesReadyCallback();
+		if (numCurrentlyLoading > 0) {
+			numCurrentlyLoading--;
+		}
+		if (numCurrentlyLoading == 0 && onSourcesChange) {
+			onSourcesChange(numCurrentlyLoading);
 		}
 	}
 	
@@ -85,6 +90,7 @@ function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
 				timeoutID = setTimeout(function() { internalPlay(dmo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
 			}
 		} else {
+			endTimes[uri] = startTime+sources[uri].getDuration();
 			timeoutID = setTimeout(function() { reset(dmo); }, (endTimes[uri]-audioContext.currentTime)*1000);
 		}
 	}
@@ -167,23 +173,23 @@ function Scheduler(audioContext, allSourcesReadyCallback, onPlaybackChange) {
 		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
 	}
 	
-	function loadAudio(path, audioLoader, onload) {
-		numCurrentlyLoading++;
-		audioLoader.src = path;
-		audioLoader.ctx = audioContext;
-		audioLoader.onload = onload;
-		audioLoader.onerror = function() {
-			console.log("Error loading audio");
-		};
-		audioLoader.send();
-	}
-	
 	function createNextSource(dmo) {
 		nextPart = dmo.getNextPart();
 		if (nextPart) {
 			var buffer = buffers[nextPart.getSourcePath()];
 			return [new Source(nextPart, audioContext, buffer, convolverSend), nextPart];
 		}
+	}
+	
+	function loadAudio(path, audioLoader, onload) {
+		numCurrentlyLoading++;
+		audioLoader.src = path;
+		audioLoader.ctx = audioContext;
+		audioLoader.onload = onload;
+		audioLoader.onerror = function() {
+			console.log("Error loading audio ", path);
+		};
+		audioLoader.send();
 	}
 	
 }

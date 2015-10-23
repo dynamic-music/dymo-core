@@ -16,3 +16,7 @@ out
 **/.DS_Store
 
 bower_components
+
+**/*.m4a
+**/*.mp3
+**/*.wav

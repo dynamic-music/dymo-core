@@ -20,6 +20,10 @@ function Rendering(label) {
 		mapping.updateParameter();
 	}
 	
+	this.getMappings = function() {
+		return mappings;
+	}
+	
 	this.toJson = function() {
 		var json = {"mappings":[]};
 		for (var i = 0; i < mappings.length; i++) {

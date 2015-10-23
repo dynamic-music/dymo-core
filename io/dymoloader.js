@@ -1,4 +1,4 @@
-function DymoLoader(dmoPath, $scope, $interval) {
+function DymoLoader(scheduler, $scope, $interval) {
 	
 	var mobileRdfUri = "rdf/mobile.n3";
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
@@ -7,8 +7,61 @@ function DymoLoader(dmoPath, $scope, $interval) {
 	var dmos = {}; //dmos at all hierarchy levels for quick access during mapping assignment
 	var features = {};
 	
-	this.loadDymoFromJson(jsonUri) {
-		
+	//TODO PUT IN CENTRAL PLACE!!
+	var jsonKeys = ["@id", "@type", "parts", "source"];
+	
+	this.loadDymoFromJson = function(jsonUri, callback, $http) {
+		loadJson(jsonUri, undefined, callback, createDymoFromJson, $http);
+	}
+	
+	this.loadRenderingFromJson = function(jsonUri, dymoMap, callback, $http) {
+		loadJson(jsonUri, dymoMap, callback, createRenderingFromJson, $http);
+	}
+	
+	function loadJson(jsonUri, dymoMap, callback, creatingFunction, $http) {
+		if ($http) {
+			$http.get(jsonUri).success(function(data) {
+				callback(creatingFunction(data, dymoMap));
+			});
+		} else {
+			var oReq = new XMLHttpRequest();
+			oReq.addEventListener("load", function() {
+				callback(creatingFunction(JSON.parse(this.responseText), dymoMap));
+			});
+			oReq.open("GET", jsonUri);
+			oReq.send();
+		}
+	}
+	
+	function createDymoFromJson(json, dymoMap) {
+		if (!dymoMap) {
+			dymoMap = {};
+		}
+		var dymo = new DynamicMusicObject(json["@id"], scheduler);
+		dymoMap[json["@id"]] = dymo;
+		dymo.setSourcePath(json["source"]);
+		for (attribute in json) {
+			if (jsonKeys.indexOf(attribute) < 0) {
+				dymo.setFeature(attribute, json[attribute].value);
+			}
+		}
+		for (var i = 0; i < json["parts"].length; i++) {
+			dymo.addPart(createDymoFromJson(json["parts"][i], dymoMap)[0]);
+		}
+		return [dymo, dymoMap];
+	}
+	
+	function createRenderingFromJson(json, dymoMap) {
+		var rendering = new Rendering(json["@id"], scheduler);
+		for (var i = 0; i < json["mappings"].length; i++) {
+			var currentMapping = json["mappings"][i];
+			var dymos = [];
+			for (var j = 0; j < currentMapping["dmos"].length; j++) {
+				dymos.push(dymoMap[currentMapping["dmos"][j]]);
+			}
+			rendering.addMapping(new Mapping(currentMapping["domainDims"], undefined, currentMapping["function"], dymos, currentMapping["parameter"]));
+		}
+		return rendering;
 	}
 	
 	this.loadDmo = function(rdfUri) {
