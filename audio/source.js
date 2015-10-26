@@ -40,7 +40,7 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	updateAmplitude();
 	var currentPlaybackRate = dmo.playbackRate.value;
 	updatePlaybackRate();
-	var currentPannerPosition = [dmo.pan.value, 0, dmo.distance.value];
+	var currentPannerPosition = [dmo.pan.value, dmo.height.value, dmo.distance.value];
 	updatePosition();
 	var currentReverb = dmo.reverb.value;
 	updateReverb();
