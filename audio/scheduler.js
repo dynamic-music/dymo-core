@@ -161,6 +161,13 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
+	this.updateHeight = function(dmo, change) {
+		var source = sources[dmo.getUri()];
+		if (source) {
+			source.changePosition(0, change, 0);
+		}
+	}
+	
 	this.updateReverb = function(dmo, change) {
 		var source = sources[dmo.getUri()];
 		if (source) {

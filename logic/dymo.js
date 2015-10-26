@@ -74,6 +74,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 			return this.pan;
 		} else if (parameterName == "Distance") {
 			return this.distance;
+		} else if (parameterName == "Height") {
+			return this.height;
 		} else if (parameterName == "PlaybackRate") {
 			return this.playbackRate;
 		} else if (parameterName == "Reverb") {
@@ -154,6 +156,14 @@ function DynamicMusicObject(uri, scheduler, type) {
 		}
 	}
 	
+	//change in distance affects distance of parts
+	this.updateHeight = function(change) {
+		scheduler.updateHeight(this, change);
+		for (var i = 0; i < parts.length; i++) {
+			parts[i].height.relativeUpdate(change);
+		}
+	}
+	
 	//change in reverb affects reverb of parts
 	this.updateReverb = function(change) {
 		scheduler.updateReverb(this, change);
@@ -211,6 +221,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.playbackRate = new Parameter(this, this.updatePlaybackRate, 1);
 	this.pan = new Parameter(this, this.updatePan, 0);
 	this.distance = new Parameter(this, this.updateDistance, 0);
+	this.height = new Parameter(this, this.updateHeight, 0);
 	this.reverb = new Parameter(this, this.updateReverb, 0);
 	this.partIndex = new Parameter(this, this.updatePartIndex, 0, true, true);
 	this.onset = new Parameter(this, undefined, -1, false, true);
