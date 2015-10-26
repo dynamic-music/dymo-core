@@ -5,7 +5,8 @@ describe("a dymoloader", function() {
 	
 	var scheduler, dymo, dymoMap, rendering;
 	var dymoPath = '../example/dymo.json';
-	var renderingPath = '../example/rendering.json';
+	var featureRenderingPath = '../example/feature-rendering.json';
+	var controlRenderingPath = '../example/control-rendering.json';
 	var reverbPath = '../example/impulse_rev.wav';
 	
 	it("loads a dymo from json", function(done) {
@@ -15,7 +16,7 @@ describe("a dymoloader", function() {
 				//expect(scheduler.urisOfPlayingDmos).toEqual(["dymo1"]);
 				scheduler.stop(dymo);
 				done();
-			}, 2000);
+			}, 500);
 		});
 		scheduler.setReverbFile(reverbPath);
 		var loader = new DymoLoader(scheduler);
@@ -28,17 +29,30 @@ describe("a dymoloader", function() {
 		});
 	});
 	
-	it("loads a rendering from json", function(done) {
+	it("loads a feature rendering from json", function(done) {
 		var loader = new DymoLoader(scheduler);
-		loader.loadRenderingFromJson(renderingPath, dymoMap, function(loadedRendering) {
-			rendering = loadedRendering;
+		loader.loadRenderingFromJson(featureRenderingPath, dymoMap, function(loadedRendering) {
+			rendering = loadedRendering[0];
+			controls = loadedRendering[1];
 			expect(rendering.getMappings().length).toEqual(3);
+			expect(Object.keys(controls).length).toEqual(0);
 			scheduler.play(dymo);
 			setTimeout(function() {
 				//expect(scheduler.urisOfPlayingDmos).toEqual(["dymo1"]);
 				scheduler.stop(dymo);
 				done();
-			}, 2000);
+			}, 500);
+		});
+	});
+	
+	it("loads a control rendering from json", function(done) {
+		var loader = new DymoLoader(scheduler);
+		loader.loadRenderingFromJson(controlRenderingPath, dymoMap, function(loadedRendering) {
+			rendering = loadedRendering[0];
+			controls = loadedRendering[1];
+			expect(rendering.getMappings().length).toEqual(2);
+			expect(Object.keys(controls).length).toEqual(1);
+			done();
 		});
 	});
 	

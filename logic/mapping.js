@@ -63,8 +63,16 @@ function Mapping(domainDims, domainFunctions, functionString, dmos, parameterNam
 	}
 	
 	this.toJson = function() {
+		var domainJson = [];
+		for (var i = 0; i < domainDims.length; i++) {
+			if (domainDims[i] instanceof Control) {
+				domainJson.push({name:domainDims[i].name, type:domainDims[i].type});
+			} else {
+				domainJson.push({name:domainDims[i], type:"Feature"});
+			}
+		}
 		return {
-			"domainDims": domainDims,
+			"domainDims": domainJson,
 			"function": functionString,
 			"dmos": dmos.map(function (d) { return d.getUri(); }),
 			"parameter": parameterName

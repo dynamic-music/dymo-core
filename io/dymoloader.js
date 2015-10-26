@@ -53,15 +53,29 @@ function DymoLoader(scheduler, $scope, $interval) {
 	
 	function createRenderingFromJson(json, dymoMap) {
 		var rendering = new Rendering(json["@id"], scheduler);
+		var controls = {};
 		for (var i = 0; i < json["mappings"].length; i++) {
 			var currentMapping = json["mappings"][i];
 			var dymos = [];
 			for (var j = 0; j < currentMapping["dmos"].length; j++) {
 				dymos.push(dymoMap[currentMapping["dmos"][j]]);
 			}
-			rendering.addMapping(new Mapping(currentMapping["domainDims"], undefined, currentMapping["function"], dymos, currentMapping["parameter"]));
+			var domainDims = [];
+			for (var j = 0; j < currentMapping["domainDims"].length; j++) {
+				var currentName = currentMapping["domainDims"][j]["name"];
+				var currentType = currentMapping["domainDims"][j]["type"];
+				if (currentType == "Feature") {
+					domainDims.push(currentName);
+				} else {
+					if (!controls[currentName]) {
+						controls[currentName] = new Control(0, name, currentType);
+					}
+					domainDims.push(controls[currentName]);
+				}
+			}
+			rendering.addMapping(new Mapping(domainDims, undefined, currentMapping["function"], dymos, currentMapping["parameter"]));
 		}
-		return rendering;
+		return [rendering, controls];
 	}
 	
 	this.loadDmo = function(rdfUri) {

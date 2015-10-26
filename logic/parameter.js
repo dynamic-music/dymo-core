@@ -35,7 +35,7 @@ function Parameter(owner, updateFunction, initialValue, isInteger, isUpdateAbsol
 		this.value = value;
 		//update values of all other controllers connected to this parameter
 		for (var i = 0; i < this.mappings.length; i++) {
-			if (this.mappings[i] != mapping) {
+			if (mapping && this.mappings[i] != mapping) {
 				this.mappings[i].updateControl(value);
 			}
 		}

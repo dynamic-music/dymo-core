@@ -1,10 +1,10 @@
-function Control(referenceAverageOf, label, type, scope, requestValueFunction, resetFunction, updateFunction) {
+function Control(referenceAverageOf, name, type, scope, requestValueFunction, resetFunction, updateFunction) {
 	
 	this.referenceValue;
 	this.value;
 	this.mappings = [];
-	if (label) {
-		this.label = label;
+	if (name) {
+		this.name = name;
 	}
 	this.type = type;
 	if (requestValueFunction) {
