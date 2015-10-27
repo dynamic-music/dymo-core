@@ -68,7 +68,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 					domainDims.push(currentName);
 				} else {
 					if (!controls[currentName]) {
-						controls[currentName] = new Control(0, name, currentType);
+						controls[currentName] = new Control(0, currentName, currentType);
 					}
 					domainDims.push(controls[currentName]);
 				}

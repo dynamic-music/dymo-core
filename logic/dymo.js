@@ -90,6 +90,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 			return this.partCount;
 		} else if (parameterName == "PartOrder") {
 			return undefined;//this.updatePartOrder(feature.name);
+		} else if (parameterName == "ListenerOrientation") {
+			return scheduler.listenerOrientation;
 		}
 	}
 	

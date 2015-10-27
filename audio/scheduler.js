@@ -176,7 +176,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	}
 	
 	this.updateListenerOrientation = function() {
-		var angleInRadians = this.listenerOrientation.value * (Math.PI/180);
+		var angleInRadians = this.listenerOrientation.value / 180 * Math.PI;
 		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
 	}
 	
@@ -198,5 +198,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		};
 		audioLoader.send();
 	}
+	
+	this.listenerOrientation = new Parameter(this, this.updateListenerOrientation, 0);
 	
 }
