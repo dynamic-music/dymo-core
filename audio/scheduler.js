@@ -4,8 +4,9 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 	
 	var buffers = {};
-	var sources = {};
-	var nextSources = {};
+	var sources = {}; //grouped by top dymo
+	var nextSources = {}; //for each top dymo
+	var allSources = {}; //grouped by dymo
 	var endTimes = {};
 	var previousOnsets = {};
 	this.urisOfPlayingDmos = [];
@@ -53,59 +54,74 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	function internalPlay(dmo) {
 		var uri = dmo.getUri();
+		var currentSource;
 		if (!sources[uri]) {
-			//initially create sources
-			var newSource = createNextSource(dmo);
-			sources[uri] = newSource[0];
-			previousOnsets[uri] = newSource[1].getFeature("onset");
+			//create first source
+			currentSource = createNextSource(dmo);
+			currentDymo = currentSource.getDmo();
+			sources[uri] = {};
+			registerSource(uri, currentDymo.getUri(), currentSource);
+			previousOnsets[uri] = currentDymo.getFeature("onset");
 		} else {
-			//switch source
-			sources[uri] = nextSources[uri];
+			//switch to source
+			currentSource = nextSources[uri];
+			registerSource(uri, currentSource.getDmo().getUri(), currentSource);
 		}
 		if (!endTimes[uri]) {
 			delay = SCHEDULE_AHEAD_TIME;
 		} else {
 			delay = endTimes[uri]-audioContext.currentTime;
 		}
-		currentDmo = sources[uri].getDmo();
 		var startTime = audioContext.currentTime+delay;
-		sources[uri].play(startTime);//, currentPausePosition); //% audioSource.loopEnd-audioSource.loopStart);
+		currentSource.play(startTime);//, currentPausePosition); //% audioSource.loopEnd-audioSource.loopStart);
 		setTimeout(function() {
-			updatePlayingDmos(currentDmo);
+			updatePlayingDmos(currentSource.getDmo());
 		}, delay);
-		var nextSourceAndDmo = createNextSource(dmo);
-		if (nextSourceAndDmo) {
-			nextSources[uri] = nextSourceAndDmo[0];
+		var nextSource = createNextSource(dmo);
+		if (nextSource) {
+			nextSources[uri] = nextSource;
 			//REALLY BAD QUICKFIX! REDESIGN!!!
-			var nextOnset = nextSourceAndDmo[1].getFeature("onset");
+			var nextOnset = nextSource.getDmo().getFeature("onset");
 			var timeToNextOnset = nextOnset-previousOnsets[uri];
-			if (nextOnset && !timeToNextOnset || timeToNextOnset < sources[uri].getDuration()) {
+			if (nextOnset && !timeToNextOnset || timeToNextOnset < currentSource.getDuration()) {
 				endTimes[uri] = startTime+timeToNextOnset;
 				previousOnsets[uri] = nextOnset;
 			} else {
-				endTimes[uri] = startTime+sources[uri].getDuration();
+				endTimes[uri] = startTime+currentSource.getDuration();
 			}
 			if (endTimes[uri]) {
 				//TODO MAKE TIMEOUT IDS FOR EACH DYMO!!!!!
 				timeoutID = setTimeout(function() { internalPlay(dmo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
 			}
 		} else {
-			endTimes[uri] = startTime+sources[uri].getDuration();
+			endTimes[uri] = startTime+currentSource.getDuration();
 			timeoutID = setTimeout(function() { reset(dmo); }, (endTimes[uri]-audioContext.currentTime)*1000);
 		}
 	}
 	
+	function registerSource(topUri, dymoUri, source) {
+		sources[topUri][dymoUri] = source;
+		if (!allSources[dymoUri]) {
+			allSources[dymoUri] = [];
+		}
+		allSources[dymoUri].push(source);
+	}
+	
 	this.pause = function(dmo) {
-		var source = sources[dmo.getUri()];
-		if (source) {
-			source.pause();
+		var sourcesToPause = sources[dmo.getUri()];
+		if (sourcesToPause) {
+			for (var source in sourcesToPause) {
+				sourcesToPause[source].pause();
+			}
 		}
 	}
 	
 	this.stop = function(dmo) {
-		var source = sources[dmo.getUri()];
-		if (source) {
-			source.stop();
+		var sourcesToStop = sources[dmo.getUri()];
+		if (sourcesToStop) {
+			for (var source in sourcesToStop) {
+				sourcesToStop[source].stop();
+			}
 		}
 		reset(dmo);
 	}
@@ -134,44 +150,37 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	}
 	
 	this.updateAmplitude = function(dmo, change) {
-		var source = sources[dmo.getUri()];
-		if (source) {
-			source.changeAmplitude(change);
-		}
+		return updateSources(dmo, "changeAmplitude", [change]);
 	}
 	
 	this.updatePlaybackRate = function(dmo, change) {
-		var source = sources[dmo.getUri()];
-		if (source) {
-			source.changePlaybackRate(change);
-		}
+		return updateSources(dmo, "changePlaybackRate", [change]);
 	}
 	
 	this.updatePan = function(dmo, change) {
-		var source = sources[dmo.getUri()];
-		if (source) {
-			source.changePosition(change, 0, 0);
-		}
+		return updateSources(dmo, "changePosition", [change, 0, 0]);
 	}
 	
 	this.updateDistance = function(dmo, change) {
-		var source = sources[dmo.getUri()];
-		if (source) {
-			source.changePosition(0, 0, change);
-		}
+		return updateSources(dmo, "changePosition", [0, 0, change]);
 	}
 	
 	this.updateHeight = function(dmo, change) {
-		var source = sources[dmo.getUri()];
-		if (source) {
-			source.changePosition(0, change, 0);
-		}
+		return updateSources(dmo, "changePosition", [0, change, 0]);
 	}
 	
 	this.updateReverb = function(dmo, change) {
-		var source = sources[dmo.getUri()];
-		if (source) {
-			source.changeReverb(change);
+		return updateSources(dmo, "changeReverb", [change]);
+	}
+	
+	function updateSources(dmo, updateFunction, args) {
+		var sourcesToUpdate = allSources[dmo.getUri()];
+		if (sourcesToUpdate) {
+			var lastValue;
+			for (var i = 0; i < sourcesToUpdate.length; i++) {
+				lastValue = sourcesToUpdate[i][updateFunction].apply(sourcesToUpdate[i], args);
+			}
+			return lastValue;
 		}
 	}
 	
@@ -182,9 +191,9 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	function createNextSource(dmo) {
 		nextPart = dmo.getNextPart();
-		if (nextPart) {
+		if (nextPart && nextPart.getSourcePath()) {
 			var buffer = buffers[nextPart.getSourcePath()];
-			return [new Source(nextPart, audioContext, buffer, convolverSend), nextPart];
+			return new Source(nextPart, audioContext, buffer, convolverSend);
 		}
 	}
 	

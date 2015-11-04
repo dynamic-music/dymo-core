@@ -115,6 +115,7 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	this.changeAmplitude = function(deltaAmplitude) {
 		currentAmplitude += deltaAmplitude;
 		updateAmplitude();
+		return currentAmplitude;
 	}
 	
 	this.changePosition = function(deltaX, deltaY, deltaZ) {
@@ -122,16 +123,19 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 		currentPannerPosition[1] += deltaY;
 		currentPannerPosition[2] += deltaZ;
 		updatePosition();
+		return currentPannerPosition;
 	}
 	
 	this.changePlaybackRate = function(deltaRate) {
 		currentPlaybackRate += deltaRate;
 		updatePlaybackRate();
+		return currentPlaybackRate;
 	}
 	
 	this.changeReverb = function(deltaReverb) {
 		currentReverb += deltaReverb;
 		updateReverb();
+		return currentReverb;
 	}
 	
 	function toSamples(seconds, buffer) {

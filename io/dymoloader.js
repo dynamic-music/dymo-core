@@ -68,7 +68,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 					domainDims.push(currentName);
 				} else {
 					if (!controls[currentName]) {
-						controls[currentName] = new Control(0, currentName, currentType);
+						controls[currentName] = getControl(currentType, currentName);
 					}
 					domainDims.push(controls[currentName]);
 				}
@@ -290,7 +290,40 @@ function DymoLoader(scheduler, $scope, $interval) {
 		return defaultValue;
 	}
 	
-	function getControl(controlUri, controlTypeUri, label, dmo) {
+	function getControl(type, label, dmo) {
+			if (type == "AccelerometerX") {
+				return getAccelerometerControl(0);
+			} else if (type == "AccelerometerY") {
+				return getAccelerometerControl(1);
+			}	else if (type == "AccelerometerZ") {
+				return getAccelerometerControl(2);
+			} else if (type == "TiltX") {
+				return getAccelerometerControl(3);
+			} else if (type == "TiltY") {
+				return getAccelerometerControl(4);
+			} else if (type == "GeolocationLatitude") {
+				return getGeolocationControl(0);
+			}	else if (type == "GeolocationLongitude") {
+				return getGeolocationControl(1);
+			}	else if (type == "GeolocationDistance") {
+				return getGeolocationControl(2);
+			}	else if (type == "CompassHeading") {
+				return getCompassControl(0);
+			}	else if (type == "Slider") {
+				return new Control(0, label, type, $scope);
+			} else if (type == "Toggle") {
+				return new Control(0, label, type, $scope);
+			} else if (type == "Random") {
+				return getStatsControl(0, controlUri);
+			} else if (type == "GraphControl") {
+				if (dmo) {
+					var graph = dmo.getGraph();
+				}
+				return getGraphControl(0, controlUri, graph);
+			}
+		}
+	
+	/*function getControl(controlUri, controlTypeUri, label, dmo) {
 		if (controlUri == mobileRdfUri+"#AccelerometerX") {
 			return getAccelerometerControl(0);
 		} else if (controlUri == mobileRdfUri+"#AccelerometerY") {
@@ -321,7 +354,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 			}
 			return getGraphControl(0, controlUri, graph);
 		}
-	}
+	}*/
 	
 	function getAccelerometerControl(index) {
 		if (!$scope.accelerometerWatcher) {
@@ -388,13 +421,13 @@ function DymoLoader(scheduler, $scope, $interval) {
 		}
 	}
 	
-	function getUIControl(type, uri, label) {
+	/*function getUIControl(type, uri, label) {
 		if (!$scope.uiControls[uri]) {
 			$scope.uiControls[uri] = new Control(0, label, type, $scope);
 			$scope.$apply();
 		}
 		return $scope.uiControls[uri];
-	}
+	}*/
 	
 	function getParameter(owner, parameterUri, parameterTypeUri ) {
 		if (parameterUri == mobileRdfUri+"#Play" || parameterTypeUri == mobileRdfUri+"#Play") {
