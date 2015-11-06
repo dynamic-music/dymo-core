@@ -149,36 +149,12 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
-	this.updateAmplitude = function(dmo, change) {
-		return updateSources(dmo, "changeAmplitude", [change]);
-	}
-	
-	this.updatePlaybackRate = function(dmo, change) {
-		return updateSources(dmo, "changePlaybackRate", [change]);
-	}
-	
-	this.updatePan = function(dmo, change) {
-		return updateSources(dmo, "changePosition", [change, 0, 0]);
-	}
-	
-	this.updateDistance = function(dmo, change) {
-		return updateSources(dmo, "changePosition", [0, 0, change]);
-	}
-	
-	this.updateHeight = function(dmo, change) {
-		return updateSources(dmo, "changePosition", [0, change, 0]);
-	}
-	
-	this.updateReverb = function(dmo, change) {
-		return updateSources(dmo, "changeReverb", [change]);
-	}
-	
-	function updateSources(dmo, updateFunction, args) {
+	this.updateParameter = function(dmo, name, change) {
 		var sourcesToUpdate = allSources[dmo.getUri()];
 		if (sourcesToUpdate) {
 			var lastValue;
 			for (var i = 0; i < sourcesToUpdate.length; i++) {
-				lastValue = sourcesToUpdate[i][updateFunction].apply(sourcesToUpdate[i], args);
+				lastValue = sourcesToUpdate[i].changeParameter(name, change);
 			}
 			return lastValue;
 		}

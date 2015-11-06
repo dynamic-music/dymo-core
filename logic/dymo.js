@@ -1,5 +1,7 @@
 function DynamicMusicObject(uri, scheduler, type) {
 	
+	var self = this;
+	
 	var parentDMO = null;
 	var parts = [];
 	var partsPlayed = 0;
@@ -9,8 +11,23 @@ function DynamicMusicObject(uri, scheduler, type) {
 	var skipProportionAdjustment = false;
 	var previousIndex = null;
 	var features = {};
+	var parameters = {};
+	initFeaturesAndParameters();
 	
-	features["level"] = 0;
+	function initFeaturesAndParameters() {
+		features["level"] = 0;
+		parameters[PLAY] = new Parameter(this, updatePlay, 0, true);
+		parameters[ONSET] = new Parameter(this, undefined, -1, false, true);
+		parameters[DURATION_RATIO] = new Parameter(this, undefined, 1, false, true);
+		parameters[AMPLITUDE] = new Parameter(this, updateAmplitude, 1);
+		parameters[PLAYBACK_RATE] = new Parameter(this, updatePlaybackRate, 1);
+		parameters[PAN] = new Parameter(this, updatePan, 0);
+		parameters[DISTANCE] = new Parameter(this, updateDistance, 0);
+		parameters[HEIGHT] = new Parameter(this, updateHeight, 0);
+		parameters[REVERB] = new Parameter(this, updateReverb, 0);
+		parameters[PART_INDEX] = new Parameter(this, updatePartIndex, 0, true, true);
+		parameters[PART_COUNT] = new Parameter(this, undefined, Number.POSITIVE_INFINITY, true, true);
+	}
 	
 	this.getUri = function() {
 		return uri;
@@ -64,35 +81,16 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.getSegment = function() {
-		return [this.getFeature("time"), this.durationRatio.value*this.getFeature("duration")];
+		return [this.getFeature("time"), parameters[DURATION_RATIO].value*this.getFeature("duration")];
 	}
 	
 	this.getParameter = function(parameterName) {
-		if (parameterName == "Amplitude") {
-			return this.amplitude;
-		} else if (parameterName == "Pan") {
-			return this.pan;
-		} else if (parameterName == "Distance") {
-			return this.distance;
-		} else if (parameterName == "Height") {
-			return this.height;
-		} else if (parameterName == "PlaybackRate") {
-			return this.playbackRate;
-		} else if (parameterName == "Reverb") {
-			return this.reverb;
-		} else if (parameterName == "DurationRatio") {
-			return this.durationRatio;
-		} else if (parameterName == "Onset") {
-			return this.onset;
-		} else if (parameterName == "PartIndex") {
-			return this.partIndex;
-		} else if (parameterName == "PartCount") {
-			return this.partCount;
+		if (parameterName == "ListenerOrientation") {
+			return scheduler.listenerOrientation;
 		} else if (parameterName == "PartOrder") {
 			return undefined;//this.updatePartOrder(feature.name);
-		} else if (parameterName == "ListenerOrientation") {
-			return scheduler.listenerOrientation;
 		}
+		return parameters[parameterName];
 	}
 	
 	this.setGraph = function(g) {
@@ -104,7 +102,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	//positive change in play affects parts
-	this.updatePlay = function(change) {
+	function updatePlay(change) {
 		//ask their parts to get appropriate segment
 		if (type == DmoTypes.SEQUENCE) {
 			
@@ -123,58 +121,45 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	//change in amplitude does not affect parts
-	this.updateAmplitude = function(change) {
-		scheduler.updateAmplitude(this, change);
-		if (!sourcePath) {
-			for (var i = 0; i < parts.length; i++) {
-				parts[i].amplitude.relativeUpdate(change);
-			}
-		}
+	function updateAmplitude(change) {
+		updateParameter(AMPLITUDE, change, true);
 	}
 	
 	//change in amplitude does not affect parts
-	this.updatePlaybackRate = function(change) {
-		scheduler.updatePlaybackRate(this, change);
-		if (!sourcePath) {
+	function updatePlaybackRate(change) {
+		updateParameter(PLAYBACK_RATE, change, true);
+	}
+	
+	//change in pan affects pan of parts
+	function updatePan(change) {
+		updateParameter(PAN, change);
+	}
+	
+	//change in distance affects distance of parts
+	function updateDistance(change) {
+		updateParameter(DISTANCE, change);
+	}
+	
+	//change in distance affects distance of parts
+	function updateHeight(change) {
+		updateParameter(HEIGHT, change);
+	}
+	
+	//change in reverb affects reverb of parts
+	function updateReverb(change) {
+		updateParameter(REVERB, change);
+	}
+	
+	function updateParameter(name, change, onlyIfNoSource) {
+		scheduler.updateParameter(self, name, change);
+		if (!onlyIfNoSource || !sourcePath) {
 			for (var i = 0; i < parts.length; i++) {
-				parts[i].playbackRate.relativeUpdate(change);
+				parts[i].getParameter(name).relativeUpdate(change);
 			}
 		}
 	}
 	
-	//change in pan affects pan of parts
-	this.updatePan = function(change) {
-		scheduler.updatePan(this, change);
-		for (var i = 0; i < parts.length; i++) {
-			parts[i].pan.relativeUpdate(change);
-		}
-	}
-	
-	//change in distance affects distance of parts
-	this.updateDistance = function(change) {
-		scheduler.updateDistance(this, change);
-		for (var i = 0; i < parts.length; i++) {
-			parts[i].distance.relativeUpdate(change);
-		}
-	}
-	
-	//change in distance affects distance of parts
-	this.updateHeight = function(change) {
-		scheduler.updateHeight(this, change);
-		for (var i = 0; i < parts.length; i++) {
-			parts[i].height.relativeUpdate(change);
-		}
-	}
-	
-	//change in reverb affects reverb of parts
-	this.updateReverb = function(change) {
-		scheduler.updateReverb(this, change);
-		for (var i = 0; i < parts.length; i++) {
-			parts[i].reverb.relativeUpdate(change);
-		}
-	}
-	
-	this.updatePartIndex = function(value) {
+	function updatePartIndex(value) {
 		partsPlayed = value;
 	}
 	
@@ -194,7 +179,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.getNextPart = function() {
 		if (parts.length > 0) {
 			isPlaying = true;
-			while (partsPlayed < parts.length && partsPlayed < this.partCount.value) {
+			while (partsPlayed < parts.length && partsPlayed < parameters[PART_COUNT].value) {
 				var nextPart = parts[partsPlayed].getNextPart();
 				if (nextPart) {
 					return nextPart;
@@ -217,19 +202,6 @@ function DynamicMusicObject(uri, scheduler, type) {
 		}
 	}
 	
-	
-	this.play = new Parameter(this, this.updatePlay, 0, true);
-	this.amplitude = new Parameter(this, this.updateAmplitude, 1);
-	this.playbackRate = new Parameter(this, this.updatePlaybackRate, 1);
-	this.pan = new Parameter(this, this.updatePan, 0);
-	this.distance = new Parameter(this, this.updateDistance, 0);
-	this.height = new Parameter(this, this.updateHeight, 0);
-	this.reverb = new Parameter(this, this.updateReverb, 0);
-	this.partIndex = new Parameter(this, this.updatePartIndex, 0, true, true);
-	this.onset = new Parameter(this, undefined, -1, false, true);
-	this.durationRatio = new Parameter(this, undefined, 1, false, true);
-	this.partCount = new Parameter(this, undefined, Number.POSITIVE_INFINITY, true, true);
-	
 	//creates a hierarchical json of this (recursively containing parts)
 	this.toJsonHierarchy = function() {
 		var jsonDymo = this.toFlatJson();
@@ -243,7 +215,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.toFlatJson = function() {
 		var jsonDymo = {
 			"@id": uri,
-			"@type": "DYMO",
+			"@type": DYMO,
 			"parts": [],
 			"source": sourcePath
 		}

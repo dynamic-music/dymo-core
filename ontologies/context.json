@@ -1,17 +1,20 @@
 {
 	"@context" : {
-		"@base" : "http://example.org/syrinx/",
-		"Constituent" : "http://localhost:3000/co/charm#Constituent",
-		"pitch": "http://localhost:3000/co/charm#pitch",
-		"time": "http://localhost:3000/co/charm#time",
-		"duration": "http://localhost:3000/co/charm#duration",
-		"Pitch": "http://localhost:3000/co/charm#Pitch",
-		"Time": "http://localhost:3000/co/charm#Time",
-		"Duration": "http://localhost:3000/co/charm#Duration",
-		"hasPart" : "http://localhost:3000/co/charm#hasPart",
-		"adt" : "@type",
-		"cdt" : "http://localhost:3000/co/charm#cdt",
-		"value" : "http://localhost:3000/co/charm#value",
-		"DMO" : "dmo#DMO"
+		"@base" : "??",
+		
+		"Constituent": "charm#Constituent",
+		"pitch": "charm#pitch",
+		"time": "charm#time",
+		"duration": "charm#duration",
+		"Pitch": "charm#Pitch",
+		"Time": "charm#Time",
+		"Duration": "charm#Duration",
+		"hasPart": "charm#hasPart",
+		"adt": "@type",
+		"cdt": "charm#cdt",
+		"value": "charm#value",
+		
+		"Dymo": "dymo#Dymo",
+		"Amplitude": "dymo#Amplitude"
 	}
 }

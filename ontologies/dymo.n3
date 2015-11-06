@@ -12,7 +12,7 @@
 	a owl:Ontology ;
 	rdfs:comment "An ontology for describing Dynamic Music Objects" .
 
-:DMO
+:Dymo
 	a owl:Class ;
 	rdfs:subClassOf ch:Constituent ;
 	rdfs:comment "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters" .
@@ -20,12 +20,12 @@
 :Feature
 	a owl:Class ;
 	rdfs:subClassOf ch:Attribute ;
-	rdfs:comment "A parameter is an immutable attribute of a DMO" .
+	rdfs:comment "A parameter is an immutable attribute of a Dymo" .
 
 :Parameter
 	a owl:Class ;
 	rdfs:subClassOf ch:Attribute ;
-	rdfs:comment "A parameter is a mutable attribute of a DMO" .
+	rdfs:comment "A parameter is a mutable attribute of a Dymo" .
 
 #Audio parameters
 
@@ -59,40 +59,40 @@
 	rdfs:subClassOf :AudioParameter ;
 	rdfs:comment "" .
 
-#Segmentation parameters
+#Structural parameters
 
-:SegmentationParameter
+:StructuralParameter
 	a owl:Class ;
 	rdfs:subClassOf :Parameter ;
 	rdfs:comment "" .
 
-:Segmentation
+:PartOrder
 	a owl:Class ;
-	rdfs:subClassOf :SegmentationParameter ;
+	rdfs:subClassOf :StructuralParameter ;
 	rdfs:comment "" .
 
-:SegmentCount
+:PartCount
 	a owl:Class ;
-	rdfs:subClassOf :SegmentationParameter ;
+	rdfs:subClassOf :StructuralParameter ;
 	rdfs:comment "" .
 
-:SegmentDuration
+:PartDurationRatio
 	a owl:Class ;
-	rdfs:subClassOf :SegmentationParameter ;
+	rdfs:subClassOf :StructuralParameter ;
 	rdfs:comment "" .
 
-:SegmentProportion
+:PartProportion
 	a owl:Class ;
-	rdfs:subClassOf :SegmentationParameter ;
+	rdfs:subClassOf :StructuralParameter ;
 	rdfs:comment "" .
 
 
 #PROPERTIES
 
-#DMO properties
+#Dymo properties
 
 :hasAudioPath
 	a owl:DatatypeProperty ;
-	rdfs:domain :DMO ;
+	rdfs:domain :Dymo ;
 	rdfs:range xsd:string ;
 	rdfs:comment "" .

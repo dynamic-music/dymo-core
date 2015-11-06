@@ -36,14 +36,22 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	source.connect(panner);
 	source.buffer = buffer;
 	
-	var currentAmplitude = dmo.amplitude.value;
-	updateAmplitude();
-	var currentPlaybackRate = dmo.playbackRate.value;
-	updatePlaybackRate();
-	var currentPannerPosition = [dmo.pan.value, dmo.height.value, dmo.distance.value];
-	updatePosition();
-	var currentReverb = dmo.reverb.value;
-	updateReverb();
+	var parameters = {};
+	parameters[AMPLITUDE] = dryGain.gain;
+	parameters[PLAYBACK_RATE] = source.playbackRate;
+	parameters[REVERB] = reverbGain.gain;
+	parameters[PAN] = {value:0}; //mock parameters since panner non-readable
+	parameters[HEIGHT] = {value:0};
+	parameters[DISTANCE] = {value:0};
+	var positiveParameters = {AMPLITUDE, PLAYBACK_RATE, REVERB};
+	var positionParameters = {PAN, HEIGHT, DISTANCE};
+	
+	setParameter(AMPLITUDE, dmo.getParameter(AMPLITUDE).value);
+	setParameter(PLAYBACK_RATE, dmo.getParameter(PLAYBACK_RATE).value);
+	setParameter(REVERB, dmo.getParameter(REVERB).value);
+	setParameter(PAN, dmo.getParameter(PAN).value);
+	setParameter(HEIGHT, dmo.getParameter(HEIGHT).value);
+	setParameter(DISTANCE, dmo.getParameter(DISTANCE).value);
 	
 	
 	this.getDmo = function() {
@@ -83,59 +91,29 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 		source.stop(0);
 	}
 	
-	function updateAmplitude() {
-		if (currentAmplitude > 0) {
-			dryGain.gain.value = currentAmplitude;
-		} else {
-			dryGain.gain.value = 0;
+	this.changeParameter = function(name, change) {
+		return setParameter(name, change, true);
+	}
+	
+	function setParameter(name, value, relative) {
+		if (relative) {
+			value += parameters[name].value;
 		}
-	}
-	
-	function updatePosition() {
-		if (currentPannerPosition[2] == 0) {
-			z = -0.01; //for chrome :( source not audible at z = 0
-		} else {
-			z = currentPannerPosition[2];
+		if (value < 0 && name in positiveParameters) {
+			value = 0;
 		}
-		panner.setPosition(currentPannerPosition[0], currentPannerPosition[1], z);
-	}
-	
-	function updatePlaybackRate() {
-		source.playbackRate.value = currentPlaybackRate;
-	}
-	
-	function updateReverb() {
-		if (currentReverb > 0) {
-			reverbGain.gain.value = currentReverb;
-		} else {
-			reverbGain.gain.value = 0;
+		parameters[name].value = value;
+		if (name in positionParameters) {
+			updatePannerPosition();
 		}
+		return parameters[name].value;
 	}
 	
-	this.changeAmplitude = function(deltaAmplitude) {
-		currentAmplitude += deltaAmplitude;
-		updateAmplitude();
-		return currentAmplitude;
-	}
-	
-	this.changePosition = function(deltaX, deltaY, deltaZ) {
-		currentPannerPosition[0] += deltaX;
-		currentPannerPosition[1] += deltaY;
-		currentPannerPosition[2] += deltaZ;
-		updatePosition();
-		return currentPannerPosition;
-	}
-	
-	this.changePlaybackRate = function(deltaRate) {
-		currentPlaybackRate += deltaRate;
-		updatePlaybackRate();
-		return currentPlaybackRate;
-	}
-	
-	this.changeReverb = function(deltaReverb) {
-		currentReverb += deltaReverb;
-		updateReverb();
-		return currentReverb;
+	function updatePannerPosition() {
+		if (parameters[DISTANCE].value == 0) {
+			parameters[DISTANCE].value = -0.01; //for chrome :( source not audible at z = 0
+		}
+		panner.setPosition(parameters[PAN].value, parameters[HEIGHT].value, parameters[DISTANCE].value);
 	}
 	
 	function toSamples(seconds, buffer) {

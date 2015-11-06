@@ -197,10 +197,10 @@
 
 #Rendering properties
 
-:hasDMO
+:hasDymo
 	a owl:ObjectProperty, owl:FunctionalProperty ;
 	rdfs:domain :Rendering ; 
-	rdfs:range dmo:DMO ;
+	rdfs:range dmo:Dymo ;
 	rdfs:comment "" .
 
 :hasMapping
@@ -229,13 +229,13 @@
 	rdfs:range :Function ;
 	rdfs:comment "" .
 
-:toDMO
+:toDymo
 	a owl:ObjectProperty ;
 	rdfs:domain :Mapping ;
-	rdfs:range dmo:DMO ;
+	rdfs:range dmo:Dymo ;
 	rdfs:comment "" .
 
-:toDMOParameter
+:toDymoParameter
 	a owl:ObjectProperty ;
 	rdfs:domain :Mapping ;
 	rdfs:range dmo:Parameter ;

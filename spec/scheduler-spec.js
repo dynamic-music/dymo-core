@@ -29,10 +29,10 @@ describe("a scheduler", function() {
 	});
 	
 	it("reacts to updates", function(done) {
-		expect(scheduler.updateAmplitude(dymo2, -0.6)).toEqual(0.4);
+		expect(scheduler.updateParameter(dymo2, AMPLITUDE, -0.6)).toBeCloseTo(0.4, 7);
 		setTimeout(function() {
 			expect(scheduler.urisOfPlayingDmos).toEqual(["dymo2", "dymo1"]);
-			expect(scheduler.updateAmplitude(dymo2, 0.3)).toEqual(0.7);
+			expect(scheduler.updateParameter(dymo2, AMPLITUDE, 0.3)).toBeCloseTo(0.7, 7);
 			setTimeout(function() {
 				done();
 			}, 500);

@@ -8,6 +8,7 @@ function DymoWriter($http) {
 	var rdfsUri = "http://www.w3.org/2000/01/rdf-schema";
 	
 	this.writeDymoToJson = function(dymo, path) {
+		dymo["@context"] = "http://purl.org/ontology/dymo/context.json";
 		writeJson(dymo, path+'dymo.json');
 	}
 	
