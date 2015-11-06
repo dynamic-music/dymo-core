@@ -1,14 +1,8 @@
 function Mapping(domainDims, domainFunctions, functionString, dmos, parameterName) {
 	
-	var currentControlValues = [];
 	var mappingFunction = eval(functionString);
 	
 	this.updateParameter = function(value, control) {
-		if (value && control) {
-			//TODO REMOVE WITH currentControlValues..
-			var controlIndex = domainDims.indexOf(control);
-			currentControlValues[controlIndex] = getDomainValue(value, controlIndex);
-		}
 		for (var i = 0; i < dmos.length; i++) {
 			dmos[i].getParameter(parameterName).update(this, calculateParameter(dmos[i]));
 		}
@@ -16,13 +10,14 @@ function Mapping(domainDims, domainFunctions, functionString, dmos, parameterNam
 	
 	function calculateParameter(dmo) {
 		var currentDomainValues = [];
-		//ADJUST WITH REMOVAL OF currentControlValues
 		for (var i = 0; i < domainDims.length; i++) {
+			var currentValue;
 			if (typeof domainDims[i] === 'string' || domainDims[i] instanceof String) {
-				currentDomainValues[i] = dmo.getFeature(domainDims[i]);
+				currentValue = dmo.getFeature(domainDims[i]);
 			} else {
-				currentDomainValues[i] = currentControlValues[i];
+				currentValue = domainDims[i].value;
 			}
+			currentDomainValues[i] = getDomainValue(currentValue, i);
 		}
 		return mappingFunction.apply(this, currentDomainValues);
 	}
@@ -45,10 +40,7 @@ function Mapping(domainDims, domainFunctions, functionString, dmos, parameterNam
 	this.requestValue = function(dmo) {
 		for (var i = 0; i < domainDims.length; i++) {
 			if (domainDims[i].requestValue) {
-				var value = domainDims[i].requestValue();
-				if (value || value == 0) {
-					currentControlValues[i] = getDomainValue(value, i);
-				}
+				domainDims[i].requestValue();
 			}
 		}
 		return calculateParameter(dmo);

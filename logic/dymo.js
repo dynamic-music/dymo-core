@@ -85,9 +85,9 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.getParameter = function(parameterName) {
-		if (parameterName == "ListenerOrientation") {
+		if (parameterName == LISTENER_ORIENTATION) {
 			return scheduler.listenerOrientation;
-		} else if (parameterName == "PartOrder") {
+		} else if (parameterName == PART_ORDER) {
 			return undefined;//this.updatePartOrder(feature.name);
 		}
 		return parameters[parameterName];
@@ -151,7 +151,9 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	function updateParameter(name, change, onlyIfNoSource) {
-		scheduler.updateParameter(self, name, change);
+		if (scheduler) {
+			scheduler.updateParameter(self, name, change);
+		}
 		if (!onlyIfNoSource || !sourcePath) {
 			for (var i = 0; i < parts.length; i++) {
 				parts[i].getParameter(name).relativeUpdate(change);

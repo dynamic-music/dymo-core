@@ -15,6 +15,13 @@ var HEIGHT = "Height";
 var REVERB = "Reverb";
 var PART_INDEX = "PartIndex";
 var PART_COUNT = "PartCount";
+var PART_ORDER = "PartOrder";
+var LISTENER_ORIENTATION = "ListenerOrientation";
+
+// features
+
+var ONSET_FEATURE = "onset";
+var DURATION_FEATURE = "duration";
 
 // controls
 
@@ -25,6 +32,7 @@ var TILT_X = "TiltX";
 var TILT_Y = "TiltY";
 var GEOLOCATION_LATITUDE = "GeolocationLatitude";
 var GEOLOCATION_LONGITUDE = "GeolocationLongitude";
+var GEOLOCATION_DISTANCE = "GeolocationDistance"
 var COMPASS_HEADING = "CompassHeading";
 var SLIDER = "Slider";
 var TOGGLE = "Toggle";

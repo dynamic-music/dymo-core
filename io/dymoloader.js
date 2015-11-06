@@ -291,31 +291,31 @@ function DymoLoader(scheduler, $scope, $interval) {
 	}
 	
 	function getControl(type, label, dmo) {
-			if (type == "AccelerometerX") {
+			if (type == ACCELEROMETER_X) {
 				return getAccelerometerControl(0);
-			} else if (type == "AccelerometerY") {
+			} else if (type == ACCELEROMETER_Y) {
 				return getAccelerometerControl(1);
-			}	else if (type == "AccelerometerZ") {
+			}	else if (type == ACCELEROMETER_Z) {
 				return getAccelerometerControl(2);
-			} else if (type == "TiltX") {
+			} else if (type == TILT_X) {
 				return getAccelerometerControl(3);
-			} else if (type == "TiltY") {
+			} else if (type == TILT_Y) {
 				return getAccelerometerControl(4);
-			} else if (type == "GeolocationLatitude") {
+			} else if (type == GEOLOCATION_LATITUDE) {
 				return getGeolocationControl(0);
-			}	else if (type == "GeolocationLongitude") {
+			}	else if (type == GEOLOCATION_LONGITUDE) {
 				return getGeolocationControl(1);
-			}	else if (type == "GeolocationDistance") {
+			}	else if (type == GEOLOCATION_DISTANCE) {
 				return getGeolocationControl(2);
-			}	else if (type == "CompassHeading") {
+			}	else if (type == COMPASS_HEADING) {
 				return getCompassControl(0);
-			}	else if (type == "Slider") {
+			}	else if (type == SLIDER) {
 				return new Control(0, label, type, $scope);
-			} else if (type == "Toggle") {
+			} else if (type == TOGGLE) {
 				return new Control(0, label, type, $scope);
-			} else if (type == "Random") {
+			} else if (type == RANDOM) {
 				return getStatsControl(0, controlUri);
-			} else if (type == "GraphControl") {
+			} else if (type == GRAPH_CONTROL) {
 				if (dmo) {
 					var graph = dmo.getGraph();
 				}

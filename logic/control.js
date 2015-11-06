@@ -8,7 +8,10 @@ function Control(referenceAverageOf, name, type, scope, requestValueFunction, re
 	}
 	this.type = type;
 	if (requestValueFunction) {
-		this.requestValue = requestValueFunction;
+		this.requestValue = function() {
+			this.value = requestValueFunction();
+			return this.value;
+		}
 	}
 	if (resetFunction) {
 		this.reset = resetFunction;
