@@ -2,12 +2,12 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	var self = this;
 	
-	var parentDMO = null;
+	var parent = null;
 	var parts = [];
+	var similars = [];
 	var partsPlayed = 0;
 	var isPlaying = false;
 	var sourcePath;
-	var graph = null;
 	var skipProportionAdjustment = false;
 	var previousIndex = null;
 	var features = {};
@@ -34,16 +34,16 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.setParent = function(dmo) {
-		parentDMO = dmo;
+		parent = dmo;
 	}
 	
 	this.getParent = function() {
-		return parentDMO;
+		return parent;
 	}
 	
 	this.getLevel = function() {
-		if (parentDMO) {
-			return parentDMO.getLevel()+1;
+		if (parent) {
+			return parent.getLevel()+1;
 		}
 		return 0;
 	}
@@ -58,6 +58,30 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return parts;
 	}
 	
+	this.getNthPart = function(n, level) {
+		return recursiveGetNthPart(n, 0, level, this);
+	}
+	
+	function recursiveGetNthPart(n, found, level, dymo) {
+		var partsToGo = n-found;
+		var currentParts = dymo.getParts();
+		if (dymo.getLevel() == level && partsToGo == 0) {
+			return dymo;
+		} else if (dymo.getLevel() >= level-1) {
+			if (partsToGo < currentParts.length) {
+				return currentParts[partsToGo];
+			}
+			return found+currentParts.length;
+		} else {
+			for (var i = 0; i < currentParts.length; i++) {
+				found = recursiveGetNthPart(n, found, level, currentParts[i]);
+				if (isNaN(found)) {
+					return found;
+				}
+			}
+		}
+	}
+	
 	this.setSourcePath = function(path) {
 		sourcePath = path;
 		if (path) {
@@ -66,10 +90,18 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.getSourcePath = function() {
-		if (parentDMO && !sourcePath) {
-			return parentDMO.getSourcePath();
+		if (parent && !sourcePath) {
+			return parent.getSourcePath();
 		}
 		return sourcePath;
+	}
+	
+	this.addSimilar = function(dymo) {
+		similars.push(dymo);
+	}
+	
+	this.getSimilars = function(dymo) {
+		return similars;
 	}
 	
 	this.setFeature = function(name, value) {
@@ -91,14 +123,6 @@ function DynamicMusicObject(uri, scheduler, type) {
 			return undefined;//this.updatePartOrder(feature.name);
 		}
 		return parameters[parameterName];
-	}
-	
-	this.setGraph = function(g) {
-		graph = g;
-	}
-	
-	this.getGraph = function() {
-		return graph;
 	}
 	
 	//positive change in play affects parts
@@ -213,16 +237,63 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return jsonDymo;
 	}
 	
+	this.toJsonHierarchyGraph = function() {
+		var graph = createGraph();
+		addToJsonHierarchyGraph(graph, this);
+		return graph;
+	}
+	
+	function addToJsonHierarchyGraph(graph, dymo, parentJson) {
+		var currentJson = dymo.toFlatJson();
+		graph["nodes"].push(currentJson);
+		if (parentJson) {
+			graph["links"].push(createLink(parentJson, currentJson));
+		}
+		for (var i = 0; i < dymo.getParts().length; i++) {
+			addToJsonHierarchyGraph(graph, dymo.getParts()[i], currentJson);
+		}
+	}
+	
+	this.toJsonSimilarityGraph = function() {
+		var graph = createGraph();
+		addToJsonSimilarityGraph(graph, this);
+		return graph;
+	}
+	
+	//for now adds two edges per relation
+	function addToJsonSimilarityGraph(graph, dymo) {
+		var currentJson = dymo.toFlatJson();
+		graph["nodes"].push(currentJson);
+		for (var i = 0; i < dymo.getSimilars().length; i++) {
+			graph["links"].push(createLink(currentJson, dymo.getSimilars()[i].toFlatJson()));
+		}
+		for (var i = 0; i < dymo.getParts().length; i++) {
+			addToJsonSimilarityGraph(graph, dymo.getParts()[i]);
+		}
+	}
+	
+	function createGraph() {
+		return {"nodes":[], "links":[]};
+	}
+	
+	function createLink(dymo1, dymo2) {
+		return {"source":dymo1, "target":dymo2, "value":1};
+	}
+	
 	//creates basic representation of this with empty parts
 	this.toFlatJson = function() {
 		var jsonDymo = {
 			"@id": uri,
 			"@type": DYMO,
 			"parts": [],
+			"similars": [],
 			"source": sourcePath
 		}
 		for (featureName in features) {
 			jsonDymo[featureName] = this.getFeatureJson(featureName);
+		}
+		for (var i = 0; i < similars.length; i++) {
+			jsonDymo["similars"].push(similars[i].getUri());
 		}
 		return jsonDymo;
 	}

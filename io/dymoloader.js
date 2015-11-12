@@ -18,6 +18,10 @@ function DymoLoader(scheduler, $scope, $interval) {
 		loadJson(jsonUri, dymoMap, callback, createRenderingFromJson, $http);
 	}
 	
+	this.loadGraphFromJson = function(jsonUri, dymoMap, callback, $http) {
+		loadJson(jsonUri, dymoMap, callback, createGraphFromJson, $http);
+	}
+	
 	function loadJson(jsonUri, dymoMap, callback, creatingFunction, $http) {
 		if ($http) {
 			$http.get(jsonUri).success(function(data) {
@@ -77,6 +81,24 @@ function DymoLoader(scheduler, $scope, $interval) {
 		}
 		return [rendering, controls];
 	}
+	
+	//currently only works for generically named dymos
+	function createGraphFromJson(json, dymoMap) {
+		for (var i = 0; i < json.length; i++) {
+			if (json[i]) {
+				for (var j = 0; j < json[i].length; j++) {
+					var dymo = dymoMap["dymo"+i];
+					var similarDymo = dymoMap["dymo"+json[i][j]];
+					if (dymo && similarDymo) {
+						dymo.addSimilar(similarDymo);
+					}
+				}
+			}
+		}
+	}
+	
+	
+	
 	
 	this.loadDmo = function(rdfUri) {
 		$http.get(dmoPath+rdfUri).success(function(data) {
@@ -541,15 +563,6 @@ function DymoLoader(scheduler, $scope, $interval) {
 				$scope.$apply();
 			});
 		}
-	}
-	
-	function loadGraph(dmo, parameterUri, jsonUri) {
-		$scope.featureLoadingThreads++;
-		$http.get(jsonUri).success(function(json) {
-			dmo.setGraph(json);
-			$scope.featureLoadingThreads--;
-			$scope.$apply();
-		});
 	}
 	
 	function toSecondsNumber(xsdDurationString) {

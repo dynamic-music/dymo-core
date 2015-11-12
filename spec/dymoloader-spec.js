@@ -7,6 +7,7 @@ describe("a dymoloader", function() {
 	var dymoPath = '../example/dymo.json';
 	var featureRenderingPath = '../example/feature-rendering.json';
 	var controlRenderingPath = '../example/control-rendering.json';
+	var similarityGraphPath = '../example/similarity.json';
 	var reverbPath = '../example/impulse_rev.wav';
 	
 	it("loads a dymo from json", function(done) {
@@ -16,7 +17,7 @@ describe("a dymoloader", function() {
 				//expect(scheduler.urisOfPlayingDmos).toEqual(["dymo1"]);
 				scheduler.stop(dymo);
 				done();
-			}, 500);
+			}, 100);
 		});
 		scheduler.setReverbFile(reverbPath);
 		var loader = new DymoLoader(scheduler);
@@ -38,10 +39,10 @@ describe("a dymoloader", function() {
 			expect(Object.keys(controls).length).toEqual(0);
 			scheduler.play(dymo);
 			setTimeout(function() {
-				//expect(scheduler.urisOfPlayingDmos).toEqual(["dymo1"]);
+				expect(scheduler.urisOfPlayingDmos).toEqual(["dymo4", "dymo0"]);
 				scheduler.stop(dymo);
 				done();
-			}, 500);
+			}, 100);
 		});
 	});
 	
@@ -52,6 +53,16 @@ describe("a dymoloader", function() {
 			controls = loadedRendering[1];
 			expect(rendering.getMappings().length).toEqual(2);
 			expect(Object.keys(controls).length).toEqual(1);
+			done();
+		});
+	});
+	
+	it("loads a similarity graph from json", function(done) {
+		var loader = new DymoLoader(scheduler);
+		loader.loadGraphFromJson(similarityGraphPath, dymoMap, function() {
+			var graph = dymo.toJsonSimilarityGraph();
+			expect(graph["nodes"].length).toEqual(331);
+			expect(graph["links"].length).toEqual(274);
 			done();
 		});
 	});

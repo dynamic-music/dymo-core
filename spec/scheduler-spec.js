@@ -25,7 +25,7 @@ describe("a scheduler", function() {
 		setTimeout(function() {
 			expect(scheduler.urisOfPlayingDmos).toEqual(["dymo2", "dymo1"]);
 			done();
-		}, 1000);
+		}, 100);
 	});
 	
 	it("reacts to updates", function(done) {
@@ -35,8 +35,8 @@ describe("a scheduler", function() {
 			expect(scheduler.updateParameter(dymo2, AMPLITUDE, 0.3)).toBeCloseTo(0.7, 7);
 			setTimeout(function() {
 				done();
-			}, 500);
-		}, 500);
+			}, 100);
+		}, 100);
 	});
 	
 	it("stops a dymo", function(done) {
@@ -45,7 +45,7 @@ describe("a scheduler", function() {
 		setTimeout(function() {
 			expect(scheduler.urisOfPlayingDmos).toEqual([]);
 			done();
-		}, 500);
+		}, 100);
 	});
 	
 });
