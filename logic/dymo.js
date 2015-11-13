@@ -261,14 +261,24 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	//for now adds two edges per relation
-	function addToJsonSimilarityGraph(graph, dymo) {
-		var currentJson = dymo.toFlatJson();
+	function addToJsonSimilarityGraph(graph, dymo, jsonMap) {
+		if (!jsonMap) {
+			jsonMap = {};
+		}
+		if (!jsonMap[dymo.getUri()]) {
+			jsonMap[dymo.getUri()] = dymo.toFlatJson();
+		}
+		var currentJson = jsonMap[dymo.getUri()];
 		graph["nodes"].push(currentJson);
 		for (var i = 0; i < dymo.getSimilars().length; i++) {
-			graph["links"].push(createLink(currentJson, dymo.getSimilars()[i].toFlatJson()));
+			var currentSimilar = dymo.getSimilars()[i];
+			if (!jsonMap[currentSimilar.getUri()]) {
+				jsonMap[currentSimilar.getUri()] = currentSimilar.toFlatJson();
+			}
+			graph["links"].push(createLink(currentJson, jsonMap[currentSimilar.getUri()]));
 		}
 		for (var i = 0; i < dymo.getParts().length; i++) {
-			addToJsonSimilarityGraph(graph, dymo.getParts()[i]);
+			addToJsonSimilarityGraph(graph, dymo.getParts()[i], jsonMap);
 		}
 	}
 	
