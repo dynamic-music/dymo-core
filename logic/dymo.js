@@ -127,20 +127,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	//positive change in play affects parts
 	function updatePlay(change) {
-		//ask their parts to get appropriate segment
-		if (type == DmoTypes.SEQUENCE) {
-			
-		}
-		if (parts.length > 0) {
-			for (var i = 0; i < parts.length; i++) {
-				parts[i].updatePlay(change);
-			}
+		if (change > 0) {
+			scheduler.play(self);
 		} else {
-			if (change > 0) {
-				scheduler.play(this);
-			} else {
-				scheduler.stop(this);
-			}
+			scheduler.stop(self);
 		}
 	}
 	

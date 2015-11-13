@@ -37,10 +37,10 @@ describe("a dymoloader", function() {
 			controls = loadedRendering[1];
 			expect(rendering.getMappings().length).toEqual(3);
 			expect(Object.keys(controls).length).toEqual(0);
-			scheduler.play(dymo);
+			rendering.play();
 			setTimeout(function() {
 				expect(scheduler.urisOfPlayingDmos).toEqual(["dymo4", "dymo0"]);
-				scheduler.stop(dymo);
+				rendering.stop();
 				done();
 			}, 100);
 		});

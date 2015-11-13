@@ -56,7 +56,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 	}
 	
 	function createRenderingFromJson(json, dymoMap) {
-		var rendering = new Rendering(json["@id"], scheduler);
+		var rendering = new Rendering(dymoMap[json["topDymo"]]);
 		var controls = {};
 		for (var i = 0; i < json["mappings"].length; i++) {
 			var currentMapping = json["mappings"][i];

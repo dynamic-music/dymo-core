@@ -1,18 +1,15 @@
-function Rendering(label) {
+function Rendering(dymo) {
 	
 	var self = this;
 	
-	var label = label;
 	var mappings = [];
 	
-	this.dmo = null;
-	
 	this.play = function() {
-		this.dmo.play.update(undefined, 1);
+		dymo.getParameter(PLAY).update(undefined, 1);
 	}
 	
 	this.stop = function() {
-		this.dmo.play.update(undefined, 0);
+		dymo.getParameter(PLAY).update(undefined, 0);
 	}
 	
 	this.addMapping = function(mapping) {
@@ -25,7 +22,7 @@ function Rendering(label) {
 	}
 	
 	this.toJson = function() {
-		var json = {"mappings":[]};
+		var json = {"topDymo":dymo.getUri(),"mappings":[]};
 		for (var i = 0; i < mappings.length; i++) {
 			json["mappings"].push(mappings[i].toJson());
 		}
