@@ -307,6 +307,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 		var jsonDymo = {
 			"@id": uri,
 			"@type": DYMO,
+			"ct": type,
 			"parts": [],
 			"similars": [],
 			"source": sourcePath

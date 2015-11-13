@@ -41,7 +41,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 		if (!dymoMap) {
 			dymoMap = {};
 		}
-		var dymo = new DynamicMusicObject(json["@id"], scheduler);
+		var dymo = new DynamicMusicObject(json["@id"], scheduler, json["ct"]);
 		dymoMap[json["@id"]] = dymo;
 		dymo.setSourcePath(json["source"]);
 		for (attribute in json) {
