@@ -5,11 +5,15 @@ function Rendering(dymo) {
 	var mappings = [];
 	
 	this.play = function() {
-		dymo.getParameter(PLAY).update(undefined, 1);
+		if (dymo) {
+			dymo.getParameter(PLAY).update(undefined, 1);
+		}
 	}
 	
 	this.stop = function() {
-		dymo.getParameter(PLAY).update(undefined, 0);
+		if (dymo) {
+			dymo.getParameter(PLAY).update(undefined, 0);
+		}
 	}
 	
 	this.addMapping = function(mapping) {

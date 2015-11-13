@@ -29,6 +29,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 		parameters[PART_COUNT] = new Parameter(this, undefined, Number.POSITIVE_INFINITY, true, true);
 	}
 	
+	this.setType = function(t) {
+		type = t;
+	}
+	
 	this.getUri = function() {
 		return uri;
 	}
@@ -192,15 +196,33 @@ function DynamicMusicObject(uri, scheduler, type) {
 		});
 	}
 	
-	this.getNextPart = function() {
+	this.getNextParts = function() {
 		if (parts.length > 0) {
-			isPlaying = true;
-			while (partsPlayed < parts.length && partsPlayed < parameters[PART_COUNT].value) {
-				var nextPart = parts[partsPlayed].getNextPart();
-				if (nextPart) {
-					return nextPart;
-				} else {
-					partsPlayed++;
+			if (type == PARALLEL) {
+				var parallelParts = [];
+				while (partsPlayed < parts.length && partsPlayed < parameters[PART_COUNT].value) {
+					var nextParts = parts[partsPlayed].getNextParts();
+					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
+						parallelParts = parallelParts.concat(nextParts);
+					} else {
+						partsPlayed++;
+					}
+				}
+				if (parallelParts.length > 0) {
+					return parallelParts;
+				}
+			} else { //SEQUENTIAL FOR EVERYTHING ELSE
+				isPlaying = true;
+				while (partsPlayed < parts.length && partsPlayed < parameters[PART_COUNT].value) {
+					var nextParts = parts[partsPlayed].getNextParts();
+					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
+						if (!nextParts instanceof Array) {
+							nextParts = [nextParts]
+						}
+						return nextParts;
+					} else {
+						partsPlayed++;
+					}
 				}
 			}
 			//done playing
@@ -210,7 +232,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 		} else {
 			if (!isPlaying) {
 				isPlaying = true;
-				return this;
+				return [this];
 			} else {
 				isPlaying = false;
 				return null;
