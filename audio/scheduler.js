@@ -61,7 +61,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			sources[uri] = {};
 			for (var i = 0; i < currentSources.length; i++) {
 				var currentDymo = currentSources[i].getDmo();
-				registerSource(uri, currentDymo.getUri(), currentSources);
+				registerSource(uri, currentDymo.getUri(), currentSources[i]);
 				previousOnsets[uri] = currentDymo.getFeature("onset");
 			}
 		} else {
@@ -131,9 +131,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		var dymoSources = sources[dymo.getUri()];
 		if (dymoSources) {
 			for (var key in dymoSources) {
-				for (var i = 0; i < dymoSources[key].length; i++) {
-					dymoSources[key][i][func].call(dymoSources[key][i]);
-				}
+				dymoSources[key][func].call(dymoSources[key]);
 			}
 		}
 	}
@@ -169,10 +167,8 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		var sourcesToUpdate = allSources[dmo.getUri()];
 		if (sourcesToUpdate) {
 			var lastValue;
-			for (var key in sourcesToUpdate) {
-				for (var i = 0; i < sourcesToUpdate[key].length; i++) {
-					lastValue = sourcesToUpdate[key][i].changeParameter(name, change);
-				}
+			for (var i = 0; i < sourcesToUpdate.length; i++) {
+				lastValue = sourcesToUpdate[i].changeParameter(name, change);
 			}
 			return lastValue;
 		}

@@ -43,8 +43,8 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	parameters[PAN] = {value:0}; //mock parameters since panner non-readable
 	parameters[HEIGHT] = {value:0};
 	parameters[DISTANCE] = {value:0};
-	var positiveParameters = {AMPLITUDE, PLAYBACK_RATE, REVERB};
-	var positionParameters = {PAN, HEIGHT, DISTANCE};
+	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, REVERB];
+	var positionParameters = [PAN, HEIGHT, DISTANCE];
 	
 	setParameter(AMPLITUDE, dmo.getParameter(AMPLITUDE).value);
 	setParameter(PLAYBACK_RATE, dmo.getParameter(PLAYBACK_RATE).value);
@@ -99,11 +99,11 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 		if (relative) {
 			value += parameters[name].value;
 		}
-		if (value < 0 && name in positiveParameters) {
+		if (value < 0 && positiveParameters.indexOf(name) >= 0) {
 			value = 0;
 		}
 		parameters[name].value = value;
-		if (name in positionParameters) {
+		if (positionParameters.indexOf(name) >= 0) {
 			updatePannerPosition();
 		}
 		return parameters[name].value;
