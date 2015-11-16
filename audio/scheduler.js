@@ -98,14 +98,14 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 				endTimes[uri] = startTime+timeToNextOnset;
 				previousOnsets[uri] = nextOnset;
 			} else {
-				endTimes[uri] = startTime+currentSources[0].getDuration();
+				endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getParameter(PLAYBACK_RATE);
 			}
 			if (endTimes[uri]) {
 				//TODO MAKE TIMEOUT IDS FOR EACH DYMO!!!!!
 				timeoutID = setTimeout(function() { internalPlay(dmo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
 			}
 		} else {
-			endTimes[uri] = startTime+currentSources[0].getDuration();
+			endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getParameter(PLAYBACK_RATE);
 			timeoutID = setTimeout(function() { reset(dmo); }, (endTimes[uri]-audioContext.currentTime)*1000);
 		}
 	}
@@ -166,6 +166,9 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	this.updateParameter = function(dmo, name, change) {
 		var sourcesToUpdate = allSources[dmo.getUri()];
 		if (sourcesToUpdate) {
+			if (nextSources[dmo.getUri()]) {
+				sourcesToUpdate = sourcesToUpdate.concat(nextSources[dmo.getUri()]);
+			}
 			var lastValue;
 			for (var i = 0; i < sourcesToUpdate.length; i++) {
 				lastValue = sourcesToUpdate[i].changeParameter(name, change);

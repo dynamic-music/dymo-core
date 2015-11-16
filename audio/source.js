@@ -62,6 +62,10 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 		return duration;
 	}
 	
+	this.getParameter = function(name) {
+		return parameters[name].value;
+	}
+	
 	this.play = function(startTime) {
 		source.start(startTime, currentPausePosition);
 		isPlaying = true;

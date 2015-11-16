@@ -26,7 +26,10 @@ function Rendering(dymo) {
 	}
 	
 	this.toJson = function() {
-		var json = {"topDymo":dymo.getUri(),"mappings":[]};
+		var json = {"mappings":[]};
+		if (dymo) {
+			json["topDymo"] = dymo.getUri();
+		}
 		for (var i = 0; i < mappings.length; i++) {
 			json["mappings"].push(mappings[i].toJson());
 		}

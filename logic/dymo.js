@@ -39,6 +39,15 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	this.setParent = function(dmo) {
 		parent = dmo;
+		recursiveUpdateLevel(this);
+	}
+	
+	function recursiveUpdateLevel(dmo) {
+		dmo.setFeature("level", dmo.getLevel());
+		var dmoParts = dmo.getParts();
+		for (var i = 0; i < dmoParts.length; i++) {
+			recursiveUpdateLevel(dmoParts[i]);
+		}
 	}
 	
 	this.getParent = function() {
@@ -53,9 +62,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.addPart = function(dmo) {
-		dmo.setParent(this);
 		parts.push(dmo);
-		dmo.setFeature("level", this.getLevel()+1);
+		dmo.setParent(this);
 	}
 	
 	this.getParts = function() {
@@ -140,12 +148,12 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	//change in amplitude does not affect parts
 	function updateAmplitude(change) {
-		updateParameter(AMPLITUDE, change, true);
+		updateParameter(AMPLITUDE, change);//, true);
 	}
 	
 	//change in amplitude does not affect parts
 	function updatePlaybackRate(change) {
-		updateParameter(PLAYBACK_RATE, change, true);
+		updateParameter(PLAYBACK_RATE, change);//, true);
 	}
 	
 	//change in pan affects pan of parts
@@ -200,12 +208,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 		if (parts.length > 0) {
 			if (type == PARALLEL) {
 				var parallelParts = [];
-				while (partsPlayed < parts.length && partsPlayed < parameters[PART_COUNT].value) {
-					var nextParts = parts[partsPlayed].getNextParts();
+				for (var i = 0; i < parts.length; i++) {
+					var nextParts = parts[i].getNextParts();
 					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
 						parallelParts = parallelParts.concat(nextParts);
-					} else {
-						partsPlayed++;
 					}
 				}
 				if (parallelParts.length > 0) {
@@ -217,7 +223,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 					var nextParts = parts[partsPlayed].getNextParts();
 					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
 						if (!nextParts instanceof Array) {
-							nextParts = [nextParts]
+							nextParts = [nextParts];
 						}
 						return nextParts;
 					} else {
