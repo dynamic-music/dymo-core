@@ -15,6 +15,10 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	var panner = audioContext.createPanner();
 	panner.connect(dryGain);
 	panner.connect(reverbGain);
+	var filter = audioContext.createBiquadFilter();
+	filter.type = "lowpass";
+	filter.frequency.value = 20000;
+	filter.connect(panner);
 	
 	var segment = dmo.getSegment();
 	var time = segment[0];
@@ -33,17 +37,18 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	}
 	
 	var source = audioContext.createBufferSource();
-	source.connect(panner);
+	source.connect(filter);
 	source.buffer = buffer;
 	
 	var parameters = {};
 	parameters[AMPLITUDE] = dryGain.gain;
 	parameters[PLAYBACK_RATE] = source.playbackRate;
 	parameters[REVERB] = reverbGain.gain;
+	parameters[FILTER] = filter.frequency;
 	parameters[PAN] = {value:0}; //mock parameters since panner non-readable
 	parameters[HEIGHT] = {value:0};
 	parameters[DISTANCE] = {value:0};
-	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, REVERB];
+	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, REVERB, FILTER];
 	var positionParameters = [PAN, HEIGHT, DISTANCE];
 	
 	setParameter(AMPLITUDE, dmo.getParameter(AMPLITUDE).value);

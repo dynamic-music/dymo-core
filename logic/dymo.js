@@ -25,6 +25,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 		parameters[DISTANCE] = new Parameter(this, updateDistance, 0);
 		parameters[HEIGHT] = new Parameter(this, updateHeight, 0);
 		parameters[REVERB] = new Parameter(this, updateReverb, 0);
+		parameters[FILTER] = new Parameter(this, updateFilter, 0);
 		parameters[PART_INDEX] = new Parameter(this, updatePartIndex, 0, true, true);
 		parameters[PART_COUNT] = new Parameter(this, undefined, Number.POSITIVE_INFINITY, true, true);
 	}
@@ -174,6 +175,11 @@ function DynamicMusicObject(uri, scheduler, type) {
 	//change in reverb affects reverb of parts
 	function updateReverb(change) {
 		updateParameter(REVERB, change);
+	}
+	
+	//change in filter
+	function updateFilter(change) {
+		updateParameter(FILTER, change);
 	}
 	
 	function updateParameter(name, change, onlyIfNoSource) {
