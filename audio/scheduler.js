@@ -163,7 +163,11 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
-	this.updateParameter = function(dmo, name, change) {
+	this.getSources = function(dmo) {
+		return allSources[dmo.getUri()];
+	}
+	
+	/*this.updateParameter = function(dmo, name, change) {
 		var sourcesToUpdate = allSources[dmo.getUri()];
 		if (sourcesToUpdate) {
 			if (nextSources[dmo.getUri()]) {
@@ -175,7 +179,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			}
 			return lastValue;
 		}
-	}
+	}*/
 	
 	this.updateListenerOrientation = function() {
 		var angleInRadians = this.listenerOrientation.value / 180 * Math.PI;

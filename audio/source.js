@@ -51,13 +51,17 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, REVERB, FILTER];
 	var positionParameters = [PAN, HEIGHT, DISTANCE];
 	
-	setParameter(AMPLITUDE, dmo.getParameter(AMPLITUDE).value);
-	setParameter(PLAYBACK_RATE, dmo.getParameter(PLAYBACK_RATE).value);
-	setParameter(REVERB, dmo.getParameter(REVERB).value);
-	setParameter(PAN, dmo.getParameter(PAN).value);
-	setParameter(HEIGHT, dmo.getParameter(HEIGHT).value);
-	setParameter(DISTANCE, dmo.getParameter(DISTANCE).value);
+	initParameter(AMPLITUDE, dmo.getParameter(AMPLITUDE));
+	initParameter(PLAYBACK_RATE, dmo.getParameter(PLAYBACK_RATE));
+	initParameter(REVERB, dmo.getParameter(REVERB));
+	initParameter(PAN, dmo.getParameter(PAN));
+	initParameter(HEIGHT, dmo.getParameter(HEIGHT));
+	initParameter(DISTANCE, dmo.getParameter(DISTANCE));
 	
+	function initParameter(name, dmoParam) {
+		setParameter(name, dmoParam.value);
+		dmoParam.addObserver(self);
+	}
 	
 	this.getDmo = function() {
 		return dmo;
@@ -100,8 +104,8 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 		source.stop(0);
 	}
 	
-	this.changeParameter = function(name, change) {
-		return setParameter(name, change, true);
+	this.observedParameterChanged = function(param) {
+		setParameter(param.name, param.change, true);
 	}
 	
 	function setParameter(name, value, relative) {
@@ -115,7 +119,6 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 		if (positionParameters.indexOf(name) >= 0) {
 			updatePannerPosition();
 		}
-		return parameters[name].value;
 	}
 	
 	function updatePannerPosition() {

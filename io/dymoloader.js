@@ -65,9 +65,11 @@ function DymoLoader(scheduler, $scope, $interval) {
 				dymos.push(dymoMap[currentMapping["dmos"][j]]);
 			}
 			var domainDims = [];
+			var domainDimsRelative = [];
 			for (var j = 0; j < currentMapping["domainDims"].length; j++) {
 				var currentName = currentMapping["domainDims"][j]["name"];
 				var currentType = currentMapping["domainDims"][j]["type"];
+				domainDimsRelative[i] = currentMapping["domainDims"][j]["relative"];
 				if (currentType == "Feature") {
 					domainDims.push(currentName);
 				} else {
@@ -77,7 +79,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 					domainDims.push(controls[currentName]);
 				}
 			}
-			rendering.addMapping(new Mapping(domainDims, undefined, currentMapping["function"], dymos, currentMapping["parameter"]));
+			rendering.addMapping(new Mapping(domainDims, domainDimsRelative, currentMapping["function"], dymos, currentMapping["parameter"]));
 		}
 		return [rendering, controls];
 	}

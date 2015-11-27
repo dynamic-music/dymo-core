@@ -1,24 +1,29 @@
-function Parameter(owner, updateFunction, initialValue, isInteger, isUpdateAbsolute) {
+function Parameter(name, initialValue, isInteger, isUpdateAbsolute) {
 	
+	var self = this;
+	
+	this.name = name;
 	this.value = initialValue;
 	this.change = 0; //records amout of last change
-	this.mappings = [];
+	var updaters = [];
+	var observers = [];
 	
-	this.addMapping = function(mapping) {
-		this.mappings.push(mapping);
-		mapping.updateControl(this.value);
+	this.addUpdater = function(updater) {
+		updaters.push(updater);
+		updater.updatedParameterChanged(this.value);
 	}
 	
-	this.update = function(mapping, value) {
-		if (value || value == 0) {
-			this.setValueAndUpdateOtherMappings(mapping, value);
-			//only update if value changed
-			if (this.change && updateFunction) {
-				if (isUpdateAbsolute) { //send absolute value rather than change
-					updateFunction.call(owner, this.value);
-				} else {
-					updateFunction.call(owner, this.change);
-				}
+	this.addObserver = function(observer) {
+		observers.push(observer);
+	}
+	
+	this.update = function(updater, value) {
+		if (!isNaN(value)) {
+			setValueAndNotifyUpdaters(updater, value);
+			//only notify if value changed
+			console.log(name, updater, value, this.change)
+			if (this.change) {
+				notifyObservers();
 			}
 		}
 	}
@@ -27,16 +32,22 @@ function Parameter(owner, updateFunction, initialValue, isInteger, isUpdateAbsol
 		this.update(undefined, this.value+change);
 	}
 	
-	this.setValueAndUpdateOtherMappings = function(mapping, value) {
+	function notifyObservers() {
+		for (var i = 0; i < observers.length; i++) {
+			observers[i].observedParameterChanged(self);
+		}
+	}
+	
+	function setValueAndNotifyUpdaters(updater, value) {
 		if (isInteger) {
 			value = Math.round(value);
 		}
-		this.change = value - this.value;
-		this.value = value;
-		//update values of all other controllers connected to this parameter
-		for (var i = 0; i < this.mappings.length; i++) {
-			if (mapping && this.mappings[i] != mapping) {
-				this.mappings[i].updateControl(value);
+		self.change = value - self.value;
+		self.value = value;
+		//update values of all other updaters connected to this parameter
+		for (var i = 0; i < updaters.length; i++) {
+			if (updaters[i] != updater) {
+				updaters[i].updatedParameterChanged(value);
 			}
 		}
 	}
@@ -44,21 +55,21 @@ function Parameter(owner, updateFunction, initialValue, isInteger, isUpdateAbsol
 	//returns the first value that it manages to request that is different from this.value
 	//returns this.value if none are different
 	this.requestValue = function() {
-		for (var i = 0; i < this.mappings.length; i++) {
-			var value = this.mappings[i].requestValue();
+		for (var i = 0; i < this.updaters.length; i++) {
+			var value = updaters[i].requestValue();
 			if (value && value != this.value) {
-				this.setValueAndUpdateOtherMappings(this.mappings[i], value);
+				setValueAndNotifyUpdaters(updaters[i], value);
 				return this.value;
 			}
 		}
 		return this.value;
 	}
 	
-	//resets all the mappings
+	/*//resets all the updaters
 	this.reset = function() {
-		for (var i = 0; i < this.mappings.length; i++) {
-			this.mappings[i].reset();
+		for (var i = 0; i < this.updaters.length; i++) {
+			this.updaters[i].reset();
 		}
-	}
+	}*/
 	
 }

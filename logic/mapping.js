@@ -1,10 +1,27 @@
-function Mapping(domainDims, domainFunctions, functionString, dmos, parameterName) {
+function Mapping(domainDims, domainDimsRelative, functionString, dmos, parameterName) {
 	
+	if (!functionString) {
+		functionString = "new Function(\"a\", \"return a;\");"; //make identity in standard case
+	}
 	var mappingFunction = eval(functionString);
 	
-	this.updateParameter = function(value, control) {
+	
+	this.updateParameter = function() {
 		for (var i = 0; i < dmos.length; i++) {
 			dmos[i].getParameter(parameterName).update(this, calculateParameter(dmos[i]));
+		}
+	}
+	
+	this.observedParameterChanged = function(param) {
+		console.log(param.value, dmos[0].getUri())
+		this.updateParameter();
+	}
+	
+	this.updatedParameterChanged = function(value) {
+		//TODO MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
+		if (domainDims[0].updateValue) {
+			//CALCULATE INVERSE FUNCTION :)
+			domainDims[0].updateValue(value);
 		}
 	}
 	
@@ -14,27 +31,14 @@ function Mapping(domainDims, domainFunctions, functionString, dmos, parameterNam
 			var currentValue;
 			if (typeof domainDims[i] === 'string' || domainDims[i] instanceof String) {
 				currentValue = dmo.getFeature(domainDims[i]);
+			} else if (domainDimsRelative && domainDimsRelative[i]) {
+				currentValue = domainDims[i].change;
 			} else {
 				currentValue = domainDims[i].value;
 			}
-			currentDomainValues[i] = getDomainValue(currentValue, i);
+			currentDomainValues[i] = currentValue;
 		}
 		return mappingFunction.apply(this, currentDomainValues);
-	}
-	
-	function getDomainValue(value, i) {
-		if (domainFunctions && domainFunctions[i]) {
-			return domainFunctions[i].getValue(value);
-		}
-		return value;
-	}
-	
-	this.updateControl = function(value) {
-		//TODO MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
-		if (domainDims.length == 1 && domainDims[0].updateValue) {
-			//CALCULATE INVERSE FUNCTION :)
-			domainDims[0].updateValue(value);
-		}
 	}
 	
 	this.requestValue = function(dmo) {
@@ -44,14 +48,6 @@ function Mapping(domainDims, domainFunctions, functionString, dmos, parameterNam
 			}
 		}
 		return calculateParameter(dmo);
-	}
-	
-	this.reset = function() {
-		for (var i = 0; i < domainDims.length; i++) {
-			if (domainDims[i].reset) {
-				domainDims[i].reset();
-			}
-		}
 	}
 	
 	this.toJson = function() {
@@ -76,13 +72,14 @@ function Mapping(domainDims, domainFunctions, functionString, dmos, parameterNam
 		return ((m % n) + n) % n;
 	}
 	
+	//TODO PUT IN METHOD
 	for (var i = 0; i < domainDims.length; i++) {
 		if (domainDims[i].addMapping) {
 			domainDims[i].addMapping(this);
 		}
 	}
 	for (var i = 0; i < dmos.length; i++) {
-		dmos[i].getParameter(parameterName).addMapping(this);
+		dmos[i].getParameter(parameterName).addUpdater(this);
 	}
 	
 }

@@ -14,8 +14,17 @@ describe("a mapping", function() {
 		control.value = 0.3;
 		mapping.updateParameter(0.3, control);
 		expect(dymo1.getParameter(AMPLITUDE).value).toBe(1.5);
+		expect(dymo2.getParameter(AMPLITUDE).value).toBeCloseTo(0.9, 10);
 		control.updateMappings(0.1);
 		expect(dymo1.getParameter(AMPLITUDE).value).toBe(0.5);
+		expect(dymo2.getParameter(AMPLITUDE).value).toBeCloseTo(0.3, 10);
+	});
+	
+	it("updates a control but without inverse", function() {
+		expect(dymo1.getParameter(AMPLITUDE).value).toBe(0.5);
+		expect(control.value).toBe(0.1);
+		dymo1.getParameter(AMPLITUDE).update(undefined, 5);
+		expect(control.value).toBe(5);
 	});
 	
 	it("requests a value", function() {

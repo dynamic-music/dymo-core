@@ -16,18 +16,21 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	function initFeaturesAndParameters() {
 		features["level"] = 0;
-		parameters[PLAY] = new Parameter(this, updatePlay, 0, true);
-		parameters[ONSET] = new Parameter(this, undefined, -1, false, true);
-		parameters[DURATION_RATIO] = new Parameter(this, undefined, 1, false, true);
-		parameters[AMPLITUDE] = new Parameter(this, updateAmplitude, 1);
-		parameters[PLAYBACK_RATE] = new Parameter(this, updatePlaybackRate, 1);
-		parameters[PAN] = new Parameter(this, updatePan, 0);
-		parameters[DISTANCE] = new Parameter(this, updateDistance, 0);
-		parameters[HEIGHT] = new Parameter(this, updateHeight, 0);
-		parameters[REVERB] = new Parameter(this, updateReverb, 0);
-		parameters[FILTER] = new Parameter(this, updateFilter, 0);
-		parameters[PART_INDEX] = new Parameter(this, updatePartIndex, 0, true, true);
-		parameters[PART_COUNT] = new Parameter(this, undefined, Number.POSITIVE_INFINITY, true, true);
+		parameters[PLAY] = new Parameter(PLAY, 0, true);
+		parameters[ONSET] = new Parameter(ONSET, -1, false, true);
+		parameters[DURATION_RATIO] = new Parameter(DURATION_RATIO, undefined, 1, false, true);
+		parameters[AMPLITUDE] = new Parameter(AMPLITUDE, 1);
+		parameters[PLAYBACK_RATE] = new Parameter(PLAYBACK_RATE, 1);
+		parameters[PAN] = new Parameter(PAN, 0);
+		parameters[DISTANCE] = new Parameter(DISTANCE, 0);
+		parameters[HEIGHT] = new Parameter(HEIGHT, 0);
+		parameters[REVERB] = new Parameter(REVERB, 0);
+		parameters[FILTER] = new Parameter(FILTER, 0);
+		parameters[PART_INDEX] = new Parameter(PART_INDEX, 0, true, true);
+		parameters[PART_COUNT] = new Parameter(PART_COUNT, Number.POSITIVE_INFINITY, true, true);
+		parameters[PLAY].addObserver(self);
+		parameters[PART_INDEX].addObserver(self);
+		parameters[PART_COUNT].addObserver(self);
 	}
 	
 	this.setType = function(t) {
@@ -41,6 +44,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.setParent = function(dmo) {
 		parent = dmo;
 		recursiveUpdateLevel(this);
+		for (name in parameters) {
+			//create standard relative mappings to child parameters
+			parameters[name].addObserver(new Mapping([dmo.getParameter(name)], [true], undefined, [this], name));
+		}
 	}
 	
 	function recursiveUpdateLevel(dmo) {
@@ -138,63 +145,17 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return parameters[parameterName];
 	}
 	
-	//positive change in play affects parts
-	function updatePlay(change) {
-		if (change > 0) {
-			scheduler.play(self);
-		} else {
-			scheduler.stop(self);
-		}
-	}
-	
-	//change in amplitude does not affect parts
-	function updateAmplitude(change) {
-		updateParameter(AMPLITUDE, change);//, true);
-	}
-	
-	//change in amplitude does not affect parts
-	function updatePlaybackRate(change) {
-		updateParameter(PLAYBACK_RATE, change);//, true);
-	}
-	
-	//change in pan affects pan of parts
-	function updatePan(change) {
-		updateParameter(PAN, change);
-	}
-	
-	//change in distance affects distance of parts
-	function updateDistance(change) {
-		updateParameter(DISTANCE, change);
-	}
-	
-	//change in distance affects distance of parts
-	function updateHeight(change) {
-		updateParameter(HEIGHT, change);
-	}
-	
-	//change in reverb affects reverb of parts
-	function updateReverb(change) {
-		updateParameter(REVERB, change);
-	}
-	
-	//change in filter
-	function updateFilter(change) {
-		updateParameter(FILTER, change);
-	}
-	
-	function updateParameter(name, change, onlyIfNoSource) {
-		if (scheduler) {
-			scheduler.updateParameter(self, name, change);
-		}
-		if (!onlyIfNoSource || !sourcePath) {
-			for (var i = 0; i < parts.length; i++) {
-				parts[i].getParameter(name).relativeUpdate(change);
+	this.observedParameterChanged = function(param) {
+		//HMMM a little weird, think about this..
+		if (param.name == PLAY) {
+			if (param.change > 0) {
+				scheduler.play(self);
+			} else {
+				scheduler.stop(self);
 			}
+		} else if (param.name == PART_INDEX) {
+			partsPlayed = param.value;
 		}
-	}
-	
-	function updatePartIndex(value) {
-		partsPlayed = value;
 	}
 	
 	this.resetPartsPlayed = function() {

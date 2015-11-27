@@ -50,10 +50,12 @@ describe("a scheduler", function() {
 	});
 	
 	it("reacts to updates", function(done) {
-		expect(scheduler.updateParameter(dymo2, AMPLITUDE, -0.6)).toBeCloseTo(0.4, 7);
+		dymo2.getParameter(AMPLITUDE).relativeUpdate(-0.6);
+		expect(scheduler.getSources(dymo2)[0].getParameter(AMPLITUDE)).toBeCloseTo(0.4, 7);
 		setTimeout(function() {
 			expect(scheduler.urisOfPlayingDmos).toEqual(["dymo2", "dymo1"]);
-			expect(scheduler.updateParameter(dymo2, AMPLITUDE, 0.3)).toBeCloseTo(0.7, 7);
+			dymo2.getParameter(AMPLITUDE).relativeUpdate(0.3);
+			expect(scheduler.getSources(dymo2)[0].getParameter(AMPLITUDE)).toBeCloseTo(0.7, 7);
 			setTimeout(function() {
 				done();
 			}, 100);
