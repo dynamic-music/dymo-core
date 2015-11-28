@@ -45,7 +45,7 @@ describe("a control", function() {
 	
 	it("can update its value periodically", function(done) {
 		var statsControls = new StatsControls();
-		statsControls.frequency.update(undefined, 50);
+		statsControls.frequency.update(50);
 		var randomControl = statsControls.randomControl;
 		setTimeout(function() {
 			var firstValue = randomControl.getValue();
@@ -59,6 +59,37 @@ describe("a control", function() {
 				done();
 			}, 60);
 		}, 60);
+	});
+	
+	it("can navigate a graph", function() {
+		var graphControls = new GraphControls();
+		graphControls.setGraph([[],[],[],[5],[8],[7],[5,6,7,8],[6],[],[5,6,7,8]]);
+		graphControls.leapingProbability.update(0);
+		for (var i = 0; i < 10; i++) {
+			expect(graphControls.nextNodeControl.requestValue()).toBe(i);
+		}
+		
+		graphControls.nextNodeControl.reset();
+		graphControls.leapingProbability.update(0.5);
+		expect(graphControls.nextNodeControl.requestValue()).toBe(0);
+		expect(graphControls.nextNodeControl.requestValue()).toBe(1);
+		expect(graphControls.nextNodeControl.requestValue()).toBe(2);
+		expect([3,5]).toContain(graphControls.nextNodeControl.requestValue());
+		expect([4,8]).toContain(graphControls.nextNodeControl.requestValue());
+		expect([5,7]).toContain(graphControls.nextNodeControl.requestValue());
+		expect([5,6,7,8]).toContain(graphControls.nextNodeControl.requestValue());
+		expect([6,7]).toContain(graphControls.nextNodeControl.requestValue());
+		
+		graphControls.nextNodeControl.reset();
+		graphControls.leapingProbability.update(1);
+		expect(graphControls.nextNodeControl.requestValue()).toBe(0);
+		expect(graphControls.nextNodeControl.requestValue()).toBe(1);
+		expect(graphControls.nextNodeControl.requestValue()).toBe(2);
+		expect([5]).toContain(graphControls.nextNodeControl.requestValue());
+		expect([8]).toContain(graphControls.nextNodeControl.requestValue());
+		expect([7]).toContain(graphControls.nextNodeControl.requestValue());
+		expect([5,6,7,8]).toContain(graphControls.nextNodeControl.requestValue());
+		expect([6]).toContain(graphControls.nextNodeControl.requestValue());
 	});
 	
 });

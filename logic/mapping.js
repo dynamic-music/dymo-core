@@ -14,9 +14,9 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 	this.updateParameter = function() {
 		for (var i = 0; i < dmos.length; i++) {
 			if (relative) {
-				dmos[i].getParameter(parameterName).relativeUpdate(this, calculateParameter(dmos[i]));
+				dmos[i].getParameter(parameterName).relativeUpdate(calculateParameter(dmos[i]), this);
 			} else {
-				dmos[i].getParameter(parameterName).update(this, calculateParameter(dmos[i]));
+				dmos[i].getParameter(parameterName).update(calculateParameter(dmos[i]), this);
 			}
 		}
 	}

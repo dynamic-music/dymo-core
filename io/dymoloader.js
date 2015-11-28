@@ -173,7 +173,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 				var value = getNumberValue(results[i].value);
 				if (value) {
 					var parameter = getParameter(dmo, results[i].parameter.value, results[i].parameterType.value);
-					parameter.update(undefined, value);
+					parameter.update(value);
 				}
 				if (results[i].featuresPath) {
 					var featuresPath = dmoPath+"/"+results[i].featuresPath.value;

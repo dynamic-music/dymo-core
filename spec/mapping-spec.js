@@ -22,7 +22,7 @@ describe("a mapping", function() {
 	it("updates a control but without inverse", function() {
 		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(0.5);
 		expect(control.getValue()).toBe(0.1);
-		dymo1.getParameter(AMPLITUDE).update(undefined, 5);
+		dymo1.getParameter(AMPLITUDE).update(5);
 		expect(control.getValue()).toBe(5);
 	});
 	

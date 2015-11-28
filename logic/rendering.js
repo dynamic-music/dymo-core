@@ -6,13 +6,13 @@ function Rendering(dymo) {
 	
 	this.play = function() {
 		if (dymo) {
-			dymo.getParameter(PLAY).update(undefined, 1);
+			dymo.getParameter(PLAY).update(1);
 		}
 	}
 	
 	this.stop = function() {
 		if (dymo) {
-			dymo.getParameter(PLAY).update(undefined, 0);
+			dymo.getParameter(PLAY).update(0);
 		}
 	}
 	

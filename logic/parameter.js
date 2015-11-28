@@ -28,7 +28,7 @@ function Parameter(name, initialValue, isInteger) {
 		observers.push(observer);
 	}
 	
-	this.update = function(updater, newValue) {
+	this.update = function(newValue, updater) {
 		if (!isNaN(newValue)) {
 			setValueAndNotifyUpdaters(updater, newValue);
 			//only notify if value changed
@@ -38,8 +38,8 @@ function Parameter(name, initialValue, isInteger) {
 		}
 	}
 	
-	this.relativeUpdate = function(updater, newChange) {
-		this.update(updater, value+newChange);
+	this.relativeUpdate = function(newChange, updater) {
+		this.update(value+newChange, updater);
 	}
 	
 	function notifyObservers() {
