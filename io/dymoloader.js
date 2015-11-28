@@ -64,12 +64,11 @@ function DymoLoader(scheduler, $scope, $interval) {
 			for (var j = 0; j < currentMapping["dmos"].length; j++) {
 				dymos.push(dymoMap[currentMapping["dmos"][j]]);
 			}
+			var isRelative = currentMapping["relative"];
 			var domainDims = [];
-			var domainDimsRelative = [];
 			for (var j = 0; j < currentMapping["domainDims"].length; j++) {
 				var currentName = currentMapping["domainDims"][j]["name"];
 				var currentType = currentMapping["domainDims"][j]["type"];
-				domainDimsRelative[i] = currentMapping["domainDims"][j]["relative"];
 				if (currentType == "Feature") {
 					domainDims.push(currentName);
 				} else {
@@ -79,7 +78,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 					domainDims.push(controls[currentName]);
 				}
 			}
-			rendering.addMapping(new Mapping(domainDims, domainDimsRelative, currentMapping["function"], dymos, currentMapping["parameter"]));
+			rendering.addMapping(new Mapping(domainDims, isRelative, currentMapping["function"], dymos, currentMapping["parameter"]));
 		}
 		return [rendering, controls];
 	}

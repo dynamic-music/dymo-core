@@ -45,8 +45,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 		parent = dmo;
 		recursiveUpdateLevel(this);
 		for (name in parameters) {
-			//create standard relative mappings to child parameters
-			parameters[name].addObserver(new Mapping([dmo.getParameter(name)], [true], undefined, [this], name));
+			if (name != PLAY && name != PART_COUNT && name != PART_INDEX) {
+				//create standard relative mappings to child parameters
+				dmo.getParameter(name).addObserver(new Mapping([dmo.getParameter(name)], true, undefined, [this], name));
+			}
 		}
 	}
 	

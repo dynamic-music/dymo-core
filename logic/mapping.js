@@ -1,4 +1,9 @@
-function Mapping(domainDims, domainDimsRelative, functionString, dmos, parameterName) {
+/*
+ * relative means that the function both
+ * -takes the change parameters from its domainDims where possible, and
+ * -updates its goal parameter relatively
+ */
+function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 	
 	if (!functionString) {
 		functionString = "new Function(\"a\", \"return a;\");"; //make identity in standard case
@@ -8,12 +13,15 @@ function Mapping(domainDims, domainDimsRelative, functionString, dmos, parameter
 	
 	this.updateParameter = function() {
 		for (var i = 0; i < dmos.length; i++) {
-			dmos[i].getParameter(parameterName).update(this, calculateParameter(dmos[i]));
+			if (relative) {
+				dmos[i].getParameter(parameterName).relativeUpdate(this, calculateParameter(dmos[i]));
+			} else {
+				dmos[i].getParameter(parameterName).update(this, calculateParameter(dmos[i]));
+			}
 		}
 	}
 	
 	this.observedParameterChanged = function(param) {
-		console.log(param.value, dmos[0].getUri())
 		this.updateParameter();
 	}
 	
@@ -31,7 +39,7 @@ function Mapping(domainDims, domainDimsRelative, functionString, dmos, parameter
 			var currentValue;
 			if (typeof domainDims[i] === 'string' || domainDims[i] instanceof String) {
 				currentValue = dmo.getFeature(domainDims[i]);
-			} else if (domainDimsRelative && domainDimsRelative[i]) {
+			} else if (relative) {
 				currentValue = domainDims[i].change;
 			} else {
 				currentValue = domainDims[i].value;

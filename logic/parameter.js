@@ -21,15 +21,14 @@ function Parameter(name, initialValue, isInteger, isUpdateAbsolute) {
 		if (!isNaN(value)) {
 			setValueAndNotifyUpdaters(updater, value);
 			//only notify if value changed
-			console.log(name, updater, value, this.change)
 			if (this.change) {
 				notifyObservers();
 			}
 		}
 	}
 	
-	this.relativeUpdate = function(change) {
-		this.update(undefined, this.value+change);
+	this.relativeUpdate = function(updater, change) {
+		this.update(updater, this.value+change);
 	}
 	
 	function notifyObservers() {
