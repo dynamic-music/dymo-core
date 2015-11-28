@@ -1,16 +1,13 @@
-function Control(referenceAverageOf, name, type, scope, requestValueFunction, resetFunction, updateFunction) {
+function Control(name, type, requestValueFunction, resetFunction, updateFunction) {
 	
-	this.referenceValue;
-	this.value;
-	this.mappings = [];
-	if (name) {
-		this.name = name;
-	}
-	this.type = type;
+	var referenceValue;
+	var referenceAverageCount;
+	var value;
+	var mappings = [];
 	if (requestValueFunction) {
 		this.requestValue = function() {
-			this.value = requestValueFunction();
-			return this.value;
+			value = requestValueFunction();
+			return value;
 		}
 	}
 	if (resetFunction) {
@@ -18,52 +15,74 @@ function Control(referenceAverageOf, name, type, scope, requestValueFunction, re
 	}
 	var currentNumAddends, currentSum;
 	
+	
+	this.getName = function() {
+		return name;
+	}
+	
+	this.getValue = function() {
+		return value;
+	}
+	
+	this.getReferenceValue = function() {
+		return referenceValue;
+	}
+	
+	this.setReferenceAverageCount = function(count) {
+		referenceAverageCount = count;
+		this.resetReferenceValue();
+	}
+	
 	this.resetReferenceValue = function() {
-		this.value = null;
-		this.referenceValue = null;
+		value = undefined;
+		referenceValue = undefined;
 		currentNumAddends = 0;
 		currentSum = 0;
 	}
 	
 	this.addMapping = function(mapping) {
-		this.mappings.push(mapping);
-		mapping.updateParameter(this.value, this);
+		mappings.push(mapping);
+		mapping.updateParameter(value, this);
 	}
 	
-	this.updateValue = function(value) {
-		this.value = value;
+	this.backpropagate = function(newValue, mapping) {
+		value = newValue;
 		if (updateFunction) {
 			updateFunction(value);
 		}
+		updateMappings(mapping);
 	}
 	
-	this.updateMappings = function(value) {
+	this.update = function(newValue) {
 		//still measuring reference value
-		if (referenceAverageOf && currentNumAddends < referenceAverageOf) {
-			currentSum += value;
+		if (referenceAverageCount && currentNumAddends < referenceAverageCount) {
+			currentSum += newValue;
 			currentNumAddends++;
 			//done measuring values. calculate average
-			if (currentNumAddends == referenceAverageOf) {
-				currentSum /= referenceAverageOf;
-				this.referenceValue = currentSum;
+			if (currentNumAddends == referenceAverageCount) {
+				currentSum /= referenceAverageCount;
+				referenceValue = currentSum;
 			}
 		//done measuring. adjust value if initialvalue taken
 		} else {
-			if (value) {
-				this.value = value;
+			if (newValue) {
+				value = newValue;
 			}
-			if (this.referenceValue) {
-				this.value -= this.referenceValue;
+			if (referenceValue) {
+				value -= referenceValue;
 			}
-			for (var i = 0; i < this.mappings.length; i++) {
-				this.mappings[i].updateParameter(this.value, this);
-			}
+			updateMappings();
 		}
 	}
 	
-	//initialize
-	if (referenceAverageOf) {
-		this.resetReferenceValue();
+	//updates all mappings different from the one given as an argument
+	function updateMappings(mapping) {
+		for (var i = 0; i < mappings.length; i++) {
+			//update all mappings except the backpropagating one
+			if (mappings[i] != mapping) {
+				mappings[i].updateParameter(value, this);
+			}
+		}
 	}
 	
 }

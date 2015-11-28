@@ -105,7 +105,7 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	}
 	
 	this.observedParameterChanged = function(param) {
-		setParameter(param.name, param.change, true);
+		setParameter(param.getName(), param.getChange(), true);
 	}
 	
 	function setParameter(name, value, relative) {

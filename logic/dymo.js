@@ -17,8 +17,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 	function initFeaturesAndParameters() {
 		features["level"] = 0;
 		parameters[PLAY] = new Parameter(PLAY, 0, true);
-		parameters[ONSET] = new Parameter(ONSET, -1, false, true);
-		parameters[DURATION_RATIO] = new Parameter(DURATION_RATIO, undefined, 1, false, true);
+		parameters[ONSET] = new Parameter(ONSET, -1);
+		parameters[DURATION_RATIO] = new Parameter(DURATION_RATIO, 1);
 		parameters[AMPLITUDE] = new Parameter(AMPLITUDE, 1);
 		parameters[PLAYBACK_RATE] = new Parameter(PLAYBACK_RATE, 1);
 		parameters[PAN] = new Parameter(PAN, 0);
@@ -26,8 +26,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 		parameters[HEIGHT] = new Parameter(HEIGHT, 0);
 		parameters[REVERB] = new Parameter(REVERB, 0);
 		parameters[FILTER] = new Parameter(FILTER, 0);
-		parameters[PART_INDEX] = new Parameter(PART_INDEX, 0, true, true);
-		parameters[PART_COUNT] = new Parameter(PART_COUNT, Number.POSITIVE_INFINITY, true, true);
+		parameters[PART_INDEX] = new Parameter(PART_INDEX, 0, true);
+		parameters[PART_COUNT] = new Parameter(PART_COUNT, Number.POSITIVE_INFINITY, true);
 		parameters[PLAY].addObserver(self);
 		parameters[PART_INDEX].addObserver(self);
 		parameters[PART_COUNT].addObserver(self);
@@ -135,7 +135,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.getSegment = function() {
-		return [this.getFeature("time"), parameters[DURATION_RATIO].value*this.getFeature("duration")];
+		return [this.getFeature("time"), parameters[DURATION_RATIO].getValue()*this.getFeature("duration")];
 	}
 	
 	this.getParameter = function(parameterName) {
@@ -149,14 +149,14 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	this.observedParameterChanged = function(param) {
 		//HMMM a little weird, think about this..
-		if (param.name == PLAY) {
-			if (param.change > 0) {
+		if (param.getName() == PLAY) {
+			if (param.getChange() > 0) {
 				scheduler.play(self);
 			} else {
 				scheduler.stop(self);
 			}
-		} else if (param.name == PART_INDEX) {
-			partsPlayed = param.value;
+		} else if (param.getName() == PART_INDEX) {
+			partsPlayed = param.getValue();
 		}
 	}
 	
@@ -188,7 +188,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 				}
 			} else { //SEQUENTIAL FOR EVERYTHING ELSE
 				isPlaying = true;
-				while (partsPlayed < parts.length && partsPlayed < parameters[PART_COUNT].value) {
+				while (partsPlayed < parts.length && partsPlayed < parameters[PART_COUNT].getValue()) {
 					var nextParts = parts[partsPlayed].getNextParts();
 					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
 						if (!nextParts instanceof Array) {

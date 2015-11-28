@@ -333,9 +333,9 @@ function DymoLoader(scheduler, $scope, $interval) {
 			}	else if (type == COMPASS_HEADING) {
 				return getCompassControl(0);
 			}	else if (type == SLIDER) {
-				return new Control(0, label, type, $scope);
+				return new Control(label, type, $scope);
 			} else if (type == TOGGLE) {
-				return new Control(0, label, type, $scope);
+				return new Control(label, type, $scope);
 			} else if (type == RANDOM) {
 				return getStatsControl(0, controlUri);
 			} else if (type == GRAPH_CONTROL) {

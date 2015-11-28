@@ -1,34 +1,45 @@
-function Parameter(name, initialValue, isInteger, isUpdateAbsolute) {
+function Parameter(name, initialValue, isInteger) {
 	
 	var self = this;
 	
-	this.name = name;
-	this.value = initialValue;
-	this.change = 0; //records amout of last change
+	var value = initialValue;
+	var change = 0; //records amount of last change
 	var updaters = [];
 	var observers = [];
 	
+	this.getName = function() {
+		return name;
+	}
+	
+	this.getValue = function() {
+		return value;
+	}
+	
+	this.getChange = function() {
+		return change;
+	}
+	
 	this.addUpdater = function(updater) {
 		updaters.push(updater);
-		updater.updatedParameterChanged(this.value);
+		updater.updatedParameterChanged(value);
 	}
 	
 	this.addObserver = function(observer) {
 		observers.push(observer);
 	}
 	
-	this.update = function(updater, value) {
-		if (!isNaN(value)) {
-			setValueAndNotifyUpdaters(updater, value);
+	this.update = function(updater, newValue) {
+		if (!isNaN(newValue)) {
+			setValueAndNotifyUpdaters(updater, newValue);
 			//only notify if value changed
-			if (this.change) {
+			if (change) {
 				notifyObservers();
 			}
 		}
 	}
 	
-	this.relativeUpdate = function(updater, change) {
-		this.update(updater, this.value+change);
+	this.relativeUpdate = function(updater, newChange) {
+		this.update(updater, value+newChange);
 	}
 	
 	function notifyObservers() {
@@ -37,12 +48,12 @@ function Parameter(name, initialValue, isInteger, isUpdateAbsolute) {
 		}
 	}
 	
-	function setValueAndNotifyUpdaters(updater, value) {
+	function setValueAndNotifyUpdaters(updater, newValue) {
 		if (isInteger) {
-			value = Math.round(value);
+			newValue = Math.round(newValue);
 		}
-		self.change = value - self.value;
-		self.value = value;
+		change = newValue - value;
+		value = newValue;
 		//update values of all other updaters connected to this parameter
 		for (var i = 0; i < updaters.length; i++) {
 			if (updaters[i] != updater) {
@@ -55,20 +66,13 @@ function Parameter(name, initialValue, isInteger, isUpdateAbsolute) {
 	//returns this.value if none are different
 	this.requestValue = function() {
 		for (var i = 0; i < this.updaters.length; i++) {
-			var value = updaters[i].requestValue();
-			if (value && value != this.value) {
-				setValueAndNotifyUpdaters(updaters[i], value);
-				return this.value;
+			var requestedValue = updaters[i].requestValue();
+			if (requestedValue && requestedValue != value) {
+				setValueAndNotifyUpdaters(updaters[i], requestedValue);
+				return value;
 			}
 		}
-		return this.value;
+		return value;
 	}
-	
-	/*//resets all the updaters
-	this.reset = function() {
-		for (var i = 0; i < this.updaters.length; i++) {
-			this.updaters[i].reset();
-		}
-	}*/
 	
 }

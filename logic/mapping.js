@@ -27,9 +27,9 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 	
 	this.updatedParameterChanged = function(value) {
 		//TODO MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
-		if (domainDims[0].updateValue) {
+		if (domainDims[0].backpropagate) {
 			//CALCULATE INVERSE FUNCTION :)
-			domainDims[0].updateValue(value);
+			domainDims[0].backpropagate(value, this);
 		}
 	}
 	
@@ -40,9 +40,9 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 			if (typeof domainDims[i] === 'string' || domainDims[i] instanceof String) {
 				currentValue = dmo.getFeature(domainDims[i]);
 			} else if (relative) {
-				currentValue = domainDims[i].change;
+				currentValue = domainDims[i].getChange();
 			} else {
-				currentValue = domainDims[i].value;
+				currentValue = domainDims[i].getValue();
 			}
 			currentDomainValues[i] = currentValue;
 		}
