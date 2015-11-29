@@ -43,7 +43,7 @@ describe("a control", function() {
 		expect(control.getValue()).toBe(-1);
 	});
 	
-	it("can update its value periodically", function(done) {
+	it("can be a stats control", function(done) {
 		var statsControls = new StatsControls();
 		statsControls.frequency.update(50);
 		var randomControl = statsControls.randomControl;
@@ -61,7 +61,40 @@ describe("a control", function() {
 		}, 60);
 	});
 	
-	it("can navigate a graph", function() {
+	it("can be a brownian control", function(done) {
+		var brownianControls = new BrownianControls();
+		brownianControls.frequency.update(50);
+		var brownianControl = brownianControls.brownianControl;
+		var currentValue = brownianControl.getValue();
+		expect(currentValue).toBe(0.5);
+		var previousValue = currentValue;
+		setTimeout(function() {
+			var currentValue = brownianControl.getValue();
+			expect(currentValue).toBeGreaterThan(0.4);
+			expect(currentValue).toBeLessThan(0.6);
+			expect(currentValue).not.toEqual(previousValue);
+			var previousValue = currentValue;
+			setTimeout(function() {
+				var currentValue = brownianControl.getValue();
+				expect(currentValue).toBeGreaterThan(0.3);
+				expect(currentValue).toBeLessThan(0.7);
+				expect(currentValue).not.toEqual(previousValue);
+				var previousValue = currentValue;
+				setTimeout(function() {
+					var currentValue = brownianControl.getValue();
+					expect(currentValue).toBeGreaterThan(0.2);
+					expect(currentValue).toBeLessThan(0.8);
+					expect(currentValue).not.toEqual(previousValue);
+					var previousValue = currentValue;
+					done();
+				}, 60);
+			}, 60);
+		}, 60);
+		
+		
+	});
+	
+	it("can be a graph control", function() {
 		var graphControls = new GraphControls();
 		graphControls.setGraph([[],[],[],[5],[8],[7],[5,6,7,8],[6],[],[5,6,7,8]]);
 		graphControls.leapingProbability.update(0);
