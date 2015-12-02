@@ -19,11 +19,22 @@ describe("a mapping", function() {
 		expect(dymo2.getParameter(AMPLITUDE).getValue()).toBeCloseTo(0.3, 10);
 	});
 	
-	it("updates a control but without inverse", function() {
+	it("updates a control with inverse if possible", function() {
+		//currently non-invertible function
 		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(0.5);
 		expect(control.getValue()).toBe(0.1);
 		dymo1.getParameter(AMPLITUDE).update(5);
 		expect(control.getValue()).toBe(5);
+		//currently invertible function
+		var dymo3 = new DynamicMusicObject("dymo3");
+		var mapping = new Mapping([control, ONSET_FEATURE], undefined, 'new Function("a", "b", "return 5*a-1;");', [dymo3], AMPLITUDE);
+		expect(dymo3.getParameter(AMPLITUDE).getValue()).toBe(24);
+		control.update(0.3);
+		expect(dymo3.getParameter(AMPLITUDE).getValue()).toBe(0.5);
+		dymo3.getParameter(AMPLITUDE).update(1);
+		expect(control.getValue()).toBe(0.4);
+		dymo3.getParameter(AMPLITUDE).update(4);
+		expect(control.getValue()).toBe(1);
 	});
 	
 	it("requests a value", function() {

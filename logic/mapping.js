@@ -5,10 +5,17 @@
  */
 function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 	
+	var inverter = new FunctionInverter();
 	if (!functionString) {
 		functionString = "new Function(\"a\", \"return a;\");"; //make identity in standard case
 	}
 	var mappingFunction = eval(functionString);
+	
+	var inverseFunction;
+	var inverseString = inverter.invert(inverter.toReturnValueString(functionString));
+	if (inverseString) {
+		inverseFunction = eval(inverter.toJavaScriptFunctionString(inverseString));
+	}
 	
 	
 	this.updateParameter = function() {
@@ -28,7 +35,9 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 	this.updatedParameterChanged = function(value) {
 		//TODO MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
 		if (domainDims[0].backpropagate) {
-			//CALCULATE INVERSE FUNCTION :)
+			if (inverseFunction) {
+				value = inverseFunction(value);
+			}
 			domainDims[0].backpropagate(value, this);
 		}
 	}
