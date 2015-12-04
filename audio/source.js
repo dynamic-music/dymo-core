@@ -1,4 +1,4 @@
-function Source(dmo, audioContext, buffer, reverbSend) {
+function Source(dymo, audioContext, buffer, reverbSend) {
 	
 	var self = this;
 	
@@ -20,7 +20,7 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	filter.frequency.value = 20000;
 	filter.connect(panner);
 	
-	var segment = dmo.getSegment();
+	var segment = dymo.getSegment();
 	var time = segment[0];
 	var duration = segment[1];
 	if (!time) {
@@ -48,23 +48,50 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	parameters[PAN] = {value:0}; //mock parameters since panner non-readable
 	parameters[HEIGHT] = {value:0};
 	parameters[DISTANCE] = {value:0};
+	var allParameters = [AMPLITUDE, PLAYBACK_RATE, REVERB, FILTER, PAN, HEIGHT, DISTANCE];
 	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, REVERB, FILTER];
 	var positionParameters = [PAN, HEIGHT, DISTANCE];
 	
-	initParameter(AMPLITUDE, dmo.getParameter(AMPLITUDE));
-	initParameter(PLAYBACK_RATE, dmo.getParameter(PLAYBACK_RATE));
-	initParameter(REVERB, dmo.getParameter(REVERB));
-	initParameter(PAN, dmo.getParameter(PAN));
-	initParameter(HEIGHT, dmo.getParameter(HEIGHT));
-	initParameter(DISTANCE, dmo.getParameter(DISTANCE));
+	initParameter(AMPLITUDE, dymo.getParameter(AMPLITUDE));
+	initParameter(PLAYBACK_RATE, dymo.getParameter(PLAYBACK_RATE));
+	initParameter(REVERB, dymo.getParameter(REVERB));
+	initParameter(PAN, dymo.getParameter(PAN));
+	initParameter(HEIGHT, dymo.getParameter(HEIGHT));
+	initParameter(DISTANCE, dymo.getParameter(DISTANCE));
 	
-	function initParameter(name, dmoParam) {
-		setParameter(name, dmoParam.getValue());
-		dmoParam.addObserver(self);
+	function initParameter(name, dymoParam) {
+		setParameter(name, dymoParam.getValue());
+		dymoParam.addObserver(self);
 	}
 	
-	this.getDmo = function() {
-		return dmo;
+	function removeFromObserved() {
+		for (var i = 0; i < allParameters.length; i++) {
+			var dymoParam = dymo.getParameter(allParameters[i]);
+			if (dymoParam) {
+				dymoParam.removeObserver(self);
+			}
+		}
+	}
+	
+	this.observedParameterChanged = function(param) {
+		setParameter(param.getName(), param.getChange(), true);
+	}
+	
+	function setParameter(name, value, relative) {
+		if (relative) {
+			value += parameters[name].value;
+		}
+		if (value < 0 && positiveParameters.indexOf(name) >= 0) {
+			value = 0;
+		}
+		parameters[name].value = value;
+		if (positionParameters.indexOf(name) >= 0) {
+			updatePannerPosition();
+		}
+	}
+	
+	this.getDymo = function() {
+		return dymo;
 	}
 	
 	this.getDuration = function() {
@@ -76,6 +103,7 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	}
 	
 	this.play = function(startTime) {
+		source.onended = removeFromObserved;
 		source.start(startTime, currentPausePosition);
 		isPlaying = true;
 	}
@@ -94,6 +122,7 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	this.stop = function() {
 		if (isPlaying) {
 			stopAndRemoveAudioSources();
+			removeFromObserved();
 		}
 		//even in case it is paused
 		currentPausePosition = 0;
@@ -102,23 +131,6 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	function stopAndRemoveAudioSources() {
 		isPlaying = false;
 		source.stop(0);
-	}
-	
-	this.observedParameterChanged = function(param) {
-		setParameter(param.getName(), param.getChange(), true);
-	}
-	
-	function setParameter(name, value, relative) {
-		if (relative) {
-			value += parameters[name].value;
-		}
-		if (value < 0 && positiveParameters.indexOf(name) >= 0) {
-			value = 0;
-		}
-		parameters[name].value = value;
-		if (positionParameters.indexOf(name) >= 0) {
-			updatePannerPosition();
-		}
 	}
 	
 	function updatePannerPosition() {

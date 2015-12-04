@@ -6,10 +6,9 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	var buffers = {};
 	var sources = {}; //grouped by top dymo
 	var nextSources = {}; //for each top dymo
-	var allSources = {}; //grouped by dymo
 	var endTimes = {};
 	var previousOnsets = {};
-	this.urisOfPlayingDmos = [];
+	this.urisOfPlayingDymos = [];
 	
 	//horizontal listener orientation in degrees
 	this.listenerOrientation = new Parameter(this, 0);
@@ -48,19 +47,19 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
-	this.play = function(dmo) {
-		internalPlay(dmo);
+	this.play = function(dymo) {
+		internalPlay(dymo);
 	}
 	
-	function internalPlay(dmo) {
-		var uri = dmo.getUri();
+	function internalPlay(dymo) {
+		var uri = dymo.getUri();
 		var currentSources;
 		if (!sources[uri]) {
 			//create first source
-			currentSources = createNextSources(dmo);
+			currentSources = createNextSources(dymo);
 			sources[uri] = {};
 			for (var i = 0; i < currentSources.length; i++) {
-				var currentDymo = currentSources[i].getDmo();
+				var currentDymo = currentSources[i].getDymo();
 				registerSource(uri, currentDymo.getUri(), currentSources[i]);
 				previousOnsets[uri] = currentDymo.getFeature("onset");
 			}
@@ -68,7 +67,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			//switch to source
 			currentSources = nextSources[uri];
 			for (var i = 0; i < currentSources.length; i++) {
-				registerSource(uri, currentSources[i].getDmo().getUri(), currentSources[i]);
+				registerSource(uri, currentSources[i].getDymo().getUri(), currentSources[i]);
 			}
 		}
 		if (!endTimes[uri]) {
@@ -83,16 +82,16 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		setTimeout(function() {
 			var playingDymos = [];
 			for (var i = 0; i < currentSources.length; i++) {
-				playingDymos.push(currentSources[i].getDmo());
+				playingDymos.push(currentSources[i].getDymo());
 			}
-			updatePlayingDmos(playingDymos);
+			updatePlayingDymos(playingDymos);
 		}, delay);
-		var nextSrcs = createNextSources(dmo);
+		var nextSrcs = createNextSources(dymo);
 		if (nextSrcs) {
 			nextSources[uri] = nextSrcs;
 			//REALLY BAD QUICKFIX! REDESIGN!!!
 			//TODO ACCOUNT FOR MAX DURATION OF PARALLEL SOURCES!!!!! instead currentSources[0].getDuration()
-			var nextOnset = nextSrcs[0].getDmo().getFeature("onset");
+			var nextOnset = nextSrcs[0].getDymo().getFeature("onset");
 			var timeToNextOnset = nextOnset-previousOnsets[uri];
 			if (nextOnset && !timeToNextOnset || timeToNextOnset < currentSources[0].getDuration()) {
 				endTimes[uri] = startTime+timeToNextOnset;
@@ -102,29 +101,25 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			}
 			if (endTimes[uri]) {
 				//TODO MAKE TIMEOUT IDS FOR EACH DYMO!!!!!
-				timeoutID = setTimeout(function() { internalPlay(dmo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
+				timeoutID = setTimeout(function() { internalPlay(dymo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
 			}
 		} else {
 			endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getParameter(PLAYBACK_RATE);
-			timeoutID = setTimeout(function() { reset(dmo); }, (endTimes[uri]-audioContext.currentTime)*1000);
+			timeoutID = setTimeout(function() { reset(dymo); }, (endTimes[uri]-audioContext.currentTime)*1000);
 		}
 	}
 	
 	function registerSource(topUri, dymoUri, source) {
 		sources[topUri][dymoUri] = source;
-		if (!allSources[dymoUri]) {
-			allSources[dymoUri] = [];
-		}
-		allSources[dymoUri].push(source);
 	}
 	
-	this.pause = function(dmo) {
-		callOnSources(dmo, "pause");
+	this.pause = function(dymo) {
+		callOnSources(dymo, "pause");
 	}
 	
-	this.stop = function(dmo) {
-		callOnSources(dmo, "stop");
-		reset(dmo);
+	this.stop = function(dymo) {
+		callOnSources(dymo, "stop");
+		reset(dymo);
 	}
 	
 	function callOnSources(dymo, func) {
@@ -136,35 +131,35 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
-	function reset(dmo) {
+	function reset(dymo) {
 		window.clearTimeout(timeoutID);
-		var uri = dmo.getUri();
+		var uri = dymo.getUri();
 		sources[uri] = null;
 		nextSources[uri] = null;
 		endTimes[uri] = null;
-		dmo.resetPartsPlayed();
-		updatePlayingDmos([]);
+		dymo.resetPartsPlayed();
+		updatePlayingDymos([]);
 	}
 	
-	function updatePlayingDmos(dymos) {
-		var newDmos = [];
+	function updatePlayingDymos(dymos) {
+		var newDymos = [];
 		for (var i = 0; i < dymos.length; i++) {
-			var currentDmo = dymos[i];
-			while (currentDmo != null) {
-				if (newDmos.indexOf(currentDmo.getUri()) < 0) {
-					newDmos.push(currentDmo.getUri());
+			var currentDymo = dymos[i];
+			while (currentDymo != null) {
+				if (newDymos.indexOf(currentDymo.getUri()) < 0) {
+					newDymos.push(currentDymo.getUri());
 				}
-				currentDmo = currentDmo.getParent();
+				currentDymo = currentDymo.getParent();
 			}
 		}
-		self.urisOfPlayingDmos = newDmos;
+		self.urisOfPlayingDymos = newDymos;
 		if (onPlaybackChange) {
 			onPlaybackChange();
 		}
 	}
 	
-	this.getSources = function(dmo) {
-		return allSources[dmo.getUri()];
+	this.getSources = function(dymo) {
+		return sources[dymo.getUri()];
 	}
 	
 	this.updateListenerOrientation = function() {
@@ -172,8 +167,8 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
 	}
 	
-	function createNextSources(dmo) {
-		var nextParts = dmo.getNextParts();
+	function createNextSources(dymo) {
+		var nextParts = dymo.getNextParts();
 		if (nextParts) {
 			var nextSources = [];
 			for (var i = 0; i < nextParts.length; i++) {

@@ -35,11 +35,12 @@ describe("a dymoloader", function() {
 		loader.loadRenderingFromJson(featureRenderingPath, dymoMap, function(loadedRendering) {
 			rendering = loadedRendering[0];
 			controls = loadedRendering[1];
+			expect(scheduler.urisOfPlayingDymos).toEqual([]);
 			expect(rendering.getMappings().length).toEqual(3);
 			expect(Object.keys(controls).length).toEqual(0);
 			rendering.play();
 			setTimeout(function() {
-				expect(scheduler.urisOfPlayingDmos).toEqual(["dymo4", "dymo0"]);
+				expect(scheduler.urisOfPlayingDymos).toEqual(["dymo4", "dymo0"]);
 				rendering.stop();
 				done();
 			}, 100);

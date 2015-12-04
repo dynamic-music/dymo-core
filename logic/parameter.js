@@ -27,6 +27,17 @@ function Parameter(name, initialValue, isInteger) {
 		observers.push(observer);
 	}
 	
+	this.removeObserver = function(observer) {
+		var i = observers.indexOf(observer);
+		if (i > -1) {
+			observers.splice(i, 1);
+		}
+	}
+	
+	this.getObservers = function() {
+		return observers;
+	}
+	
 	this.update = function(newValue, updater) {
 		setValueAndNotify(updater, newValue);
 	}
