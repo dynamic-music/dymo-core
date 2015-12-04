@@ -7,6 +7,7 @@ function FunctionInverter() {
 		try {
 			currentNode = math.parse(func);
 		} catch (e) {
+			console.log(e);
 			return;
 		}
 		var symbolNode = new math.expression.node.SymbolNode('a');

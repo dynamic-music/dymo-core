@@ -1,8 +1,8 @@
 function Control(name, type, requestValueFunction, resetFunction, updateFunction) {
 	
+	var value;
 	var referenceValue;
 	var referenceAverageCount;
-	var value;
 	var mappings = [];
 	if (requestValueFunction) {
 		this.requestValue = function() {
@@ -24,6 +24,10 @@ function Control(name, type, requestValueFunction, resetFunction, updateFunction
 		return value;
 	}
 	
+	this.getType = function() {
+		return type;
+	}
+	
 	this.getReferenceValue = function() {
 		return referenceValue;
 	}
@@ -40,17 +44,22 @@ function Control(name, type, requestValueFunction, resetFunction, updateFunction
 		currentSum = 0;
 	}
 	
+	this.setUpdateFunction = function(func) {
+		updateFunction = func;
+	}
+	
 	this.addMapping = function(mapping) {
 		mappings.push(mapping);
 		mapping.updateParameter(value, this);
 	}
 	
 	this.backpropagate = function(newValue, mapping) {
-		value = newValue;
-		if (updateFunction) {
-			updateFunction(value);
+		if (isFinite(newValue)) {
+			setValue(newValue, mapping);
+			if (updateFunction) {
+				updateFunction(value);
+			}
 		}
-		updateMappings(mapping);
 	}
 	
 	this.update = function(newValue) {
@@ -66,19 +75,24 @@ function Control(name, type, requestValueFunction, resetFunction, updateFunction
 		//done measuring. adjust value if initialvalue taken
 		} else {
 			if (newValue) {
-				value = newValue;
+				if (referenceValue) {
+					newValue -= referenceValue;
+				}
+				setValue(newValue);
 			}
-			if (referenceValue) {
-				value -= referenceValue;
-			}
-			updateMappings();
+		}
+	}
+	
+	function setValue(newValue, mapping) {
+		if (value == undefined || Math.abs(newValue - value) > 0.000001) { //deal with floating point errors
+			value = newValue;
+			updateMappings(mapping);
 		}
 	}
 	
 	//updates all mappings different from the one given as an argument
 	function updateMappings(mapping) {
 		for (var i = 0; i < mappings.length; i++) {
-			//update all mappings except the backpropagating one
 			if (mappings[i] != mapping) {
 				mappings[i].updateParameter(value, this);
 			}

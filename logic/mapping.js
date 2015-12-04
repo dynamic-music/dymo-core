@@ -34,7 +34,8 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 	
 	this.updatedParameterChanged = function(value) {
 		//TODO MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
-		if (domainDims[0].backpropagate) {
+		//CURRENTLY ONLY UPDATES IF NO RELATIVE DEF (E.G. NO SUBDYMO-PARAMS)
+		if (domainDims[0].backpropagate && !relative) {
 			if (inverseFunction) {
 				value = inverseFunction(value);
 			}

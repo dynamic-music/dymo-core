@@ -18,7 +18,7 @@ function Rendering(dymo) {
 	
 	this.addMapping = function(mapping) {
 		mappings.push(mapping);
-		mapping.updateParameter();
+		//mapping.updateParameter();
 	}
 	
 	this.getMappings = function() {

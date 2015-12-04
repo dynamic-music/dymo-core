@@ -1,7 +1,6 @@
 function Parameter(name, initialValue, isInteger) {
 	
 	var self = this;
-	
 	var value = initialValue;
 	var change = 0; //records amount of last change
 	var updaters = [];
@@ -29,13 +28,7 @@ function Parameter(name, initialValue, isInteger) {
 	}
 	
 	this.update = function(newValue, updater) {
-		if (!isNaN(newValue)) {
-			setValueAndNotifyUpdaters(updater, newValue);
-			//only notify if value changed
-			if (change) {
-				notifyObservers();
-			}
-		}
+		setValueAndNotify(updater, newValue);
 	}
 	
 	this.relativeUpdate = function(newChange, updater) {
@@ -48,16 +41,24 @@ function Parameter(name, initialValue, isInteger) {
 		}
 	}
 	
-	function setValueAndNotifyUpdaters(updater, newValue) {
-		if (isInteger) {
-			newValue = Math.round(newValue);
-		}
-		change = newValue - value;
-		value = newValue;
-		//update values of all other updaters connected to this parameter
-		for (var i = 0; i < updaters.length; i++) {
-			if (updaters[i] != updater) {
-				updaters[i].updatedParameterChanged(value);
+	function setValueAndNotify(updater, newValue) {
+		if (!isNaN(newValue)) {
+			if (isInteger) {
+				newValue = Math.round(newValue);
+			}
+			if (Math.abs(newValue - value) > 0.000001) { //catch floating point errors
+				change = newValue - value;
+				value = newValue;
+				//update values of all other updaters connected to this parameter
+				for (var i = 0; i < updaters.length; i++) {
+					if (updaters[i] != updater) {
+						updaters[i].updatedParameterChanged(value);
+					}
+				}
+				//only notify if value changed
+				if (change) {
+					notifyObservers();
+				}
 			}
 		}
 	}

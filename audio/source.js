@@ -59,7 +59,7 @@ function Source(dmo, audioContext, buffer, reverbSend) {
 	initParameter(DISTANCE, dmo.getParameter(DISTANCE));
 	
 	function initParameter(name, dmoParam) {
-		setParameter(name, dmoParam.value);
+		setParameter(name, dmoParam.getValue());
 		dmoParam.addObserver(self);
 	}
 	

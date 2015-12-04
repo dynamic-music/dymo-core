@@ -167,20 +167,6 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		return allSources[dmo.getUri()];
 	}
 	
-	/*this.updateParameter = function(dmo, name, change) {
-		var sourcesToUpdate = allSources[dmo.getUri()];
-		if (sourcesToUpdate) {
-			if (nextSources[dmo.getUri()]) {
-				sourcesToUpdate = sourcesToUpdate.concat(nextSources[dmo.getUri()]);
-			}
-			var lastValue;
-			for (var i = 0; i < sourcesToUpdate.length; i++) {
-				lastValue = sourcesToUpdate[i].changeParameter(name, change);
-			}
-			return lastValue;
-		}
-	}*/
-	
 	this.updateListenerOrientation = function() {
 		var angleInRadians = this.listenerOrientation.value / 180 * Math.PI;
 		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
