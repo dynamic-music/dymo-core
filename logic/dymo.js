@@ -5,13 +5,14 @@ function DynamicMusicObject(uri, scheduler, type) {
 	var parent = null;
 	var parts = [];
 	var similars = [];
+	var features = {};
+	var parameters = {};
+	var mappings = [];
 	var partsPlayed = 0;
 	var isPlaying = false;
 	var sourcePath;
 	var skipProportionAdjustment = false;
 	var previousIndex = null;
-	var features = {};
-	var parameters = {};
 	initFeaturesAndParameters();
 	
 	function initFeaturesAndParameters() {
@@ -47,7 +48,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 		for (name in parameters) {
 			if (name != PLAY && name != PART_COUNT && name != PART_INDEX) {
 				//create standard relative mappings to child parameters
-				dmo.getParameter(name).addObserver(new Mapping([dmo.getParameter(name)], true, undefined, [this], name));
+				//TODO PUSH INTO MAPPINGS LIST???
+				new Mapping([dmo.getParameter(name)], true, undefined, [this], name);
 			}
 		}
 	}
@@ -138,6 +140,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return [this.getFeature("time"), parameters[DURATION_RATIO].getValue()*this.getFeature("duration")];
 	}
 	
+	this.addParameter = function(parameter) {
+		parameters[parameter.getName()] = parameter;
+	}
+	
 	this.getParameter = function(parameterName) {
 		if (parameterName == LISTENER_ORIENTATION) {
 			return scheduler.listenerOrientation;
@@ -145,6 +151,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 			return undefined;//this.updatePartOrder(feature.name);
 		}
 		return parameters[parameterName];
+	}
+	
+	this.addMapping = function(mapping) {
+		mappings.push(mapping);
 	}
 	
 	this.observedParameterChanged = function(param) {
@@ -283,9 +293,13 @@ function DynamicMusicObject(uri, scheduler, type) {
 			"@id": uri,
 			"@type": DYMO,
 			"ct": type,
+			"mappings": [],
 			"parts": [],
 			"similars": [],
 			"source": sourcePath
+		}
+		for (var i = 0; i < mappings.length; i++) {
+			jsonDymo["mappings"].push(mappings[i].toJSON());
 		}
 		for (featureName in features) {
 			jsonDymo[featureName] = this.getFeatureJson(featureName);

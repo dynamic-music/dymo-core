@@ -8,10 +8,10 @@ function DymoLoader(scheduler, $scope, $interval) {
 	var features = {};
 	
 	//TODO PUT IN CENTRAL PLACE!!
-	var jsonKeys = ["@id", "@type", "parts", "source"];
+	var jsonKeys = ["@id", "@type", "parts", "source", "similars", "mappings"];
 	
 	this.loadDymoFromJson = function(jsonUri, callback, $http) {
-		loadJson(jsonUri, undefined, callback, createDymoFromJson, $http);
+		loadJson(jsonUri, {}, callback, createDymoFromJson, $http);
 	}
 	
 	this.loadRenderingFromJson = function(jsonUri, dymoMap, callback, $http) {
@@ -38,9 +38,14 @@ function DymoLoader(scheduler, $scope, $interval) {
 	}
 	
 	function createDymoFromJson(json, dymoMap) {
-		if (!dymoMap) {
-			dymoMap = {};
-		}
+		//first create all dymos and save references in map
+		var dymo = recursiveCreateDymoAndParts(json, dymoMap);
+		//then add similarity relations
+		recursiveAddMappingsAndSimilars(json, dymoMap);
+		return [dymo, dymoMap];
+	}
+	
+	function recursiveCreateDymoAndParts(json, dymoMap) {
 		var dymo = new DynamicMusicObject(json["@id"], scheduler, json["ct"]);
 		dymoMap[json["@id"]] = dymo;
 		dymo.setSourcePath(json["source"]);
@@ -50,9 +55,29 @@ function DymoLoader(scheduler, $scope, $interval) {
 			}
 		}
 		for (var i = 0; i < json["parts"].length; i++) {
-			dymo.addPart(createDymoFromJson(json["parts"][i], dymoMap)[0]);
+			dymo.addPart(recursiveCreateDymoAndParts(json["parts"][i], dymoMap));
 		}
-		return [dymo, dymoMap];
+		return dymo;
+	}
+	
+	function recursiveAddMappingsAndSimilars(json, dymoMap) {
+		var dymo = dymoMap[json["@id"]];
+		//first add similars
+		if (json["similars"]) {
+			for (var i = 0; i < json["similars"].length; i++) {
+				dymo.addSimilar(dymoMap[json["similars"][i]]);
+			}
+		}
+		//then add mappings
+		if (json["mappings"]) {
+			for (var i = 0; i < json["mappings"].length; i++) {
+				dymo.addMapping(createMappingFromJson(json["mappings"][i], dymoMap, dymo));
+			}
+		}
+		//iterate through parts
+		for (var i = 0; i < json["parts"].length; i++) {
+			recursiveAddMappingsAndSimilars(json["parts"][i], dymoMap);
+		}
 	}
 	
 	function createRenderingFromJson(json, dymoMap) {
@@ -60,27 +85,43 @@ function DymoLoader(scheduler, $scope, $interval) {
 		var controls = {};
 		for (var i = 0; i < json["mappings"].length; i++) {
 			var currentMapping = json["mappings"][i];
-			var dymos = [];
-			for (var j = 0; j < currentMapping["dmos"].length; j++) {
-				dymos.push(dymoMap[currentMapping["dmos"][j]]);
-			}
-			var isRelative = currentMapping["relative"];
-			var domainDims = [];
-			for (var j = 0; j < currentMapping["domainDims"].length; j++) {
-				var currentName = currentMapping["domainDims"][j]["name"];
-				var currentType = currentMapping["domainDims"][j]["type"];
-				if (currentType == "Feature") {
-					domainDims.push(currentName);
-				} else {
-					if (!controls[currentName]) {
-						controls[currentName] = getControl(currentType, currentName);
-					}
-					domainDims.push(controls[currentName]);
-				}
-			}
-			rendering.addMapping(new Mapping(domainDims, isRelative, currentMapping["function"], dymos, currentMapping["parameter"]));
+			rendering.addMapping(createMappingFromJson(currentMapping, dymoMap, undefined, controls));
 		}
 		return [rendering, controls];
+	}
+	
+	function createMappingFromJson(json, dymoMap, dymo, controls) {
+		var dymos = [];
+		for (var j = 0; j < json["dmos"].length; j++) {
+			dymos.push(dymoMap[json["dmos"][j]]);
+		}
+		var isRelative = json["relative"];
+		var domainDims = [];
+		for (var j = 0; j < json["domainDims"].length; j++) {
+			var currentName = json["domainDims"][j]["name"];
+			var currentType = json["domainDims"][j]["type"];
+			if (currentType == FEATURE) {
+				domainDims.push(currentName);
+			} else if (currentType == PARAMETER) {
+				var currentParameter;
+				if (dymo) {
+					currentParameter = dymo.getParameter(currentName);
+					if (!currentParameter) {
+						currentParameter = new Parameter(currentName, 0);
+						dymo.addParameter(currentParameter);
+					}
+				} else {
+					currentParameter = new Parameter(currentName, 0);
+				}
+				domainDims.push(currentParameter);
+			} else {
+				if (!controls[currentName]) {
+					controls[currentName] = getControl(currentType, currentName);
+				}
+				domainDims.push(controls[currentName]);
+			}
+		}
+		return new Mapping(domainDims, isRelative, json["function"], dymos, json["parameter"]);
 	}
 	
 	//currently only works for generically named dymos

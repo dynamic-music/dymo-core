@@ -72,7 +72,9 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 		var domainJson = [];
 		for (var i = 0; i < domainDims.length; i++) {
 			if (domainDims[i] instanceof Control) {
-				domainJson.push({name:domainDims[i].name, type:domainDims[i].type});
+				domainJson.push({name:domainDims[i].getName(), type:domainDims[i].getType()});
+			} else if (domainDims[i] instanceof Parameter) {
+				domainJson.push({name:domainDims[i].getName(), type:"Parameter"});
 			} else {
 				domainJson.push({name:domainDims[i], type:"Feature"});
 			}
@@ -94,6 +96,8 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 	for (var i = 0; i < domainDims.length; i++) {
 		if (domainDims[i].addMapping) {
 			domainDims[i].addMapping(this);
+		} else if (domainDims[i].addObserver) {
+			domainDims[i].addObserver(this);
 		}
 	}
 	for (var i = 0; i < dmos.length; i++) {

@@ -4,6 +4,8 @@ var DYMO = "Dymo";
 var PARALLEL = "parallel";
 var SEQUENTIAL = "sequential";
 var DYMO_TYPES = [PARALLEL, SEQUENTIAL];
+var FEATURE = "Feature";
+var PARAMETER = "Parameter";
 
 // parameters
 

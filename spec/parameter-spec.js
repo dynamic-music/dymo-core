@@ -7,7 +7,7 @@ describe("a parameter", function() {
 	dymo1.setFeature(ONSET_FEATURE, 5);
 	var dymo2 = new DynamicMusicObject("dymo2");
 	dymo2.setFeature(ONSET_FEATURE, 3);
-	parameter.addObserver(new Mapping([parameter, ONSET_FEATURE], undefined, 'new Function("a", "b", "return a * b;");', [dymo1, dymo2], AMPLITUDE));
+	new Mapping([parameter, ONSET_FEATURE], undefined, 'new Function("a", "b", "return a * b;");', [dymo1, dymo2], AMPLITUDE);
 	
 	it("can map to other parameters", function() {
 		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(1);

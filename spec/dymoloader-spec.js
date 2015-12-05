@@ -3,8 +3,9 @@ describe("a dymoloader", function() {
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	var audioContext = new AudioContext();
 	
-	var scheduler, dymo, dymoMap, rendering;
+	var dymo, dymoMap, scheduler, rendering;
 	var dymoPath = '../example/dymo.json';
+	var dymo2Path = '../example/dymo2.json';
 	var featureRenderingPath = '../example/feature-rendering.json';
 	var controlRenderingPath = '../example/control-rendering.json';
 	var similarityGraphPath = '../example/similarity.json';
@@ -27,6 +28,23 @@ describe("a dymoloader", function() {
 			expect(dymo.getUri()).toEqual("dymo0");
 			expect(dymo.getParts().length).toBe(330);
 			expect(Object.keys(dymoMap).length).toBe(331);
+		});
+	});
+	
+	it("loads higher-level parameters from json", function(done) {
+		var loader = new DymoLoader(scheduler);
+		loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
+			var dymo2 = loadedDymo[0];
+			var dymoMap2 = loadedDymo[1];
+			expect(dymo2.getUri()).toEqual("dymo0");
+			expect(dymo2.getParts().length).toBe(2);
+			expect(Object.keys(dymoMap2).length).toBe(3);
+			expect(dymo2.getParameter("fade")).not.toBeUndefined();
+			expect(dymo2.getParameter("fade").getObservers().length).toBe(2);
+			dymo2.getParameter("fade").update(0.7);
+			expect(dymo2.getParts()[0].getParameter(AMPLITUDE).getValue()).toBe(0.7);
+			expect(dymo2.getParts()[1].getParameter(AMPLITUDE).getValue()).toBeCloseTo(0.3, 10);
+			done();
 		});
 	});
 	
