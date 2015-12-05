@@ -337,7 +337,9 @@ function DymoLoader(scheduler, $scope, $interval) {
 			} else if (type == TOGGLE) {
 				return new Control(label, type, $scope);
 			} else if (type == RANDOM) {
-				return getStatsControl(0, controlUri);
+				return getStatsControl(0, label);
+			} else if (type == BROWNIAN) {
+				return getBrownianControl(0, label);
 			} else if (type == GRAPH_CONTROL) {
 				if (dmo) {
 					var graph = dmo.getGraph();
@@ -428,6 +430,17 @@ function DymoLoader(scheduler, $scope, $interval) {
 			return $scope.statsControls[uri].randomControl;
 		} else {
 			return $scope.statsControls[uri];
+		}
+	}
+	
+	function getBrownianControl(index, uri) {
+		if (!$scope.brownianControls[uri]) {
+			$scope.brownianControls[uri] = new BrownianControls($interval);
+		}
+		if (index == 0) {
+			return $scope.brownianControls[uri].brownianControl;
+		} else {
+			return $scope.brownianControls[uri];
 		}
 	}
 	

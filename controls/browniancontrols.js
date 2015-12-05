@@ -16,7 +16,8 @@ function BrownianControls() {
 	
 	function startUpdate() {
 		intervalID = setInterval(function() {
-			var currentStep = self.maxStepSize.getValue() * Math.random();
+			var currentMaxStepSize = self.maxStepSize.getValue();
+			var currentStep = (2 * currentMaxStepSize * Math.random()) - currentMaxStepSize;
 			var newValue = self.brownianControl.getValue() + currentStep;
 			newValue = Math.min(Math.max(newValue, min), max);
 			self.brownianControl.update(newValue);
