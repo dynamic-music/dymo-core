@@ -82,7 +82,7 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 		return {
 			"domainDims": domainJson,
 			"function": functionString,
-			"dmos": dmos.map(function (d) { return d.getUri(); }),
+			"dymos": dmos.map(function (d) { return d.getUri(); }),
 			"parameter": parameterName
 		}
 	}

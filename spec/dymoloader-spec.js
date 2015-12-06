@@ -86,4 +86,20 @@ describe("a dymoloader", function() {
 		});
 	});
 	
+	it("loads same dymo as written", function(done) {
+		var oReq = new XMLHttpRequest();
+		oReq.addEventListener("load", function() {
+			var loadedJson = JSON.parse(this.responseText);
+			var loader = new DymoLoader(scheduler);
+			loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
+				var writtenJson = loadedDymo[0].toJsonHierarchy();
+				expect(JSON.stringify(writtenJson)).toEqual(JSON.stringify(loadedJson));
+				expect(writtenJson).toEqual(loadedJson);
+				done();
+			});
+		});
+		oReq.open("GET", dymo2Path);
+		oReq.send();
+	});
+	
 });

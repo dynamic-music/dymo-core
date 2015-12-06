@@ -291,21 +291,31 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.toFlatJson = function() {
 		var jsonDymo = {
 			"@id": uri,
-			"@type": DYMO,
-			"ct": type,
-			"mappings": [],
-			"parts": [],
-			"similars": [],
-			"source": sourcePath
+			"@type": DYMO
 		}
-		for (var i = 0; i < mappings.length; i++) {
-			jsonDymo["mappings"].push(mappings[i].toJSON());
+		if (type) {
+			jsonDymo["ct"] = type;
+		}
+		if (sourcePath) {
+			jsonDymo["source"] = sourcePath;
 		}
 		for (featureName in features) {
 			jsonDymo[featureName] = this.getFeatureJson(featureName);
 		}
-		for (var i = 0; i < similars.length; i++) {
-			jsonDymo["similars"].push(similars[i].getUri());
+		if (mappings.length > 0) {
+			jsonDymo["mappings"] = [];
+			for (var i = 0; i < mappings.length; i++) {
+				jsonDymo["mappings"].push(mappings[i].toJson());
+			}
+		}
+		if (parts.length > 0) {
+			jsonDymo["parts"] = [];
+		}
+		if (similars.length > 0) {
+			jsonDymo["similars"] = [];
+			for (var i = 0; i < similars.length; i++) {
+				jsonDymo["similars"].push(similars[i].getUri());
+			}
 		}
 		return jsonDymo;
 	}

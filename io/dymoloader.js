@@ -8,7 +8,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 	var features = {};
 	
 	//TODO PUT IN CENTRAL PLACE!!
-	var jsonKeys = ["@id", "@type", "parts", "source", "similars", "mappings"];
+	var jsonKeys = ["@id", "@type", "ct", "parts", "source", "similars", "mappings"];
 	
 	this.loadDymoFromJson = function(jsonUri, callback, $http) {
 		loadJson(jsonUri, {}, callback, createDymoFromJson, $http);
@@ -54,8 +54,10 @@ function DymoLoader(scheduler, $scope, $interval) {
 				dymo.setFeature(attribute, json[attribute].value);
 			}
 		}
-		for (var i = 0; i < json["parts"].length; i++) {
-			dymo.addPart(recursiveCreateDymoAndParts(json["parts"][i], dymoMap));
+		if (json["parts"]) {
+			for (var i = 0; i < json["parts"].length; i++) {
+				dymo.addPart(recursiveCreateDymoAndParts(json["parts"][i], dymoMap));
+			}
 		}
 		return dymo;
 	}
@@ -75,8 +77,10 @@ function DymoLoader(scheduler, $scope, $interval) {
 			}
 		}
 		//iterate through parts
-		for (var i = 0; i < json["parts"].length; i++) {
-			recursiveAddMappingsAndSimilars(json["parts"][i], dymoMap);
+		if (json["parts"]) {
+			for (var i = 0; i < json["parts"].length; i++) {
+				recursiveAddMappingsAndSimilars(json["parts"][i], dymoMap);
+			}
 		}
 	}
 	
@@ -92,8 +96,8 @@ function DymoLoader(scheduler, $scope, $interval) {
 	
 	function createMappingFromJson(json, dymoMap, dymo, controls) {
 		var dymos = [];
-		for (var j = 0; j < json["dmos"].length; j++) {
-			dymos.push(dymoMap[json["dmos"][j]]);
+		for (var j = 0; j < json["dymos"].length; j++) {
+			dymos.push(dymoMap[json["dymos"][j]]);
 		}
 		var isRelative = json["relative"];
 		var domainDims = [];
