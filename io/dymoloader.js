@@ -1,4 +1,4 @@
-function DymoLoader(scheduler, $scope, $interval) {
+function DymoLoader(scheduler, $scope) {
 	
 	var mobileRdfUri = "rdf/mobile.n3";
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
@@ -119,10 +119,16 @@ function DymoLoader(scheduler, $scope, $interval) {
 				}
 				domainDims.push(currentParameter);
 			} else {
-				if (!controls[currentName]) {
-					controls[currentName] = getControl(currentType, currentName);
+				var control;
+				if (controls) {
+					if (!controls[currentName]) {
+						controls[currentName] = getControl(currentType, currentName);
+					}
+					control = controls[currentName];
+				} else {
+					control = getControl(currentType, currentName);
 				}
-				domainDims.push(controls[currentName]);
+				domainDims.push(control);
 			}
 		}
 		return new Mapping(domainDims, isRelative, json["function"], dymos, json["parameter"]);
@@ -143,10 +149,108 @@ function DymoLoader(scheduler, $scope, $interval) {
 		}
 	}
 	
+	function getControl(type, label, dmo) {
+		if (type == ACCELEROMETER_X) {
+			return getAccelerometerControl(0);
+		} else if (type == ACCELEROMETER_Y) {
+			return getAccelerometerControl(1);
+		}	else if (type == ACCELEROMETER_Z) {
+			return getAccelerometerControl(2);
+		} else if (type == TILT_X) {
+			return getAccelerometerControl(3);
+		} else if (type == TILT_Y) {
+			return getAccelerometerControl(4);
+		} else if (type == GEOLOCATION_LATITUDE) {
+			return getGeolocationControl(0);
+		}	else if (type == GEOLOCATION_LONGITUDE) {
+			return getGeolocationControl(1);
+		}	else if (type == GEOLOCATION_DISTANCE) {
+			return getGeolocationControl(2);
+		}	else if (type == COMPASS_HEADING) {
+			return getCompassControl(0);
+		}	else if (type == SLIDER) {
+			return new Control(label, type);
+		} else if (type == TOGGLE) {
+			return new Control(label, type);
+		} else if (type == RANDOM) {
+			return getStatsControl(0, label);
+		} else if (type == BROWNIAN) {
+			return getBrownianControl(0, label);
+		} else if (type == GRAPH_CONTROL) {
+			if (dmo) {
+				var graph = dmo.getGraph();
+			}
+			return getGraphControl(0, controlUri, graph);
+		}
+	}
+	
+	function getStatsControl(index, uri) {
+		if (index == 0) {
+			return new StatsControls().randomControl;
+		} else {
+			return new StatsControls();
+		}
+	}
+	
+	function getBrownianControl(index, uri) {
+		if (index == 0) {
+			return new BrownianControls().brownianControl;
+		} else {
+			return new BrownianControls();
+		}
+	}
+	
+	function getGraphControl(index, uri, graph) {
+		if (index == 0) {
+			return new GraphControls(graph).nextNodeControl;
+		} else {
+			return new GraphControls(graph);
+		}
+	}
+	
+	function getAccelerometerControl(index) {
+		if (!$scope.accelerometerWatcher) {
+			$scope.accelerometerWatcher = new AccelerometerWatcher($scope);
+		}
+		if (index == 0) {
+			return $scope.accelerometerWatcher.xControl;
+		} else if (index == 1) {
+			return $scope.accelerometerWatcher.yControl;
+		} else if (index == 2){
+			return $scope.accelerometerWatcher.zControl;
+		} else if (index == 3){
+			return $scope.accelerometerWatcher.tiltXControl;
+		} else if (index == 4){
+			return $scope.accelerometerWatcher.tiltYControl;
+		}
+	}
+	
+	function getGeolocationControl(index) {
+		if (!$scope.geolocationWatcher) {
+			$scope.geolocationWatcher = new GeolocationWatcher($scope);
+		}
+		if (index == 0) {
+			return $scope.geolocationWatcher.latitudeControl;
+		} else if (index == 1) {
+			return $scope.geolocationWatcher.longitudeControl;
+		} else {
+			return $scope.geolocationWatcher.distanceControl;
+		}
+	}
+	
+	function getCompassControl(index) {
+		if (!$scope.compassWatcher) {
+			$scope.compassWatcher = new CompassWatcher($scope);
+		}
+		if (index == 0) {
+			return $scope.compassWatcher.headingControl;
+		} else {
+			return $scope.compassWatcher.accuracyControl;
+		}
+	}
 	
 	
-	
-	this.loadDmo = function(rdfUri) {
+	/*this.loadDmo = function(rdfUri) {
 		$http.get(dmoPath+rdfUri).success(function(data) {
 			rdfstore.create(function(err, store) {
 				store.load('text/turtle', data, function(err, results) {
@@ -356,42 +460,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 			return Number(result.value);
 		}
 		return defaultValue;
-	}
-	
-	function getControl(type, label, dmo) {
-			if (type == ACCELEROMETER_X) {
-				return getAccelerometerControl(0);
-			} else if (type == ACCELEROMETER_Y) {
-				return getAccelerometerControl(1);
-			}	else if (type == ACCELEROMETER_Z) {
-				return getAccelerometerControl(2);
-			} else if (type == TILT_X) {
-				return getAccelerometerControl(3);
-			} else if (type == TILT_Y) {
-				return getAccelerometerControl(4);
-			} else if (type == GEOLOCATION_LATITUDE) {
-				return getGeolocationControl(0);
-			}	else if (type == GEOLOCATION_LONGITUDE) {
-				return getGeolocationControl(1);
-			}	else if (type == GEOLOCATION_DISTANCE) {
-				return getGeolocationControl(2);
-			}	else if (type == COMPASS_HEADING) {
-				return getCompassControl(0);
-			}	else if (type == SLIDER) {
-				return new Control(label, type, $scope);
-			} else if (type == TOGGLE) {
-				return new Control(label, type, $scope);
-			} else if (type == RANDOM) {
-				return getStatsControl(0, label);
-			} else if (type == BROWNIAN) {
-				return getBrownianControl(0, label);
-			} else if (type == GRAPH_CONTROL) {
-				if (dmo) {
-					var graph = dmo.getGraph();
-				}
-				return getGraphControl(0, controlUri, graph);
-			}
-		}
+	}*/
 	
 	/*function getControl(controlUri, controlTypeUri, label, dmo) {
 		if (controlUri == mobileRdfUri+"#AccelerometerX") {
@@ -424,91 +493,15 @@ function DymoLoader(scheduler, $scope, $interval) {
 			}
 			return getGraphControl(0, controlUri, graph);
 		}
-	}*/
-	
-	function getAccelerometerControl(index) {
-		if (!$scope.accelerometerWatcher) {
-			$scope.accelerometerWatcher = new AccelerometerWatcher($scope);
-		}
-		if (index == 0) {
-			return $scope.accelerometerWatcher.xControl;
-		} else if (index == 1) {
-			return $scope.accelerometerWatcher.yControl;
-		} else if (index == 2){
-			return $scope.accelerometerWatcher.zControl;
-		} else if (index == 3){
-			return $scope.accelerometerWatcher.tiltXControl;
-		} else if (index == 4){
-			return $scope.accelerometerWatcher.tiltYControl;
-		}
 	}
 	
-	function getGeolocationControl(index) {
-		if (!$scope.geolocationWatcher) {
-			$scope.geolocationWatcher = new GeolocationWatcher($scope);
-		}
-		if (index == 0) {
-			return $scope.geolocationWatcher.latitudeControl;
-		} else if (index == 1) {
-			return $scope.geolocationWatcher.longitudeControl;
-		} else {
-			return $scope.geolocationWatcher.distanceControl;
-		}
-	}
-	
-	function getCompassControl(index) {
-		if (!$scope.compassWatcher) {
-			$scope.compassWatcher = new CompassWatcher($scope);
-		}
-		if (index == 0) {
-			return $scope.compassWatcher.headingControl;
-		} else {
-			return $scope.compassWatcher.accuracyControl;
-		}
-	}
-	
-	function getStatsControl(index, uri) {
-		if (!$scope.statsControls[uri]) {
-			$scope.statsControls[uri] = new StatsControls($interval);
-		}
-		if (index == 0) {
-			return $scope.statsControls[uri].randomControl;
-		} else {
-			return $scope.statsControls[uri];
-		}
-	}
-	
-	function getBrownianControl(index, uri) {
-		if (!$scope.brownianControls[uri]) {
-			$scope.brownianControls[uri] = new BrownianControls($interval);
-		}
-		if (index == 0) {
-			return $scope.brownianControls[uri].brownianControl;
-		} else {
-			return $scope.brownianControls[uri];
-		}
-	}
-	
-	function getGraphControl(index, uri, graph) {
-		if (!$scope.graphControls[uri]) {
-			$scope.graphControls[uri] = new GraphControls(graph);
-		} else {
-			$scope.graphControls[uri].setGraph(graph);
-		}
-		if (index == 0) {
-			return $scope.graphControls[uri].nextNodeControl;
-		} else {
-			return $scope.graphControls[uri];
-		}
-	}
-	
-	/*function getUIControl(type, uri, label) {
+	function getUIControl(type, uri, label) {
 		if (!$scope.uiControls[uri]) {
 			$scope.uiControls[uri] = new Control(0, label, type, $scope);
 			$scope.$apply();
 		}
 		return $scope.uiControls[uri];
-	}*/
+	}
 	
 	function getParameter(owner, parameterUri, parameterTypeUri ) {
 		if (parameterUri == mobileRdfUri+"#Play" || parameterTypeUri == mobileRdfUri+"#Play") {
@@ -540,7 +533,7 @@ function DymoLoader(scheduler, $scope, $interval) {
 		} else if (parameterUri == mobileRdfUri+"#ContinueAfterLeaping" || parameterTypeUri == mobileRdfUri+"#ContinueAfterLeaping") {
 			return owner.continueAfterLeaping;
 		}
-	}
+	}*/
 	
 	var eventOntology = "http://purl.org/NET/c4dm/event.owl";
 	var timelineOntology = "http://purl.org/NET/c4dm/timeline.owl";
