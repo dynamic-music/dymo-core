@@ -22,6 +22,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 		parameters[DURATION_RATIO] = new Parameter(DURATION_RATIO, 1);
 		parameters[AMPLITUDE] = new Parameter(AMPLITUDE, 1);
 		parameters[PLAYBACK_RATE] = new Parameter(PLAYBACK_RATE, 1);
+		parameters[TIME_STRETCH_RATIO] = new Parameter(TIME_STRETCH_RATIO, 1);
 		parameters[PAN] = new Parameter(PAN, 0);
 		parameters[DISTANCE] = new Parameter(DISTANCE, 0);
 		parameters[HEIGHT] = new Parameter(HEIGHT, 0);

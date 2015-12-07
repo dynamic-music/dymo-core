@@ -14,6 +14,7 @@ var ONSET = "Onset";
 var DURATION_RATIO = "DurationRatio";
 var AMPLITUDE = "Amplitude";
 var PLAYBACK_RATE = "PlaybackRate";
+var TIME_STRETCH_RATIO = "TimeStretchRatio";
 var PAN = "Pan";
 var DISTANCE = "Distance";
 var HEIGHT = "Height";

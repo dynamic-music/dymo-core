@@ -36,13 +36,16 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		fadeBuffer(buffer, toSamples(duration, buffer));
 	}
 	
-	var source = audioContext.createBufferSource();
-	source.connect(filter);
-	source.buffer = buffer;
+	var source = new AudioProcessorSource(audioContext, buffer, filter);
+	//source.connect(filter);
+	//var source = audioContext.createBufferSource();
+	//source.connect(filter);
+	//source.buffer = buffer;
 	
 	var parameters = {};
 	parameters[AMPLITUDE] = dryGain.gain;
 	parameters[PLAYBACK_RATE] = source.playbackRate;
+	parameters[TIME_STRETCH_RATIO] = source.stretchRatio;
 	parameters[REVERB] = reverbGain.gain;
 	parameters[FILTER] = filter.frequency;
 	parameters[PAN] = {value:0}; //mock parameters since panner non-readable
@@ -54,6 +57,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	
 	initParameter(AMPLITUDE, dymo.getParameter(AMPLITUDE));
 	initParameter(PLAYBACK_RATE, dymo.getParameter(PLAYBACK_RATE));
+	initParameter(TIME_STRETCH_RATIO, dymo.getParameter(TIME_STRETCH_RATIO));
 	initParameter(REVERB, dymo.getParameter(REVERB));
 	initParameter(PAN, dymo.getParameter(PAN));
 	initParameter(HEIGHT, dymo.getParameter(HEIGHT));
@@ -79,12 +83,12 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	
 	function setParameter(name, value, relative) {
 		if (relative) {
-			value += parameters[name].value;
+			value += self.getParameterValue(name);
 		}
 		if (value < 0 && positiveParameters.indexOf(name) >= 0) {
 			value = 0;
 		}
-		parameters[name].value = value;
+		setParameterValue(name, value);
 		if (positionParameters.indexOf(name) >= 0) {
 			updatePannerPosition();
 		}
@@ -98,13 +102,26 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		return duration;
 	}
 	
-	this.getParameter = function(name) {
-		return parameters[name].value;
+	this.getParameterValue = function(name) {
+		if (parameters[name].value || parameters[name].value == 0) {
+			return parameters[name].value;
+		} else {
+			return parameters[name].getValue();
+		}
+	}
+	
+	function setParameterValue(name, value) {
+		if (parameters[name].value || parameters[name].value == 0) {
+			parameters[name].value = value;
+		} else {
+			parameters[name].setValue(value);
+		}
 	}
 	
 	this.play = function(startTime) {
 		source.onended = removeFromObserved;
-		source.start(startTime, currentPausePosition);
+		source.start(startTime);
+		//source.start(startTime, currentPausePosition);
 		isPlaying = true;
 	}
 	
