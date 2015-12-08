@@ -58,7 +58,7 @@ describe("a dymoloader", function() {
 			expect(Object.keys(controls).length).toEqual(0);
 			rendering.play();
 			setTimeout(function() {
-				expect(scheduler.urisOfPlayingDymos).toEqual(["dymo4", "dymo0"]);
+				expect(scheduler.urisOfPlayingDymos).toEqual(["dymo23", "dymo0"]);
 				rendering.stop();
 				done();
 			}, 100);

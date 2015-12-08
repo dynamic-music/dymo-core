@@ -36,11 +36,14 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		fadeBuffer(buffer, toSamples(duration, buffer));
 	}
 	
-	var source = new AudioProcessorSource(audioContext, buffer, filter);
-	//source.connect(filter);
-	//var source = audioContext.createBufferSource();
-	//source.connect(filter);
-	//source.buffer = buffer;
+	var source;
+	if (dymo.getParameter(TIME_STRETCH_RATIO).getValue() != 1) {
+		source = new AudioProcessorSource(audioContext, buffer, filter);
+	} else {
+		source = audioContext.createBufferSource();
+		source.connect(filter);
+		source.buffer = buffer;
+	}
 	
 	var parameters = {};
 	parameters[AMPLITUDE] = dryGain.gain;
@@ -103,18 +106,22 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	}
 	
 	this.getParameterValue = function(name) {
-		if (parameters[name].value || parameters[name].value == 0) {
-			return parameters[name].value;
-		} else {
-			return parameters[name].getValue();
+		if (parameters[name]) {
+			if (parameters[name].value || parameters[name].value == 0) {
+				return parameters[name].value;
+			} else {
+				return parameters[name].getValue();
+			}
 		}
 	}
 	
 	function setParameterValue(name, value) {
-		if (parameters[name].value || parameters[name].value == 0) {
-			parameters[name].value = value;
-		} else {
-			parameters[name].setValue(value);
+		if (parameters[name]) {
+			if (parameters[name].value || parameters[name].value == 0) {
+				parameters[name].value = value;
+			} else {
+				parameters[name].setValue(value);
+			}
 		}
 	}
 	

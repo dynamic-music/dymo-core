@@ -16,7 +16,8 @@ describe("a processor", function() {
 	});
 	
 	it("can timestretch", function(done) {
-		dymo1.getParameter(TIME_STRETCH_RATIO).relativeUpdate(0.5);
+		dymo1.getParameter(TIME_STRETCH_RATIO).relativeUpdate(-0.5);
+		dymo1.getParameter(PLAYBACK_RATE).relativeUpdate(0.5);
 		scheduler.play(dymo1);
 		setTimeout(function() {
 			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo1"]);
