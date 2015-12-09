@@ -31,10 +31,8 @@ function AudioProcessor(audioContext) {
 	
 	function calculateStretched(buffer, target, filter) {
 		var channels = [];
-		var b = [];
 		for (var i = 0; i < buffer.numberOfChannels; i++) {
 			channels.push(target.getChannelData(i));
-			b.push(buffer.getChannelData(i));
 		}
 		var samples = new Float32Array(BUFFER_SIZE * 2);
 		var framesExtracted = filter.extract(samples, BUFFER_SIZE);

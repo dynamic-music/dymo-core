@@ -101,14 +101,14 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 				endTimes[uri] = startTime+timeToNextOnset;
 				previousOnsets[uri] = nextOnset;
 			} else {
-				endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getParameterValue(PLAYBACK_RATE)/currentSources[0].getParameterValue(TIME_STRETCH_RATIO);
+				endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getParameterValue(PLAYBACK_RATE);
 			}
 			if (endTimes[uri]) {
 				//TODO MAKE TIMEOUT IDS FOR EACH DYMO!!!!!
 				timeoutID = setTimeout(function() { internalPlay(dymo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
 			}
 		} else {
-			endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getParameterValue(PLAYBACK_RATE)/currentSources[0].getParameterValue(TIME_STRETCH_RATIO);
+			endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getParameterValue(PLAYBACK_RATE);
 			timeoutID = setTimeout(function() { reset(dymo); }, (endTimes[uri]-audioContext.currentTime)*1000);
 		}
 	}
