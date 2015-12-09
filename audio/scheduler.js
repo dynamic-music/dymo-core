@@ -38,6 +38,10 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
+	this.getBuffer = function(dymo) {
+		return buffers[dymo.getSourcePath()];
+	}
+	
 	function sourceReady() {
 		if (numCurrentlyLoading > 0) {
 			numCurrentlyLoading--;

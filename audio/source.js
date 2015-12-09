@@ -35,20 +35,19 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	} else {
 		fadeBuffer(buffer, toSamples(duration, buffer));
 	}
-	
-	var source;
 	if (dymo.getParameter(TIME_STRETCH_RATIO).getValue() != 1) {
-		source = new AudioProcessorSource(audioContext, buffer, filter);
-	} else {
-		source = audioContext.createBufferSource();
-		source.connect(filter);
-		source.buffer = buffer;
+		buffer = new AudioProcessor(audioContext).timeStretch(buffer, 1.25);
 	}
+	var source = audioContext.createBufferSource();
+	source.connect(filter);
+	source.buffer = buffer;
+	
+	//var source = new AudioProcessorSource(audioContext, buffer, filter);
 	
 	var parameters = {};
 	parameters[AMPLITUDE] = dryGain.gain;
 	parameters[PLAYBACK_RATE] = source.playbackRate;
-	parameters[TIME_STRETCH_RATIO] = source.stretchRatio;
+	parameters[TIME_STRETCH_RATIO] = {value:0};
 	parameters[REVERB] = reverbGain.gain;
 	parameters[FILTER] = filter.frequency;
 	parameters[PAN] = {value:0}; //mock parameters since panner non-readable

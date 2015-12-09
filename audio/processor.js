@@ -1,50 +1,57 @@
-function AudioProcessorSource(audioContext, buffer, destination) {
-	
-	var self = this;
-	
-	var soundTouch = new SoundTouch(buffer.sampleRate);
-	
-	this.stretchRatio = {
-		setValue:function(value) {
-			soundTouch.tempo = value;
-		},
-		getValue:function() {
-			return soundTouch.tempo;
-		}
-	};
-	this.playbackRate = {
-		setValue:function(value) {
-			soundTouch.rate = value;
-		},
-		getValue:function() {
-			return soundTouch.rate;
-		}
-	};
+function AudioProcessor(audioContext) {
 	
 	var BUFFER_SIZE = 1024;
 	
-	var source = {
-		extract: function (target, numFrames, position) {
-			var channels = [];
-			for (var i = 0; i < buffer.numberOfChannels; i++) {
-				channels.push(buffer.getChannelData(i));
+	this.timeStretch = function(buffer, ratio) {
+		var soundTouch = new SoundTouch(buffer.sampleRate);
+		soundTouch.tempo = ratio;
+		var source = createSource(buffer);
+		var filter = new SimpleFilter(source, soundTouch);
+		var result = audioContext.createBuffer(buffer.numberOfChannels, buffer.length*(1/ratio), buffer.sampleRate);
+		calculateStretched(buffer, result, filter);
+		return result;
+	}
+	
+	function createSource(buffer) {
+		return {
+			extract: function (target, numFrames, position) {
+				var channels = [];
+				for (var i = 0; i < buffer.numberOfChannels; i++) {
+					channels.push(buffer.getChannelData(i));
+				}
+				for (var i = 0; i < numFrames; i++) {
+					for (var j = 0; j < channels.length; j++) {
+						target[i * channels.length + (j % channels.length)] = channels[j][i + position];
+					}
+				}
+				return Math.min(numFrames, channels[0].length - position);
 			}
-			for (var i = 0; i < numFrames; i++) {
+		};
+	}
+	
+	function calculateStretched(buffer, target, filter) {
+		var channels = [];
+		var b = [];
+		for (var i = 0; i < buffer.numberOfChannels; i++) {
+			channels.push(target.getChannelData(i));
+			b.push(buffer.getChannelData(i));
+		}
+		var samples = new Float32Array(BUFFER_SIZE * 2);
+		var framesExtracted = filter.extract(samples, BUFFER_SIZE);
+		var totalFramesExtracted = 0;
+		while (framesExtracted) {
+			for (var i = 0; i < framesExtracted; i++) {
 				for (var j = 0; j < channels.length; j++) {
-					target[i * channels.length + (j % channels.length)] = channels[j][i + position];
+					channels[j][i + totalFramesExtracted] = samples[i * channels.length + (j % channels.length)];
 				}
 			}
-			return Math.min(numFrames, channels[0].length - position);
+			totalFramesExtracted += framesExtracted;
+			framesExtracted = filter.extract(samples, BUFFER_SIZE);
 		}
-	};
+		return channels;
+	}
 	
-	var f = new SimpleFilter(source, soundTouch);
-	
-	var node = audioContext.createScriptProcessor(BUFFER_SIZE, 2, buffer.numberOfChannels);
-	
-	var samples = new Float32Array(BUFFER_SIZE * 2);
-	
-	node.onaudioprocess = function (e) {
+	/*node.onaudioprocess = function (e) {
 		var channels = [];
 		for (var i = 0; i < buffer.numberOfChannels; i++) {
 			channels.push(e.outputBuffer.getChannelData(i));
@@ -58,16 +65,6 @@ function AudioProcessorSource(audioContext, buffer, destination) {
 				channels[j][i] = samples[i * channels.length + (j % channels.length)];
 			}
 		}
-	};
-
-	this.start = function(delay) {
-		setTimeout(function(){
-			node.connect(destination);
-		}, delay);
-	}
-	
-	this.stop = function() {
-		node.disconnect();
-	}
+	};*/
 
 }
