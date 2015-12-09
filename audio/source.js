@@ -33,10 +33,12 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		//add time for fade after source officially done
 		buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+FADE_LENGTH, buffer));
 	} else {
+		//TODO FADE AFTER STRETCH
 		fadeBuffer(buffer, toSamples(duration, buffer));
 	}
-	if (dymo.getParameter(TIME_STRETCH_RATIO).getValue() != 1) {
-		buffer = new AudioProcessor(audioContext).timeStretch(buffer, 1.25);
+	var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();
+	if (stretchRatio != 1) {
+		buffer = new AudioProcessor(audioContext).timeStretch(buffer, stretchRatio);
 	}
 	var source = audioContext.createBufferSource();
 	source.connect(filter);

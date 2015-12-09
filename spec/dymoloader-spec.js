@@ -18,7 +18,7 @@ describe("a dymoloader", function() {
 				//expect(scheduler.urisOfPlayingDmos).toEqual(["dymo1"]);
 				scheduler.stop(dymo);
 				done();
-			}, 100);
+			}, 300);
 		});
 		scheduler.setReverbFile(reverbPath);
 		var loader = new DymoLoader(scheduler);
@@ -58,7 +58,7 @@ describe("a dymoloader", function() {
 			expect(Object.keys(controls).length).toEqual(0);
 			rendering.play();
 			setTimeout(function() {
-				expect(scheduler.urisOfPlayingDymos).toEqual(["dymo23", "dymo0"]);
+				expect(scheduler.urisOfPlayingDymos).toEqual(["dymo76", "dymo0"]);
 				rendering.stop();
 				done();
 			}, 100);
