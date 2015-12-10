@@ -35,20 +35,20 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		if (time != 0 || duration != buffer.duration) {
 			//add time for fade after source officially done
 			//get too much cause of shitty timestretch algorithm
-			buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+SHITTY_TIMESTRETCH_BUFFER_ZONE+FADE_LENGTH, buffer));
+			buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, buffer));
 		}
 		buffer = new AudioProcessor(audioContext).timeStretch(buffer, stretchRatio);
 		//trim it down again
 		var shouldBeDuration = duration/stretchRatio;
-		buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration, buffer));
-		duration = buffer.duration;
+		buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration+FADE_LENGTH, buffer));
+		duration = shouldBeDuration;
 	} else {
 		if (time != 0 || duration != buffer.duration) {
 			//add time for fade after source officially done
 			buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+FADE_LENGTH, buffer));
 		}
 	}
-	fadeBuffer(buffer, toSamples(duration, buffer));
+	fadeBuffer(buffer, buffer.length);
 	
 	var source = audioContext.createBufferSource();
 	source.connect(filter);
