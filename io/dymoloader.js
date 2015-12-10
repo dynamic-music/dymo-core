@@ -8,7 +8,7 @@ function DymoLoader(scheduler, $scope) {
 	var features = {};
 	
 	//TODO PUT IN CENTRAL PLACE!!
-	var jsonKeys = ["@id", "@type", "ct", "parts", "source", "similars", "mappings"];
+	var jsonKeys = ["@id", "@type", "ct", "source", "navigator", "similars", "mappings", "parts"];
 	
 	this.loadDymoFromJson = function(jsonUri, callback, $http) {
 		loadJson(jsonUri, {}, callback, createDymoFromJson, $http);
@@ -49,6 +49,9 @@ function DymoLoader(scheduler, $scope) {
 		var dymo = new DynamicMusicObject(json["@id"], scheduler, json["ct"]);
 		dymoMap[json["@id"]] = dymo;
 		dymo.setSourcePath(json["source"]);
+		if (json["navigator"]) {
+			dymo.setNavigator(getNavigator(json["navigator"], dymo));
+		}
 		for (attribute in json) {
 			if (jsonKeys.indexOf(attribute) < 0) {
 				dymo.setFeature(attribute, json[attribute].value);
@@ -147,6 +150,13 @@ function DymoLoader(scheduler, $scope) {
 				}
 			}
 		}
+	}
+	
+	function getNavigator(type, dymo) {
+		if (type == SIMILARITY_NAVIGATOR) {
+			return new SimilarityNavigator(dymo);
+		}
+		return new SequentialNavigator(dymo);
 	}
 	
 	function getControl(type, label, dmo) {

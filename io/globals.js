@@ -7,6 +7,11 @@ var DYMO_TYPES = [PARALLEL, SEQUENTIAL];
 var FEATURE = "Feature";
 var PARAMETER = "Parameter";
 
+//navigators
+
+var SEQUENTIAL_NAVIGATOR = "SequentialNavigator";
+var SIMILARITY_NAVIGATOR = "SimilarityNavigator";
+
 // parameters
 
 var PLAY = "Play";
@@ -27,6 +32,8 @@ var LISTENER_ORIENTATION = "ListenerOrientation";
 var STATS_FREQUENCY = "StatsFrequency";
 var BROWNIAN_FREQUENCY = "BrownianFrequency";
 var BROWNIAN_MAX_STEP_SIZE = "BrownianMaxStepSize";
+var LEAPING_PROBABILITY = "LeapingProbability";
+var CONTINUE_AFTER_LEAPING = "ContinueAfterLeaping";
 
 var PARAMETERS = [PLAY, ONSET, DURATION_RATIO, AMPLITUDE, PLAYBACK_RATE, PAN, DISTANCE, HEIGHT, REVERB, FILTER, PART_INDEX, PART_COUNT, PART_ORDER, LISTENER_ORIENTATION, STATS_FREQUENCY];
 

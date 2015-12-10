@@ -8,12 +8,12 @@ function DynamicMusicObject(uri, scheduler, type) {
 	var features = {};
 	var parameters = {};
 	var mappings = [];
-	var partsPlayed = 0;
 	var isPlaying = false;
 	var sourcePath;
 	var skipProportionAdjustment = false;
 	var previousIndex = null;
 	initFeaturesAndParameters();
+	var navigator = new SequentialNavigator(this);
 	
 	function initFeaturesAndParameters() {
 		features["level"] = 0;
@@ -37,6 +37,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	this.setType = function(t) {
 		type = t;
+	}
+	
+	this.getType = function() {
+		return type;
 	}
 	
 	this.getUri = function() {
@@ -166,13 +170,15 @@ function DynamicMusicObject(uri, scheduler, type) {
 			} else {
 				scheduler.stop(self);
 			}
-		} else if (param.getName() == PART_INDEX) {
-			partsPlayed = param.getValue();
 		}
 	}
 	
+	this.setNavigator = function(nav) {
+		navigator = nav;
+	}
+	
 	this.resetPartsPlayed = function() {
-		partsPlayed = 0;
+		navigator.resetPartsPlayed();
 		for (var i = 0; i < parts.length; i++) {
 			parts[i].resetPartsPlayed();
 		}
@@ -185,45 +191,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.getNextParts = function() {
-		if (parts.length > 0) {
-			if (type == PARALLEL) {
-				var parallelParts = [];
-				for (var i = 0; i < parts.length; i++) {
-					var nextParts = parts[i].getNextParts();
-					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
-						parallelParts = parallelParts.concat(nextParts);
-					}
-				}
-				if (parallelParts.length > 0) {
-					return parallelParts;
-				}
-			} else { //SEQUENTIAL FOR EVERYTHING ELSE
-				isPlaying = true;
-				while (partsPlayed < parts.length && partsPlayed < parameters[PART_COUNT].getValue()) {
-					var nextParts = parts[partsPlayed].getNextParts();
-					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
-						if (!nextParts instanceof Array) {
-							nextParts = [nextParts];
-						}
-						return nextParts;
-					} else {
-						partsPlayed++;
-					}
-				}
-			}
-			//done playing
-			partsPlayed = 0;
-			isPlaying = false;
-			return null;
-		} else {
-			if (!isPlaying) {
-				isPlaying = true;
-				return [this];
-			} else {
-				isPlaying = false;
-				return null;
-			}
-		}
+		return navigator.getNextParts();
 	}
 	
 	//creates a hierarchical json of this (recursively containing parts)
@@ -299,6 +267,9 @@ function DynamicMusicObject(uri, scheduler, type) {
 		}
 		if (sourcePath) {
 			jsonDymo["source"] = sourcePath;
+		}
+		if (navigator instanceof SimilarityNavigator) {
+			jsonDymo["navigator"] = SIMILARITY_NAVIGATOR;
 		}
 		for (featureName in features) {
 			jsonDymo[featureName] = this.getFeatureJson(featureName);
