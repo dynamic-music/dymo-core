@@ -67,9 +67,15 @@ PolygonTools.howFarIsPointInPolygon = function(polygon, centroid, point) {
 };
 
 PolygonTools.getPolygonFunctionString = function(polygon) {
-	return "new Function(\"a\", \"b\", \"return PolygonTools.isPointInPolygon(" + JSON.stringify(polygon) + ", {0:a, 1:b});\");";
+	return "new Function(\"a\", \"b\", \"return PolygonTools.isPointInPolygon(" + getPolygonOrPointString(polygon) + ", {0:a, 1:b});\");";
 };
 
 PolygonTools.getInterpolatedPolygonFunctionString = function(polygon) {
-	return "new Function(\"a\", \"b\", \"return PolygonTools.howMuchIsPointInPolygon(" + JSON.stringify(polygon) + ", {0:a, 1:b});\");";
+	var polygonString = getPolygonOrPointString(polygon);
+	var centroidString = getPolygonOrPointString(PolygonTools.getCentroid(polygon));
+	return "new Function(\"a\", \"b\", \"return PolygonTools.howFarIsPointInPolygon(" + polygonString + "," + centroidString + ", {0:a, 1:b});\");";
 };
+
+function getPolygonOrPointString(polygonOrPoint) {
+	return JSON.stringify(polygonOrPoint).replace(/"/g, "'");
+}

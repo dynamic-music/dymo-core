@@ -65,4 +65,21 @@ describe("the math tools", function() {
 		expect(PolygonTools.howFarIsPointInPolygon(polygon, centroid, point3)).toBe(0);
 	});
 	
+	it("can return a polygon testing function string", function() {
+		var polygon = [{0:0,1:0}, {0:5,1:1}, {0:3,1:3}];
+		var point1 = {0:3,1:2}; //inside
+		var point2 = {0:3,1:0}; //outside
+		var point3 = {0:4,1:2}; //on the line
+		var func = eval(PolygonTools.getPolygonFunctionString(polygon));
+		expect(func(point1[0], point1[1])).toBeTruthy();
+		expect(func(point2[0], point2[1])).toBeFalsy();
+		expect(func(point3[0], point3[1])).toBeFalsy();
+		var centroid = PolygonTools.getCentroid(polygon);
+		func = eval(PolygonTools.getInterpolatedPolygonFunctionString(polygon));
+		expect(func(point1[0], point1[1])).toBeCloseTo(0.352092461065317, 15);
+		expect(func(centroid[0], centroid[1])).toBe(1);
+		expect(func(point2[0], point2[1])).toBe(0);
+		expect(func(point3[0], point3[1])).toBe(0);
+	});
+	
 });

@@ -156,8 +156,8 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	
 	this.stop = function() {
 		if (isPlaying) {
-			stopAndRemoveAudioSources();
 			removeFromObserved();
+			stopAndRemoveAudioSources();
 		}
 		//even in case it is paused
 		currentPausePosition = 0;
@@ -165,7 +165,10 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	
 	function stopAndRemoveAudioSources() {
 		isPlaying = false;
-		source.stop(0);
+		var now = audioContext.currentTime;
+		parameters[AMPLITUDE].setValueAtTime(parameters[AMPLITUDE].value, now);
+		parameters[AMPLITUDE].linearRampToValueAtTime(0.00001, now+FADE_LENGTH);
+		source.stop(now+2*FADE_LENGTH);
 	}
 	
 	function updatePannerPosition() {
