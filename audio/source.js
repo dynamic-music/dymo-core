@@ -65,8 +65,9 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	parameters[PAN] = {value:0}; //mock parameters since panner non-readable
 	parameters[HEIGHT] = {value:0};
 	parameters[DISTANCE] = {value:0};
-	var allParameters = [AMPLITUDE, PLAYBACK_RATE, REVERB, FILTER, PAN, HEIGHT, DISTANCE];
-	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, REVERB, FILTER];
+	parameters[LOOP] = {value:0};
+	var allParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, FILTER, PAN, HEIGHT, DISTANCE, LOOP];
+	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, FILTER];
 	var positionParameters = [PAN, HEIGHT, DISTANCE];
 	
 	initParameter(AMPLITUDE, dymo.getParameter(AMPLITUDE));
@@ -76,6 +77,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	initParameter(PAN, dymo.getParameter(PAN));
 	initParameter(HEIGHT, dymo.getParameter(HEIGHT));
 	initParameter(DISTANCE, dymo.getParameter(DISTANCE));
+	initParameter(LOOP, dymo.getParameter(LOOP));
 	
 	function initParameter(name, dymoParam) {
 		setParameter(name, dymoParam.getValue());
@@ -105,6 +107,8 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		setParameterValue(name, value);
 		if (positionParameters.indexOf(name) >= 0) {
 			updatePannerPosition();
+		} else if (name == LOOP) {
+			source.loop = (value == 1);
 		}
 	}
 	

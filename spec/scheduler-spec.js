@@ -5,7 +5,8 @@ describe("a scheduler", function() {
 	
 	var sourcePath1 = '../example/sark1.m4a';
 	var sourcePath2 = '../example/sark2.m4a';
-	var dymo1, dymo2, dymo3;
+	var sourcePath3 = '../example/Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
+	var dymo1, dymo2, dymo3, dymo0;
 	var scheduler;
 	
 	beforeAll(function(done) {
@@ -19,6 +20,9 @@ describe("a scheduler", function() {
 		dymo1.addPart(dymo3);
 		dymo2.setSourcePath(sourcePath1);
 		dymo3.setSourcePath(sourcePath2);
+		
+		dymo0 = new DynamicMusicObject("dymo0", scheduler);
+		dymo0.setSourcePath(sourcePath3);
 	});
 	
 	it("plays a parallel dymo", function(done) {
@@ -79,6 +83,26 @@ describe("a scheduler", function() {
 			expect(scheduler.urisOfPlayingDymos).toEqual([]);
 			expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(0);
 			done();
+		}, 100);
+	});
+	
+	it("loops a dymo", function(done) {
+		expect(scheduler.urisOfPlayingDymos).toEqual([]);
+		dymo0.getParameter(LOOP).update(1);
+		scheduler.play(dymo0);
+		setTimeout(function() {
+			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo0"]);
+			expect(audioContext.activeSourceCount).toBe(1);
+			expect(dymo0.getParameter(LOOP).getObservers().length).toBe(1);
+			expect(dymo0.getParameter(AMPLITUDE).getObservers().length).toBe(1);
+			dymo0.getParameter(LOOP).update(0);
+			setTimeout(function() {
+				//not quite done playing yet
+				expect(scheduler.urisOfPlayingDymos).toEqual(["dymo0"]);
+				scheduler.stop(dymo0);
+				expect(scheduler.urisOfPlayingDymos).toEqual([]);
+				done();
+			}, 100);
 		}, 100);
 	});
 	

@@ -18,6 +18,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	function initFeaturesAndParameters() {
 		features["level"] = 0;
 		parameters[PLAY] = new Parameter(PLAY, 0, true);
+		parameters[LOOP] = new Parameter(LOOP, 0, true);
 		parameters[ONSET] = new Parameter(ONSET, -1);
 		parameters[DURATION_RATIO] = new Parameter(DURATION_RATIO, 1);
 		parameters[AMPLITUDE] = new Parameter(AMPLITUDE, 1);
