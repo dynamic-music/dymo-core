@@ -295,7 +295,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.getFeatureJson = function(featureName) {
 		return {
 			"value" : features[featureName],
-			"adt" : featureName.charAt(0).toUpperCase() + featureName.slice(1),
+			"type" : FEATURE,
+			"adt" : featureName.charAt(0).toUpperCase() + featureName.slice(1)
 		};
 	}
 	

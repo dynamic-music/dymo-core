@@ -54,7 +54,12 @@ function DymoLoader(scheduler, $scope) {
 		}
 		for (attribute in json) {
 			if (jsonKeys.indexOf(attribute) < 0) {
-				dymo.setFeature(attribute, json[attribute].value);
+				if (json[attribute]["type"] == FEATURE) {
+					dymo.setFeature(attribute, json[attribute].value);
+				}
+				else if (json[attribute]["type"] == PARAMETER) {
+					addOrUpdateDymoParameter(dymo, attribute, json[attribute].value);
+				}
 			}
 		}
 		if (json["parts"]) {
@@ -112,11 +117,7 @@ function DymoLoader(scheduler, $scope) {
 			} else if (currentType == PARAMETER) {
 				var currentParameter;
 				if (dymo) {
-					currentParameter = dymo.getParameter(currentName);
-					if (!currentParameter) {
-						currentParameter = new Parameter(currentName, 0);
-						dymo.addParameter(currentParameter);
-					}
+					currentParameter = addOrUpdateDymoParameter(dymo, currentName, 0);
 				} else {
 					currentParameter = new Parameter(currentName, 0);
 				}
@@ -135,6 +136,17 @@ function DymoLoader(scheduler, $scope) {
 			}
 		}
 		return new Mapping(domainDims, isRelative, json["function"], dymos, json["parameter"]);
+	}
+	
+	function addOrUpdateDymoParameter(dymo, name, value) {
+		currentParameter = dymo.getParameter(name);
+		if (!currentParameter) {
+			currentParameter = new Parameter(name, value);
+			dymo.addParameter(currentParameter);
+		} else {
+			currentParameter.update(value);
+		}
+		return currentParameter;
 	}
 	
 	//currently only works for generically named dymos

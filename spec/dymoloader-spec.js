@@ -26,6 +26,9 @@ describe("a dymoloader", function() {
 			dymo = loadedDymo[0];
 			dymoMap = loadedDymo[1];
 			expect(dymo.getUri()).toEqual("dymo0");
+			//test if initial parameter value loaded correctly
+			expect(dymoMap["dymo4"].getParameter(AMPLITUDE).getValue()).toEqual(0.5);
+			expect(dymoMap["dymo76"].getParameter(AMPLITUDE).getValue()).toEqual(1);
 			expect(dymo.getParts().length).toBe(330);
 			expect(Object.keys(dymoMap).length).toBe(331);
 		});
@@ -45,23 +48,6 @@ describe("a dymoloader", function() {
 			expect(dymo2.getParts()[0].getParameter(AMPLITUDE).getValue()).toBe(0.7);
 			expect(dymo2.getParts()[1].getParameter(AMPLITUDE).getValue()).toBeCloseTo(0.3, 10);
 			done();
-		});
-	});
-	
-	it("loads a feature rendering from json", function(done) {
-		var loader = new DymoLoader(scheduler);
-		loader.loadRenderingFromJson(featureRenderingPath, dymoMap, function(loadedRendering) {
-			rendering = loadedRendering[0];
-			controls = loadedRendering[1];
-			expect(scheduler.urisOfPlayingDymos).toEqual([]);
-			expect(rendering.getMappings().length).toEqual(3);
-			expect(Object.keys(controls).length).toEqual(0);
-			rendering.play();
-			setTimeout(function() {
-				expect(scheduler.urisOfPlayingDymos).toEqual(["dymo76", "dymo0"]);
-				rendering.stop();
-				done();
-			}, 100);
 		});
 	});
 	
