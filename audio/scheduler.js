@@ -95,13 +95,13 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			nextSources[uri] = nextSrcs;
 			//REALLY BAD QUICKFIX! REDESIGN!!!
 			//TODO ACCOUNT FOR MAX DURATION OF PARALLEL SOURCES!!!!! instead currentSources[0].getDuration()
-			var nextOnset = nextSrcs[0].getDymo().getFeature("onset");
+			var nextOnset = nextSrcs[0].getDymo().getParameter(ONSET).getValue();
 			var timeToNextOnset = nextOnset-previousOnsets[uri];
-			if (nextOnset && !timeToNextOnset || timeToNextOnset < currentSources[0].getDuration()) {
+			if (nextOnset >= 0) { //&& !timeToNextOnset || timeToNextOnset < currentSources[0].getDuration()) {
 				endTimes[uri] = startTime+timeToNextOnset;
 				previousOnsets[uri] = nextOnset;
 			} else {
-				endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getParameterValue(PLAYBACK_RATE);
+				endTimes[uri] = startTime+(currentSources[0].getDuration()/currentSources[0].getParameterValue(PLAYBACK_RATE));
 			}
 			if (endTimes[uri]) {
 				//TODO MAKE TIMEOUT IDS FOR EACH DYMO!!!!!

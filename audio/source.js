@@ -32,7 +32,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	}
 	var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();
 	if (stretchRatio != 1) {
-		if (time != 0 || duration != buffer.duration) {
+		if (time != 0 || duration < buffer.duration) {
 			//add time for fade after source officially done
 			//get too much cause of shitty timestretch algorithm
 			buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, buffer));
@@ -43,7 +43,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration+FADE_LENGTH, buffer));
 		duration = shouldBeDuration;
 	} else {
-		if (time != 0 || duration != buffer.duration) {
+		if (time != 0 || duration < buffer.duration) {
 			//add time for fade after source officially done
 			buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+FADE_LENGTH, buffer));
 		}
@@ -171,7 +171,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		isPlaying = false;
 		var now = audioContext.currentTime;
 		parameters[AMPLITUDE].setValueAtTime(parameters[AMPLITUDE].value, now);
-		parameters[AMPLITUDE].linearRampToValueAtTime(0.00001, now+FADE_LENGTH);
+		parameters[AMPLITUDE].linearRampToValueAtTime(0, now+FADE_LENGTH);
 		source.stop(now+2*FADE_LENGTH);
 	}
 	
@@ -189,11 +189,12 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	}
 	
 	function getSubBuffer(buffer, fromSample, durationInSamples) {
-		var subBuffer = audioContext.createBuffer(buffer.numberOfChannels, durationInSamples, buffer.sampleRate);
+		var samplesToCopy = Math.min(buffer.length-fromSample, durationInSamples);
+		var subBuffer = audioContext.createBuffer(buffer.numberOfChannels, samplesToCopy, buffer.sampleRate);
 		for (var i = 0; i < buffer.numberOfChannels; i++) {
 			var currentCopyChannel = subBuffer.getChannelData(i);
 			var currentOriginalChannel = buffer.getChannelData(i);
-			for (var j = 0; j < durationInSamples; j++) {
+			for (var j = 0; j < samplesToCopy; j++) {
 				currentCopyChannel[j] = currentOriginalChannel[fromSample+j];
 			}
 		}
