@@ -20,3 +20,5 @@ bower_components
 **/*.m4a
 **/*.mp3
 **/*.wav
+
+!audio/impulse_rev.wav
