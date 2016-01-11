@@ -185,10 +185,16 @@ function DynamicMusicObject(uri, scheduler, type) {
 		}
 	}
 	
-	this.updatePartOrder = function(featureName) {
-		parts.sort(function(p,q) {
-			return p.getFeature(featureName) - q.getFeature(featureName);
-		});
+	this.updatePartOrder = function(featureOrParameterName) {
+		if (parts && !isNaN(parts[0].getFeature(featureOrParameterName))) {
+			parts.sort(function(p,q) {
+				return p.getFeature(featureOrParameterName) - q.getFeature(featureOrParameterName);
+			});
+		} else if (parts) {
+			parts.sort(function(p,q) {
+				return p.getParameter(featureOrParameterName).getValue() - q.getParameter(featureOrParameterName).getValue();
+			});
+		}
 	}
 	
 	this.getNextParts = function() {

@@ -52,8 +52,11 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	}
 	
 	this.play = function(dymo) {
+		dymo.updatePartOrder(ONSET);
 		internalPlay(dymo);
 	}
+	
+	var deltaOnset = 0;
 	
 	function internalPlay(dymo) {
 		var uri = dymo.getUri();
@@ -65,7 +68,10 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			for (var i = 0; i < currentSources.length; i++) {
 				var currentDymo = currentSources[i].getDymo();
 				registerSource(uri, currentDymo.getUri(), currentSources[i]);
-				previousOnsets[uri] = currentDymo.getFeature("onset");
+				previousOnsets[uri] = currentDymo.getParameter(ONSET).getValue();
+				if (previousOnsets[uri] < 0) {
+					deltaOnset = -1*previousOnsets[uri];
+				}
 			}
 		} else {
 			//switch to source
@@ -74,6 +80,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 				registerSource(uri, currentSources[i].getDymo().getUri(), currentSources[i]);
 			}
 		}
+		var delay;
 		if (!endTimes[uri]) {
 			delay = SCHEDULE_AHEAD_TIME;
 		} else {
@@ -97,7 +104,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			//TODO ACCOUNT FOR MAX DURATION OF PARALLEL SOURCES!!!!! instead currentSources[0].getDuration()
 			var nextOnset = nextSrcs[0].getDymo().getParameter(ONSET).getValue();
 			var timeToNextOnset = nextOnset-previousOnsets[uri];
-			if (nextOnset >= 0) { //&& !timeToNextOnset || timeToNextOnset < currentSources[0].getDuration()) {
+			if (nextOnset != -1) { //JUST A QUICKFIX (-1 standard value), DEAL WITH ONSETS FOR REAL!! //&& !timeToNextOnset || timeToNextOnset < currentSources[0].getDuration()) {
 				endTimes[uri] = startTime+timeToNextOnset;
 				previousOnsets[uri] = nextOnset;
 			} else {

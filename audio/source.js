@@ -78,6 +78,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	initParameter(HEIGHT, dymo.getParameter(HEIGHT));
 	initParameter(DISTANCE, dymo.getParameter(DISTANCE));
 	initParameter(LOOP, dymo.getParameter(LOOP));
+	//console.log(dymo.getParameter(AMPLITUDE).getValue())
 	
 	function initParameter(name, dymoParam) {
 		setParameter(name, dymoParam.getValue());

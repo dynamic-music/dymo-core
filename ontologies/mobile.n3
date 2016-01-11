@@ -223,6 +223,12 @@
 	rdfs:range :MobileControl ;
 	rdfs:comment "" .
 
+:fromFeature
+	a owl:ObjectProperty ;
+	rdfs:domain :MappingDimension ;
+	rdfs:range dmo:Feature ;
+	rdfs:comment "" .
+
 :hasFunction
 	a owl:ObjectProperty ;
 	rdfs:domain :MappingDimension ;
@@ -235,7 +241,7 @@
 	rdfs:range dmo:Dymo ;
 	rdfs:comment "" .
 
-:toDymoParameter
+:toParameter
 	a owl:ObjectProperty ;
 	rdfs:domain :Mapping ;
 	rdfs:range dmo:Parameter ;
