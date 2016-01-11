@@ -3,7 +3,8 @@ describe("a processor", function() {
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	var audioContext = new AudioContext();
 	
-	var sourcePath1 = "../example/sark1.m4a";
+	var basePath = '../example/';
+	var sourcePath1 = "sark1.m4a";
 	var dymo1;
 	var scheduler;
 	
@@ -11,6 +12,7 @@ describe("a processor", function() {
 		scheduler = new Scheduler(audioContext, function() {
 			done();
 		});
+		scheduler.setDymoBasePath('../example/');
 		dymo1 = new DynamicMusicObject("dymo1", scheduler);
 		dymo1.setSourcePath(sourcePath1);
 	});

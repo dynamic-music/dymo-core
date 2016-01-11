@@ -3,9 +3,10 @@ describe("a scheduler", function() {
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	var audioContext = new AudioContext();
 	
-	var sourcePath1 = '../example/sark1.m4a';
-	var sourcePath2 = '../example/sark2.m4a';
-	var sourcePath3 = '../example/Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
+	var basePath = '../example/';
+	var sourcePath1 = 'sark1.m4a';
+	var sourcePath2 = 'sark2.m4a';
+	var sourcePath3 = 'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
 	var dymo1, dymo2, dymo3, dymo0;
 	var scheduler;
 	
@@ -13,6 +14,7 @@ describe("a scheduler", function() {
 		scheduler = new Scheduler(audioContext, function() {
 			done();
 		});
+		scheduler.setDymoBasePath(basePath);
 		dymo1 = new DynamicMusicObject("dymo1", scheduler, PARALLEL);
 		dymo2 = new DynamicMusicObject("dymo2", scheduler);
 		dymo3 = new DynamicMusicObject("dymo3", scheduler);

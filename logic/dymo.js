@@ -186,7 +186,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.updatePartOrder = function(featureOrParameterName) {
-		if (parts && !isNaN(parts[0].getFeature(featureOrParameterName))) {
+		if (parts && parts[0] && !isNaN(parts[0].getFeature(featureOrParameterName))) {
 			parts.sort(function(p,q) {
 				return p.getFeature(featureOrParameterName) - q.getFeature(featureOrParameterName);
 			});

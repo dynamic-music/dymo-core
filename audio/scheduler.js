@@ -3,6 +3,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	var self = this;
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 	
+	var dymoBasePath;
 	var buffers = {};
 	var sources = {}; //grouped by top dymo
 	var nextSources = {}; //for each top dymo
@@ -27,11 +28,15 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		});
 	}
 	
+	this.setDymoBasePath = function(path) {
+		dymoBasePath = path;
+	}
+	
 	this.addSourceFile = function(filePath) {
 		//only add if not there yet..
 		if (!buffers[filePath]) {
 			var audioLoader = new AudioSampleLoader();
-			loadAudio(filePath, audioLoader, function() {
+			loadAudio(dymoBasePath+filePath, audioLoader, function() {
 				buffers[filePath] = audioLoader.response;
 				sourceReady();
 			});

@@ -4,12 +4,13 @@ describe("a dymoloader", function() {
 	var audioContext = new AudioContext();
 	
 	var dymo, dymoMap, scheduler, rendering;
-	var dymoPath = '../example/dymo.json';
-	var dymo2Path = '../example/dymo2.json';
+	var dymosPath = '../example/'
+	var dymoPath = 'dymo.json';
+	var dymo2Path = 'dymo2.json';
 	var featureRenderingPath = '../example/feature-rendering.json';
 	var controlRenderingPath = '../example/control-rendering.json';
 	var similarityGraphPath = '../example/similarity.json';
-	var reverbPath = '../example/impulse_rev.wav';
+	var reverbPath = '../audio/impulse_rev.wav';
 	
 	it("loads a dymo from json", function(done) {
 		scheduler = new Scheduler(audioContext, function(num) {
@@ -22,7 +23,7 @@ describe("a dymoloader", function() {
 		});
 		scheduler.setReverbFile(reverbPath);
 		var loader = new DymoLoader(scheduler);
-		loader.loadDymoFromJson(dymoPath, function(loadedDymo) {
+		loader.loadDymoFromJson(dymosPath, dymoPath, function(loadedDymo) {
 			dymo = loadedDymo[0];
 			dymoMap = loadedDymo[1];
 			expect(dymo.getUri()).toEqual("dymo0");
@@ -36,7 +37,7 @@ describe("a dymoloader", function() {
 	
 	it("loads higher-level parameters from json", function(done) {
 		var loader = new DymoLoader(scheduler);
-		loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
+		loader.loadDymoFromJson(dymosPath, dymo2Path, function(loadedDymo) {
 			var dymo2 = loadedDymo[0];
 			var dymoMap2 = loadedDymo[1];
 			expect(dymo2.getUri()).toEqual("dymo0");
@@ -77,14 +78,14 @@ describe("a dymoloader", function() {
 		oReq.addEventListener("load", function() {
 			var loadedJson = JSON.parse(this.responseText);
 			var loader = new DymoLoader(scheduler);
-			loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
+			loader.loadDymoFromJson(dymosPath, dymo2Path, function(loadedDymo) {
 				var writtenJson = loadedDymo[0].toJsonHierarchy();
 				expect(JSON.stringify(writtenJson)).toEqual(JSON.stringify(loadedJson));
 				expect(writtenJson).toEqual(loadedJson);
 				done();
 			});
 		});
-		oReq.open("GET", dymo2Path);
+		oReq.open("GET", dymosPath+dymo2Path);
 		oReq.send();
 	});
 	

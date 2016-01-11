@@ -10,8 +10,9 @@ function DymoLoader(scheduler, $scope) {
 	//TODO PUT IN CENTRAL PLACE!!
 	var jsonKeys = ["@id", "@type", "ct", "source", "navigator", "similars", "mappings", "parts"];
 	
-	this.loadDymoFromJson = function(jsonUri, callback, $http) {
-		loadJson(jsonUri, {}, callback, createDymoFromJson, $http);
+	this.loadDymoFromJson = function(basePath, jsonUri, callback, $http) {
+		scheduler.setDymoBasePath(basePath);
+		loadJson(basePath+jsonUri, {}, callback, createDymoFromJson, $http);
 	}
 	
 	this.loadRenderingFromJson = function(jsonUri, dymoMap, callback, $http) {
