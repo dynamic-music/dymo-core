@@ -13,9 +13,10 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	var reverbGain = audioContext.createGain();
 	reverbGain.connect(reverbSend);
 	reverbGain.gain.value = 0;
+	dryGain.connect(reverbGain);
 	var panner = audioContext.createPanner();
 	panner.connect(dryGain);
-	panner.connect(reverbGain);
+	//panner.connect(reverbGain);
 	var filter = audioContext.createBiquadFilter();
 	filter.type = "lowpass";
 	filter.frequency.value = 20000;
