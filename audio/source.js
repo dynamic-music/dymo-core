@@ -121,6 +121,10 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		return duration;
 	}
 	
+	this.isLoopingAndPlaying = function() {
+		return source.loop && isPlaying;
+	}
+	
 	this.getParameterValue = function(name) {
 		if (parameters[name]) {
 			if (parameters[name].value || parameters[name].value == 0) {

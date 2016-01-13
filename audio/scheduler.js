@@ -150,7 +150,14 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	function reset(dymo) {
 		window.clearTimeout(timeoutID);
 		var uri = dymo.getUri();
-		sources[uri] = null;
+		for (var source in sources[uri]) {
+			if (!sources[uri][source].isLoopingAndPlaying()) {
+				delete sources[uri][source];
+			}
+		}
+		if (Object.keys(sources[uri]).length == 0) {
+			sources[uri] = null;
+		}
 		nextSources[uri] = null;
 		endTimes[uri] = null;
 		dymo.resetPartsPlayed();
