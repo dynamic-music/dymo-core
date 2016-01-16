@@ -1,4 +1,4 @@
-function DymoLoader(scheduler, $scope) {
+function DymoLoader(scheduler, $scope, $http) {
 	
 	var mobileRdfUri = "rdf/mobile.n3";
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
@@ -10,31 +10,71 @@ function DymoLoader(scheduler, $scope) {
 	//TODO PUT IN CENTRAL PLACE!!
 	var jsonKeys = ["@id", "@type", "ct", "source", "navigator", "similars", "mappings", "parts"];
 	
-	this.loadDymoFromJson = function(basePath, jsonUri, callback, $http) {
+	this.loadDymoFromJson = function(basePath, jsonUri, callback) {
 		scheduler.setDymoBasePath(basePath);
-		loadJson(basePath+jsonUri, {}, callback, createDymoFromJson, $http);
+		loadJson(jsonUri, {}, callback, createDymoFromJson);
 	}
 	
-	this.loadRenderingFromJson = function(jsonUri, dymoMap, callback, $http) {
-		loadJson(jsonUri, dymoMap, callback, createRenderingFromJson, $http);
+	this.loadRenderingFromJson = function(jsonUri, dymoMap, callback) {
+		loadJson(jsonUri, dymoMap, callback, createRenderingFromJson);
 	}
 	
-	this.loadGraphFromJson = function(jsonUri, dymoMap, callback, $http) {
-		loadJson(jsonUri, dymoMap, callback, createGraphFromJson, $http);
+	this.loadGraphFromJson = function(jsonUri, dymoMap, callback) {
+		loadJson(jsonUri, dymoMap, callback, createGraphFromJson);
 	}
 	
-	function loadJson(jsonUri, dymoMap, callback, creatingFunction, $http) {
-		if ($http) {
-			$http.get(jsonUri).success(function(data) {
-				callback(creatingFunction(data, dymoMap));
+	//only calls callback once all file references within the json are loaded
+	function loadJson(jsonUri, dymoMap, callback, creatingFunction) {
+		recursiveLoadJson(jsonUri, "", dymoMap, callback, creatingFunction);
+	}
+	
+	function recursiveLoadJson(jsonUri, jsonString, dymoMap, callback, creatingFunction) {
+		/*if ($http) {
+			$http.get(scheduler.getDymoBasePath()+jsonUri).success(function(data) {
+				if (!jsonString) {
+					jsonString = data;
+				} else {
+					
+				}
+				console.log(data.indexOf(".json"))
+				if (data.indexOf(".json") >= 0) {
+					console.log(data.indexOf(".json"))
+					//recursiveLoadJson();
+				} else {
+					callback(creatingFunction(data, dymoMap));
+				}
 			});
-		} else {
-			var oReq = new XMLHttpRequest();
-			oReq.addEventListener("load", function() {
-				callback(creatingFunction(JSON.parse(this.responseText), dymoMap));
-			});
-			oReq.open("GET", jsonUri);
-			oReq.send();
+		} else {*/
+		var oReq = new XMLHttpRequest();
+		oReq.addEventListener("load", function() {
+			if (jsonString) {
+				jsonString = jsonString.replace('"'+jsonUri+'"', this.responseText);
+				//console.log(jsonString)
+			} else {
+				jsonString = this.responseText;
+			}
+			var nextUri = findNextJsonUri(jsonString);
+			if (nextUri) {
+				recursiveLoadJson(nextUri, jsonString, dymoMap, callback, creatingFunction);
+			} else {
+				callback(creatingFunction(JSON.parse(jsonString), dymoMap));
+			}
+		});
+		oReq.open("GET", scheduler.getDymoBasePath()+jsonUri);
+		oReq.send();
+		//}
+	}
+	
+	function findNextJsonUri(jsonString) {
+		var index = jsonString.indexOf(".json");
+		if (index >= 0) {
+			if (index != jsonString.indexOf("context.json")+7) {
+				var before = jsonString.substring(0, index);
+				var beginning = before.lastIndexOf('"');
+				return jsonString.substring(beginning+1, index+5);
+			} else {
+				return findNextJsonUri(jsonString.substring(index+1));
+			}
 		}
 	}
 	
@@ -105,9 +145,15 @@ function DymoLoader(scheduler, $scope) {
 	
 	function createMappingFromJson(json, dymoMap, dymo, controls) {
 		var dymos = [];
-		for (var j = 0; j < json["dymos"].length; j++) {
-			dymos.push(dymoMap[json["dymos"][j]]);
+		if (json["dymos"] instanceof Array) {
+			for (var j = 0; j < json["dymos"].length; j++) {
+				dymos.push(dymoMap[json["dymos"][j]]);
+			}
+		} else {
+			var allDymos = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
+			Array.prototype.push.apply(dymos, allDymos.filter(eval(json["dymos"])));
 		}
+		
 		var isRelative = json["relative"];
 		var domainDims = [];
 		for (var j = 0; j < json["domainDims"].length; j++) {

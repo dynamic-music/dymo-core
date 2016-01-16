@@ -3,7 +3,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	var self = this;
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 	
-	var dymoBasePath;
+	var dymoBasePath = '';
 	var buffers = {};
 	var sources = {}; //grouped by top dymo
 	var nextSources = {}; //for each top dymo
@@ -30,6 +30,10 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	this.setDymoBasePath = function(path) {
 		dymoBasePath = path;
+	}
+	
+	this.getDymoBasePath = function() {
+		return dymoBasePath;
 	}
 	
 	this.addSourceFile = function(filePath) {
@@ -150,14 +154,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	function reset(dymo) {
 		window.clearTimeout(timeoutID);
 		var uri = dymo.getUri();
-		for (var source in sources[uri]) {
-			if (!sources[uri][source].isLoopingAndPlaying()) {
-				delete sources[uri][source];
-			}
-		}
-		if (Object.keys(sources[uri]).length == 0) {
-			sources[uri] = null;
-		}
+		sources[uri] = null;
 		nextSources[uri] = null;
 		endTimes[uri] = null;
 		dymo.resetPartsPlayed();
