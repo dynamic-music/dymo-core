@@ -144,16 +144,27 @@ function DymoLoader(scheduler, $scope, $http) {
 	}
 	
 	function createMappingFromJson(json, dymoMap, dymo, controls) {
-		var dymos = [];
-		if (json["dymos"] instanceof Array) {
-			for (var j = 0; j < json["dymos"].length; j++) {
-				dymos.push(dymoMap[json["dymos"][j]]);
+		if (json["controls"]) {
+			var targetControls = [];
+			for (var j = 0; j < json["controls"].length; j++) {
+				targetControls.push(controls[json["controls"][j]]);
 			}
-		} else {
-			var allDymos = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
-			Array.prototype.push.apply(dymos, allDymos.filter(eval(json["dymos"])));
+			return createMappingToObjectsFromJson(json, dymoMap, dymo, targetControls, controls);
+		} else if (json["dymos"]) {
+			var dymos = [];
+			if (json["dymos"] instanceof Array) {
+				for (var j = 0; j < json["dymos"].length; j++) {
+					dymos.push(dymoMap[json["dymos"][j]]);
+				}
+			} else if (json["dymos"]) {
+				var allDymos = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
+				Array.prototype.push.apply(dymos, allDymos.filter(eval(json["dymos"])));
+			}
+			return createMappingToObjectsFromJson(json, dymoMap, dymo, dymos, controls);
 		}
-		
+	}
+	
+	function createMappingToObjectsFromJson(json, dymoMap, dymo, targets, controls) {
 		var isRelative = json["relative"];
 		var domainDims = [];
 		for (var j = 0; j < json["domainDims"].length; j++) {
@@ -182,7 +193,7 @@ function DymoLoader(scheduler, $scope, $http) {
 				domainDims.push(control);
 			}
 		}
-		return new Mapping(domainDims, isRelative, json["function"], dymos, json["parameter"]);
+		return new Mapping(domainDims, isRelative, json["function"], targets, json["parameter"]);
 	}
 	
 	function addOrUpdateDymoParameter(dymo, name, value) {
@@ -241,15 +252,14 @@ function DymoLoader(scheduler, $scope, $http) {
 			return new Control(label, type);
 		} else if (type == TOGGLE) {
 			return new Control(label, type);
+		} else if (type == BUTTON) {
+			return new Control(label, type);
 		} else if (type == RANDOM) {
 			return getStatsControl(0, label);
 		} else if (type == BROWNIAN) {
 			return getBrownianControl(0, label);
-		} else if (type == GRAPH_CONTROL) {
-			if (dmo) {
-				var graph = dmo.getGraph();
-			}
-			return getGraphControl(0, controlUri, graph);
+		} else if (type == RAMP) {
+			return getRampControl(0, label);
 		}
 	}
 	
@@ -266,6 +276,14 @@ function DymoLoader(scheduler, $scope, $http) {
 			return new BrownianControls().brownianControl;
 		} else {
 			return new BrownianControls();
+		}
+	}
+	
+	function getRampControl(index, uri) {
+		if (index == 0) {
+			return new RampControls().linearRampControl;
+		} else {
+			return new RampControls();
 		}
 	}
 	

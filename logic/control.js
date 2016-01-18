@@ -1,23 +1,21 @@
-function Control(name, type, requestValueFunction, resetFunction, updateFunction) {
+function Control(name, type, parameters) {
 	
 	var value;
 	var referenceValue;
 	var referenceAverageCount;
 	var mappings = [];
-	if (requestValueFunction) {
-		this.requestValue = function() {
-			value = requestValueFunction();
-			return value;
-		}
-	}
-	if (resetFunction) {
-		this.reset = resetFunction;
-	}
 	var currentNumAddends, currentSum;
+	var updateFunction;
 	
 	
 	this.getName = function() {
 		return name;
+	}
+	
+	this.getParameter = function(name) {
+		if (parameters) {
+			return parameters[name];
+		}
 	}
 	
 	this.getValue = function() {
@@ -74,7 +72,7 @@ function Control(name, type, requestValueFunction, resetFunction, updateFunction
 			}
 		//done measuring. adjust value if initialvalue taken
 		} else {
-			if (newValue) {
+			if (!isNaN(newValue)) {
 				if (referenceValue) {
 					newValue -= referenceValue;
 				}

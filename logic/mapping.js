@@ -3,7 +3,7 @@
  * -takes the change parameters from its domainDims where possible, and
  * -updates its goal parameter relatively
  */
-function Mapping(domainDims, relative, functionString, dmos, parameterName) {
+function Mapping(domainDims, relative, functionString, targets, parameterName) {
 	
 	var inverter = new FunctionInverter();
 	if (!functionString) {
@@ -19,11 +19,11 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 	
 	
 	this.updateParameter = function() {
-		for (var i = 0; i < dmos.length; i++) {
+		for (var i = 0; i < targets.length; i++) {
 			if (relative) {
-				dmos[i].getParameter(parameterName).relativeUpdate(calculateParameter(dmos[i]), this);
+				targets[i].getParameter(parameterName).relativeUpdate(calculateParameter(targets[i]), this);
 			} else {
-				dmos[i].getParameter(parameterName).update(calculateParameter(dmos[i]), this);
+				targets[i].getParameter(parameterName).update(calculateParameter(targets[i]), this);
 			}
 		}
 	}
@@ -79,11 +79,18 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 				domainJson.push({name:domainDims[i], type:"Feature"});
 			}
 		}
-		return {
+		var json = {
 			"domainDims": domainJson,
 			"function": functionString,
-			"dymos": dmos.map(function (d) { return d.getUri(); }),
 			"parameter": parameterName
+		}
+		var dymos = targets.filter(function (d) { return d instanceof DynamicMusicObject; }).map(function (d) { return d.getUri(); });
+		var controls = targets.filter(function (d) { return !(d instanceof DynamicMusicObject); }).map(function (d) { return d.getUri(); });
+		if (dymos.length > 0) {
+			json["dymos"] = dymos;
+		}
+		if (controls.length > 0) {
+			json["controls"] = controls;
 		}
 	}
 	
@@ -100,8 +107,8 @@ function Mapping(domainDims, relative, functionString, dmos, parameterName) {
 			domainDims[i].addObserver(this);
 		}
 	}
-	for (var i = 0; i < dmos.length; i++) {
-		dmos[i].getParameter(parameterName).addUpdater(this);
+	for (var i = 0; i < targets.length; i++) {
+		targets[i].getParameter(parameterName).addUpdater(this);
 	}
 	
 }
