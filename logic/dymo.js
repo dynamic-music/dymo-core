@@ -16,7 +16,6 @@ function DynamicMusicObject(uri, scheduler, type) {
 	var navigator = new SequentialNavigator(this);
 	
 	function initFeaturesAndParameters() {
-		features["level"] = 0;
 		parameters[PLAY] = new Parameter(PLAY, 0, true);
 		parameters[LOOP] = new Parameter(LOOP, 0, true);
 		parameters[ONSET] = new Parameter(ONSET, -1);
@@ -50,21 +49,12 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	this.setParent = function(dmo) {
 		parent = dmo;
-		recursiveUpdateLevel(this);
 		for (name in parameters) {
 			if (name != PLAY && name != PART_COUNT && name != PART_INDEX) {
 				//create standard relative mappings to child parameters
 				//TODO PUSH INTO MAPPINGS LIST???
 				new Mapping([dmo.getParameter(name)], true, undefined, [this], name);
 			}
-		}
-	}
-	
-	function recursiveUpdateLevel(dmo) {
-		dmo.setFeature("level", dmo.getLevel());
-		var dmoParts = dmo.getParts();
-		for (var i = 0; i < dmoParts.length; i++) {
-			recursiveUpdateLevel(dmoParts[i]);
 		}
 	}
 	
