@@ -81,8 +81,7 @@ function Mapping(domainDims, relative, functionString, targets, parameterName) {
 		}
 		var json = {
 			"domainDims": domainJson,
-			"function": functionString,
-			"parameter": parameterName
+			"function": functionString
 		}
 		var dymos = targets.filter(function (d) { return d instanceof DynamicMusicObject; }).map(function (d) { return d.getUri(); });
 		var controls = targets.filter(function (d) { return !(d instanceof DynamicMusicObject); }).map(function (d) { return d.getUri(); });
@@ -92,6 +91,8 @@ function Mapping(domainDims, relative, functionString, targets, parameterName) {
 		if (controls.length > 0) {
 			json["controls"] = controls;
 		}
+		json["parameter"] = parameterName;
+		return json;
 	}
 	
 	//javascript modulo sucks
