@@ -7,6 +7,7 @@ describe("a dymoloader", function() {
 	var dymosPath = '../example/'
 	var dymoPath = 'dymo.json';
 	var dymo2Path = 'dymo2.json';
+	var dymo3Path = 'dymo3.json';
 	var featureRenderingPath = '../example/feature-rendering.json';
 	var controlRenderingPath = '../example/control-rendering.json';
 	var similarityGraphPath = '../example/similarity.json';
@@ -86,6 +87,25 @@ describe("a dymoloader", function() {
 			});
 		});
 		oReq.open("GET", dymosPath+dymo2Path);
+		oReq.send();
+	});
+	
+	it("loads dymos that have parts in other files", function(done) {
+		var oReq = new XMLHttpRequest();
+		oReq.addEventListener("load", function() {
+			var loadedJson = JSON.parse(this.responseText);
+			var loader = new DymoLoader(scheduler);
+			loader.loadDymoFromJson(dymosPath, dymo3Path, function(loadedDymo) {
+				var dymo3 = loadedDymo[0];
+				var dymoMap3 = loadedDymo[1];
+				expect(dymo3.getUri()).toEqual("dymo");
+				expect(dymo3.getParts().length).toBe(1);
+				expect(dymo3.getParts()[0].getParts().length).toBe(2);
+				expect(Object.keys(dymoMap3).length).toBe(4);
+				done();
+			});
+		});
+		oReq.open("GET", dymosPath+dymo3Path);
 		oReq.send();
 	});
 	
