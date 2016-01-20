@@ -4,6 +4,7 @@ function RampControls() {
 	this.frequency = 100;
 	this.duration = 5000;
 	var currentValue = 0;
+	var isIncreasing = true;
 	
 	var parameters = {};
 	parameters[RAMP_TRIGGER] = new Parameter(RAMP_TRIGGER, 0);
@@ -13,11 +14,18 @@ function RampControls() {
 	
 	function startUpdate() {
 		intervalID = setInterval(function() {
-			currentValue += 1/self.duration*self.frequency;
-			if (currentValue <= 1) {
+			var delta = 1/self.duration*self.frequency;
+			if (!isIncreasing) {
+				delta *= -1;
+			}
+			currentValue += delta;
+			if (0 < currentValue && currentValue < 1) {
 				self.linearRampControl.update(currentValue);
-			} else {
+			} else if (currentValue >= 1) {
 				self.linearRampControl.update(1);
+				reset();
+			} else if (currentValue <= 0) {
+				self.linearRampControl.update(0);
 				reset();
 			}
 		}, self.frequency);
@@ -25,7 +33,8 @@ function RampControls() {
 	
 	function reset() {
 		clearInterval(intervalID);
-		currentValue = 0;
+		intervalID = undefined;
+		isIncreasing = !isIncreasing;
 	}
 	
 	this.getParameter = function(name) {
@@ -34,10 +43,10 @@ function RampControls() {
 	
 	this.observedParameterChanged = function(param) {
 		if (param.getName() == RAMP_TRIGGER) {
-			if (currentValue != 0) {
-				reset();
-			} else {
+			if (!intervalID) {
 				startUpdate();
+			} else {
+				reset();
 			}
 		}
 	}
