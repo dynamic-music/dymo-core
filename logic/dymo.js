@@ -69,6 +69,12 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return 0;
 	}
 	
+	this.getIndex = function() {
+		if (parent) {
+			return parent.getParts().indexOf(this);
+		}
+	}
+	
 	this.addPart = function(dmo) {
 		parts.push(dmo);
 		dmo.setParent(this);
@@ -129,7 +135,33 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.getFeature = function(name) {
-		return features[name];
+		if (name === LEVEL) {
+			return this.getLevel();
+		} else if (name === INDEX) {
+			return this.getIndex();
+		} else if (features[name]) {
+			return features[name];
+		} else if (parent) {
+			return parent.getFeature(name);
+		//may seem weird but helps a lot for now
+		} else {
+			var partFeatures = [];
+			for (var i = 0; i < parts.length; i++) {
+				var currentPartFeature = parts[i].getFeatureWithoutLookingFurther(name);
+				if (!isNaN(currentPartFeature)) {
+					partFeatures.push(currentPartFeature);
+				}
+			}
+			if (partFeatures.length > 0) {
+				return partFeatures;
+			}
+		}
+	}
+	
+	this.getFeatureWithoutLookingFurther = function(name) {
+		if (features[name]) {
+			return features[name];
+		}
 	}
 	
 	this.getSegment = function() {

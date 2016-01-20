@@ -41,6 +41,8 @@ var PARAMETERS = [PLAY, LOOP, ONSET, DURATION_RATIO, AMPLITUDE, PLAYBACK_RATE, T
 
 // features
 
+var LEVEL = "level";
+var INDEX = "index";
 var ONSET_FEATURE = "onset";
 var PITCH_FEATURE = "pitch";
 var DURATION_FEATURE = "duration";
