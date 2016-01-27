@@ -51,6 +51,13 @@ function Control(name, type, parameters) {
 		mapping.updateParameter(value, this);
 	}
 	
+	this.removeMapping = function(mapping) {
+		var i = mappings.indexOf(mapping);
+		if (i > -1) {
+			mappings.splice(i, 1);
+		}
+	}
+	
 	this.backpropagate = function(newValue, mapping) {
 		if (isFinite(newValue)) {
 			setValue(newValue, mapping);

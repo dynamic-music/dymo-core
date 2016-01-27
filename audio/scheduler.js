@@ -194,7 +194,9 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			for (var i = 0; i < nextParts.length; i++) {
 				if (nextParts[i].getSourcePath()) {
 					var buffer = buffers[nextParts[i].getSourcePath()];
-					nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend));
+					if (buffer) {
+						nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend));
+					}
 				}
 			}
 			return nextSources;

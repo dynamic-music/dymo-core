@@ -2,7 +2,7 @@ function RampControls() {
 	
 	var self = this;
 	this.frequency = 100;
-	this.duration = 5000;
+	this.duration = 10000;
 	var currentValue = 0;
 	var isIncreasing = true;
 	

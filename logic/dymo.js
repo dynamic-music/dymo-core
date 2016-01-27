@@ -8,6 +8,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	var features = {};
 	var parameters = {};
 	var mappings = [];
+	var parentMappings = []; //mappings from parent to this dymo
 	var isPlaying = false;
 	var sourcePath;
 	var skipProportionAdjustment = false;
@@ -47,19 +48,70 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return uri;
 	}
 	
-	this.setParent = function(dmo) {
-		parent = dmo;
+	this.setParent = function(dymo) {
+		parent = dymo;
 		for (name in parameters) {
 			if (name != PLAY && name != PART_COUNT && name != PART_INDEX) {
 				//create standard relative mappings to child parameters
-				//TODO PUSH INTO MAPPINGS LIST???
-				new Mapping([dmo.getParameter(name)], true, undefined, [this], name);
+				parentMappings.push(new Mapping([dymo.getParameter(name)], true, undefined, [this], name));
+			}
+		}
+		//add all appropriate subdymos to the parent's mappings
+		var additionalMappings = parent.getMappings();
+		var dymoMap = this.getDymoMap();
+		dymoMap = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
+		for (var i = 0; i < additionalMappings.length; i++) {
+			var dymoConstraint = additionalMappings[i].getDymoConstraint();
+			if (dymoConstraint) {
+				var newTargets = additionalMappings[i].getTargets().concat(dymoMap.filter(eval(dymoConstraint)));
+				additionalMappings[i].setTargets(newTargets);
 			}
 		}
 	}
 	
+	this.removeParent = function() {
+		for (var i = 0; i < parentMappings.length; i++) {
+			parentMappings[i].disconnect();
+		}
+		parentMappings = [];
+		//remove all subdymos this from the parent's mappings (assumes that all mapping targets are dymos)
+		var additionalMappings = parent.getMappings();
+		var thisDymo = this;
+		for (var i = 0; i < additionalMappings.length; i++) {
+			var targets = additionalMappings[i].getTargets();
+			targets = targets.filter(function(d) { return !d.isSubDymoOf(thisDymo); });
+			additionalMappings[i].setTargets(targets);
+		}
+		parent = null;
+	}
+	
 	this.getParent = function() {
 		return parent;
+	}
+	
+	//returns true if this appears in the sub-structure of the given dymo
+	this.isSubDymoOf = function(dymo) {
+		var currentDymo = this;
+		while (currentDymo) {
+			if (currentDymo == dymo) {
+				return true;
+			}
+			currentDymo = currentDymo.getParent();
+		}
+		return false;
+	}
+	
+	this.getDymoMap = function() {
+		var dymoMap = {};
+		recursiveAddToDymoMap(this, dymoMap);
+		return dymoMap;
+	}
+	
+	function recursiveAddToDymoMap(dymo, dymoMap) {
+		dymoMap[dymo.getUri()] = dymo;
+		for (var i = 0; i < dymo.getParts().length; i++) {
+			recursiveAddToDymoMap(dymo.getParts()[i], dymoMap);
+		}
 	}
 	
 	this.getLevel = function() {
@@ -75,9 +127,24 @@ function DynamicMusicObject(uri, scheduler, type) {
 		}
 	}
 	
-	this.addPart = function(dmo) {
-		parts.push(dmo);
-		dmo.setParent(this);
+	this.addPart = function(dymo) {
+		parts.push(dymo);
+		dymo.setParent(this);
+	}
+	
+	this.removePart = function(dymo) {
+		parts.splice(array.indexOf(dymo));
+		dymo.removeParent(this);
+	}
+	
+	this.replacePart = function(index, dymo) {
+		parts[index].removeParent(this);
+		parts[index] = dymo;
+		dymo.setParent(this);
+	}
+	
+	this.getPart = function(index) {
+		return parts[index];
 	}
 	
 	this.getParts = function() {
@@ -130,6 +197,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return similars;
 	}
 	
+	this.getFeatures = function() {
+		return features;
+	}
+	
 	this.setFeature = function(name, value) {
 		features[name] = value;
 	}
@@ -162,6 +233,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 		if (features[name]) {
 			return features[name];
 		}
+	}
+	
+	this.getMappings = function() {
+		return mappings;
 	}
 	
 	this.getSegment = function() {
@@ -200,6 +275,10 @@ function DynamicMusicObject(uri, scheduler, type) {
 		navigator = nav;
 	}
 	
+	this.getNavigator = function() {
+		return navigator;
+	}
+	
 	this.resetPartsPlayed = function() {
 		navigator.resetPartsPlayed();
 		for (var i = 0; i < parts.length; i++) {
@@ -220,7 +299,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.getNextParts = function() {
-		return navigator.getNextParts();
+		var nextP = navigator.getNextParts();
+		return nextP;
 	}
 	
 	//creates a hierarchical json of this (recursively containing parts)

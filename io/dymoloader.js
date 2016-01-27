@@ -152,19 +152,21 @@ function DymoLoader(scheduler, $scope, $http) {
 			return createMappingToObjectsFromJson(json, dymoMap, dymo, targetControls, controls);
 		} else if (json["dymos"]) {
 			var dymos = [];
+			var constraint;
 			if (json["dymos"] instanceof Array) {
 				for (var j = 0; j < json["dymos"].length; j++) {
 					dymos.push(dymoMap[json["dymos"][j]]);
 				}
-			} else if (json["dymos"]) {
+			} else {
+				constraint = json["dymos"];
 				var allDymos = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
 				Array.prototype.push.apply(dymos, allDymos.filter(eval(json["dymos"])));
 			}
-			return createMappingToObjectsFromJson(json, dymoMap, dymo, dymos, controls);
+			return createMappingToObjectsFromJson(json, dymoMap, dymo, dymos, controls, constraint);
 		}
 	}
 	
-	function createMappingToObjectsFromJson(json, dymoMap, dymo, targets, controls) {
+	function createMappingToObjectsFromJson(json, dymoMap, dymo, targets, controls, dymoConstraint) {
 		var isRelative = json["relative"];
 		var domainDims = [];
 		for (var j = 0; j < json["domainDims"].length; j++) {
@@ -193,7 +195,7 @@ function DymoLoader(scheduler, $scope, $http) {
 				domainDims.push(control);
 			}
 		}
-		return new Mapping(domainDims, isRelative, json["function"], targets, json["parameter"]);
+		return new Mapping(domainDims, isRelative, json["function"], targets, json["parameter"], dymoConstraint);
 	}
 	
 	function addOrUpdateDymoParameter(dymo, name, value) {

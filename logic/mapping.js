@@ -3,7 +3,7 @@
  * -takes the change parameters from its domainDims where possible, and
  * -updates its goal parameter relatively
  */
-function Mapping(domainDims, relative, functionString, targets, parameterName) {
+function Mapping(domainDims, relative, functionString, targets, parameterName, dymoConstraint) {
 	
 	var inverter = new FunctionInverter();
 	if (!functionString) {
@@ -17,6 +17,33 @@ function Mapping(domainDims, relative, functionString, targets, parameterName) {
 		inverseFunction = eval(inverter.toJavaScriptFunctionString(inverseString));
 	}
 	
+	this.getTargets = function() {
+		return targets;
+	}
+	
+	this.setTargets = function(newTargets) {
+		targets = newTargets;
+		for (var i = 0; i < targets.length; i++) {
+			targets[i].getParameter(parameterName).addUpdater(this);
+		}
+	}
+	
+	this.getDymoConstraint = function() {
+		return dymoConstraint;
+	}
+	
+	this.disconnect = function() {
+		for (var i = 0; i < domainDims.length; i++) {
+			if (domainDims[i].removeMapping) {
+				domainDims[i].removeMapping(this);
+			} else if (domainDims[i].removeObserver) {
+				domainDims[i].removeObserver(this);
+			}
+		}
+		for (var i = 0; i < targets.length; i++) {
+			targets[i].getParameter(parameterName).removeUpdater(this);
+		}
+	}
 	
 	this.updateParameter = function() {
 		for (var i = 0; i < targets.length; i++) {
@@ -100,7 +127,7 @@ function Mapping(domainDims, relative, functionString, targets, parameterName) {
 		return ((m % n) + n) % n;
 	}
 	
-	//TODO PUT IN METHOD
+	//INIT
 	for (var i = 0; i < domainDims.length; i++) {
 		if (domainDims[i].addMapping) {
 			domainDims[i].addMapping(this);

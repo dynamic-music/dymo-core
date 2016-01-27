@@ -19,8 +19,17 @@ function Parameter(name, initialValue, isInteger) {
 	}
 	
 	this.addUpdater = function(updater) {
-		updaters.push(updater);
-		updater.updatedParameterChanged(value);
+		if (updaters.indexOf(updater) < 0) {
+			updaters.push(updater);
+			updater.updatedParameterChanged(value);
+		}
+	}
+	
+	this.removeUpdater = function(updater) {
+		var i = updaters.indexOf(updater);
+		if (i > -1) {
+			updaters.splice(i, 1);
+		}
 	}
 	
 	this.addObserver = function(observer) {

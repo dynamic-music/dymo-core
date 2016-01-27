@@ -7,6 +7,14 @@ function SequentialNavigator(dymo) {
 		partsPlayed = 0;
 	}
 	
+	this.setPartsPlayed = function(played) {
+		partsPlayed = played;
+	}
+	
+	this.getPartsPlayed = function() {
+		return partsPlayed;
+	}
+	
 	this.getNextParts = function() {
 		var parts = dymo.getParts();
 		if (parts.length > 0) {
@@ -19,6 +27,7 @@ function SequentialNavigator(dymo) {
 					}
 				}
 				if (parallelParts.length > 0) {
+					console.log(parallelParts.map(function(d){return d.getIndex();}))
 					return parallelParts;
 				}
 			} else { //SEQUENTIAL FOR EVERYTHING ELSE
