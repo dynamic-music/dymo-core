@@ -7,9 +7,12 @@ function DymoWriter($http) {
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
 	var rdfsUri = "http://www.w3.org/2000/01/rdf-schema";
 	
-	this.writeDymoToJson = function(dymo, path) {
+	this.writeDymoToJson = function(dymo, path, name) {
 		dymo["@context"] = "http://purl.org/ontology/dymo/context.json";
-		writeJson(dymo, path+'dymo.json');
+		if (!name) {
+			name = 'dymo.json'
+		}
+		writeJson(dymo, path+name);
 	}
 	
 	this.writeRenderingToJson = function(rendering, path) {

@@ -210,7 +210,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 			return this.getLevel();
 		} else if (name === INDEX) {
 			return this.getIndex();
-		} else if (features[name]) {
+		} else if (features.hasOwnProperty(name)) {
 			return features[name];
 		} else if (parent) {
 			return parent.getFeature(name);
