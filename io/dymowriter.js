@@ -21,7 +21,7 @@ function DymoWriter($http) {
 	
 	function writeJson(json, path) {
 		$http.post(path, json).success(function(res) {
-			//console.log('success!');
+			console.log("written json to " + path);
 		});
 	}
 	
