@@ -138,7 +138,9 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.replacePart = function(index, dymo) {
-		parts[index].removeParent(this);
+		if (parts[index]) {
+			parts[index].removeParent(this);
+		}
 		parts[index] = dymo;
 		dymo.setParent(this);
 	}
@@ -177,7 +179,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	this.setSourcePath = function(path) {
 		sourcePath = path;
-		if (path) {
+		if (path && scheduler) {
 			scheduler.addSourceFile(path);
 		}
 	}
@@ -218,9 +220,11 @@ function DynamicMusicObject(uri, scheduler, type) {
 		} else {
 			var partFeatures = [];
 			for (var i = 0; i < parts.length; i++) {
-				var currentPartFeature = parts[i].getFeatureWithoutLookingFurther(name);
-				if (!isNaN(currentPartFeature)) {
-					partFeatures.push(currentPartFeature);
+				if (parts[i]) {
+					var currentPartFeature = parts[i].getFeatureWithoutLookingFurther(name);
+					if (!isNaN(currentPartFeature)) {
+						partFeatures.push(currentPartFeature);
+					}
 				}
 			}
 			if (partFeatures.length > 0) {
