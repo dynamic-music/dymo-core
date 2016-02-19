@@ -50,7 +50,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	
 	this.setParent = function(dymo) {
 		parent = dymo;
-		for (name in parameters) {
+		for (var name in parameters) {
 			if (name != PLAY && name != PART_COUNT && name != PART_INDEX) {
 				//create standard relative mappings to child parameters
 				parentMappings.push(new Mapping([dymo.getParameter(name)], true, undefined, [this], name));
@@ -133,7 +133,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.removePart = function(dymo) {
-		parts.splice(array.indexOf(dymo));
+		parts.splice(parts.indexOf(dymo));
 		dymo.removeParent(this);
 	}
 	
@@ -384,7 +384,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 		if (navigator instanceof SimilarityNavigator) {
 			jsonDymo["navigator"] = SIMILARITY_NAVIGATOR;
 		}
-		for (featureName in features) {
+		for (var featureName in features) {
 			jsonDymo[featureName] = this.getFeatureJson(featureName);
 		}
 		if (mappings.length > 0) {

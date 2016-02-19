@@ -6,8 +6,7 @@ gulp.task('default', function () {
 	.pipe(closureCompiler({
 		compilation_level: 'SIMPLE_OPTIMIZATIONS',
 		warning_level: 'VERBOSE',
-		language_in: 'ECMASCRIPT6_STRICT',
-		language_out: 'ECMASCRIPT5_STRICT',
+		externs: './externs.js',
 		js_output_file: 'dymo-core.min.js'
 	}))
 	.pipe(gulp.dest('./dist'));

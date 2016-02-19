@@ -4,7 +4,7 @@ function OntologyLoader2(dmoUri, $scope, $interval) {
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
 	var rdfsUri = "http://www.w3.org/2000/01/rdf-schema";
 	
-	/* WORKING RDFLIB SAMPLE FOR THE RECORD (DOESNT WORK WITH LOCAL FILES) */
+	/* WORKING RDFLIB SAMPLE FOR THE RECORD (DOESNT WORK WITH LOCAL FILES) 
 	var kb = $rdf.graph();
 	var fetch = $rdf.fetcher(kb);
 	
@@ -14,14 +14,14 @@ function OntologyLoader2(dmoUri, $scope, $interval) {
 		preds = kb.each($rdf.sym(subj));
 		knowns = kb.each($rdf.sym(subj), $rdf.sym(pred));
 	}
-	doc = (function(uri){return uri.slice(0, uri.indexOf('#'));})(subj);*/
+	doc = (function(uri){return uri.slice(0, uri.indexOf('#'));})(subj);
 	fetch.nowOrWhenFetched("http://localhost/rdf/rdf-schema.n3", undefined, function(success, error) {
 		//query();
 		console.log(kb.statements.length + " " + success + " " + error);
 		$scope.statements = kb.statements.length;
 		/*for (var i = 0; i < preds.length; i++) {
 			console.log(preds[i].value);
-		}*/
+		}
 	});
 	
 	this.loadDmo = function(rdfUri) {
@@ -229,6 +229,6 @@ function OntologyLoader2(dmoUri, $scope, $interval) {
 	
 	function toSecondsNumber(xsdDurationString) {
 		return Number(xsdDurationString.substring(2, xsdDurationString.length-1));
-	}
+	}*/
 	
 }

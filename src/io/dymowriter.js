@@ -28,7 +28,7 @@ function DymoWriter($http) {
 	this.writeDmoToRdf = function(uri) {
 		var writer = N3.Writer({ prefixes: { 'ch': charmRdfUri+'#' } });
 		var writer = N3.Writer({ prefixes: { 'dmo': dmoRdfUri+'#' } });
-		var writer = N3.Writer({ prefixes: { 'mb': mbRdfUri+'#' } });
+		var writer = N3.Writer({ prefixes: { 'mb': mobileRdfUri+'#' } });
 		addDmo(writer);
 		writer.end(function (error, result) { console.log(result); });
 	}

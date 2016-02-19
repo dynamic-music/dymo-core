@@ -89,7 +89,7 @@ function Parameter(name, initialValue, isInteger) {
 		for (var i = 0; i < this.updaters.length; i++) {
 			var requestedValue = updaters[i].requestValue();
 			if (requestedValue && requestedValue != value) {
-				setValueAndNotifyUpdaters(updaters[i], requestedValue);
+				setValueAndNotify(updaters[i], requestedValue);
 				return value;
 			}
 		}
