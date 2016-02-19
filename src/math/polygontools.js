@@ -66,14 +66,14 @@ PolygonTools.howFarIsPointInPolygon = function(polygon, centroid, point) {
 	return 0;
 };
 
-PolygonTools.getPolygonFunctionString = function(polygon) {
-	return "new Function(\"a\", \"b\", \"return PolygonTools.isPointInPolygon(" + getPolygonOrPointString(polygon) + ", {0:a, 1:b});\");";
+PolygonTools.getPolygonFunctionArgs = function(polygon) {
+	return ["a", "b", "return PolygonTools.isPointInPolygon(" + getPolygonOrPointString(polygon) + ", {0:a, 1:b});"];
 };
 
-PolygonTools.getInterpolatedPolygonFunctionString = function(polygon) {
+PolygonTools.getInterpolatedPolygonFunctionArgs = function(polygon) {
 	var polygonString = getPolygonOrPointString(polygon);
 	var centroidString = getPolygonOrPointString(PolygonTools.getCentroid(polygon));
-	return "new Function(\"a\", \"b\", \"return PolygonTools.howFarIsPointInPolygon(" + polygonString + "," + centroidString + ", {0:a, 1:b});\");";
+	return ["a", "b", "return PolygonTools.howFarIsPointInPolygon(" + polygonString + "," + centroidString + ", {0:a, 1:b});"];
 };
 
 function getPolygonOrPointString(polygonOrPoint) {

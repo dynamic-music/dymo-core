@@ -1,3 +1,7 @@
+/**
+ * A rendering defines how a given dymo is played back.
+ * @constructor
+ */
 function Rendering(dymo) {
 	
 	var self = this;

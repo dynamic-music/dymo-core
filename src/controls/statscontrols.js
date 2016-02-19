@@ -1,3 +1,7 @@
+/**
+ * Autocontrols that use statistics to set their values.
+ * @constructor
+ */
 function StatsControls() {
 	
 	var self = this;

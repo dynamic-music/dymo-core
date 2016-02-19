@@ -1,3 +1,7 @@
+/**
+ * Controls based on brownian motion
+ * @constructor
+ */
 function BrownianControls() {
 	
 	var self = this;

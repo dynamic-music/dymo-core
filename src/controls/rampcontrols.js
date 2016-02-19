@@ -1,3 +1,7 @@
+/**
+ * Ramp controls that gradually interpolate between given values.
+ * @constructor
+ */
 function RampControls() {
 	
 	var self = this;

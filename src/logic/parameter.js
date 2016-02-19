@@ -1,3 +1,8 @@
+/**
+ * A parameter that has updaters and observers.
+ * @param {boolean=} isInteger (optional)
+ * @constructor
+ */
 function Parameter(name, initialValue, isInteger) {
 	
 	var self = this;
@@ -86,7 +91,7 @@ function Parameter(name, initialValue, isInteger) {
 	//returns the first value that it manages to request that is different from this.value
 	//returns this.value if none are different
 	this.requestValue = function() {
-		for (var i = 0; i < this.updaters.length; i++) {
+		for (var i = 0; i < updaters.length; i++) {
 			var requestedValue = updaters[i].requestValue();
 			if (requestedValue && requestedValue != value) {
 				setValueAndNotify(updaters[i], requestedValue);

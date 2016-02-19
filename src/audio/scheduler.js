@@ -1,3 +1,7 @@
+/**
+ * Manages playing back any number of dymos.
+ * @constructor
+ */
 function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	var self = this;
@@ -213,7 +217,5 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		};
 		audioLoader.send();
 	}
-	
-	this.listenerOrientation = new Parameter(this, this.updateListenerOrientation, 0);
 	
 }

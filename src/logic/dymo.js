@@ -1,3 +1,7 @@
+/**
+ * A dymo has features, parameters, and parts.
+ * @constructor
+ */
 function DynamicMusicObject(uri, scheduler, type) {
 	
 	var self = this;
@@ -63,7 +67,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 		for (var i = 0; i < additionalMappings.length; i++) {
 			var dymoConstraint = additionalMappings[i].getDymoConstraint();
 			if (dymoConstraint) {
-				var newTargets = additionalMappings[i].getTargets().concat(dymoMap.filter(eval(dymoConstraint)));
+				var newTargets = additionalMappings[i].getTargets().concat(dymoMap.filter(dymoConstraint));
 				additionalMappings[i].setTargets(newTargets);
 			}
 		}
@@ -322,6 +326,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return graph;
 	}
 	
+	/** @param {Object=} parentJson (optional) */
 	function addToJsonHierarchyGraph(graph, dymo, parentJson) {
 		var currentJson = dymo.toFlatJson();
 		graph["nodes"].push(currentJson);
@@ -339,7 +344,8 @@ function DynamicMusicObject(uri, scheduler, type) {
 		return graph;
 	}
 	
-	//for now adds two edges per relation
+	//for now adds two edges per relation.
+	/** @param {Object=} jsonMap (optional) */
 	function addToJsonSimilarityGraph(graph, dymo, jsonMap) {
 		if (!jsonMap) {
 			jsonMap = {};

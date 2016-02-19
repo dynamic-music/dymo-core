@@ -1,20 +1,23 @@
-/*
+/**
+ * A mapping from features/controls/parameters to parameters.
  * relative means that the function both
  * -takes the change parameters from its domainDims where possible, and
  * -updates its goal parameter relatively
+ * @param {Function=} dymoConstraint a function that defines which dymos to map to (optional)
+ * @constructor
  */
-function Mapping(domainDims, relative, functionString, targets, parameterName, dymoConstraint) {
+function Mapping(domainDims, relative, functionStrings, targets, parameterName, dymoConstraint) {
 	
 	var inverter = new FunctionInverter();
-	if (!functionString) {
-		functionString = "new Function(\"a\", \"return a;\");"; //make identity in standard case
+	if (!functionStrings) {
+		functionStrings = ["a", "return a;"]; //make identity in standard case
 	}
-	var mappingFunction = eval(functionString);
+	var mappingFunction = Function.apply(null, functionStrings);
 	
 	var inverseFunction;
-	var inverseString = inverter.invert(inverter.toReturnValueString(functionString));
+	var inverseString = inverter.invert(inverter.toReturnValueString(functionStrings[functionStrings.length-1]));
 	if (inverseString) {
-		inverseFunction = eval(inverter.toJavaScriptFunctionString(inverseString));
+		inverseFunction = inverter.toJavaScriptFunction(inverseString);
 	}
 	
 	this.getTargets = function() {
@@ -108,7 +111,7 @@ function Mapping(domainDims, relative, functionString, targets, parameterName, d
 		}
 		var json = {
 			"domainDims": domainJson,
-			"function": functionString
+			"function": functionStrings
 		}
 		var dymos = targets.filter(function (d) { return d instanceof DynamicMusicObject; }).map(function (d) { return d.getUri(); });
 		var controls = targets.filter(function (d) { return !(d instanceof DynamicMusicObject); }).map(function (d) { return d.getUri(); });

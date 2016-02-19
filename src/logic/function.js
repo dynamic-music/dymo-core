@@ -1,3 +1,4 @@
+/*
 function LinearFunction() {
 	
 	this.getValue = function(argument) {
@@ -30,4 +31,4 @@ function RectangleFunction(position, range) {
 		}
 	}
 	
-}
+}*/

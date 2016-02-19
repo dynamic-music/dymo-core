@@ -1,3 +1,7 @@
+/**
+ * A DymoWriter will write dymos to json or rdf.
+ * @constructor
+ */
 function DymoWriter($http) {
 	
 	var RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
@@ -20,15 +24,11 @@ function DymoWriter($http) {
 	}
 	
 	function writeJson(json, path) {
-		$http.post(path, json).success(function(res) {
-			console.log("written json to " + path);
-		});
+		httpPost(path, json);
 	}
 	
 	this.writeDmoToRdf = function(uri) {
-		var writer = N3.Writer({ prefixes: { 'ch': charmRdfUri+'#' } });
-		var writer = N3.Writer({ prefixes: { 'dmo': dmoRdfUri+'#' } });
-		var writer = N3.Writer({ prefixes: { 'mb': mobileRdfUri+'#' } });
+		var writer = N3.Writer({ prefixes: { 'ch':charmRdfUri+'#', 'dmo':dmoRdfUri+'#', 'mb':mobileRdfUri+'#' } });
 		addDmo(writer);
 		writer.end(function (error, result) { console.log(result); });
 	}
@@ -40,6 +40,19 @@ function DymoWriter($http) {
 		writer.addTriple('_:',
 			'ch:hasPart',
 			'ch:test2');
+	}
+	
+	function httpPost(uri, content) {
+		var xhr = new XMLHttpRequest();
+		xhr.send(content);
+		xhr.addEventListener("save", function() {
+			console.log("saved " + uri);
+		});
+		xhr.addEventListener("error", function() {
+			console.log("saving " + uri + " failed");
+		});
+		xhr.open("POST", uri);
+		xhr.send();
 	}
 	
 }

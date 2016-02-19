@@ -1,3 +1,7 @@
+/**
+ * A tool that inverts simple functions.
+ * @constructor
+ */
 function FunctionInverter() {
 	
 	//currently inverts functions that are linear binary trees with 
@@ -7,7 +11,7 @@ function FunctionInverter() {
 		try {
 			currentNode = math.parse(func);
 		} catch (e) {
-			if (!e instanceof SyntaxError) {
+			if (!(e instanceof SyntaxError)) {
 				console.log(e);
 			}
 			return;
@@ -50,8 +54,8 @@ function FunctionInverter() {
 		return invertedTree.toString();
 	}
 	
-	this.toJavaScriptFunctionString = function(returnString) {
-		return "new Function(\"a\", \"return " + returnString + ";\");";
+	this.toJavaScriptFunction = function(returnString) {
+		return new Function("a", "return " + returnString + ";");
 	}
 	
 	this.toReturnValueString = function(functionString) {

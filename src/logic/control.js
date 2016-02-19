@@ -1,3 +1,8 @@
+/**
+ * A control actively changes its value.
+ * @param {Object=} parameters (optional)
+ * @constructor
+ */
 function Control(name, type, parameters) {
 	
 	var value;
@@ -88,6 +93,7 @@ function Control(name, type, parameters) {
 		}
 	}
 	
+	/** @param {Object=} mapping (optional) */
 	function setValue(newValue, mapping) {
 		if (value == undefined || Math.abs(newValue - value) > 0.000001) { //deal with floating point errors
 			value = newValue;

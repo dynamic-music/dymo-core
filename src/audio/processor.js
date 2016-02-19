@@ -1,3 +1,7 @@
+/**
+ * Offers some audio processing functions such as time stretching.
+ * @constructor
+ */
 function AudioProcessor(audioContext) {
 	
 	var BUFFER_SIZE = 1024;

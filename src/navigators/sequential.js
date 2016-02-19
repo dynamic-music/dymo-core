@@ -1,3 +1,7 @@
+/**
+ * A navigator that follows the order of parts.
+ * @constructor
+ */
 function SequentialNavigator(dymo) {
 	
 	var isPlaying = false;
@@ -35,7 +39,7 @@ function SequentialNavigator(dymo) {
 				while (partsPlayed < parts.length && partsPlayed < dymo.getParameter(PART_COUNT).getValue()) {
 					var nextParts = parts[partsPlayed].getNextParts();
 					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
-						if (!nextParts instanceof Array) {
+						if (!(nextParts instanceof Array)) {
 							nextParts = [nextParts];
 						}
 						return nextParts;

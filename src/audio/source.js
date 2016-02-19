@@ -1,3 +1,7 @@
+/**
+ * Plays back a buffer and offers lots of changeable parameters.
+ * @constructor
+ */
 function Source(dymo, audioContext, buffer, reverbSend) {
 	
 	var self = this;
@@ -99,6 +103,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		setParameter(param.getName(), param.getChange(), true);
 	}
 	
+	/** @param {boolean=} relative (optional) */
 	function setParameter(name, value, relative) {
 		if (relative) {
 			value += self.getParameterValue(name);
@@ -146,6 +151,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 		}
 	}
 	
+	/** @param {number=} startTime (optional) */
 	this.play = function(startTime) {
 		source.onended = removeFromObserved;
 		source.start(startTime);

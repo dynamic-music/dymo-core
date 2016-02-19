@@ -6,7 +6,7 @@ describe("a mapping", function() {
 	dymo1.setFeature(ONSET_FEATURE, 5);
 	var dymo2 = new DynamicMusicObject("dymo2");
 	dymo2.setFeature(ONSET_FEATURE, 3);
-	var mapping = new Mapping([control, ONSET_FEATURE], undefined, 'new Function("a", "b", "return a * b;");', [dymo1, dymo2], AMPLITUDE);
+	var mapping = new Mapping([control, ONSET_FEATURE], undefined, ["a", "b", "return a * b;"], [dymo1, dymo2], AMPLITUDE);
 	
 	it("updates a parameter", function() {
 		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(1);
@@ -21,7 +21,7 @@ describe("a mapping", function() {
 	it("updates a control parameter", function() {
 		var control2 = new Control("control2", SLIDER);
 		var ramp = new RampControls().linearRampControl;
-		var mapping2 = new Mapping([control2], undefined, 'new Function("a", "return a;");', [ramp], RAMP_TRIGGER);
+		var mapping2 = new Mapping([control2], undefined, ["a", "return a;"], [ramp], RAMP_TRIGGER);
 		control2.update(1);
 		expect(ramp.getParameter(RAMP_TRIGGER).getValue()).toBe(1);
 		control2.update(0);
@@ -36,7 +36,7 @@ describe("a mapping", function() {
 		expect(control.getValue()).toBe(5);
 		//currently invertible function
 		var dymo3 = new DynamicMusicObject("dymo3");
-		var mapping = new Mapping([control, ONSET_FEATURE], undefined, 'new Function("a", "b", "return 5*a-1;");', [dymo3], AMPLITUDE);
+		var mapping = new Mapping([control, ONSET_FEATURE], undefined, ["a", "b", "return 5*a-1;"], [dymo3], AMPLITUDE);
 		expect(dymo3.getParameter(AMPLITUDE).getValue()).toBe(24);
 		control.update(0.3);
 		expect(dymo3.getParameter(AMPLITUDE).getValue()).toBe(0.5);

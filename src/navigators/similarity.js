@@ -1,3 +1,7 @@
+/**
+ * A navigator that follows similarity relations.
+ * @constructor
+ */
 function SimilarityNavigator(dymo) {
 	
 	var self = this;
@@ -34,7 +38,7 @@ function SimilarityNavigator(dymo) {
 				while (partsPlayed < parts.length && partsPlayed < dymo.getParameter(PART_COUNT).getValue()) {
 					var nextParts = parts[partsPlayed].getNextParts();
 					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
-						if (!nextParts instanceof Array) {
+						if (!(nextParts instanceof Array)) {
 							nextParts = [nextParts];
 						}
 						replaceWithSimilars(nextParts);

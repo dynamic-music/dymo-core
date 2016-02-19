@@ -1,5 +1,6 @@
 /**
- * A wrapper for dymo-core controls to be used as Angular UI controls
+ * A wrapper for dymo-core controls to be used as Angular UI controls.
+ * @constructor
  */
 function UIControl(control, $scope) {
 	

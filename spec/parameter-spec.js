@@ -7,7 +7,7 @@ describe("a parameter", function() {
 	dymo1.setFeature(ONSET_FEATURE, 5);
 	var dymo2 = new DynamicMusicObject("dymo2");
 	dymo2.setFeature(ONSET_FEATURE, 3);
-	new Mapping([parameter, ONSET_FEATURE], undefined, 'new Function("a", "b", "return a * b;");', [dymo1, dymo2], AMPLITUDE);
+	new Mapping([parameter, ONSET_FEATURE], undefined, ["a", "b", "return a * b;"], [dymo1, dymo2], AMPLITUDE);
 	
 	it("can map to other parameters", function() {
 		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(1);
@@ -37,7 +37,7 @@ describe("a parameter", function() {
 		expect(dymo3.getParameter(AMPLITUDE).getValue()).toBeCloseTo(1.1, 10);
 		expect(dymo4.getParameter(AMPLITUDE).getValue()).toBeCloseTo(1.1, 10);
 		var control = new Control("control1", SLIDER);
-		new Mapping([control], undefined, 'new Function("a", "b", "return 1-a;");', [dymo1], AMPLITUDE);
+		new Mapping([control], undefined, ["a", "b", "return 1-a;"], [dymo1], AMPLITUDE);
 		control.update(0.4);
 		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(0.6);
 		expect(dymo2.getParameter(AMPLITUDE).getValue()).toBeCloseTo(0.3, 10);

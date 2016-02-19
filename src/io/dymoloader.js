@@ -1,3 +1,7 @@
+/**
+ * A DymoLoader loads dymos from rdf, jams, or json-ld.
+ * @constructor
+ */
 function DymoLoader(scheduler, $scope, $http) {
 	
 	var mobileRdfUri = "rdf/mobile.n3";
@@ -131,6 +135,7 @@ function DymoLoader(scheduler, $scope, $http) {
 		return [rendering, controls];
 	}
 	
+	/** @param {Object=} controls (optional) */
 	function createMappingFromJson(json, dymoMap, dymo, controls) {
 		if (json["controls"]) {
 			var targetControls = [];
@@ -140,20 +145,21 @@ function DymoLoader(scheduler, $scope, $http) {
 			return createMappingToObjectsFromJson(json, dymoMap, dymo, targetControls, controls);
 		} else if (json["dymos"]) {
 			var dymos = [];
-			var constraint;
+			var constraintFunction;
 			if (json["dymos"] instanceof Array) {
 				for (var j = 0; j < json["dymos"].length; j++) {
 					dymos.push(dymoMap[json["dymos"][j]]);
 				}
 			} else {
-				constraint = json["dymos"];
+				constraintFunction = Function.apply(null, json["dymos"]);
 				var allDymos = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
-				Array.prototype.push.apply(dymos, allDymos.filter(eval(json["dymos"])));
+				Array.prototype.push.apply(dymos, allDymos.filter(constraintFunction));
 			}
-			return createMappingToObjectsFromJson(json, dymoMap, dymo, dymos, controls, constraint);
+			return createMappingToObjectsFromJson(json, dymoMap, dymo, dymos, controls, constraintFunction);
 		}
 	}
 	
+	/** @param {Function=} dymoConstraint (optional) */
 	function createMappingToObjectsFromJson(json, dymoMap, dymo, targets, controls, dymoConstraint) {
 		var isRelative = json["relative"];
 		var domainDims = [];
@@ -219,7 +225,7 @@ function DymoLoader(scheduler, $scope, $http) {
 		return new SequentialNavigator(dymo);
 	}
 	
-	function getControl(type, label, dmo) {
+	function getControl(type, label) {
 		if (type == ACCELEROMETER_X) {
 			return getAccelerometerControl(0);
 		} else if (type == ACCELEROMETER_Y) {
@@ -279,7 +285,7 @@ function DymoLoader(scheduler, $scope, $http) {
 	
 	function getAccelerometerControl(index) {
 		if (!$scope.accelerometerWatcher) {
-			$scope.accelerometerWatcher = new AccelerometerWatcher($scope);
+			$scope.accelerometerWatcher = new AccelerometerWatcher();
 		}
 		if (index == 0) {
 			return $scope.accelerometerWatcher.xControl;
@@ -296,7 +302,7 @@ function DymoLoader(scheduler, $scope, $http) {
 	
 	function getGeolocationControl(index) {
 		if (!$scope.geolocationWatcher) {
-			$scope.geolocationWatcher = new GeolocationWatcher($scope);
+			$scope.geolocationWatcher = new GeolocationWatcher();
 		}
 		if (index == 0) {
 			return $scope.geolocationWatcher.latitudeControl;
@@ -309,7 +315,7 @@ function DymoLoader(scheduler, $scope, $http) {
 	
 	function getCompassControl(index) {
 		if (!$scope.compassWatcher) {
-			$scope.compassWatcher = new CompassWatcher($scope);
+			$scope.compassWatcher = new CompassWatcher();
 		}
 		if (index == 0) {
 			return $scope.compassWatcher.headingControl;
