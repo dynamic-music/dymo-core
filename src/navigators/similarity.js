@@ -63,8 +63,8 @@ function SimilarityNavigator(dymo) {
 		for (var i = 0; i < parts.length; i++) {
 			if (parts[i].getSimilars().length > 0) {
 				if (Math.random() < self.leapingProbability.getValue()) {
-					options = parts[i].getSimilars();
-					selectedOption = Math.floor(Math.random()*options.length);
+					var options = parts[i].getSimilars();
+					var selectedOption = Math.floor(Math.random()*options.length);
 					if (self.continueAfterLeaping.getValue()) {
 						var index = dymo.getParts().indexOf(selectedOption);
 						if (index) {

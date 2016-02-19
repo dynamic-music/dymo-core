@@ -10,8 +10,8 @@ PolygonTools.isPointInPolygon = function(poly, pt) {
 }
 
 PolygonTools.getArea = function(polygon) {
-	var area = 0, i, j, point1, point2;
-	for (i = 0, j = polygon.length - 1; i < polygon.length; j=i,i++) {
+	var area = 0, point1, point2;
+	for (var i = 0, j = polygon.length - 1; i < polygon.length; j=i,i++) {
 		point1 = polygon[i];
 		point2 = polygon[j];
 		area += point1[0] * point2[1];
@@ -23,7 +23,7 @@ PolygonTools.getArea = function(polygon) {
 
 PolygonTools.getCentroid = function(polygon) {
 	var point1, point2, f, x = 0, y = 0;
-	for (i = 0, j = polygon.length - 1; i < polygon.length; j=i,i++) {
+	for (var i = 0, j = polygon.length - 1; i < polygon.length; j=i,i++) {
 		point1 = polygon[i];
 		point2 = polygon[j];
 		f = point1[0] * point2[1] - point2[0] * point1[1];

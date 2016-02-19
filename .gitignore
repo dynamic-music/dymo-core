@@ -16,6 +16,7 @@ out
 **/.DS_Store
 
 bower_components
+node_modules
 
 **/*.m4a
 **/*.mp3

@@ -23,5 +23,9 @@
   "bugs": {
     "url": "https://github.com/florianthalmann/dymo-core/issues"
   },
-  "homepage": "https://github.com/florianthalmann/dymo-core#readme"
+  "homepage": "https://github.com/florianthalmann/dymo-core#readme",
+  "devDependencies": {
+    "google-closure-compiler": "^20160208.1.0",
+    "gulp": "^3.9.1"
+  }
 }
