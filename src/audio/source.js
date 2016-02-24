@@ -11,6 +11,12 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	
 	var startTime, endTime, currentPausePosition = 0;
 	var isPlaying, isPaused;
+	var parameters = {};
+	var allParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, FILTER, PAN, HEIGHT, DISTANCE, LOOP];
+	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, FILTER];
+	var positionParameters = [PAN, HEIGHT, DISTANCE];
+	var source = audioContext.createBufferSource();
+	//var source = new AudioProcessorSource(audioContext, buffer, filter);
 	
 	var dryGain = audioContext.createGain();
 	dryGain.connect(audioContext.destination);
@@ -25,6 +31,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	filter.type = "lowpass";
 	filter.frequency.value = 20000;
 	filter.connect(panner);
+	source.connect(filter);
 	
 	var segment = dymo.getSegment();
 	var time = segment[0];
@@ -35,35 +42,30 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	if (!duration) {
 		duration = buffer.duration-time;
 	}
-	var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();
-	if (stretchRatio != 1) {
-		if (time != 0 || duration < buffer.duration) {
-			//add time for fade after source officially done
-			//get too much cause of shitty timestretch algorithm
-			buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, buffer));
-		}
-		buffer = new AudioProcessor(audioContext).timeStretch(buffer, stretchRatio);
-		//trim it down again
-		var shouldBeDuration = duration/stretchRatio;
-		buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration+FADE_LENGTH, buffer));
-		duration = shouldBeDuration;
+	if (!buffer) {
+		requestBufferFromAudioServer(dymo.getSourcePath(), time, time+duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, function(loadedBuffer) {
+			buffer = loadedBuffer;
+			var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();
+			if (stretchRatio != 1) {
+				buffer = new AudioProcessor(audioContext).timeStretch(buffer, stretchRatio);
+				//trim it down again
+				var shouldBeDuration = duration/stretchRatio;
+				//add time for fade after source officially done
+				buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration+FADE_LENGTH, buffer));
+				duration = shouldBeDuration;
+			} else {
+				//add time for fade after source officially done
+				buffer = getSubBuffer(buffer, 0, toSamples(duration+FADE_LENGTH, buffer));
+			}
+			fadeBuffer(buffer, buffer.length);
+		
+			source.buffer = buffer;
+		});
 	} else {
-		if (time != 0 || duration < buffer.duration) {
-			//add time for fade after source officially done
-			buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+FADE_LENGTH, buffer));
-		}
+		initBuffer();
 	}
-	fadeBuffer(buffer, buffer.length);
 	
-	var source = audioContext.createBufferSource();
-	source.connect(filter);
-	source.buffer = buffer;
-	
-	//var source = new AudioProcessorSource(audioContext, buffer, filter);
-	
-	var parameters = {};
 	parameters[AMPLITUDE] = dryGain.gain;
-	parameters[PLAYBACK_RATE] = source.playbackRate;
 	parameters[TIME_STRETCH_RATIO] = {value:0};
 	parameters[REVERB] = reverbGain.gain;
 	parameters[FILTER] = filter.frequency;
@@ -71,12 +73,8 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	parameters[HEIGHT] = {value:0};
 	parameters[DISTANCE] = {value:0};
 	parameters[LOOP] = {value:0};
-	var allParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, FILTER, PAN, HEIGHT, DISTANCE, LOOP];
-	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, FILTER];
-	var positionParameters = [PAN, HEIGHT, DISTANCE];
-	
+
 	initParameter(AMPLITUDE, dymo.getParameter(AMPLITUDE));
-	initParameter(PLAYBACK_RATE, dymo.getParameter(PLAYBACK_RATE));
 	initParameter(TIME_STRETCH_RATIO, dymo.getParameter(TIME_STRETCH_RATIO));
 	initParameter(REVERB, dymo.getParameter(REVERB));
 	initParameter(PAN, dymo.getParameter(PAN));
@@ -84,6 +82,33 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	initParameter(DISTANCE, dymo.getParameter(DISTANCE));
 	initParameter(LOOP, dymo.getParameter(LOOP));
 	//console.log(dymo.getParameter(AMPLITUDE).getValue())
+	
+	function initBuffer() {
+		var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();
+		if (stretchRatio != 1) {
+			if (time != 0 || duration < buffer.duration) {
+				//get too much cause of shitty timestretch algorithm
+				buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, buffer));
+			}
+			buffer = new AudioProcessor(audioContext).timeStretch(buffer, stretchRatio);
+			//trim it down again
+			var shouldBeDuration = duration/stretchRatio;
+			//add time for fade after source officially done
+			buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration+FADE_LENGTH, buffer));
+			duration = shouldBeDuration;
+		} else {
+			if (time != 0 || duration < buffer.duration) {
+				//add time for fade after source officially done
+				buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+FADE_LENGTH, buffer));
+			}
+		}
+		fadeBuffer(buffer, buffer.length);
+		
+		source.buffer = buffer;
+		
+		parameters[PLAYBACK_RATE] = source.playbackRate;
+		initParameter(PLAYBACK_RATE, dymo.getParameter(PLAYBACK_RATE));
+	}
 	
 	function initParameter(name, dymoParam) {
 		setParameter(name, dymoParam.getValue());
@@ -201,6 +226,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	}
 	
 	function getSubBuffer(buffer, fromSample, durationInSamples) {
+		//console.log(buffer, buffer.numberOfChannels, buffer.length, fromSample, durationInSamples, buffer.sampleRate)
 		var samplesToCopy = Math.min(buffer.length-fromSample, durationInSamples);
 		var subBuffer = audioContext.createBuffer(buffer.numberOfChannels, samplesToCopy, buffer.sampleRate);
 		for (var i = 0; i < buffer.numberOfChannels; i++) {
@@ -222,6 +248,28 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 				currentChannel[durationInSamples-j-1] *= j/fadeSamples;
 			}
 		}
+	}
+	
+	function requestBufferFromAudioServer(filename, from, to, callback) {
+		var query = "http://localhost:8060/getAudioChunk?filename=" + filename + "&fromSecond=" + from + "&toSecond=" + to;
+		loadAudio(query, function(buffer) {
+			callback(buffer);
+		});
+	}
+	
+	//PUT IN AUDIO TOOLS OR SO!!! (duplicate in scheduler)
+	function loadAudio(path, callback) {
+		var request = new XMLHttpRequest();
+		request.open('GET', path, true);
+		request.responseType = 'arraybuffer';
+		request.onload = function() {
+			audioContext.decodeAudioData(request.response, function(buffer) {
+				callback(buffer);
+			}, function(err) {
+				throw new Error(err);
+			});
+		}
+		request.send();
 	}
 	
 }

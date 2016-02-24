@@ -6,16 +6,16 @@
  * @param {Function=} dymoConstraint a function that defines which dymos to map to (optional)
  * @constructor
  */
-function Mapping(domainDims, relative, functionStrings, targets, parameterName, dymoConstraint) {
+function Mapping(domainDims, relative, functionJson, targets, parameterName, dymoConstraint) {
 	
 	var inverter = new FunctionInverter();
-	if (!functionStrings) {
-		functionStrings = ["a", "return a;"]; //make identity in standard case
+	if (!functionJson) {
+		functionJson = {"args":["a"],"body":"return a;"}; //make identity in standard case
 	}
-	var mappingFunction = Function.apply(null, functionStrings);
+	var mappingFunction = Function.apply(null, functionJson["args"].concat(functionJson["body"]));
 	
 	var inverseFunction;
-	var inverseString = inverter.invert(inverter.toReturnValueString(functionStrings[functionStrings.length-1]));
+	var inverseString = inverter.invert(inverter.toReturnValueString(functionJson["body"]));
 	if (inverseString) {
 		inverseFunction = inverter.toJavaScriptFunction(inverseString);
 	}
@@ -111,7 +111,7 @@ function Mapping(domainDims, relative, functionStrings, targets, parameterName, 
 		}
 		var json = {
 			"domainDims": domainJson,
-			"function": functionStrings
+			"function": functionJson
 		}
 		var dymos = targets.filter(function (d) { return d instanceof DynamicMusicObject; }).map(function (d) { return d.getUri(); });
 		var controls = targets.filter(function (d) { return !(d instanceof DynamicMusicObject); }).map(function (d) { return d.getUri(); });

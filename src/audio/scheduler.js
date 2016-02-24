@@ -25,9 +25,8 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	var timeoutID;//TODO MAKE TIMEOUT IDS FOR EACH DMO!!!!!
 	
 	this.setReverbFile = function(filePath) {
-		var audioLoader = new AudioSampleLoader();
-		loadAudio(filePath, audioLoader, function() {
-			convolverSend.buffer = audioLoader.response;
+		loadAudio(filePath, function(buffer) {
+			convolverSend.buffer = buffer;
 			sourceReady();
 		});
 	}
@@ -43,9 +42,8 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	this.addSourceFile = function(filePath) {
 		//only add if not there yet..
 		if (!buffers[filePath]) {
-			var audioLoader = new AudioSampleLoader();
-			loadAudio(dymoBasePath+filePath, audioLoader, function() {
-				buffers[filePath] = audioLoader.response;
+			loadAudio(dymoBasePath+filePath, function(buffer) {
+				buffers[filePath] = buffer;
 				sourceReady();
 			});
 		}
@@ -121,14 +119,14 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 				endTimes[uri] = startTime+timeToNextOnset;
 				previousOnsets[uri] = nextOnset;
 			} else {
-				endTimes[uri] = startTime+(currentSources[0].getDuration()/currentSources[0].getParameterValue(PLAYBACK_RATE));
+				endTimes[uri] = startTime+(currentSources[0].getDuration()/currentSources[0].getDymo().getParameter(PLAYBACK_RATE).getValue());
 			}
 			if (endTimes[uri]) {
 				//TODO MAKE TIMEOUT IDS FOR EACH DYMO!!!!!
 				timeoutID = setTimeout(function() { internalPlay(dymo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
 			}
 		} else {
-			endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getParameterValue(PLAYBACK_RATE);
+			endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getDymo().getParameter(PLAYBACK_RATE).getValue();
 			timeoutID = setTimeout(function() { reset(dymo); }, (endTimes[uri]-audioContext.currentTime)*1000);
 		}
 	}
@@ -198,24 +196,24 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			for (var i = 0; i < nextParts.length; i++) {
 				if (nextParts[i].getSourcePath()) {
 					var buffer = buffers[nextParts[i].getSourcePath()];
-					if (buffer) {
-						nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend));
-					}
+					nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend));
 				}
 			}
 			return nextSources;
 		}
 	}
 	
-	function loadAudio(path, audioLoader, onload) {
+	function loadAudio(path, callback) {
 		numCurrentlyLoading++;
-		audioLoader.src = path;
-		audioLoader.ctx = audioContext;
-		audioLoader.onload = onload;
-		audioLoader.onerror = function() {
-			console.log("Error loading audio ", path);
-		};
-		audioLoader.send();
+		var request = new XMLHttpRequest();
+		request.open('GET', path, true);
+		request.responseType = 'arraybuffer';
+		request.onload = function() {
+			audioContext.decodeAudioData(request.response, function(buffer) {
+				callback(buffer);
+			});
+		}
+		request.send();
 	}
 	
 }

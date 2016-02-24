@@ -13,14 +13,6 @@ var N3;
 N3.Writer = function(p1){};
 N3.Writer.addTriple = function(p1,p2,p3){};
 var rdfstore;
-/** @constructor */
-function AudioSampleLoader(){};
-AudioSampleLoader.prototype.response;
-/** @constructor */
-function SoundTouch(p1){};
-/** @constructor */
-function SimpleFilter(p1,p2){};
-SimpleFilter.prototype.extract;
 
 /** @constructor */
 function AccelerometerWatcher(){};

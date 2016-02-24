@@ -151,7 +151,7 @@ function DymoLoader(scheduler, $scope, $http) {
 					dymos.push(dymoMap[json["dymos"][j]]);
 				}
 			} else {
-				constraintFunction = Function.apply(null, json["dymos"]);
+				constraintFunction = Function.apply(null, json["dymos"]["args"].concat(json["dymos"]["body"]));
 				var allDymos = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
 				Array.prototype.push.apply(dymos, allDymos.filter(constraintFunction));
 			}
