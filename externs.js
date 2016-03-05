@@ -12,7 +12,6 @@ $scope.prototype.$apply;
 var N3;
 N3.Writer = function(p1){};
 N3.Writer.addTriple = function(p1,p2,p3){};
-var rdfstore;
 
 /** @constructor */
 function AccelerometerWatcher(){};

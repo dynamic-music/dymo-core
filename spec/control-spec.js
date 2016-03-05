@@ -43,10 +43,9 @@ describe("a control", function() {
 		expect(control.getValue()).toBe(-1);
 	});
 	
-	it("can be a stats control", function(done) {
-		var statsControls = new StatsControls();
-		statsControls.getParameter(STATS_FREQUENCY).update(50);
-		var randomControl = statsControls.randomControl;
+	it("can be a random control", function(done) {
+		var randomControl = new RandomControl();
+		randomControl.getParameter(AUTO_CONTROL_FREQUENCY).update(50);
 		setTimeout(function() {
 			var firstValue = randomControl.getValue();
 			expect(firstValue).toBeGreaterThan(0);
@@ -62,9 +61,8 @@ describe("a control", function() {
 	});
 	
 	it("can be a brownian control", function(done) {
-		var brownianControls = new BrownianControls();
-		brownianControls.getParameter(BROWNIAN_FREQUENCY).update(50);
-		var brownianControl = brownianControls.brownianControl;
+		var brownianControl = new BrownianControl();
+		brownianControl.getParameter(AUTO_CONTROL_FREQUENCY).update(50);
 		var currentValue = brownianControl.getValue();
 		expect(currentValue).toBe(0.5);
 		var previousValue = currentValue;

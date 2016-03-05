@@ -20,12 +20,12 @@ describe("a mapping", function() {
 	
 	it("updates a control parameter", function() {
 		var control2 = new Control("control2", SLIDER);
-		var ramp = new RampControls().linearRampControl;
-		var mapping2 = new Mapping([control2], undefined, {args:["a"], body:"return a;"}, [ramp], RAMP_TRIGGER);
+		var ramp = new RampControl();
+		var mapping2 = new Mapping([control2], undefined, {args:["a"], body:"return a;"}, [ramp], AUTO_CONTROL_TRIGGER);
 		control2.update(1);
-		expect(ramp.getParameter(RAMP_TRIGGER).getValue()).toBe(1);
+		expect(ramp.getParameter(AUTO_CONTROL_TRIGGER).getValue()).toBe(1);
 		control2.update(0);
-		expect(ramp.getParameter(RAMP_TRIGGER).getValue()).toBe(0);
+		expect(ramp.getParameter(AUTO_CONTROL_TRIGGER).getValue()).toBe(0);
 	});
 	
 	it("updates a control with inverse if possible", function() {

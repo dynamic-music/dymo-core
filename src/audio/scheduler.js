@@ -1,10 +1,12 @@
 /**
  * Manages playing back any number of dymos.
  * @constructor
+ * @param {Function=} onPlaybackChange (optional)
  */
 function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	var self = this;
+	
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 	
 	var dymoBasePath = '';
@@ -29,6 +31,10 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			convolverSend.buffer = buffer;
 			sourceReady();
 		});
+	}
+	
+	this.setScheduleAheadTime = function(scheduleAheadTime) {
+		SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	}
 	
 	this.setDymoBasePath = function(path) {
@@ -213,6 +219,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 				callback(buffer);
 			});
 		}
+		request.error = function(){};
 		request.send();
 	}
 	

@@ -1,8 +1,9 @@
 /**
  * A DymoLoader loads dymos from rdf, jams, or json-ld.
  * @constructor
+ * @param {Object=} $scope angular scope (optional, to be removed soon)
  */
-function DymoLoader(scheduler, $scope, $http) {
+function DymoLoader(scheduler, $scope) {
 	
 	var mobileRdfUri = "rdf/mobile.n3";
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
@@ -164,8 +165,9 @@ function DymoLoader(scheduler, $scope, $http) {
 		var isRelative = json["relative"];
 		var domainDims = [];
 		for (var j = 0; j < json["domainDims"].length; j++) {
-			var currentName = json["domainDims"][j]["name"];
-			var currentType = json["domainDims"][j]["type"];
+			var currentDim = json["domainDims"][j];
+			var currentName = currentDim["name"];
+			var currentType = currentDim["type"];
 			if (currentType == FEATURE) {
 				domainDims.push(currentName);
 			} else if (currentType == PARAMETER) {
@@ -178,13 +180,13 @@ function DymoLoader(scheduler, $scope, $http) {
 				domainDims.push(currentParameter);
 			} else {
 				var control;
-				if (controls) {
-					if (!controls[currentName]) {
-						controls[currentName] = getControl(currentType, currentName);
-					}
+				if (controls && controls[currentName]) {
 					control = controls[currentName];
 				} else {
-					control = getControl(currentType, currentName);
+					control = getControl(currentDim);
+				}
+				if (controls && !controls[currentName]) {
+					controls[currentName] = control;
 				}
 				domainDims.push(control);
 			}
@@ -225,7 +227,9 @@ function DymoLoader(scheduler, $scope, $http) {
 		return new SequentialNavigator(dymo);
 	}
 	
-	function getControl(type, label) {
+	function getControl(options) {
+		var type = options["type"];
+		var label = options["name"];
 		if (type == ACCELEROMETER_X) {
 			return getAccelerometerControl(0);
 		} else if (type == ACCELEROMETER_Y) {
@@ -244,42 +248,14 @@ function DymoLoader(scheduler, $scope, $http) {
 			return getGeolocationControl(2);
 		}	else if (type == COMPASS_HEADING) {
 			return getCompassControl(0);
-		}	else if (type == SLIDER) {
-			return new Control(label, type);
-		} else if (type == TOGGLE) {
-			return new Control(label, type);
-		} else if (type == BUTTON) {
+		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON) {
 			return new Control(label, type);
 		} else if (type == RANDOM) {
-			return getStatsControl(0, label);
+			return new RandomControl();
 		} else if (type == BROWNIAN) {
-			return getBrownianControl(0, label);
+			return new BrownianControl(options["value"]);
 		} else if (type == RAMP) {
-			return getRampControl(0, label);
-		}
-	}
-	
-	function getStatsControl(index, uri) {
-		if (index == 0) {
-			return new StatsControls().randomControl;
-		} else {
-			return new StatsControls();
-		}
-	}
-	
-	function getBrownianControl(index, uri) {
-		if (index == 0) {
-			return new BrownianControls().brownianControl;
-		} else {
-			return new BrownianControls();
-		}
-	}
-	
-	function getRampControl(index, uri) {
-		if (index == 0) {
-			return new RampControls().linearRampControl;
-		} else {
-			return new RampControls();
+			return new RampControl(options["duration"], options["value"]);
 		}
 	}
 	
