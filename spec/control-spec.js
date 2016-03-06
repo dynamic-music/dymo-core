@@ -45,6 +45,12 @@ describe("a control", function() {
 	
 	it("can be a random control", function(done) {
 		var randomControl = new RandomControl();
+		//check if inheritance works
+		expect(randomControl.getParameter(AUTO_CONTROL_FREQUENCY)).not.toBeUndefined();
+		expect(randomControl.getParameter(AUTO_CONTROL_TRIGGER)).not.toBeUndefined();
+		expect(randomControl.observedParameterChanged).not.toBeUndefined();
+		expect(randomControl.reset).not.toBeUndefined();
+		//test updating
 		randomControl.getParameter(AUTO_CONTROL_FREQUENCY).update(50);
 		setTimeout(function() {
 			var firstValue = randomControl.getValue();
@@ -88,8 +94,39 @@ describe("a control", function() {
 				}, 60);
 			}, 60);
 		}, 60);
-		
-		
+	});
+	
+	it("can be a ramp control", function(done) {
+		var rampControl = new RampControl(200);
+		rampControl.getParameter(AUTO_CONTROL_FREQUENCY).update(20);
+		expect(rampControl.getValue()).toBe(0);
+		//turn on
+		rampControl.getParameter(AUTO_CONTROL_TRIGGER).update(1);
+		setTimeout(function() {
+			var firstValue = rampControl.getValue();
+			expect(firstValue).toBeGreaterThan(0);
+			expect(firstValue).toBeCloseTo(0.2, 8);
+			setTimeout(function() {
+				var secondValue = rampControl.getValue();
+				expect(secondValue).toBeCloseTo(0.5, 8);
+				expect(secondValue).toBeLessThan(1);
+				expect(secondValue).not.toEqual(firstValue);
+				//stop and switch directions
+				rampControl.getParameter(AUTO_CONTROL_TRIGGER).update(0);
+				setTimeout(function() {
+					var thirdValue = rampControl.getValue();
+					expect(thirdValue).toBeCloseTo(0.5, 8);
+					expect(thirdValue).toEqual(secondValue);
+					//turn on again
+					rampControl.getParameter(AUTO_CONTROL_TRIGGER).update(1);
+					setTimeout(function() {
+						var fourthValue = rampControl.getValue();
+						expect(fourthValue).toBeCloseTo(0.3, 8);
+						done();
+					}, 60);
+				}, 60);
+			}, 60);
+		}, 60);
 	});
 	
 });

@@ -14,7 +14,6 @@ function AutoControl(controlName, updateFunction, resetFunction) {
 	Control.call(this, controlName, AUTO_CONTROL, parameters);
 	
 	var intervalID;
-	startUpdate();
 	
 	function addParameter(param) {
 		var paramName = param.getName();
@@ -27,12 +26,13 @@ function AutoControl(controlName, updateFunction, resetFunction) {
 		return parameters[paramName];
 	}
 	
-	function startUpdate() {
+	this.startUpdate = function() {
 		intervalID = setInterval(updateFunction, parameters[AUTO_CONTROL_FREQUENCY].getValue());
 	}
 	
 	this.reset = function() {
 		clearInterval(intervalID);
+		intervalID = null;
 		if (resetFunction) {
 			resetFunction();
 		}
@@ -40,11 +40,13 @@ function AutoControl(controlName, updateFunction, resetFunction) {
 	
 	this.observedParameterChanged = function(param) {
 		if (param == parameters[AUTO_CONTROL_FREQUENCY]) {
-			this.reset();
-			startUpdate();
-		} else if (param.getName() == AUTO_CONTROL_TRIGGER) {
+			if (intervalID) {
+				this.reset();
+				this.startUpdate();
+			}
+		} else if (param == parameters[AUTO_CONTROL_TRIGGER]) {
 			if (!intervalID) {
-				startUpdate();
+				this.startUpdate();
 			} else {
 				this.reset();
 			}

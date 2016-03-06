@@ -23,6 +23,7 @@ function BrownianControl(initialValue) {
 	});
 	this.addParameter(new Parameter(BROWNIAN_MAX_STEP_SIZE, 0.1));
 	this.update(initialValue);
+	this.startUpdate();
 	
 }
 inheritPrototype(BrownianControl, AutoControl);

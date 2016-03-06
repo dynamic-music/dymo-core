@@ -10,6 +10,7 @@ function RandomControl() {
 	AutoControl.call(this, RANDOM, function() {
 		self.update(Math.random());
 	});
+	this.startUpdate();
 	
 }
 inheritPrototype(RandomControl, AutoControl);

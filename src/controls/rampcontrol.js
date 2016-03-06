@@ -10,7 +10,7 @@ function RampControl(duration, initialValue) {
 		duration = 10000;
 	}
 	var currentValue = 0;
-	if (!initialValue) {
+	if (initialValue) {
 		currentValue = initialValue;
 	}
 	var isIncreasing = currentValue != 1;
@@ -33,7 +33,7 @@ function RampControl(duration, initialValue) {
 	}, function() {
 		isIncreasing = !isIncreasing;
 	});
-	this.update(initialValue);
+	this.update(currentValue);
 	
 }
 inheritPrototype(RampControl, AutoControl);

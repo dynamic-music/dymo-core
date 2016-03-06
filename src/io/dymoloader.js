@@ -253,9 +253,10 @@ function DymoLoader(scheduler, $scope) {
 		} else if (type == RANDOM) {
 			return new RandomControl();
 		} else if (type == BROWNIAN) {
-			return new BrownianControl(options["value"]);
+			return new BrownianControl(parseFloat(options["value"]));
 		} else if (type == RAMP) {
-			return new RampControl(options["duration"], options["value"]);
+			var milisDuration = Math.round(parseFloat(options["duration"])*1000);
+			return new RampControl(milisDuration, parseFloat(options["value"]));
 		}
 	}
 	
