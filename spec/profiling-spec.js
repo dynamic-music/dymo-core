@@ -1,16 +1,17 @@
-describe("a scheduler", function() {
+describe("the profiler", function() {
 	
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	var audioContext = new AudioContext();
 	
 	var basePath = '../example/';
-	var sourcePath1 = 'sark1.m4a';
-	var sourcePath2 = 'sark2.m4a';
-	var sourcePath3 = 'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
+	var sourcePath1 = 'http://localhost/sark1.m4a';
+	var sourcePath2 = 'http://localhost/sark2.m4a';
+	var sourcePath3 = 'http://localhost/Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
 	var dymo1, dymo2, dymo3, dymo0;
 	var scheduler;
 	
 	beforeAll(function(done) {
+		jasmine.Ajax.install();
 		scheduler = new Scheduler(audioContext, function() {
 			done();
 		});
@@ -94,7 +95,7 @@ describe("a scheduler", function() {
 		scheduler.play(dymo0);
 		setTimeout(function() {
 			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo0"]);
-			//expect(audioContext.activeSourceCount).toBe(1);
+			expect(audioContext.activeSourceCount).toBe(1);
 			expect(dymo0.getParameter(LOOP).getObservers().length).toBe(1);
 			expect(dymo0.getParameter(AMPLITUDE).getObservers().length).toBe(1);
 			dymo0.getParameter(LOOP).update(0);

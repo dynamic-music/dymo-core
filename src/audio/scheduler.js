@@ -76,6 +76,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	var deltaOnset = 0;
 	
 	function internalPlay(dymo) {
+		//console.log(Object.keys(sources).length + " " + Object.keys(nextSources).length);
 		var uri = dymo.getUri();
 		var currentSources;
 		if (!sources[uri]) {

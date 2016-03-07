@@ -105,17 +105,17 @@ describe("a control", function() {
 		setTimeout(function() {
 			var firstValue = rampControl.getValue();
 			expect(firstValue).toBeGreaterThan(0);
-			expect(firstValue).toBeCloseTo(0.2, 8);
+			expect(firstValue).toBeCloseTo(0.3, 8);
 			setTimeout(function() {
 				var secondValue = rampControl.getValue();
-				expect(secondValue).toBeCloseTo(0.5, 8);
+				expect(secondValue).toBeCloseTo(0.6, 8);
 				expect(secondValue).toBeLessThan(1);
 				expect(secondValue).not.toEqual(firstValue);
 				//stop and switch directions
 				rampControl.getParameter(AUTO_CONTROL_TRIGGER).update(0);
 				setTimeout(function() {
 					var thirdValue = rampControl.getValue();
-					expect(thirdValue).toBeCloseTo(0.5, 8);
+					expect(thirdValue).toBeCloseTo(0.6, 8);
 					expect(thirdValue).toEqual(secondValue);
 					//turn on again
 					rampControl.getParameter(AUTO_CONTROL_TRIGGER).update(1);

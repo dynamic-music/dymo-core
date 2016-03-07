@@ -178,7 +178,15 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	
 	/** @param {number=} startTime (optional) */
 	this.play = function(startTime) {
-		source.onended = removeFromObserved;
+		source.onended = function() {
+			removeFromObserved();
+			//overwrite buffer just to make sure memory gets cleared!
+			//source.buffer = audioContext.createBuffer(buffer.numberOfChannels, 1, buffer.sampleRate);
+			//disconnect all nodes
+			source.disconnect();
+			dryGain.disconnect();
+			reverbGain.disconnect();
+		};
 		source.start(startTime);
 		//source.start(startTime, currentPausePosition);
 		isPlaying = true;
@@ -197,7 +205,6 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	
 	this.stop = function() {
 		if (isPlaying) {
-			removeFromObserved();
 			stopAndRemoveAudioSources();
 		}
 		//even in case it is paused
