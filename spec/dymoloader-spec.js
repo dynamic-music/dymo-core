@@ -4,10 +4,9 @@ describe("a dymoloader", function() {
 	var audioContext = new AudioContext();
 	
 	var dymo, dymoMap, scheduler, rendering;
-	var dymosPath = '../example/'
-	var dymoPath = 'dymo.json';
-	var dymo2Path = 'dymo2.json';
-	var dymo3Path = 'dymo3.json';
+	var dymoPath = '../example/dymo.json';
+	var dymo2Path = '../example/dymo2.json';
+	var dymo3Path = '../example/dymo3.json';
 	var featureRenderingPath = '../example/feature-rendering.json';
 	var controlRenderingPath = '../example/control-rendering.json';
 	var similarityGraphPath = '../example/similarity.json';
@@ -24,7 +23,7 @@ describe("a dymoloader", function() {
 		});
 		scheduler.setReverbFile(reverbPath);
 		var loader = new DymoLoader(scheduler);
-		loader.loadDymoFromJson(dymosPath, dymoPath, function(loadedDymo) {
+		loader.loadDymoFromJson(dymoPath, function(loadedDymo) {
 			dymo = loadedDymo[0];
 			dymoMap = loadedDymo[1];
 			expect(dymo.getUri()).toEqual("dymo0");
@@ -38,7 +37,7 @@ describe("a dymoloader", function() {
 	
 	it("loads higher-level parameters from json", function(done) {
 		var loader = new DymoLoader(scheduler);
-		loader.loadDymoFromJson(dymosPath, dymo2Path, function(loadedDymo) {
+		loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
 			var dymo2 = loadedDymo[0];
 			var dymoMap2 = loadedDymo[1];
 			expect(dymo2.getUri()).toEqual("dymo0");
@@ -79,14 +78,14 @@ describe("a dymoloader", function() {
 		oReq.addEventListener("load", function() {
 			var loadedJson = JSON.parse(this.responseText);
 			var loader = new DymoLoader(scheduler);
-			loader.loadDymoFromJson(dymosPath, dymo2Path, function(loadedDymo) {
+			loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
 				var writtenJson = loadedDymo[0].toJsonHierarchy();
 				expect(JSON.stringify(writtenJson)).toEqual(JSON.stringify(loadedJson));
 				expect(writtenJson).toEqual(loadedJson);
 				done();
 			});
 		});
-		oReq.open("GET", dymosPath+dymo2Path);
+		oReq.open("GET", dymo2Path);
 		oReq.send();
 	});
 	
@@ -95,7 +94,7 @@ describe("a dymoloader", function() {
 		oReq.addEventListener("load", function() {
 			var loadedJson = JSON.parse(this.responseText);
 			var loader = new DymoLoader(scheduler);
-			loader.loadDymoFromJson(dymosPath, dymo3Path, function(loadedDymo) {
+			loader.loadDymoFromJson(dymo3Path, function(loadedDymo) {
 				var dymo3 = loadedDymo[0];
 				var dymoMap3 = loadedDymo[1];
 				expect(dymo3.getUri()).toEqual("dymo");
@@ -105,7 +104,7 @@ describe("a dymoloader", function() {
 				done();
 			});
 		});
-		oReq.open("GET", dymosPath+dymo3Path);
+		oReq.open("GET", dymo3Path);
 		oReq.send();
 	});
 	

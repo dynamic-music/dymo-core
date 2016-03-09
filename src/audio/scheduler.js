@@ -10,6 +10,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 	
 	var dymoBasePath = '';
+	var files = [];
 	var buffers = {};
 	var sources = {}; //grouped by top dymo
 	var nextSources = {}; //for each top dymo
@@ -47,11 +48,20 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	this.addSourceFile = function(filePath) {
 		//only add if not there yet..
-		if (!buffers[filePath]) {
-			loadAudio(dymoBasePath+filePath, function(buffer) {
-				buffers[filePath] = buffer;
-				sourceReady();
-			});
+		if (!files.indexOf(filePath) < 0) {
+			files.push(filePath);
+		}
+	}
+	
+	this.loadBuffers = function() {
+		//only add if not there yet..
+		for (var filePath in files) {
+			if (!buffers[filePath]) {
+				loadAudio(dymoBasePath+filePath, function(buffer) {
+					buffers[filePath] = buffer;
+					sourceReady();
+				});
+			}
 		}
 	}
 	
@@ -142,13 +152,24 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		sources[topUri][dymoUri] = source;
 	}
 	
+	function removeSource(sourceToRemove) {
+		for (var dymo in sources) {
+			for (var dymo2 in sources[dymo]) {
+				if (sources[dymo][dymo2] == sourceToRemove) {
+					sources[dymo][dymo2] = null;
+				}
+			}
+		}
+	}
+	
 	this.pause = function(dymo) {
 		callOnSources(dymo, "pause");
 	}
 	
 	this.stop = function(dymo) {
-		callOnSources(dymo, "stop");
-		reset(dymo);
+		if (callOnSources(dymo, "stop")) {
+			reset(dymo);
+		}
 	}
 	
 	function callOnSources(dymo, func) {
@@ -157,6 +178,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			for (var key in dymoSources) {
 				dymoSources[key][func].call(dymoSources[key]);
 			}
+			return true;
 		}
 	}
 	
@@ -187,10 +209,6 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
-	this.getSources = function(dymo) {
-		return sources[dymo.getUri()];
-	}
-	
 	this.updateListenerOrientation = function() {
 		var angleInRadians = this.listenerOrientation.value / 180 * Math.PI;
 		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
@@ -203,7 +221,9 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			for (var i = 0; i < nextParts.length; i++) {
 				if (nextParts[i].getSourcePath()) {
 					var buffer = buffers[nextParts[i].getSourcePath()];
-					nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend));
+					nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend, function() {
+						
+					}));
 				}
 			}
 			return nextSources;

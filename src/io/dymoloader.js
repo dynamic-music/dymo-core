@@ -15,7 +15,10 @@ function DymoLoader(scheduler, $scope) {
 	//TODO PUT IN CENTRAL PLACE!!
 	var jsonKeys = ["@id", "@type", "ct", "source", "navigator", "similars", "mappings", "parts"];
 	
-	this.loadDymoFromJson = function(basePath, jsonUri, callback) {
+	this.loadDymoFromJson = function(jsonUri, callback) {
+		var fileIndex = jsonUri.lastIndexOf('/')+1;
+		var basePath = jsonUri.substring(0, fileIndex);
+		jsonUri = jsonUri.substring(fileIndex);
 		scheduler.setDymoBasePath(basePath);
 		loadJson(jsonUri, {}, callback, createDymoFromJson);
 	}
@@ -38,9 +41,11 @@ function DymoLoader(scheduler, $scope) {
 	}
 	
 	function recursiveLoadJson(jsonUri, jsonString, dymoMap, callback, creatingFunction) {
-		var oReq = new XMLHttpRequest();
-		oReq.addEventListener("load", function() {
-			if (jsonString) {
+		//console.log(jsonUri, scheduler.getDymoBasePath() + jsonUri)
+		var request = new XMLHttpRequest();
+		request.open('GET', scheduler.getDymoBasePath() + jsonUri, true);
+		request.onload = function() {
+			if (jsonString && isJsonString(this.responseText)) {
 				jsonString = jsonString.replace('"'+jsonUri+'"', this.responseText);
 				//console.log(jsonString)
 			} else {
@@ -50,12 +55,23 @@ function DymoLoader(scheduler, $scope) {
 			if (nextUri) {
 				recursiveLoadJson(nextUri, jsonString, dymoMap, callback, creatingFunction);
 			} else {
-				callback(creatingFunction(JSON.parse(jsonString), dymoMap));
+				var result = creatingFunction(JSON.parse(jsonString), dymoMap);
+				callback(result);
 			}
-		});
-		oReq.open("GET", scheduler.getDymoBasePath()+jsonUri);
-		oReq.send();
-		//}
+		}
+		request.error = function(e){
+			console.log(e);
+		};
+		request.send();
+	}
+	
+	function isJsonString(str) {
+		try {
+			JSON.parse(str);
+		} catch (e) {
+			return false;
+		}
+		return true;
 	}
 	
 	function findNextJsonUri(jsonString) {

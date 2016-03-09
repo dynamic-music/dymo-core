@@ -2,17 +2,20 @@
  * A class for easy access of all dymo core functionality.
  * @constructor
  */
-function DymoManager(audioContext, scheduleAheadTime) {
+function DymoManager(audioContext, scheduleAheadTime, reverbFile) {
 	
 	var scheduler = new Scheduler(audioContext, function(){});
-	scheduler.setReverbFile('bower_components/dymo-core/audio/impulse_rev.wav');
+	if (!reverbFile) {
+		reverbFile = 'bower_components/dymo-core/audio/impulse_rev.wav';
+	}
+	scheduler.setReverbFile(reverbFile);
 	scheduler.setScheduleAheadTime(scheduleAheadTime);
 	var rendering;
 	var uiControls = {};
 	
-	this.loadDymoAndRendering = function(dymoUri, renderingUri) {
+	this.loadDymoAndRendering = function(dymoUri, renderingUri, callback) {
 		var loader = new DymoLoader(scheduler);
-		loader.loadDymoFromJson('', dymoUri, function(loadedDymo) {
+		loader.loadDymoFromJson(dymoUri, function(loadedDymo) {
 			loader.loadRenderingFromJson(renderingUri, loadedDymo[1], function(loadedRendering) {
 				rendering = loadedRendering[0];
 				rendering.dymo = loadedDymo[0];
@@ -22,11 +25,23 @@ function DymoManager(audioContext, scheduleAheadTime) {
 						uiControls[key] = new UIControl(currentControl);
 					}
 				}
+				scheduler.loadBuffers();
+				if (callback) {
+					callback();
+				}
 			});
 		});
 	}
 	
 	this.loadDymoFromJson = function(jsonDymo, callback) {
+		new DymoLoader(scheduler).loadDymoFromJson(jsonDymo, function(loadedDymo) {
+			if (callback) {
+				callback(loadedDymo[0]);
+			}
+		});
+	}
+	
+	this.parseDymoFromJson = function(jsonDymo, callback) {
 		new DymoLoader(scheduler).parseDymoFromJson(jsonDymo, function(loadedDymo) {
 			callback(loadedDymo[0]);
 		});
@@ -34,6 +49,10 @@ function DymoManager(audioContext, scheduleAheadTime) {
 	
 	this.startPlaying = function() {
 		scheduler.play(rendering.dymo);
+	}
+	
+	this.stopPlaying = function() {
+		scheduler.stop(rendering.dymo);
 	}
 	
 	this.getTopDymo = function() {

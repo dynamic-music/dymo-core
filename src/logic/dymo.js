@@ -144,6 +144,7 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.replacePart = function(index, dymo) {
 		if (parts[index]) {
 			parts[index].removeParent(this);
+			//scheduler.stop(parts[index]);
 		}
 		parts[index] = dymo;
 		dymo.setParent(this);

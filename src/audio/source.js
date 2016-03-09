@@ -2,7 +2,7 @@
  * Plays back a buffer and offers lots of changeable parameters.
  * @constructor
  */
-function Source(dymo, audioContext, buffer, reverbSend) {
+function Source(dymo, audioContext, buffer, reverbSend, onEnded) {
 	
 	var self = this;
 	
@@ -39,7 +39,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 	if (!time) {
 		time = 0;
 	}
-	if (!duration) {
+	if (!duration && buffer) {
 		duration = buffer.duration-time;
 	}
 	if (!buffer) {
@@ -186,6 +186,9 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 			source.disconnect();
 			dryGain.disconnect();
 			reverbGain.disconnect();
+			if (onEnded) {
+				onEnded();
+			}
 		};
 		source.start(startTime);
 		//source.start(startTime, currentPausePosition);
@@ -273,7 +276,7 @@ function Source(dymo, audioContext, buffer, reverbSend) {
 			audioContext.decodeAudioData(request.response, function(buffer) {
 				callback(buffer);
 			}, function(err) {
-				throw new Error(err);
+				console.log('audio from server is faulty');
 			});
 		}
 		request.send();
