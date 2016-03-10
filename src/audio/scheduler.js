@@ -9,7 +9,6 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 	
-	var dymoBasePath = '';
 	var files = [];
 	var buffers = {};
 	var sources = {}; //grouped by top dymo
@@ -38,29 +37,19 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	}
 	
-	this.setDymoBasePath = function(path) {
-		dymoBasePath = path;
-	}
-	
-	this.getDymoBasePath = function() {
-		return dymoBasePath;
-	}
-	
 	this.addSourceFile = function(filePath) {
 		//only add if not there yet..
-		if (!files.indexOf(filePath) < 0) {
+		if (files.indexOf(filePath) < 0) {
 			files.push(filePath);
 		}
 	}
 	
 	this.loadBuffers = function() {
 		//only add if not there yet..
-		for (var filePath in files) {
-			if (!buffers[filePath]) {
-				loadAudio(dymoBasePath+filePath, function(buffer) {
-					buffers[filePath] = buffer;
-					sourceReady();
-				});
+		for (var i = 0, ii = files.length; i < ii; i++) {
+			var currentPath = files[i];
+			if (!buffers[currentPath]) {
+				loadAudio(currentPath);
 			}
 		}
 	}
@@ -162,6 +151,11 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
+	/** @private */
+	this.getSources = function(dymo) {
+		return sources[dymo.getUri()];
+	}
+	
 	this.pause = function(dymo) {
 		callOnSources(dymo, "pause");
 	}
@@ -221,9 +215,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			for (var i = 0; i < nextParts.length; i++) {
 				if (nextParts[i].getSourcePath()) {
 					var buffer = buffers[nextParts[i].getSourcePath()];
-					nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend, function() {
-						
-					}));
+					nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend));
 				}
 			}
 			return nextSources;
@@ -237,7 +229,12 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		request.responseType = 'arraybuffer';
 		request.onload = function() {
 			audioContext.decodeAudioData(request.response, function(buffer) {
-				callback(buffer);
+				if (callback) {
+					callback(buffer);
+				} else {
+					buffers[path] = buffer;
+					sourceReady();
+				}
 			});
 		}
 		request.error = function(){};

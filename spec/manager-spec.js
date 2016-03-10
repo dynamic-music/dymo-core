@@ -6,19 +6,19 @@ describe("a manager", function() {
 	var manager = new DymoManager(audioContext, 0.1, '../audio/impulse_rev.wav');
 	var fadePosition = 0;
 	var isPlaying = false;
-	jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+	//jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 	
 	
-	/*it("manages a dymo", function(done) {
+	it("manages a dymo", function(done) {
 		console.profile("dymo");
 		manager.loadDymoAndRendering('../example/mixdymo.json', 'mixdymo-rendering.json', function() {
 			expect(manager.getTopDymo()).not.toBeUndefined();
 			console.profileEnd();
 			done();
 		});
-	});*/
+	});
 	
-	it("manages a dymo", function(done) {
+	/*it("manages a dymo", function(done) {
 		console.profile("dymo");
 		manager.loadDymoAndRendering('../example/mixdymo.json', 'mixdymo-rendering.json', function() {
 			manager.loadDymoFromJson('../example/dymo.json', function(loadedDymo) {
@@ -62,7 +62,7 @@ describe("a manager", function() {
 				});
 			});
 		});
-	});
+	});*/
 	
 	function replace(nextSongDymo, callback) {
 		var currentSongDymo = manager.getTopDymo().getPart(fadePosition);

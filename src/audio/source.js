@@ -261,6 +261,10 @@ function Source(dymo, audioContext, buffer, reverbSend, onEnded) {
 	}
 	
 	function requestBufferFromAudioServer(filename, from, to, callback) {
+		var index = filename.lastIndexOf('/');
+		if (index) {
+			filename = filename.substring(index+1);
+		}
 		var query = "http://localhost:8060/getAudioChunk?filename=" + filename + "&fromSecond=" + from + "&toSecond=" + to;
 		loadAudio(query, function(buffer) {
 			callback(buffer);

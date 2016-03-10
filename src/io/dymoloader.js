@@ -15,11 +15,12 @@ function DymoLoader(scheduler, $scope) {
 	//TODO PUT IN CENTRAL PLACE!!
 	var jsonKeys = ["@id", "@type", "ct", "source", "navigator", "similars", "mappings", "parts"];
 	
+	var dymoBasePath = '';
+	
 	this.loadDymoFromJson = function(jsonUri, callback) {
 		var fileIndex = jsonUri.lastIndexOf('/')+1;
-		var basePath = jsonUri.substring(0, fileIndex);
+		dymoBasePath = jsonUri.substring(0, fileIndex);
 		jsonUri = jsonUri.substring(fileIndex);
-		scheduler.setDymoBasePath(basePath);
 		loadJson(jsonUri, {}, callback, createDymoFromJson);
 	}
 	
@@ -43,7 +44,7 @@ function DymoLoader(scheduler, $scope) {
 	function recursiveLoadJson(jsonUri, jsonString, dymoMap, callback, creatingFunction) {
 		//console.log(jsonUri, scheduler.getDymoBasePath() + jsonUri)
 		var request = new XMLHttpRequest();
-		request.open('GET', scheduler.getDymoBasePath() + jsonUri, true);
+		request.open('GET', dymoBasePath + jsonUri, true);
 		request.onload = function() {
 			if (jsonString && isJsonString(this.responseText)) {
 				jsonString = jsonString.replace('"'+jsonUri+'"', this.responseText);
@@ -98,7 +99,11 @@ function DymoLoader(scheduler, $scope) {
 	function recursiveCreateDymoAndParts(json, dymoMap) {
 		var dymo = new DynamicMusicObject(json["@id"], scheduler, json["ct"]);
 		dymoMap[json["@id"]] = dymo;
-		dymo.setSourcePath(json["source"]);
+		if (json["source"]) {
+			var path = dymoBasePath+json["source"];
+			dymo.setSourcePath(path);
+			scheduler.addSourceFile(path);
+		}
 		if (json["navigator"]) {
 			dymo.setNavigator(getNavigator(json["navigator"], dymo));
 		}

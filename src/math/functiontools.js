@@ -25,53 +25,60 @@ FunctionTools.invertFunction = function(body) {
 	if (FunctionTools.inverted[body]) {
 		return FunctionTools.inverted[body];
 	} else {
-		var currentNode;
-		try {
-			currentNode = math.parse(returnValue);
-		} catch (e) {
-			if (!(e instanceof SyntaxError)) {
-				console.log(e);
-			}
-			return;
-		}
-		var symbolNode = new math.expression.node.SymbolNode('a');
-		var invertedTree = symbolNode;
-		while (currentNode) {
-			if (currentNode.isSymbolNode) {
-				symbolNode.name = currentNode.name;
-				currentNode = undefined;
-			} else if (currentNode.isParenthesisNode) {
-				currentNode = currentNode.content;
-			} else if (currentNode.isOperatorNode) {
-				var invertedOperator = FunctionTools.getInvertedOperator(currentNode.op);
-				if (currentNode.op == '+' || currentNode.op == '*') {
-					if (currentNode.args[0].isConstantNode) {
-						invertedTree = new math.expression.node.OperatorNode(invertedOperator, FunctionTools.getOperatorName(invertedOperator), [invertedTree, currentNode.args[0]]);
-						currentNode = FunctionTools.ifNextNode(currentNode.args[1]);
-					} else if (currentNode.args[1].isConstantNode) {
-						invertedTree = new math.expression.node.OperatorNode(invertedOperator, FunctionTools.getOperatorName(invertedOperator), [invertedTree, currentNode.args[1]]);
-						currentNode = FunctionTools.ifNextNode(currentNode.args[0]);
-					} else {
-						return;
-					}
-				} else if (currentNode.op == '-' || currentNode.op == '/') {
-					if (currentNode.args[0].isConstantNode) {
-						invertedTree = new math.expression.node.OperatorNode(currentNode.op, FunctionTools.getOperatorName(currentNode.op), [currentNode.args[0], invertedTree]);
-						currentNode = FunctionTools.ifNextNode(currentNode.args[1]);
-					} else if (currentNode.args[1].isConstantNode) {
-						invertedTree = new math.expression.node.OperatorNode(invertedOperator, FunctionTools.getOperatorName(invertedOperator), [invertedTree, currentNode.args[1]]);
-						currentNode = FunctionTools.ifNextNode(currentNode.args[0]);
-					} else {
-						return;
-					}
-				}
-			} else {
-				return;
-			}
-		}
-		FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(invertedTree.toString());;
+		FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(FunctionTools.invertReturnValue(returnValue));;
 		return FunctionTools.inverted[body];
 	}
+}
+
+//currently inverts functions that are linear binary trees with 
+//arithmetic operations, constant leaves, and one variable leaf
+/** @private */
+FunctionTools.invertReturnValue = function(returnValue) {
+	var currentNode;
+	try {
+		currentNode = math.parse(returnValue);
+	} catch (e) {
+		if (!(e instanceof SyntaxError)) {
+			console.log(e);
+		}
+		return;
+	}
+	var symbolNode = new math.expression.node.SymbolNode('a');
+	var invertedTree = symbolNode;
+	while (currentNode) {
+		if (currentNode.isSymbolNode) {
+			symbolNode.name = currentNode.name;
+			currentNode = undefined;
+		} else if (currentNode.isParenthesisNode) {
+			currentNode = currentNode.content;
+		} else if (currentNode.isOperatorNode) {
+			var invertedOperator = FunctionTools.getInvertedOperator(currentNode.op);
+			if (currentNode.op == '+' || currentNode.op == '*') {
+				if (currentNode.args[0].isConstantNode) {
+					invertedTree = new math.expression.node.OperatorNode(invertedOperator, FunctionTools.getOperatorName(invertedOperator), [invertedTree, currentNode.args[0]]);
+					currentNode = FunctionTools.ifNextNode(currentNode.args[1]);
+				} else if (currentNode.args[1].isConstantNode) {
+					invertedTree = new math.expression.node.OperatorNode(invertedOperator, FunctionTools.getOperatorName(invertedOperator), [invertedTree, currentNode.args[1]]);
+					currentNode = FunctionTools.ifNextNode(currentNode.args[0]);
+				} else {
+					return;
+				}
+			} else if (currentNode.op == '-' || currentNode.op == '/') {
+				if (currentNode.args[0].isConstantNode) {
+					invertedTree = new math.expression.node.OperatorNode(currentNode.op, FunctionTools.getOperatorName(currentNode.op), [currentNode.args[0], invertedTree]);
+					currentNode = FunctionTools.ifNextNode(currentNode.args[1]);
+				} else if (currentNode.args[1].isConstantNode) {
+					invertedTree = new math.expression.node.OperatorNode(invertedOperator, FunctionTools.getOperatorName(invertedOperator), [invertedTree, currentNode.args[1]]);
+					currentNode = FunctionTools.ifNextNode(currentNode.args[0]);
+				} else {
+					return;
+				}
+			}
+		} else {
+			return;
+		}
+	}
+	return invertedTree.toString();
 }
 
 FunctionTools.toJavaScriptFunction = function(returnString) {

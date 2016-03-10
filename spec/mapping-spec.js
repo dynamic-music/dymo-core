@@ -9,7 +9,7 @@ describe("a mapping", function() {
 	var mapping = new Mapping([control, ONSET_FEATURE], undefined, {args:["a", "b"], body:"return a * b;"}, [dymo1, dymo2], AMPLITUDE);
 	
 	it("updates a parameter", function() {
-		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(1);
+		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(5);
 		control.update(0.3);
 		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(1.5);
 		expect(dymo2.getParameter(AMPLITUDE).getValue()).toBeCloseTo(0.9, 10);
