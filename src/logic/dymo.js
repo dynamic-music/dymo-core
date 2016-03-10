@@ -2,7 +2,7 @@
  * A dymo has features, parameters, and parts.
  * @constructor
  */
-function DynamicMusicObject(uri, scheduler, type) {
+function DynamicMusicObject(uri, type) {
 	
 	var self = this;
 	
@@ -144,7 +144,6 @@ function DynamicMusicObject(uri, scheduler, type) {
 	this.replacePart = function(index, dymo) {
 		if (parts[index]) {
 			parts[index].removeParent(this);
-			//scheduler.stop(parts[index]);
 		}
 		parts[index] = dymo;
 		dymo.setParent(this);
@@ -191,6 +190,23 @@ function DynamicMusicObject(uri, scheduler, type) {
 			return parent.getSourcePath();
 		}
 		return sourcePath;
+	}
+	
+	this.getAllSourcePaths = function(dymo) {
+		var paths = [];
+		recursiveGatherSourcePaths(dymo, paths);
+		return paths;
+	}
+	
+	function recursiveGatherSourcePaths(currentDymo, paths) {
+		var currentPath = currentDymo.getSourcePath();
+		if (paths.indexOf(currentPath) < 0) {
+			paths.push(currentPath);
+		}
+		var parts = currentDymo.getParts();
+		for (var i = 0, ii = parts.length; i < ii; i++) {
+			recursiveGatherSourcePaths(parts[i], paths);
+		}
 	}
 	
 	this.addSimilar = function(dymo) {
@@ -254,11 +270,6 @@ function DynamicMusicObject(uri, scheduler, type) {
 	}
 	
 	this.getParameter = function(parameterName) {
-		if (parameterName == LISTENER_ORIENTATION) {
-			return scheduler.listenerOrientation;
-		} else if (parameterName == PART_ORDER) {
-			return undefined;//this.updatePartOrder(feature.name);
-		}
 		return parameters[parameterName];
 	}
 	
@@ -270,9 +281,9 @@ function DynamicMusicObject(uri, scheduler, type) {
 		//HMMM a little weird, think about this..
 		if (param.getName() == PLAY) {
 			if (param.getChange() > 0) {
-				scheduler.play(self);
+				//scheduler.play(self);
 			} else {
-				scheduler.stop(self);
+				//scheduler.stop(self);
 			}
 		}
 	}

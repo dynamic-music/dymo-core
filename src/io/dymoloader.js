@@ -3,7 +3,7 @@
  * @constructor
  * @param {Object=} $scope angular scope (optional, to be removed soon)
  */
-function DymoLoader(scheduler, $scope) {
+function DymoLoader($scope) {
 	
 	var mobileRdfUri = "rdf/mobile.n3";
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
@@ -42,7 +42,6 @@ function DymoLoader(scheduler, $scope) {
 	}
 	
 	function recursiveLoadJson(jsonUri, jsonString, dymoMap, callback, creatingFunction) {
-		//console.log(jsonUri, scheduler.getDymoBasePath() + jsonUri)
 		var request = new XMLHttpRequest();
 		request.open('GET', dymoBasePath + jsonUri, true);
 		request.onload = function() {
@@ -97,12 +96,11 @@ function DymoLoader(scheduler, $scope) {
 	}
 	
 	function recursiveCreateDymoAndParts(json, dymoMap) {
-		var dymo = new DynamicMusicObject(json["@id"], scheduler, json["ct"]);
+		var dymo = new DynamicMusicObject(json["@id"], json["ct"]);
 		dymoMap[json["@id"]] = dymo;
 		if (json["source"]) {
 			var path = dymoBasePath+json["source"];
 			dymo.setSourcePath(path);
-			scheduler.addSourceFile(path);
 		}
 		if (json["navigator"]) {
 			dymo.setNavigator(getNavigator(json["navigator"], dymo));

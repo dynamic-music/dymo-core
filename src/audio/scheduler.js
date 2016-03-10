@@ -9,7 +9,6 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 	
-	var files = [];
 	var buffers = {};
 	var sources = {}; //grouped by top dymo
 	var nextSources = {}; //for each top dymo
@@ -37,18 +36,12 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	}
 	
-	this.addSourceFile = function(filePath) {
-		//only add if not there yet..
-		if (files.indexOf(filePath) < 0) {
-			files.push(filePath);
-		}
-	}
-	
-	this.loadBuffers = function() {
-		//only add if not there yet..
-		for (var i = 0, ii = files.length; i < ii; i++) {
-			var currentPath = files[i];
+	this.loadBuffers = function(dymo) {
+		var allPaths = dymo.getAllSourcePaths();
+		for (var i = 0, ii = allPaths.length; i < ii; i++) {
+			var currentPath = allPaths[i];
 			if (!buffers[currentPath]) {
+				//only add if not there yet..
 				loadAudio(currentPath);
 			}
 		}
@@ -204,7 +197,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	}
 	
 	this.updateListenerOrientation = function() {
-		var angleInRadians = this.listenerOrientation.value / 180 * Math.PI;
+		var angleInRadians = this.listenerOrientation.getValue() / 180 * Math.PI;
 		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
 	}
 	
@@ -222,6 +215,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
+	/** @param {Function=} callback (optional) */
 	function loadAudio(path, callback) {
 		numCurrentlyLoading++;
 		var request = new XMLHttpRequest();

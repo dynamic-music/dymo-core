@@ -14,7 +14,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile) {
 	var uiControls = {};
 	
 	this.loadDymoAndRendering = function(dymoUri, renderingUri, callback) {
-		var loader = new DymoLoader(scheduler);
+		var loader = new DymoLoader();
 		loader.loadDymoFromJson(dymoUri, function(loadedDymo) {
 			loader.loadRenderingFromJson(renderingUri, loadedDymo[1], function(loadedRendering) {
 				rendering = loadedRendering[0];
@@ -25,7 +25,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile) {
 						uiControls[key] = new UIControl(currentControl);
 					}
 				}
-				scheduler.loadBuffers();
+				scheduler.loadBuffers(rendering.dymo);
 				if (callback) {
 					callback();
 				}
