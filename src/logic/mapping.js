@@ -9,21 +9,20 @@
 function Mapping(domainDims, relative, functionJson, targets, parameterName, dymoConstraint) {
 	
 	/** @private */
-	this.domainDims = domainDims;
-	/** @private */
 	this.relative = relative;
 	/** @private */
 	this.functionJson = functionJson;
 	/** @private */
-	this.targets;
-	/** @private */
 	this.parameterName = parameterName;
+	/** @private */
+	this.targets;
+	this.setTargets(targets);
+	/** @private */
+	this.domainDims = domainDims;
 	/** @private */
 	this.targetParameters;
 	/** @private */
 	this.dymoConstraint = dymoConstraint;
-	
-	this.setTargets(targets);
 	this.init();
 }
 
@@ -95,7 +94,7 @@ Mapping.prototype.observedParameterChanged = function(param) {
 Mapping.prototype.updatedParameterChanged = function(value) {
 	//TODO MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
 	//CURRENTLY ONLY UPDATES IF NO RELATIVE DEF (E.G. NO SUBDYMO-PARAMS)
-	if (this.domainDims[0].backpropagate && !this.relative) {
+	if (this.domainDims && this.domainDims[0].backpropagate && !this.relative) {
 		if (this.inverseFunction) {
 			value = this.inverseFunction(value);
 		}

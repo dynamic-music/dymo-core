@@ -9,7 +9,7 @@ describe("a mapping", function() {
 	var mapping = new Mapping([control, ONSET_FEATURE], undefined, {args:["a", "b"], body:"return a * b;"}, [dymo1, dymo2], AMPLITUDE);
 	
 	it("updates a parameter", function() {
-		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(5);
+		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(1);
 		control.update(0.3);
 		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(1.5);
 		expect(dymo2.getParameter(AMPLITUDE).getValue()).toBeCloseTo(0.9, 10);
@@ -32,12 +32,12 @@ describe("a mapping", function() {
 		//currently non-invertible function
 		expect(dymo1.getParameter(AMPLITUDE).getValue()).toBe(0.5);
 		expect(control.getValue()).toBe(0.1);
-		dymo1.getParameter(AMPLITUDE).update(5);
-		expect(control.getValue()).toBe(5);
+		dymo1.getParameter(AMPLITUDE).update(1.5);
+		expect(control.getValue()).toBe(0.1); //doesn't update
 		//currently invertible function
 		var dymo3 = new DynamicMusicObject("dymo3");
 		var mapping = new Mapping([control, ONSET_FEATURE], undefined, {args:["a", "b"], body:"return 5*a-1;"}, [dymo3], AMPLITUDE);
-		expect(dymo3.getParameter(AMPLITUDE).getValue()).toBe(24);
+		expect(dymo3.getParameter(AMPLITUDE).getValue()).toBe(-0.5);
 		control.update(0.3);
 		expect(dymo3.getParameter(AMPLITUDE).getValue()).toBe(0.5);
 		dymo3.getParameter(AMPLITUDE).update(1);

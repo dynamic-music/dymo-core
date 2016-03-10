@@ -39,10 +39,9 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	this.loadBuffers = function(dymo) {
 		var allPaths = dymo.getAllSourcePaths();
 		for (var i = 0, ii = allPaths.length; i < ii; i++) {
-			var currentPath = allPaths[i];
-			if (!buffers[currentPath]) {
+			if (!buffers[allPaths[i]]) {
 				//only add if not there yet..
-				loadAudio(currentPath);
+				loadAudio(allPaths[i]);
 			}
 		}
 	}

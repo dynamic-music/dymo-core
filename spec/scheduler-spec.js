@@ -14,20 +14,20 @@ describe("a scheduler", function() {
 		scheduler = new Scheduler(audioContext, function() {
 			done();
 		});
-		dymo1 = new DynamicMusicObject("dymo1", scheduler, PARALLEL);
-		dymo2 = new DynamicMusicObject("dymo2", scheduler);
-		dymo3 = new DynamicMusicObject("dymo3", scheduler);
+		dymo1 = new DynamicMusicObject("dymo1", PARALLEL);
+		dymo2 = new DynamicMusicObject("dymo2");
+		dymo3 = new DynamicMusicObject("dymo3");
+		dymo1.setBasePath(basePath);
 		dymo1.addPart(dymo2);
 		dymo1.addPart(dymo3);
-		dymo2.setSourcePath(basePath+sourcePath1);
-		scheduler.addSourceFile(basePath+sourcePath1);
-		dymo3.setSourcePath(basePath+sourcePath2);
-		scheduler.addSourceFile(basePath+sourcePath2);
+		dymo2.setSourcePath(sourcePath1);
+		dymo3.setSourcePath(sourcePath2);
 		
-		dymo0 = new DynamicMusicObject("dymo0", scheduler);
-		dymo0.setSourcePath(basePath+sourcePath3);
-		scheduler.addSourceFile(basePath+sourcePath3);
-		scheduler.loadBuffers();
+		dymo0 = new DynamicMusicObject("dymo0");
+		dymo0.setSourcePath(sourcePath3);
+		dymo0.setBasePath(basePath);
+		scheduler.loadBuffers(dymo1);
+		scheduler.loadBuffers(dymo0);
 	});
 	
 	it("plays a parallel dymo", function(done) {

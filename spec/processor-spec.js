@@ -3,7 +3,8 @@ describe("a processor", function() {
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	var audioContext = new AudioContext();
 	
-	var sourcePath1 = '../example/sark1.m4a';
+	var basePath = '../example/';
+	var sourcePath1 = 'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
 	var dymo1;
 	var scheduler;
 	
@@ -11,16 +12,18 @@ describe("a processor", function() {
 		scheduler = new Scheduler(audioContext, function() {
 			done();
 		});
-		dymo1 = new DynamicMusicObject("dymo1", scheduler);
+		dymo1 = new DynamicMusicObject("dymo1");
+		dymo1.setBasePath(basePath);
 		dymo1.setSourcePath(sourcePath1);
-		scheduler.addSourceFile(sourcePath1);
-		scheduler.loadBuffers();
+		scheduler.loadBuffers(dymo1);
 	});
 	
 	it("can timestretch", function() {
+		console.profile("processor")
 		var buffer = scheduler.getBuffer(dymo1);
 		var stretched = new AudioProcessor(audioContext).timeStretch(buffer, 1.25);
 		expect(stretched.getChannelData(0).length/10).toBeCloseTo(Math.round(0.8*buffer.getChannelData(0).length)/10, 0);
+		console.profileEnd("processor")
 	});
 	
 	it("can timestretch dymos", function(done) {

@@ -45,16 +45,18 @@ function DymoLoader($scope) {
 		var request = new XMLHttpRequest();
 		request.open('GET', dymoBasePath + jsonUri, true);
 		request.onload = function() {
-			if (jsonString && isJsonString(this.responseText)) {
-				jsonString = jsonString.replace('"'+jsonUri+'"', this.responseText);
-				//console.log(jsonString)
-			} else {
-				jsonString = this.responseText;
+			//console.log(this.responseText.substring(0,20), isJsonString(this.responseText))
+			if (isJsonString(this.responseText)) {
+				if (jsonString) {
+					jsonString = jsonString.replace('"'+jsonUri+'"', this.responseText);
+				} else {
+					jsonString = this.responseText;
+				}
 			}
 			var nextUri = findNextJsonUri(jsonString);
 			if (nextUri) {
 				recursiveLoadJson(nextUri, jsonString, dymoMap, callback, creatingFunction);
-			} else {
+			} else if (jsonString) {
 				var result = creatingFunction(JSON.parse(jsonString), dymoMap);
 				callback(result);
 			}
@@ -97,10 +99,10 @@ function DymoLoader($scope) {
 	
 	function recursiveCreateDymoAndParts(json, dymoMap) {
 		var dymo = new DynamicMusicObject(json["@id"], json["ct"]);
+		dymo.setBasePath(dymoBasePath);
 		dymoMap[json["@id"]] = dymo;
 		if (json["source"]) {
-			var path = dymoBasePath+json["source"];
-			dymo.setSourcePath(path);
+			dymo.setSourcePath(json["source"]);
 		}
 		if (json["navigator"]) {
 			dymo.setNavigator(getNavigator(json["navigator"], dymo));

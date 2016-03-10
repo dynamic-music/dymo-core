@@ -11,7 +11,7 @@ describe("a manager", function() {
 	
 	it("manages a dymo", function(done) {
 		console.profile("dymo");
-		manager.loadDymoAndRendering('../example/mixdymo.json', 'mixdymo-rendering.json', function() {
+		manager.loadDymoAndRendering('../example/mixdymo.json', '../example/mixdymo-rendering.json', function() {
 			expect(manager.getTopDymo()).not.toBeUndefined();
 			console.profileEnd();
 			done();

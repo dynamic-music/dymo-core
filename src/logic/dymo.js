@@ -14,6 +14,7 @@ function DynamicMusicObject(uri, type) {
 	var mappings = [];
 	var parentMappings = []; //mappings from parent to this dymo
 	var isPlaying = false;
+	var basePath = '';
 	var sourcePath;
 	var skipProportionAdjustment = false;
 	var previousIndex = null;
@@ -181,6 +182,17 @@ function DynamicMusicObject(uri, type) {
 		}
 	}
 	
+	this.setBasePath = function(path) {
+		basePath = path;
+	}
+	
+	this.getBasePath = function() {
+		if (parent && !basePath) {
+			return parent.getBasePath();
+		}
+		return basePath;
+	}
+	
 	this.setSourcePath = function(path) {
 		sourcePath = path;
 	}
@@ -189,18 +201,20 @@ function DynamicMusicObject(uri, type) {
 		if (parent && !sourcePath) {
 			return parent.getSourcePath();
 		}
-		return sourcePath;
+		if (sourcePath) {
+			return this.getBasePath()+sourcePath;
+		}
 	}
 	
-	this.getAllSourcePaths = function(dymo) {
+	this.getAllSourcePaths = function() {
 		var paths = [];
-		recursiveGatherSourcePaths(dymo, paths);
+		recursiveGatherSourcePaths(this, paths);
 		return paths;
 	}
 	
 	function recursiveGatherSourcePaths(currentDymo, paths) {
 		var currentPath = currentDymo.getSourcePath();
-		if (paths.indexOf(currentPath) < 0) {
+		if (currentPath && paths.indexOf(currentPath) < 0) {
 			paths.push(currentPath);
 		}
 		var parts = currentDymo.getParts();
