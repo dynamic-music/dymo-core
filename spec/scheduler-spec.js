@@ -34,8 +34,7 @@ describe("a scheduler", function() {
 		expect(scheduler.urisOfPlayingDymos).toEqual([]);
 		scheduler.play(dymo1);
 		setTimeout(function() {
-			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo2", "dymo1", "dymo3"]);
-			//expect(audioContext.activeSourceCount).toBe(2);
+			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo1", "dymo2", "dymo3"]);
 			expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(1);
 			expect(dymo3.getParameter(AMPLITUDE).getObservers().length).toBe(1);
 			done();
@@ -43,14 +42,30 @@ describe("a scheduler", function() {
 	});
 	
 	it("stops a parallel dymo", function(done) {
-		expect(scheduler.urisOfPlayingDymos).toEqual(["dymo2", "dymo1", "dymo3"]);
+		expect(scheduler.urisOfPlayingDymos).toEqual(["dymo1", "dymo2", "dymo3"]);
 		scheduler.stop(dymo1);
 		setTimeout(function() {
 			expect(scheduler.urisOfPlayingDymos).toEqual([]);
-			//expect(audioContext.activeSourceCount).toBe(0);
 			expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(0);
 			expect(dymo3.getParameter(AMPLITUDE).getObservers().length).toBe(0);
 			done();
+		}, 100);
+	});
+	
+	it("stops subdymos", function(done) {
+		expect(scheduler.urisOfPlayingDymos).toEqual([]);
+		scheduler.play(dymo1);
+		setTimeout(function() {
+			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo1", "dymo2", "dymo3"]);
+			scheduler.stop(dymo2);
+			setTimeout(function() {
+				expect(scheduler.urisOfPlayingDymos).toEqual(["dymo1", "dymo3"]);
+				scheduler.stop(dymo1);
+				setTimeout(function() {
+					expect(scheduler.urisOfPlayingDymos).toEqual([]);
+					done();
+				}, 100);
+			}, 100);
 		}, 100);
 	});
 	
@@ -59,7 +74,7 @@ describe("a scheduler", function() {
 		expect(scheduler.urisOfPlayingDymos).toEqual([]);
 		scheduler.play(dymo1);
 		setTimeout(function() {
-			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo2", "dymo1"]);
+			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo1", "dymo2"]);
 			//expect(audioContext.activeSourceCount).toBe(1);
 			expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(1);
 			done();
@@ -68,11 +83,11 @@ describe("a scheduler", function() {
 	
 	it("reacts to updates", function(done) {
 		dymo2.getParameter(AMPLITUDE).relativeUpdate(-0.6);
-		expect(scheduler.getSources(dymo1)[dymo2.getUri()].getParameterValue(AMPLITUDE)).toBeCloseTo(0.4, 7);
+		expect(scheduler.getSource(dymo2).getParameterValue(AMPLITUDE)).toBeCloseTo(0.4, 7);
 		setTimeout(function() {
-			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo2", "dymo1"]);
+			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo1", "dymo2"]);
 			dymo2.getParameter(AMPLITUDE).relativeUpdate(0.3);
-			expect(scheduler.getSources(dymo1)[dymo2.getUri()].getParameterValue(AMPLITUDE)).toBeCloseTo(0.7, 7);
+			expect(scheduler.getSource(dymo2).getParameterValue(AMPLITUDE)).toBeCloseTo(0.7, 7);
 			//expect(audioContext.activeSourceCount).toBe(1);
 			expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(1);
 			setTimeout(function() {
@@ -82,7 +97,7 @@ describe("a scheduler", function() {
 	});
 	
 	it("stops a dymo and cleans up the sources", function(done) {
-		expect(scheduler.urisOfPlayingDymos).toEqual(["dymo2", "dymo1"]);
+		expect(scheduler.urisOfPlayingDymos).toEqual(["dymo1", "dymo2"]);
 		scheduler.stop(dymo1);
 		setTimeout(function() {
 			expect(scheduler.urisOfPlayingDymos).toEqual([]);
@@ -106,6 +121,7 @@ describe("a scheduler", function() {
 				expect(scheduler.urisOfPlayingDymos).toEqual(["dymo0"]);
 				scheduler.stop(dymo0);
 				expect(scheduler.urisOfPlayingDymos).toEqual([]);
+				//TODO CHECK IF REALLY STOPPED!!
 				done();
 			}, 100);
 		}, 100);

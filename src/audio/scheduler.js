@@ -10,7 +10,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 	
 	var buffers = {};
-	var sources = {}; //grouped by top dymo
+	var sources = new Map(); //grouped by top dymo
 	var nextSources = {}; //for each top dymo
 	var endTimes = {};
 	var previousOnsets = {};
@@ -61,22 +61,20 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	this.play = function(dymo) {
 		dymo.updatePartOrder(ONSET);
-		internalPlay(dymo);
+		recursivePlay(dymo);
 	}
 	
 	var deltaOnset = 0;
 	
-	function internalPlay(dymo) {
-		//console.log(Object.keys(sources).length + " " + Object.keys(nextSources).length);
+	function recursivePlay(dymo) {
 		var uri = dymo.getUri();
 		var currentSources;
-		if (!sources[uri]) {
+		if (!nextSources[uri]) {
 			//create first source
 			currentSources = createNextSources(dymo);
-			sources[uri] = {};
 			for (var i = 0; i < currentSources.length; i++) {
 				var currentDymo = currentSources[i].getDymo();
-				registerSource(uri, currentDymo.getUri(), currentSources[i]);
+				sources.set(currentDymo, currentSources[i]);
 				previousOnsets[uri] = currentDymo.getParameter(ONSET).getValue();
 				if (previousOnsets[uri] < 0) {
 					deltaOnset = -1*previousOnsets[uri];
@@ -86,7 +84,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			//switch to source
 			currentSources = nextSources[uri];
 			for (var i = 0; i < currentSources.length; i++) {
-				registerSource(uri, currentSources[i].getDymo().getUri(), currentSources[i]);
+				sources.set(currentSources[i].getDymo(), currentSources[i]);
 			}
 		}
 		var delay;
@@ -100,11 +98,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			currentSources[i].play(startTime);//, currentPausePosition); //% audioSource.loopEnd-audioSource.loopStart);
 		}
 		setTimeout(function() {
-			var playingDymos = [];
-			for (var i = 0; i < currentSources.length; i++) {
-				playingDymos.push(currentSources[i].getDymo());
-			}
-			updatePlayingDymos(playingDymos);
+			updatePlayingDymos();
 		}, delay);
 		var nextSrcs = createNextSources(dymo);
 		if (nextSrcs) {
@@ -121,7 +115,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			}
 			if (endTimes[uri]) {
 				//TODO MAKE TIMEOUT IDS FOR EACH DYMO!!!!!
-				timeoutID = setTimeout(function() { internalPlay(dymo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
+				timeoutID = setTimeout(function() { recursivePlay(dymo); }, (endTimes[uri]-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000);
 			}
 		} else {
 			endTimes[uri] = startTime+currentSources[0].getDuration()/currentSources[0].getDymo().getParameter(PLAYBACK_RATE).getValue();
@@ -129,67 +123,55 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
-	function registerSource(topUri, dymoUri, source) {
-		sources[topUri][dymoUri] = source;
-	}
-	
-	function removeSource(sourceToRemove) {
-		for (var dymo in sources) {
-			for (var dymo2 in sources[dymo]) {
-				if (sources[dymo][dymo2] == sourceToRemove) {
-					sources[dymo][dymo2] = null;
-				}
+	this.pause = function(dymo) {
+		var dymos = dymo.getAllDymosInHierarchy();
+		for (var i = 0, ii = dymos.length; i < ii; i++) {
+			var currentSource = sources.get(dymos[i]);
+			if (currentSource) {
+				currentSource.pause();
 			}
 		}
-	}
-	
-	/** @private */
-	this.getSources = function(dymo) {
-		return sources[dymo.getUri()];
-	}
-	
-	this.pause = function(dymo) {
-		callOnSources(dymo, "pause");
 	}
 	
 	this.stop = function(dymo) {
-		if (callOnSources(dymo, "stop")) {
-			reset(dymo);
+		var dymos = dymo.getAllDymosInHierarchy();
+		for (var i = 0, ii = dymos.length; i < ii; i++) {
+			var currentSource = sources.get(dymos[i]);
+			if (currentSource) {
+				currentSource.stop();
+				sources.delete(dymos[i]);
+			}
 		}
+		reset(dymo);
 	}
 	
-	function callOnSources(dymo, func) {
-		var dymoSources = sources[dymo.getUri()];
-		if (dymoSources) {
-			for (var key in dymoSources) {
-				dymoSources[key][func].call(dymoSources[key]);
-			}
-			return true;
-		}
+	/** @private returns the source correponding to the given dymo */
+	this.getSource = function(dymo) {
+		return sources.get(dymo);
 	}
 	
 	function reset(dymo) {
 		window.clearTimeout(timeoutID);
 		var uri = dymo.getUri();
-		sources[uri] = null;
+		//sources[uri] = null;
 		nextSources[uri] = null;
 		endTimes[uri] = null;
 		dymo.resetPartsPlayed();
-		updatePlayingDymos([]);
+		updatePlayingDymos();
 	}
 	
-	function updatePlayingDymos(dymos) {
-		var newDymos = [];
-		for (var i = 0; i < dymos.length; i++) {
-			var currentDymo = dymos[i];
+	function updatePlayingDymos() {
+		var uris = [];
+		for (var currentDymo of sources.keys()) {
 			while (currentDymo != null) {
-				if (newDymos.indexOf(currentDymo.getUri()) < 0) {
-					newDymos.push(currentDymo.getUri());
+				if (uris.indexOf(currentDymo.getUri()) < 0) {
+					uris.push(currentDymo.getUri());
 				}
 				currentDymo = currentDymo.getParent();
 			}
 		}
-		self.urisOfPlayingDymos = newDymos;
+		uris.sort();
+		self.urisOfPlayingDymos = uris;
 		if (onPlaybackChange) {
 			onPlaybackChange();
 		}

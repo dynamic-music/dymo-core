@@ -208,18 +208,28 @@ function DynamicMusicObject(uri, type) {
 	
 	this.getAllSourcePaths = function() {
 		var paths = [];
-		recursiveGatherSourcePaths(this, paths);
+		recursiveGatherThingsInHierarchy(this, paths, function(currentDymo, things) {
+			var currentPath = currentDymo.getSourcePath();
+			if (currentPath && paths.indexOf(currentPath) < 0) {
+				things.push(currentPath);
+			}
+		});
 		return paths;
 	}
 	
-	function recursiveGatherSourcePaths(currentDymo, paths) {
-		var currentPath = currentDymo.getSourcePath();
-		if (currentPath && paths.indexOf(currentPath) < 0) {
-			paths.push(currentPath);
-		}
+	this.getAllDymosInHierarchy = function() {
+		var dymos = [];
+		recursiveGatherThingsInHierarchy(this, dymos, function(currentDymo, things) {
+			things.push(currentDymo);
+		});
+		return dymos;
+	}
+	
+	function recursiveGatherThingsInHierarchy(currentDymo, things, gatheringFunction) {
+		gatheringFunction(currentDymo, things);
 		var parts = currentDymo.getParts();
 		for (var i = 0, ii = parts.length; i < ii; i++) {
-			recursiveGatherSourcePaths(parts[i], paths);
+			recursiveGatherThingsInHierarchy(parts[i], things, gatheringFunction);
 		}
 	}
 	

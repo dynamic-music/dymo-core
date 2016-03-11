@@ -28,6 +28,12 @@ describe("a dynamic music object", function() {
 		expect(dymo4.getSimilars().length).toBe(0);
 	});
 	
+	it("offers some functions to get things from subdymos", function() {
+		var similarityGraph = dymo1.getAllDymosInHierarchy();
+		expect(dymo1.getAllDymosInHierarchy().length).toBe(4);
+		expect(dymo1.getAllSourcePaths().length).toBe(0);
+	});
+	
 	it("can return the nth part on a level", function() {
 		expect(dymo1.getNthPart(0,0).getUri()).toBe("dymo1");
 		expect(dymo1.getNthPart(0,1).getUri()).toBe("dymo2");
