@@ -142,6 +142,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 				sources.delete(dymos[i]);
 			}
 		}
+		console.log(sources);
 		reset(dymo);
 	}
 	

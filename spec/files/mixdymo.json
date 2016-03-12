@@ -1,0 +1,22 @@
+{
+	"@id":"mixdymo",
+	"@type":"Dymo",
+	"ct":"parallel",
+	"mappings":[
+		{
+			"domainDims":[{"name":"Fade","type":"Parameter"},{"name":"index","type":"Feature"}],
+			"function":{"args":["a", "b"],"body":"return (1-b)*(1-a)+b*a;"},
+			"dymos":{"args":["d"],"body":"return d.getLevel() == 1;"},
+			"parameter":"Amplitude"
+		},
+		{
+			"domainDims":[{"name":"Tempo","type":"Parameter"},{"name":"duration","type":"Feature"}],
+			"function":{"args":["a", "b"],"body":"return a/60*b;"},
+			"dymos":{"args":["d"],"body":"return d.getLevel() == 3;"},
+			"parameter":"TimeStretchRatio"
+		}
+	],
+	"parts":["dymo.json","dymo2.json"],
+	"similars":[],
+	"@context":"http://purl.org/ontology/dymo/context.json"
+}

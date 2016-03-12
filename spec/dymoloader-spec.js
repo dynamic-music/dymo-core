@@ -4,12 +4,12 @@ describe("a dymoloader", function() {
 	var audioContext = new AudioContext();
 	
 	var dymo, dymoMap, scheduler, rendering;
-	var dymoPath = '../example/dymo.json';
-	var dymo2Path = '../example/dymo2.json';
-	var dymo3Path = '../example/dymo3.json';
-	var featureRenderingPath = '../example/feature-rendering.json';
-	var controlRenderingPath = '../example/control-rendering.json';
-	var similarityGraphPath = '../example/similarity.json';
+	var dymoPath = 'files/dymo.json';
+	var dymo2Path = 'files/dymo2.json';
+	var dymo3Path = 'files/dymo3.json';
+	var featureRenderingPath = 'files/feature-rendering.json';
+	var controlRenderingPath = 'files/control-rendering.json';
+	var similarityGraphPath = 'files/similarity.json';
 	var reverbPath = '../audio/impulse_rev.wav';
 	
 	it("loads a dymo from json", function(done) {

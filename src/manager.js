@@ -47,6 +47,12 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile) {
 		});
 	}
 	
+	this.replacePartOfTopDymo = function(index, dymo) {
+		var oldDymo = rendering.dymo.getPart(index);
+		rendering.dymo.replacePart(index, dymo);
+		scheduler.stop(oldDymo);
+	}
+	
 	this.startPlaying = function() {
 		scheduler.play(rendering.dymo);
 	}

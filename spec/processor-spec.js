@@ -3,7 +3,7 @@ describe("a processor", function() {
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	var audioContext = new AudioContext();
 	
-	var basePath = '../example/';
+	var basePath = 'files/';
 	var sourcePath1 = 'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
 	var dymo1;
 	var scheduler;

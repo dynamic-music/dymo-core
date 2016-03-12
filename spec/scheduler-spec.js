@@ -3,7 +3,7 @@ describe("a scheduler", function() {
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	var audioContext = new AudioContext();
 	
-	var basePath = '../example/';
+	var basePath = 'files/';
 	var sourcePath1 = 'sark1.m4a';
 	var sourcePath2 = 'sark2.m4a';
 	var sourcePath3 = 'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
