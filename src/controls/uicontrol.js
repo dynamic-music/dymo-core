@@ -20,6 +20,9 @@ function UIControl(control, $scope) {
 	
 	this.update = function() {
 		if (control.getType() == BUTTON) {
+			if (isNaN(this.value)) {
+				this.value = 0;
+			}
 			this.value = 1-this.value;
 		}
 		if (this.value == true) {

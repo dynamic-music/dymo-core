@@ -1,7 +1,7 @@
 {
 	"mappings":[
 		{
-			"domainDims":[{"name":"fadeRamp","type":"Ramp","value":0,"duration":5}],
+			"domainDims":[{"name":"fadeRamp","type":"Ramp","value":0,"duration":1}],
 			"function":{"args":["a"],"body":"return a;"},
 			"dymos":["mixdymo"],
 			"parameter":"Fade"

@@ -9,7 +9,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile) {
 		reverbFile = 'bower_components/dymo-core/audio/impulse_rev.wav';
 	}
 	scheduler.setReverbFile(reverbFile);
-	scheduler.setScheduleAheadTime(scheduleAheadTime);
+	SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	var rendering;
 	var uiControls = {};
 	

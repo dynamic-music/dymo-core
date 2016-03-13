@@ -24,7 +24,7 @@ function DynamicMusicObject(uri, type) {
 	function initFeaturesAndParameters() {
 		parameters[PLAY] = new Parameter(PLAY, 0, true);
 		parameters[LOOP] = new Parameter(LOOP, 0, true);
-		parameters[ONSET] = new Parameter(ONSET, -1);
+		parameters[ONSET] = new Parameter(ONSET, undefined);
 		parameters[DURATION_RATIO] = new Parameter(DURATION_RATIO, 1);
 		parameters[AMPLITUDE] = new Parameter(AMPLITUDE, 1);
 		parameters[PLAYBACK_RATE] = new Parameter(PLAYBACK_RATE, 1);

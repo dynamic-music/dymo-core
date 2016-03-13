@@ -1,5 +1,6 @@
 // general
 
+var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 var DYMO = "Dymo";
 var PARALLEL = "parallel";
 var SEQUENTIAL = "sequential";

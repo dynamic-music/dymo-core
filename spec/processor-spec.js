@@ -30,7 +30,7 @@ describe("a processor", function() {
 		dymo1.getParameter(TIME_STRETCH_RATIO).relativeUpdate(-0.5);
 		scheduler.play(dymo1);
 		setTimeout(function() {
-			expect(scheduler.urisOfPlayingDymos).toEqual(["dymo1"]);
+			expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1"]);
 			//expect(audioContext.activeSourceCount).toBe(1);
 			scheduler.stop(dymo1);
 			done();

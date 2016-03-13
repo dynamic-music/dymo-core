@@ -187,7 +187,7 @@ function Source(dymo, audioContext, buffer, reverbSend, onEnded) {
 			dryGain.disconnect();
 			reverbGain.disconnect();
 			if (onEnded) {
-				onEnded();
+				onEnded(self);
 			}
 		};
 		source.start(startTime);
