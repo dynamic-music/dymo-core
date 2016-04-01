@@ -13,6 +13,10 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	var nextSources;
 	var previousOnset;
 	
+	if (!navigator) {
+		navigator = new DymoNavigator(dymo, new SequentialNavigator(dymo));
+	}
+	
 	//starts automatically
 	recursivePlay();
 	
@@ -50,6 +54,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 		//create sources and init
 		currentSources = getNextSources();
 		registerSources(currentSources);
+		console.log(currentSources)
 		if (!previousOnset) {
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
 			previousOnset = currentSources[0].getDymo().getParameter(ONSET).getValue();
@@ -68,7 +73,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			var wakeupTime = (currentEndTime-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000;
 			timeoutID = setTimeout(function() { recursivePlay(); }, wakeupTime);
 		} else {
-			dymo.resetPartsPlayed();
+			navigator.reset();
 			if (onEnded) {
 				onEnded();
 			}
@@ -126,8 +131,8 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	}
 	
 	function createNextSources() {
-		//HERE: NAVIGATOR.GETNEXTPARTS()!!
-		var nextParts = dymo.getNextParts();
+		var nextParts = navigator.getNextParts();
+		//console.log(nextParts.map(function(s){return s.getUri();}))
 		if (nextParts) {
 			var nextSources = [];
 			for (var i = 0; i < nextParts.length; i++) {

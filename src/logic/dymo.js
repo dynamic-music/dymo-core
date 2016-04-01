@@ -19,7 +19,6 @@ function DynamicMusicObject(uri, type) {
 	var skipProportionAdjustment = false;
 	var previousIndex = null;
 	initFeaturesAndParameters();
-	var navigator = new SequentialNavigator(this);
 	
 	function initFeaturesAndParameters() {
 		parameters[PLAY] = new Parameter(PLAY, 0, true);
@@ -156,6 +155,10 @@ function DynamicMusicObject(uri, type) {
 	
 	this.getParts = function() {
 		return parts;
+	}
+	
+	this.hasParts = function() {
+		return parts.length > 0;
 	}
 	
 	this.getNthPart = function(n, level) {
@@ -312,21 +315,6 @@ function DynamicMusicObject(uri, type) {
 		}
 	}
 	
-	this.setNavigator = function(nav) {
-		navigator = nav;
-	}
-	
-	this.getNavigator = function() {
-		return navigator;
-	}
-	
-	this.resetPartsPlayed = function() {
-		navigator.resetPartsPlayed();
-		for (var i = 0; i < parts.length; i++) {
-			parts[i].resetPartsPlayed();
-		}
-	}
-	
 	this.updatePartOrder = function(featureOrParameterName) {
 		if (parts && parts[0] && !isNaN(parts[0].getFeature(featureOrParameterName))) {
 			parts.sort(function(p,q) {
@@ -337,11 +325,6 @@ function DynamicMusicObject(uri, type) {
 				return p.getParameter(featureOrParameterName).getValue() - q.getParameter(featureOrParameterName).getValue();
 			});
 		}
-	}
-	
-	this.getNextParts = function() {
-		var nextP = navigator.getNextParts();
-		return nextP;
 	}
 	
 	//creates a hierarchical json of this (recursively containing parts)
@@ -419,9 +402,6 @@ function DynamicMusicObject(uri, type) {
 		}
 		if (sourcePath) {
 			jsonDymo["source"] = sourcePath;
-		}
-		if (navigator instanceof SimilarityNavigator) {
-			jsonDymo["navigator"] = SIMILARITY_NAVIGATOR;
 		}
 		for (var featureName in features) {
 			jsonDymo[featureName] = this.getFeatureJson(featureName);

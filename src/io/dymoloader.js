@@ -104,9 +104,6 @@ function DymoLoader($scope) {
 		if (json["source"]) {
 			dymo.setSourcePath(json["source"]);
 		}
-		if (json["navigator"]) {
-			dymo.setNavigator(getNavigator(json["navigator"], dymo));
-		}
 		for (var attribute in json) {
 			if (jsonKeys.indexOf(attribute) < 0) {
 				if (json[attribute]["type"] == FEATURE) {
@@ -153,6 +150,10 @@ function DymoLoader($scope) {
 		for (var i = 0; i < json["mappings"].length; i++) {
 			var currentMapping = json["mappings"][i];
 			rendering.addMapping(createMappingFromJson(currentMapping, dymoMap, undefined, controls));
+		}
+		if (json["navigator"]) {
+			var dymosFunction = Function.apply(null, json["navigator"]["dymos"]["args"].concat(json["navigator"]["dymos"]["body"]));
+			rendering.addNavigator(getNavigator(json["navigator"]["type"]), dymosFunction);
 		}
 		return [rendering, controls];
 	}
@@ -241,11 +242,11 @@ function DymoLoader($scope) {
 		}
 	}
 	
-	function getNavigator(type, dymo) {
+	function getNavigator(type) {
 		if (type == SIMILARITY_NAVIGATOR) {
-			return new SimilarityNavigator(dymo);
+			return new SimilarityNavigator(undefined);
 		}
-		return new SequentialNavigator(dymo);
+		return new SequentialNavigator(undefined);
 	}
 	
 	function getControl(options) {

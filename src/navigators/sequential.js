@@ -1,65 +1,67 @@
 /**
  * A navigator that follows the order of parts.
  * @constructor
+ * @param {boolean=} backwards (optional)
  */
-function SequentialNavigator(dymo) {
+function SequentialNavigator(dymo, backwards) {
 	
-	var isPlaying = false;
-	var partsPlayed = 0;
+	var partsNavigated = 0;
 	
-	this.resetPartsPlayed = function() {
-		partsPlayed = 0;
+	this.resetPartsNavigated = function() {
+		partsNavigated = 0;
 	}
 	
-	this.setPartsPlayed = function(played) {
-		partsPlayed = played;
+	this.setPartsNavigated = function(played) {
+		partsNavigated = played;
 	}
 	
-	this.getPartsPlayed = function() {
-		return partsPlayed;
+	this.getPartsNavigated = function(level) {
+		return partsNavigated[level];
 	}
 	
-	this.getNextParts = function() {
+	this.getType = function() {
+		return SEQUENTIAL_NAVIGATOR;
+	}
+	
+	this.getCopy = function(dymo) {
+		return new SequentialNavigator(dymo, backwards);
+	}
+	
+	this.getCurrentParts = function() {
 		var parts = dymo.getParts();
 		if (parts.length > 0) {
 			if (dymo.getType() == PARALLEL) {
-				var parallelParts = [];
-				for (var i = 0; i < parts.length; i++) {
-					var nextParts = parts[i].getNextParts();
-					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
-						parallelParts = parallelParts.concat(nextParts);
-					}
-				}
-				if (parallelParts.length > 0) {
-					console.log(parallelParts.map(function(d){return d.getIndex();}))
-					return parallelParts;
-				}
-			} else { //SEQUENTIAL FOR EVERYTHING ELSE
-				isPlaying = true;
-				while (partsPlayed < parts.length && partsPlayed < dymo.getParameter(PART_COUNT).getValue()) {
-					var nextParts = parts[partsPlayed].getNextParts();
-					if (nextParts && (!nextParts.length || nextParts.length > 0)) {
-						if (!(nextParts instanceof Array)) {
-							nextParts = [nextParts];
-						}
-						return nextParts;
-					} else {
-						partsPlayed++;
-					}
-				}
+				return getParallelParts();
 			}
-			//done playing
-			partsPlayed = 0;
-			isPlaying = false;
-			return null;
+			return getSequentialPart(); //SEQUENTIAL FOR EVERYTHING ELSE
+		}
+	}
+	
+	this.getNextParts = function() {
+		partsNavigated++;
+		return this.getCurrentParts();
+	}
+	
+	function getParallelParts() {
+		if (partsNavigated <= 0) {
+			partsNavigated++;
+			return dymo.getParts();
+		}
+	}
+	
+	function getSequentialPart() {
+		var part;
+		if (backwards) {
+			var partCount = dymo.getParts().length;
+			part = dymo.getPart(partCount-partsNavigated);
 		} else {
-			if (!isPlaying) {
-				isPlaying = true;
-				return [dymo];
-			} else {
-				isPlaying = false;
-				return null;
+			part = dymo.getPart(partsNavigated);
+		}
+		if (part) {
+			if (!part.hasParts()) {
+				partsNavigated++;
 			}
+			return [part];
 		}
 	}
 	

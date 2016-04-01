@@ -10,6 +10,7 @@ var PARAMETER = "Parameter";
 
 //navigators
 
+var ONE_SHOT_NAVIGATOR = "OneShotNavigator";
 var SEQUENTIAL_NAVIGATOR = "SequentialNavigator";
 var SIMILARITY_NAVIGATOR = "SimilarityNavigator";
 

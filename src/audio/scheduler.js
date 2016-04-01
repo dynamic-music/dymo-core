@@ -51,7 +51,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	this.play = function(dymo) {
 		dymo.updatePartOrder(ONSET); //TODO WHERE TO PUT THIS??
-		var thread = new SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, updatePlayingDymos, threadEnded);
+		var thread = new SchedulerThread(dymo, undefined, audioContext, buffers, convolverSend, updatePlayingDymos, threadEnded);
 		threads.push(thread);
 	}
 	
@@ -121,6 +121,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	/** @param {Function=} callback (optional) */
 	function loadAudio(path, callback) {
+		console.log(path)
 		numCurrentlyLoading++;
 		var request = new XMLHttpRequest();
 		request.open('GET', path, true);

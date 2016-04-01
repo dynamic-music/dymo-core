@@ -6,7 +6,7 @@ describe("a manager", function() {
 	var manager = new DymoManager(audioContext, 0.1, '../audio/impulse_rev.wav');
 	var fadePosition = 0;
 	var isPlaying = false;
-	jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+	//jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 	
 	
 	/*it("manages a dymo", function(done) {
@@ -60,12 +60,7 @@ describe("a manager", function() {
 		fadePosition = 1-fadePosition;
 		manager.replacePartOfTopDymo(fadePosition, nextSongDymo);
 		//sync the loaded dymos to be in the same metrical position
-		var currentBeat = 0;
-		if (currentSongDymo) {
-			var currentBar = currentSongDymo.getPart(currentSongDymo.getNavigator().getPartsPlayed());
-			currentBeat = currentBar.getNavigator().getPartsPlayed();
-		}
-		nextSongDymo.getPart(0).getNavigator().setPartsPlayed(currentBeat+1);
+		//manager.syncNavigators(currentSongDymo, nextSongDymo, 2);
 		setTimeout(function() {
 			if (!isPlaying) {
 				manager.startPlaying();

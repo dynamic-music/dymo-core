@@ -14,8 +14,8 @@ describe("a dymoloader", function() {
 	
 	it("loads a dymo from json", function(done) {
 		scheduler = new Scheduler(audioContext, function(num) {
-			scheduler.play(dymo);
 			setTimeout(function() {
+				scheduler.play(dymo);
 				//expect(scheduler.urisOfPlayingDmos).toEqual(["dymo1"]);
 				scheduler.stop(dymo);
 				done();
@@ -25,6 +25,7 @@ describe("a dymoloader", function() {
 		var loader = new DymoLoader(scheduler);
 		loader.loadDymoFromJson(dymoPath, function(loadedDymo) {
 			dymo = loadedDymo[0];
+			scheduler.loadBuffers(dymo);
 			dymoMap = loadedDymo[1];
 			expect(dymo.getUri()).toEqual("dymo0");
 			//test if initial parameter value loaded correctly
