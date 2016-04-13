@@ -20,6 +20,10 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	//starts automatically
 	recursivePlay();
 	
+	this.getDymo = function() {
+		return dymo;
+	}
+	
 	this.pause = function(dymo) {
 		var dymos = dymo.getAllDymosInHierarchy();
 		for (var i = 0, ii = dymos.length; i < ii; i++) {

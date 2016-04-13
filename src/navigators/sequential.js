@@ -15,8 +15,8 @@ function SequentialNavigator(dymo, backwards) {
 		partsNavigated = played;
 	}
 	
-	this.getPartsNavigated = function(level) {
-		return partsNavigated[level];
+	this.getPartsNavigated = function() {
+		return partsNavigated;
 	}
 	
 	this.getType = function() {
@@ -25,6 +25,10 @@ function SequentialNavigator(dymo, backwards) {
 	
 	this.getCopy = function(dymo) {
 		return new SequentialNavigator(dymo, backwards);
+	}
+	
+	this.getDymo = function() {
+		return dymo;
 	}
 	
 	this.getCurrentParts = function() {
@@ -58,9 +62,9 @@ function SequentialNavigator(dymo, backwards) {
 			part = dymo.getPart(partsNavigated);
 		}
 		if (part) {
-			if (!part.hasParts()) {
+			/*if (!part.hasParts()) {
 				partsNavigated++;
-			}
+			}*/
 			return [part];
 		}
 	}

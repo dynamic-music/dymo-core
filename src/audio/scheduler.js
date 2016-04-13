@@ -56,8 +56,20 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
+	//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
+	this.syncNavigators = function(syncDymo, goalDymo, level) {
+		getNavigator(syncDymo).setPosition(getNavigator(goalDymo).getPosition());
+	}
+	
+	function getNavigator(dymo) {
+		for (var i = 0, ii = threads.length; i < ii; i++) {
+			if (threads[i].getDymo() == dymo) {
+				return thread.getNavigator();
+			}
+		}
+	}
+	
 	this.play = function(dymo) {
-		dymo.updatePartOrder(ONSET); //TODO WHERE TO PUT THIS??
 		var thread = new SchedulerThread(dymo, undefined, audioContext, buffers, convolverSend, updatePlayingDymos, threadEnded);
 		threads.push(thread);
 	}

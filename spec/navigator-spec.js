@@ -41,6 +41,7 @@ describe("a navigator", function() {
 	
 	it("can be sequential", function() {
 		var navigator = new DymoNavigator(dymo1, new SequentialNavigator(dymo1));
+		expect(navigator.getPosition(0)).toBeUndefined();
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo5");
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo6");
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo7");
@@ -57,6 +58,52 @@ describe("a navigator", function() {
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo12");
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo9");
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo10");
+	});
+	
+	it("has getters and setters for its position", function() {
+		var navigator = new DymoNavigator(dymo1, new SequentialNavigator(dymo1));
+		expect(navigator.getPosition(0)).toBeUndefined();
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo5");
+		expect(navigator.getPosition(0)).toBe(0);
+		expect(navigator.getPosition(1)).toBe(0);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo6");
+		expect(navigator.getPosition(0)).toBe(0);
+		expect(navigator.getPosition(1)).toBe(1);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo7");
+		expect(navigator.getPosition(0)).toBe(1);
+		expect(navigator.getPosition(1)).toBe(0);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo11");
+		expect(navigator.getPosition(0)).toBe(1);
+		expect(navigator.getPosition(1)).toBe(1);
+		expect(navigator.getPosition(2)).toBe(0);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo12");
+		expect(navigator.getPosition(0)).toBe(1);
+		expect(navigator.getPosition(1)).toBe(1);
+		expect(navigator.getPosition(2)).toBe(1);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo9");
+		expect(navigator.getPosition(0)).toBe(1);
+		expect(navigator.getPosition(1)).toBe(2);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo10");
+		expect(navigator.getPosition(0)).toBe(2);
+		expect(navigator.getPosition(1)).toBe(0);
+		navigator.setPosition(1, 0);
+		navigator.setPosition(1, 1);
+		expect(navigator.getPosition(0)).toBe(1);
+		expect(navigator.getPosition(1)).toBe(1);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo11");
+		expect(navigator.getPosition(0)).toBe(1);
+		expect(navigator.getPosition(1)).toBe(1);
+		expect(navigator.getPosition(2)).toBe(0);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo12");
+		expect(navigator.getPosition(0)).toBe(1);
+		expect(navigator.getPosition(1)).toBe(1);
+		expect(navigator.getPosition(2)).toBe(1);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo9");
+		expect(navigator.getPosition(0)).toBe(1);
+		expect(navigator.getPosition(1)).toBe(2);
+		expect(navigator.getNextParts()[0].getUri()).toBe("dymo10");
+		expect(navigator.getPosition(0)).toBe(2);
+		expect(navigator.getPosition(1)).toBe(0);
 	});
 	
 	it("can handle conjunctions", function() {

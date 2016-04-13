@@ -53,17 +53,13 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile) {
 		scheduler.stop(oldDymo);
 	}
 	
-	//sync the navigator for syncDymo to goalDymo on the given level
-	this.syncNavigators = function(goalDymo, syncDymo, level) {
-		/*var currentBeat = 0;
-		if (goalDymo) {
-			var currentBar = goalDymo.getPart(goalDymo.getNavigator().getPartsPlayed());
-			currentBeat = currentBar.getNavigator().getPartsPlayed();
-		}
-		syncDymo.getPart(0).getNavigator().setPartsPlayed(currentBeat+1);*/
+	//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
+	this.syncNavigators = function(syncDymo, goalDymo, level) {
+		scheduler.syncNavigators(goalDymo, goalDymo, level);
 	}
 	
 	this.startPlaying = function() {
+		rendering.dymo.updatePartOrder(ONSET); //TODO WHERE TO PUT THIS??
 		scheduler.play(rendering.dymo);
 	}
 	

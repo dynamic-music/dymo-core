@@ -23,6 +23,32 @@ function DymoNavigator(dymo, defaultSubsetNavigator) {
 		subsetNavigators.push([subsetFunction, navigator]);
 	}
 	
+	this.getPosition = function(level) {
+		if (currentNavigators[level]) {
+			return currentNavigators[level].getPartsNavigated();
+		}
+	}
+	
+	//resets all navigators except the current ones and sets the navigator on the given level to the given position
+	this.setPosition = function(position, level) {
+		var navs = currentNavigators;
+		this.reset();
+		var i = 0;
+		var currentDymo = dymo;
+		while (i <= level) {
+			if (!navs[i]) {
+				navs[i] = getNavigator(currentDymo);
+			}
+			currentNavigators[i] = navs[i];
+			navigators.set(currentDymo, navs[i]);
+			currentDymo = navs[i].getCurrentParts()[0];
+			if (i == level) {
+				navs[i].setPartsNavigated(position);
+			}
+			i++;
+		}
+	}
+	
 	this.getNextParts = function() {
 		return recursiveGetNextParts(dymo);
 	}
