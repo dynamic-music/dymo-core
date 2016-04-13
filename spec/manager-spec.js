@@ -6,17 +6,8 @@ describe("a manager", function() {
 	var manager = new DymoManager(audioContext, 0.1, '../audio/impulse_rev.wav');
 	var fadePosition = 0;
 	var isPlaying = false;
-	//jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+	jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
 	
-	
-	/*it("manages a dymo", function(done) {
-		console.profile("dymo");
-		manager.loadDymoAndRendering('files/mixdymo.json', 'files/mixdymo-rendering.json', function() {
-			expect(manager.getTopDymo()).not.toBeUndefined();
-			console.profileEnd();
-			done();
-		});
-	});*/
 	
 	it("manages a dymo", function(done) {
 		console.profile("dymo");
@@ -45,6 +36,26 @@ describe("a manager", function() {
 		});
 	});
 	
+	it("can sync dymos", function(done) {
+		manager.loadDymoAndRendering('files/mixdymo.json', 'mixdymo-rendering.json', function() {
+			manager.loadDymoFromJson('files/dymo.json', function(loadedDymo) {
+				expect(manager.getTopDymo()).not.toBeUndefined();
+				replace(loadedDymo, function() {
+					manager.loadDymoFromJson('files/dymo.json', function(loadedDymo) {
+						expect(manager.getTopDymo()).not.toBeUndefined();
+						var parts = manager.getTopDymo().getParts();
+						manager.syncNavigators(parts[fadePosition], parts[1-fadePosition]);
+						setTimeout(function() {
+							manager.stopPlaying();
+							expect(manager.getTopDymo()).not.toBeUndefined();
+							done();
+						}, 100);
+					});
+				});
+			});
+		});
+	});
+	
 	function replace(nextSongDymo, callback) {
 		var currentSongDymo = manager.getTopDymo().getPart(fadePosition);
 		fadePosition = 1-fadePosition;
@@ -58,56 +69,7 @@ describe("a manager", function() {
 			}
 			manager.getUIControl("transition").update();
 			callback();
-		}, 500);
+		}, 300);
 	}
-	
-	/*it("manages a dymo", function(done) {
-		//TODO TEST EVERYTHING IN MOODPLAY: PLAYBACK, TRANSFORMATION ETC (SOMEWHERE DYMOS ARE RETAINED2)
-		manager = new manager(audioContext, 0.1, '../audio/impulse_rev.wav');
-		manager.loadDymoAndRendering('files/mixdymo.json', 'mixdymo-rendering.json', function() {
-			var temp1 = manager.getTopDymo();
-			expect(manager.getTopDymo()).not.toBeUndefined();
-			manager.loadDymoAndRendering('files/mixdymo.json', 'mixdymo-rendering.json', function() {
-				var temp2 = manager.getTopDymo();
-				expect(manager.getTopDymo()).not.toBeUndefined();
-				manager.loadDymoAndRendering('files/mixdymo.json', 'mixdymo-rendering.json', function() {
-					var temp3 = manager.getTopDymo();
-					expect(manager.getTopDymo()).not.toBeUndefined();
-					done();
-				});
-			});
-		});
-	});*/
-	
-	/*it("manages a dymo", function(done) {
-		manager = new manager(audioContext, 0.1, '../audio/impulse_rev.wav');
-		manager.loadDymoAndRendering('files/mixdymo.json', 'mixdymo-rendering.json', function() {
-			expect(manager.getTopDymo()).not.toBeUndefined();
-				manager.loadDymoFromJson('files/dymo.json', function(loadedDymo) {
-					expect(manager.getTopDymo()).not.toBeUndefined();
-					manager.getTopDymo().replacePart(0, loadedDymo);
-					manager.loadDymoFromJson('files/dymo.json', function(loadedDymo) {
-						manager.startPlaying();
-						expect(manager.getTopDymo()).not.toBeUndefined();
-						manager.getTopDymo().replacePart(1, loadedDymo);
-						manager.loadDymoFromJson('files/dymo.json', function(loadedDymo) {
-							expect(manager.getTopDymo()).not.toBeUndefined();
-							manager.getTopDymo().replacePart(0, loadedDymo);
-							manager.getUIControl("transition").update();
-							manager.loadDymoFromJson('files/dymo.json', function(loadedDymo) {
-								expect(manager.getTopDymo()).not.toBeUndefined();
-								manager.getTopDymo().replacePart(1, loadedDymo);
-								setTimeout(function() {
-									expect(manager.getTopDymo()).not.toBeUndefined();
-									manager.stopPlaying();
-									manager = null;
-									done();
-								}, 10);
-							});
-						});
-					});
-				});
-		});
-	});*/
 	
 });

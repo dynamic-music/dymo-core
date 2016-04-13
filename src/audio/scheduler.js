@@ -58,15 +58,17 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
 	this.syncNavigators = function(syncDymo, goalDymo, level) {
-		getNavigator(syncDymo).setPosition(getNavigator(goalDymo).getPosition());
-	}
-	
-	function getNavigator(dymo) {
+		var syncNav, goalNav;
 		for (var i = 0, ii = threads.length; i < ii; i++) {
-			if (threads[i].getDymo() == dymo) {
-				return thread.getNavigator();
+			if (threads[i].hasDymo(syncDymo)) {
+				syncNav = threads[i].getNavigator();
+			}
+			if (threads[i].hasDymo(goalDymo)) {
+				goalNav = threads[i].getNavigator();
 			}
 		}
+		var position = goalNav.getPosition(level, goalDymo);
+		syncNav.setPosition(position, level, syncDymo);
 	}
 	
 	this.play = function(dymo) {

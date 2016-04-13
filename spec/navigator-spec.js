@@ -41,7 +41,6 @@ describe("a navigator", function() {
 	
 	it("can be sequential", function() {
 		var navigator = new DymoNavigator(dymo1, new SequentialNavigator(dymo1));
-		expect(navigator.getPosition(0)).toBeUndefined();
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo5");
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo6");
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo7");
