@@ -3,7 +3,7 @@
  * @constructor
  * @param {Object=} $scope angular scope (optional, to be removed soon)
  */
-function DymoLoader($scope) {
+function DymoLoader(scheduler, $scope) {
 	
 	var mobileRdfUri = "rdf/mobile.n3";
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
@@ -179,6 +179,8 @@ function DymoLoader($scope) {
 				Array.prototype.push.apply(dymos, allDymos.filter(constraintFunction));
 			}
 			return createMappingToObjectsFromJson(json, dymoMap, dymo, dymos, controls, constraintFunction);
+		} else {
+			return createMappingToObjectsFromJson(json, dymoMap, dymo, [scheduler], controls);
 		}
 	}
 	

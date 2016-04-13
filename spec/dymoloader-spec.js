@@ -58,8 +58,11 @@ describe("a dymoloader", function() {
 		loader.loadRenderingFromJson(controlRenderingPath, dymoMap, function(loadedRendering) {
 			rendering = loadedRendering[0];
 			controls = loadedRendering[1];
-			expect(rendering.getMappings().length).toEqual(2);
-			expect(Object.keys(controls).length).toEqual(1);
+			expect(rendering.getMappings().length).toEqual(3);
+			expect(Object.keys(controls).length).toEqual(2);
+			expect(scheduler.getParameter(LISTENER_ORIENTATION).getValue()).toBe(0);
+			controls["orientation"].update(0.5);
+			expect(scheduler.getParameter(LISTENER_ORIENTATION).getValue()).toBe(180);
 			done();
 		});
 	});

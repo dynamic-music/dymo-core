@@ -12,7 +12,8 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	var urisOfPlayingDymos = [];
 	
 	//horizontal listener orientation in degrees
-	this.listenerOrientation = new Parameter(this, 0);
+	this.listenerOrientation = new Parameter(LISTENER_ORIENTATION, 0);
+	this.listenerOrientation.addObserver(this);
 	
 	var convolverSend = audioContext.createConvolver();
 	convolverSend.connect(audioContext.destination);
@@ -46,6 +47,12 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 		if (numCurrentlyLoading == 0 && onSourcesChange) {
 			onSourcesChange(numCurrentlyLoading);
+		}
+	}
+	
+	this.getParameter = function(parameterName) {
+		if (parameterName == LISTENER_ORIENTATION) {
+			return this.listenerOrientation;
 		}
 	}
 	
@@ -114,7 +121,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		return urisOfPlayingDymos;
 	}
 	
-	this.updateListenerOrientation = function() {
+	this.observedParameterChanged = function(param) {
 		var angleInRadians = this.listenerOrientation.getValue() / 180 * Math.PI;
 		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
 	}

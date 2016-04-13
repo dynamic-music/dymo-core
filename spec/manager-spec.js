@@ -30,22 +30,12 @@ describe("a manager", function() {
 							manager.loadDymoFromJson('files/dymo.json', function(loadedDymo) {
 								expect(manager.getTopDymo()).not.toBeUndefined();
 								replace(loadedDymo, function() {
-									manager.loadDymoFromJson('files/dymo.json', function(loadedDymo) {
+									setTimeout(function() {
+										manager.stopPlaying();
 										expect(manager.getTopDymo()).not.toBeUndefined();
-										replace(loadedDymo, function() {
-											manager.loadDymoFromJson('files/dymo.json', function(loadedDymo) {
-												expect(manager.getTopDymo()).not.toBeUndefined();
-												replace(loadedDymo, function() {
-													setTimeout(function() {
-														manager.stopPlaying();
-														expect(manager.getTopDymo()).not.toBeUndefined();
-														done();
-														console.profileEnd();
-													}, 100);
-												});
-											});
-										});
-									});
+										done();
+										console.profileEnd();
+									}, 100);
 								});
 							});
 						});
