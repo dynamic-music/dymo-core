@@ -28,24 +28,21 @@ function DymoNavigator(dymo, defaultSubsetNavigator) {
 	}
 	
 	function recursiveGetNextParts(currentDymo) {
-		if (currentDymo.hasParts()) {
-			var currentNavigator = getNavigator(currentDymo);
-			if (currentNavigator) {
-				currentNavigators[currentDymo.getLevel()] = currentNavigator;
-				if (currentNavigator.getType() == ONE_SHOT_NAVIGATOR) {
-					return currentNavigator.getCurrentParts();
-				}
-				var par = currentNavigator.getCurrentParts();
-				var nextParts = replaceAndConcat(par);
-				if (nextParts) {
-					return nextParts;
-				} else {
-					return replaceAndConcat(currentNavigator.getNextParts());
-				}
+		var currentNavigator = getNavigator(currentDymo);
+		if (currentNavigator) {
+			currentNavigators[currentDymo.getLevel()] = currentNavigator;
+			if (currentNavigator.getType() == ONE_SHOT_NAVIGATOR) {
+				return currentNavigator.getCurrentParts();
 			}
-		} else {
-			return [currentDymo];
+			var par = currentNavigator.getCurrentParts();
+			var nextParts = replaceAndConcat(par);
+			if (nextParts) {
+				return nextParts;
+			} else {
+				return replaceAndConcat(currentNavigator.getNextParts());
+			}
 		}
+		return [currentDymo];
 	}
 	
 	function replaceAndConcat(dymoArray) {
@@ -72,13 +69,13 @@ function DymoNavigator(dymo, defaultSubsetNavigator) {
 	function getNavigator(dymo) {
 		if (!navigators.has(dymo)) {
 			for (var i = 0, j = subsetNavigators.length; i < j; i++) {
-				if (subsetNavigators[i][0](dymo)) {
+				if (subsetNavigators[i][0](dymo) && dymo.hasParts()) {
 					navigators.set(dymo, subsetNavigators[i][1].getCopy(dymo));
 				}
 			}
 			//none of the subsetNavs fit..
 			if (!navigators.has(dymo)) {
-				if (defaultSubsetNavigator) {
+				if (defaultSubsetNavigator && dymo.hasParts()) {
 					navigators.set(dymo, defaultSubsetNavigator.getCopy(dymo));
 				} else {
 					navigators.set(dymo, new OneShotNavigator(dymo));
