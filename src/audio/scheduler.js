@@ -56,6 +56,22 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		}
 	}
 	
+	this.updateNavigatorPosition = function(dymo, level, position) {
+		for (var i = 0, ii = threads.length; i < ii; i++) {
+			if (threads[i].hasDymo(dymo)) {
+				threads[i].getNavigator().setPosition(position, level, dymo);
+			}
+		}
+	}
+	
+	this.getNavigatorPosition = function(dymo, level) {
+		for (var i = 0, ii = threads.length; i < ii; i++) {
+			if (threads[i].hasDymo(dymo)) {
+				return threads[i].getNavigator().getPosition(level, dymo);
+			}
+		}
+	}
+	
 	//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
 	this.syncNavigators = function(syncDymo, goalDymo, level) {
 		var syncNav, goalNav;

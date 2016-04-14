@@ -16,7 +16,7 @@
 			"parameter":"TimeStretchRatio"
 		}
 	],
-	"parts":["dymo.json","dymo2.json"],
+	"parts":["dymo2.json","dymo4.json"],
 	"similars":[],
 	"@context":"http://purl.org/ontology/dymo/context.json"
 }

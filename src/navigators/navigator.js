@@ -15,8 +15,21 @@ function DymoNavigator(dymo, defaultSubsetNavigator) {
 		currentNavigators = [];
 	}
 	
-	this.reset = function() {
-		init();
+	//resets all subnavigators associated with the given dymo
+	this.reset = function(dymo) {
+		if (dymo) {
+			var dymos = dymo.getAllDymosInHierarchy();
+			dymos.splice(dymos.indexOf(dymo), 1); //only keep subdymos
+			for (var i = 0, ii = dymos.length; i < ii; i++) {
+				var nav = navigators.delete(dymos[i]);
+				var index = currentNavigators.indexOf(nav);
+				if (index) {
+					currentNavigators.splice(index, 1);
+				}
+			}
+		} else {
+			init();
+		}
 	}
 	
 	this.addSubsetNavigator = function(subsetFunction, navigator) {
@@ -46,18 +59,19 @@ function DymoNavigator(dymo, defaultSubsetNavigator) {
 		if (!currentDymo) {
 			currentDymo = dymo;
 		}
-		var navs = currentNavigators;
-		this.reset();
+		//this.reset(currentDymo);
 		var i = 0;
-		while (i <= level) {
-			if (!navs[i]) {
-				navs[i] = getNavigator(currentDymo);
-			}
-			currentNavigators[i] = navs[i];
-			navigators.set(currentDymo, navs[i]);
-			currentDymo = navs[i].getCurrentParts()[0];
+		while (i <= level && currentDymo) {
+			var currentNav = getNavigator(currentDymo);
+			//if level reached, set
 			if (i == level) {
-				navs[i].setPartsNavigated(position);
+				currentNav.setPartsNavigated(position);
+				this.reset(currentDymo);
+			} else if (currentNav.getCurrentParts()) {
+				currentDymo = currentNav.getCurrentParts()[0];
+			} else {
+				//impossible to set position (navigator out of range)
+				currentDymo = undefined;
 			}
 			i++;
 		}

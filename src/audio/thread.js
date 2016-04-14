@@ -84,10 +84,14 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			var wakeupTime = (currentEndTime-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000;
 			timeoutID = setTimeout(function() { recursivePlay(); }, wakeupTime);
 		} else {
-			navigator.reset();
-			if (onEnded) {
-				onEnded();
-			}
+			currentEndTime = getCurrentEndTime(startTime);
+			var wakeupTime = (currentEndTime-audioContext.currentTime)*1000;
+			setTimeout(function() {
+				navigator.reset();
+				if (onEnded) {
+					onEnded();
+				}
+			}, wakeupTime);
 		}
 	}
 	

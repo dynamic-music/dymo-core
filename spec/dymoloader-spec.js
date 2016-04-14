@@ -7,6 +7,7 @@ describe("a dymoloader", function() {
 	var dymoPath = 'files/dymo.json';
 	var dymo2Path = 'files/dymo2.json';
 	var dymo3Path = 'files/dymo3.json';
+	var mixDymoPath = 'files/mixdymo.json';
 	var featureRenderingPath = 'files/feature-rendering.json';
 	var controlRenderingPath = 'files/control-rendering.json';
 	var similarityGraphPath = 'files/similarity.json';
@@ -38,17 +39,17 @@ describe("a dymoloader", function() {
 	
 	it("loads higher-level parameters from json", function(done) {
 		var loader = new DymoLoader(scheduler);
-		loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
+		loader.loadDymoFromJson(mixDymoPath, function(loadedDymo) {
 			var dymo2 = loadedDymo[0];
 			var dymoMap2 = loadedDymo[1];
-			expect(dymo2.getUri()).toEqual("dymo0");
+			expect(dymo2.getUri()).toEqual("mixdymo");
 			expect(dymo2.getParts().length).toBe(2);
-			expect(Object.keys(dymoMap2).length).toBe(3);
-			expect(dymo2.getParameter("fade")).not.toBeUndefined();
-			expect(dymo2.getParameter("fade").getObservers().length).toBe(2);
-			dymo2.getParameter("fade").update(0.7);
-			expect(dymo2.getParts()[0].getParameter(AMPLITUDE).getValue()).toBe(0.7);
-			expect(dymo2.getParts()[1].getParameter(AMPLITUDE).getValue()).toBeCloseTo(0.3, 10);
+			expect(Object.keys(dymoMap2).length).toBe(9);
+			expect(dymo2.getParameter("Fade")).not.toBeUndefined();
+			expect(dymo2.getParameter("Fade").getObservers().length).toBe(1);
+			dymo2.getParameter("Fade").update(0.7);
+			expect(dymo2.getParts()[0].getParameter(AMPLITUDE).getValue()).toBeCloseTo(0.3, 10);
+			expect(dymo2.getParts()[1].getParameter(AMPLITUDE).getValue()).toBe(0.7);
 			done();
 		});
 	});
@@ -103,8 +104,8 @@ describe("a dymoloader", function() {
 				var dymoMap3 = loadedDymo[1];
 				expect(dymo3.getUri()).toEqual("dymo");
 				expect(dymo3.getParts().length).toBe(1);
-				expect(dymo3.getParts()[0].getParts().length).toBe(2);
-				expect(Object.keys(dymoMap3).length).toBe(4);
+				expect(dymo3.getParts()[0].getParts().length).toBe(3);
+				expect(Object.keys(dymoMap3).length).toBe(5);
 				done();
 			});
 		});
