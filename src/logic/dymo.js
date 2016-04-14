@@ -2,7 +2,7 @@
  * A dymo has features, parameters, and parts.
  * @constructor
  */
-function DynamicMusicObject(uri, type) {
+function DynamicMusicObject(uri, type, scheduler) {
 	
 	var self = this;
 	
@@ -306,11 +306,11 @@ function DynamicMusicObject(uri, type) {
 	
 	this.observedParameterChanged = function(param) {
 		//HMMM a little weird, think about this..
-		if (param.getName() == PLAY) {
+		if (param.getName() == PLAY && scheduler) {
 			if (param.getChange() > 0) {
-				//scheduler.play(self);
+				scheduler.play(self);
 			} else {
-				//scheduler.stop(self);
+				scheduler.stop(self);
 			}
 		}
 	}

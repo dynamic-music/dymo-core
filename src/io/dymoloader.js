@@ -98,7 +98,7 @@ function DymoLoader(scheduler, $scope) {
 	}
 	
 	function recursiveCreateDymoAndParts(json, dymoMap) {
-		var dymo = new DynamicMusicObject(json["@id"], json["ct"]);
+		var dymo = new DynamicMusicObject(json["@id"], json["ct"], scheduler);
 		dymo.setBasePath(dymoBasePath);
 		dymoMap[json["@id"]] = dymo;
 		if (json["source"]) {
