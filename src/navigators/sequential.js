@@ -48,7 +48,6 @@ function SequentialNavigator(dymo, backwards) {
 	
 	function getParallelParts() {
 		if (partsNavigated <= 0) {
-			partsNavigated++;
 			return dymo.getParts();
 		}
 	}
