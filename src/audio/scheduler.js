@@ -89,8 +89,11 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 				goalNav = threads[i].getNavigator();
 			}
 		}
-		var position = goalNav.getPosition(level, goalDymo);
-		syncNav.setPosition(position, level, syncDymo);
+		//only sync if goalNav already exists..
+		if (goalNav) {
+			var position = goalNav.getPosition(level, goalDymo);
+			syncNav.setPosition(position+1, level, syncDymo);
+		}
 	}
 	
 	this.play = function(dymo) {
