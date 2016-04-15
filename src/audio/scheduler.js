@@ -17,6 +17,12 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	var convolverSend = audioContext.createConvolver();
 	convolverSend.connect(audioContext.destination);
+	var delaySend = audioContext.createDelay(0.5);
+	delaySend.connect(audioContext.destination);
+	var delayFeedback = audioContext.createGain();
+	delayFeedback.gain.value = 0.8;
+	delaySend.connect(delayFeedback);
+	delayFeedback.connect(delaySend);
 	
 	var numCurrentlyLoading = 0;
 	
@@ -88,7 +94,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	}
 	
 	this.play = function(dymo) {
-		var thread = new SchedulerThread(dymo, undefined, audioContext, buffers, convolverSend, updatePlayingDymos, threadEnded);
+		var thread = new SchedulerThread(dymo, undefined, audioContext, buffers, convolverSend, delaySend, updatePlayingDymos, threadEnded);
 		threads.push(thread);
 	}
 	

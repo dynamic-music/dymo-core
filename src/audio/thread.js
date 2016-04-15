@@ -2,7 +2,7 @@
  * Plays back a dymo using a navigator.
  * @constructor
  */
-function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, onChanged, onEnded) {
+function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, delaySend, onChanged, onEnded) {
 	
 	var self = this;
 	
@@ -153,7 +153,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			for (var i = 0; i < nextParts.length; i++) {
 				if (nextParts[i].getSourcePath()) {
 					var buffer = buffers[nextParts[i].getSourcePath()];
-					nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend, sourceEnded));
+					nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend, delaySend, sourceEnded));
 				}
 			}
 			return nextSources;

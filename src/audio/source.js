@@ -2,7 +2,7 @@
  * Plays back a buffer and offers lots of changeable parameters.
  * @constructor
  */
-function Source(dymo, audioContext, buffer, reverbSend, onEnded) {
+function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 	
 	var self = this;
 	
@@ -12,18 +12,16 @@ function Source(dymo, audioContext, buffer, reverbSend, onEnded) {
 	var startTime, endTime, currentPausePosition = 0;
 	var isPlaying, isPaused;
 	var parameters = {};
-	var allParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, FILTER, PAN, HEIGHT, DISTANCE, LOOP];
-	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, FILTER];
+	var allParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, DELAY, FILTER, PAN, HEIGHT, DISTANCE, LOOP];
+	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, DELAY, FILTER];
 	var positionParameters = [PAN, HEIGHT, DISTANCE];
 	var source = audioContext.createBufferSource();
 	//var source = new AudioProcessorSource(audioContext, buffer, filter);
 	
 	var dryGain = audioContext.createGain();
 	dryGain.connect(audioContext.destination);
-	var reverbGain = audioContext.createGain();
-	reverbGain.connect(reverbSend);
-	reverbGain.gain.value = 0;
-	dryGain.connect(reverbGain);
+	var reverbGain = createGain(dryGain, reverbSend);
+	var delayGain = createGain(dryGain, delaySend);
 	var panner = audioContext.createPanner();
 	panner.connect(dryGain);
 	//panner.connect(reverbGain);
@@ -68,6 +66,7 @@ function Source(dymo, audioContext, buffer, reverbSend, onEnded) {
 	parameters[AMPLITUDE] = dryGain.gain;
 	parameters[TIME_STRETCH_RATIO] = {value:0};
 	parameters[REVERB] = reverbGain.gain;
+	parameters[DELAY] = delayGain.gain;
 	parameters[FILTER] = filter.frequency;
 	parameters[PAN] = {value:0}; //mock parameters since panner non-readable
 	parameters[HEIGHT] = {value:0};
@@ -77,11 +76,20 @@ function Source(dymo, audioContext, buffer, reverbSend, onEnded) {
 	initParameter(AMPLITUDE, dymo.getParameter(AMPLITUDE));
 	initParameter(TIME_STRETCH_RATIO, dymo.getParameter(TIME_STRETCH_RATIO));
 	initParameter(REVERB, dymo.getParameter(REVERB));
+	initParameter(DELAY, dymo.getParameter(DELAY));
 	initParameter(PAN, dymo.getParameter(PAN));
 	initParameter(HEIGHT, dymo.getParameter(HEIGHT));
 	initParameter(DISTANCE, dymo.getParameter(DISTANCE));
 	initParameter(LOOP, dymo.getParameter(LOOP));
 	//console.log(dymo.getParameter(AMPLITUDE).getValue())
+	
+	function createGain(source, sink) {
+		var newGain = audioContext.createGain();
+		newGain.connect(sink);
+		newGain.gain.value = 0;
+		source.connect(newGain);
+		return newGain;
+	}
 	
 	function initBuffer() {
 		var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();

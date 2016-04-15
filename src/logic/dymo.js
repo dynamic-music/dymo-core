@@ -32,6 +32,7 @@ function DynamicMusicObject(uri, type, scheduler) {
 		parameters[DISTANCE] = new Parameter(DISTANCE, 0);
 		parameters[HEIGHT] = new Parameter(HEIGHT, 0);
 		parameters[REVERB] = new Parameter(REVERB, 0);
+		parameters[DELAY] = new Parameter(DELAY, 0);
 		parameters[FILTER] = new Parameter(FILTER, 0);
 		parameters[PART_INDEX] = new Parameter(PART_INDEX, 0, true);
 		parameters[PART_COUNT] = new Parameter(PART_COUNT, Number.POSITIVE_INFINITY, true);
