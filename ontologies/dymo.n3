@@ -91,7 +91,7 @@
 
 #Dymo properties
 
-:hasAudioPath
+:hasSource
 	a owl:DatatypeProperty ;
 	rdfs:domain :Dymo ;
 	rdfs:range xsd:string ;
