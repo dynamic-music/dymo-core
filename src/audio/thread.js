@@ -147,8 +147,8 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	
 	function createNextSources() {
 		var nextParts = navigator.getNextParts();
-		console.log(nextParts.map(function(s){return s.getIndex();}))
 		if (nextParts) {
+			console.log(nextParts.map(function(s){return s.getIndex();}))
 			var nextSources = [];
 			for (var i = 0; i < nextParts.length; i++) {
 				if (nextParts[i].getSourcePath()) {

@@ -167,7 +167,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	/** @param {Function=} callback (optional) */
 	function loadAudio(path, callback) {
-		console.log(path)
+		//console.log(path)
 		numCurrentlyLoading++;
 		var request = new XMLHttpRequest();
 		request.open('GET', path, true);

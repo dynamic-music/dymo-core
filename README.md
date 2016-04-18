@@ -85,7 +85,9 @@ You can then get it by its name from the `DymoManager`, as explained [above](#em
 
 For now, *sensor controls* and automatically generated *UI controls* can only be used within the [Semantic Player](https://github.com/florianthalmann/semantic-player.git) framework.
 
-### Creating a hierarchy by adding parts
+### Creating a dymo hierarchy
+
+
 
 ### Defining higher-level parameters
 

@@ -198,6 +198,9 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 				onEnded(self);
 			}
 		};
+		if (!startTime) {
+			startTime = 0;
+		}
 		source.start(startTime);
 		//source.start(startTime, currentPausePosition);
 		isPlaying = true;
