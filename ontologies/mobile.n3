@@ -62,6 +62,11 @@
 	a owl:Class ;
 	rdfs:comment "" .
 
+:CustomControl
+	a owl:Class ;
+	rdfs:subClassOf :MobileControl ;
+	rdfs:comment "" .
+
 
 #Sensor Controls
 

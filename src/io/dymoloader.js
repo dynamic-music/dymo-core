@@ -272,7 +272,7 @@ function DymoLoader(scheduler, $scope) {
 			return getGeolocationControl(2);
 		}	else if (type == COMPASS_HEADING) {
 			return getCompassControl(0);
-		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON) {
+		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM) {
 			return new Control(label, type);
 		} else if (type == RANDOM) {
 			return new RandomControl();

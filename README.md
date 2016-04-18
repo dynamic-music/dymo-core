@@ -12,7 +12,7 @@ or [Bower](http://bower.io/#install-bower)
 $ bower install dymo-core
 ```
 
-Then include `[bower_components]/dymo-core/dist/dymo-core.min.js` in your app.
+Then, simply include `[bower_components]/dymo-core/dist/dymo-core.min.js` in your code.
 
 The `DymoManager` class allows you to easily load and playback dymos. First you need to create a Web Audio API audio context and pass it to the constructor:
 ```javascript
@@ -28,11 +28,11 @@ The callback tells you when the dymo, its audio files, and the rendering are don
 ```javascript
 dymoManager.stopPlaying();
 ```
-If you plan on using custom UI controls in your application, the dymo manager can provide you with the corresponding UI controls you added to the dymo spec via
+If you plan on using custom UI controls in your application, the dymo manager can provide you with the corresponding UI controls you added to your dymo spec (see next section). The following method takes the name you gave it in the json definition as a parameter.
 ```javascript
 dymoManager.getUIControl(name);
 ```
-where `name` is the name you gave it in the definition. You can also use the [Semantic Player](https://github.com/florianthalmann/semantic-player.git) framework to create generic user interfaces more easily.
+You can also use the [Semantic Player](https://github.com/florianthalmann/semantic-player.git) framework to create generic user interfaces more easily.
 
 ## Creating dymos manually in json-ld
 
@@ -75,7 +75,15 @@ In order to make the dymo dynamic, adaptive, or interactive you can define a *re
 }
 ```
 
-The first few lines are analogous to the ones we used to define the dymo in the previous section. What follows is a list of mappings which contains only one in this example. First we specify a number of domain dimensions to map from, here a one-dimensional space with just a random control. Then, we define a mapping function that can consist of arbitrary javascript code, the arguments of which are going to stem from the domain dimensions. Here, we simple map the value *a* coming from the random control with an identity function. *dymos* and *parameter* define where the result of the function is mapped to, in this case the *Amplitude* parameter of the *exampleDymo* defined in the previous section.
+The first few lines are analogous to the ones we used to define the dymo in the previous section. What follows is a list of mappings which contains only one in this example. First we specify a number of domain dimensions to map from, here a one-dimensional space with just a random control. Then, we define a mapping function that can consist of arbitrary javascript code, the arguments of which are going to stem from the domain dimensions. Here, we simple map the value `a` coming from the random control with an identity function. `dymos` and `parameter` define where the result of the function is mapped to, in this case the `Amplitude` parameter of the `exampleDymo` defined in the previous section.
+
+Within dymo-core you can use any of the *auto controls* defined by the ontology, as well as *custom controls*, which you can manipulate yourself within your app. You can define a *custom control* as follows
+```json
+{"name":"customControl","type":"Custom"}
+```
+You can then get it by its name from the `DymoManager`, as explained [above](#embedding-dymo-core-in-a-web-app).
+
+For now, *sensor controls* and automatically generated *UI controls* can only be used within the [Semantic Player](https://github.com/florianthalmann/semantic-player.git) framework.
 
 ### Creating a hierarchy by adding parts
 
