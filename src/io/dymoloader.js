@@ -209,6 +209,9 @@ function DymoLoader(scheduler, $scope) {
 				} else {
 					control = getControl(currentDim);
 				}
+				if ("value" in currentDim) {
+					control.update(currentDim["value"]);
+				}
 				if (controls && !controls[currentName]) {
 					controls[currentName] = control;
 				}
