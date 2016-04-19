@@ -87,11 +87,18 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			currentEndTime = getCurrentEndTime(startTime);
 			var wakeupTime = (currentEndTime-audioContext.currentTime)*1000;
 			setTimeout(function() {
-				navigator.reset();
-				if (onEnded) {
-					onEnded();
-				}
-			}, wakeupTime);
+				endThreadIfNoMoreSources();
+			}, wakeupTime+100);
+		}
+	}
+	
+	function endThreadIfNoMoreSources() {
+		if (sources.size == 0) {
+			window.clearTimeout(timeoutID);
+			navigator.reset();
+			if (onEnded) {
+				onEnded();
+			}
 		}
 	}
 	
@@ -113,10 +120,8 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	
 	function sourceEnded(source) {
 		sources.delete(source.getDymo());
-		if (sources.size == 0) {
-			window.clearTimeout(timeoutID);
-		}
 		onChanged();
+		endThreadIfNoMoreSources();
 	}
 	
 	function getCurrentDelay() {

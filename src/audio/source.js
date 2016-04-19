@@ -77,6 +77,7 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 	initParameter(TIME_STRETCH_RATIO, dymo.getParameter(TIME_STRETCH_RATIO));
 	initParameter(REVERB, dymo.getParameter(REVERB));
 	initParameter(DELAY, dymo.getParameter(DELAY));
+	initParameter(FILTER, dymo.getParameter(FILTER));
 	initParameter(PAN, dymo.getParameter(PAN));
 	initParameter(HEIGHT, dymo.getParameter(HEIGHT));
 	initParameter(DISTANCE, dymo.getParameter(DISTANCE));

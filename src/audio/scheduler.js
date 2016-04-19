@@ -17,10 +17,11 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	var convolverSend = audioContext.createConvolver();
 	convolverSend.connect(audioContext.destination);
-	var delaySend = audioContext.createDelay(0.5);
+	var delaySend = audioContext.createDelay();
+	delaySend.delayTime.value = 0.5;
 	delaySend.connect(audioContext.destination);
 	var delayFeedback = audioContext.createGain();
-	delayFeedback.gain.value = 0.8;
+	delayFeedback.gain.value = 0.6;
 	delaySend.connect(delayFeedback);
 	delayFeedback.connect(delaySend);
 	
