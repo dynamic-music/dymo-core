@@ -81,7 +81,7 @@ Within dymo-core you can use any of the *auto controls* defined by the ontology,
 ```json
 {"name":"customControl","type":"Custom"}
 ```
-You can also use the predefined types `"Slider"`, `"Toggle"`, or `"Button"` if you want them to behave respectively. Any of these UI controls can then be obtained from the `DymoManager` as explained [above](#embedding-dymo-core-in-a-web-app).
+You can also use the predefined types `Slider`, `Toggle`, or `Button` if you want them to behave respectively. Any of these UI controls can then be obtained from the `DymoManager` as explained [above](#embedding-dymo-core-in-a-web-app).
 
 For now, *sensor controls* and automatically *generated UI controls* can only be used within the [Semantic Player](https://github.com/florianthalmann/semantic-player.git) framework.
 
