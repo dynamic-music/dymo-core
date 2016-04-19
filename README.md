@@ -77,13 +77,13 @@ In order to make the dymo dynamic, adaptive, or interactive you can define a *re
 
 The first few lines are analogous to the ones we used to define the dymo in the previous section. What follows is a list of mappings which contains only one in this example. First we specify a number of domain dimensions to map from, here a one-dimensional space with just a random control. Then, we define a mapping function that can consist of arbitrary javascript code, the arguments of which are going to stem from the domain dimensions. Here, we simple map the value `a` coming from the random control with an identity function. `dymos` and `parameter` define where the result of the function is mapped to, in this case the `Amplitude` parameter of the `exampleDymo` defined in the previous section.
 
-Within dymo-core you can use any of the *auto controls* defined by the ontology, as well as *custom controls*, which you can manipulate yourself within your app. You can define a *custom control* as follows
+Within dymo-core you can use any of the *auto controls* defined by the ontology, as well as *custom UI controls*, which you can manipulate yourself within your app. You can define a *custom UI control* as follows
 ```json
 {"name":"customControl","type":"Custom"}
 ```
-You can then get it by its name from the `DymoManager`, as explained [above](#embedding-dymo-core-in-a-web-app).
+You can also use the predefined types `"Slider"`, `"Toggle"`, or `"Button"` if you want them to behave respectively. Any of these UI controls can then be obtained from the `DymoManager` as explained [above](#embedding-dymo-core-in-a-web-app).
 
-For now, *sensor controls* and automatically generated *UI controls* can only be used within the [Semantic Player](https://github.com/florianthalmann/semantic-player.git) framework.
+For now, *sensor controls* and automatically *generated UI controls* can only be used within the [Semantic Player](https://github.com/florianthalmann/semantic-player.git) framework.
 
 ### Creating a dymo hierarchy
 
