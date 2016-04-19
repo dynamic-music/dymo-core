@@ -1,8 +1,9 @@
 /**
  * A class for easy access of all dymo core functionality.
  * @constructor
+ * @param {Object=} $scope angular scope (optional, uicontrols will call $scope.$apply())
  */
-function DymoManager(audioContext, scheduleAheadTime, reverbFile) {
+function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 	
 	var scheduler = new Scheduler(audioContext, function(){});
 	if (!reverbFile) {
@@ -24,7 +25,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile) {
 				for (var key in loadedRendering[1]) {
 					var currentControl = loadedRendering[1][key];
 					if (UI_CONTROLS.indexOf(currentControl.getType()) >= 0) {
-						uiControls[key] = new UIControl(currentControl);
+						uiControls[key] = new UIControl(currentControl, $scope);
 					}
 				}
 				scheduler.loadBuffers(rendering.dymo);
