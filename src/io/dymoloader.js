@@ -20,7 +20,6 @@ function DymoLoader(scheduler, $scope) {
 	this.loadDymoFromJson = function(jsonUri, callback) {
 		var fileIndex = jsonUri.lastIndexOf('/')+1;
 		dymoBasePath = jsonUri.substring(0, fileIndex);
-		jsonUri = jsonUri.substring(fileIndex);
 		loadJson(jsonUri, {}, callback, createDymoFromJson);
 	}
 	
@@ -43,7 +42,7 @@ function DymoLoader(scheduler, $scope) {
 	
 	function recursiveLoadJson(jsonUri, jsonString, dymoMap, callback, creatingFunction) {
 		var request = new XMLHttpRequest();
-		request.open('GET', dymoBasePath + jsonUri, true);
+		request.open('GET', jsonUri, true);
 		request.onload = function() {
 			//console.log(this.responseText.substring(0,20), isJsonString(this.responseText))
 			if (isJsonString(this.responseText)) {
