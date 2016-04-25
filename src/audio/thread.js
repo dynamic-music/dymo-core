@@ -65,7 +65,6 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 		//create sources and init
 		currentSources = getNextSources();
 		registerSources(currentSources);
-		//console.log(currentSources)
 		if (!previousOnset) {
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
 			previousOnset = currentSources[0].getDymo().getParameter(ONSET).getValue();

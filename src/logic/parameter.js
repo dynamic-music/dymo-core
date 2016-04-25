@@ -93,7 +93,7 @@ Parameter.prototype.setValueAndNotify = function(updater, newValue) {
 		if (this.isInteger) {
 			newValue = Math.round(newValue);
 		}
-		if (Math.abs(newValue - this.value) > 0.000001) { //catch floating point errors
+		if (isNaN(this.value) || Math.abs(newValue - this.value) > 0.000001) { //catch floating point errors
 			this.change = newValue - this.value;
 			this.value = newValue;
 			//update values of all other updaters connected to this parameter
