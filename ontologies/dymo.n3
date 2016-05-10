@@ -27,6 +27,10 @@
 	rdfs:subClassOf ch:Attribute ;
 	rdfs:comment "A parameter is a mutable attribute of a Dymo" .
 
+:ParameterPreset
+	a owl:Class ;
+	rdfs:comment "A parameter preset" .
+
 #Audio parameters
 
 :AudioParameter
@@ -95,4 +99,24 @@
 	a owl:DatatypeProperty ;
 	rdfs:domain :Dymo ;
 	rdfs:range xsd:string ;
+	rdfs:comment "" .
+
+:hasPreset
+	a owl:ObjectProperty ;
+	rdfs:domain :Dymo ;
+	rdfs:range :Parameter ;
+	rdfs:comment "" .
+
+#Preset properties
+
+:hasParameter
+	a owl:ObjectProperty ;
+	rdfs:domain :ParameterPreset ;
+	rdfs:range :Parameter ;
+	rdfs:comment "" .
+
+:hasValue
+	a owl:DatatypeProperty ;
+	rdfs:domain :ParameterPreset ;
+	rdfs:range xsd:float ;
 	rdfs:comment "" .
