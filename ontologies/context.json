@@ -1,6 +1,6 @@
 {
 	"@context" : {
-		"@base" : "http://tiny.cc/dymo-context#",
+		"@base" : "http://tiny.cc/dymo-context/",
 		"xsd": "http://www.w3.org/2001/XMLSchema#",
 		"ch": "http://tiny.cc/charm-ontology#",
 		"dy": "http://tiny.cc/dymo-ontology#",
