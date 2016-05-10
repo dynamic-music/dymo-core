@@ -1,9 +1,9 @@
 {
 	"@context" : {
-		"@base" : "http://tiny.cc/dymo-context",
-		"charm": "http://tiny.cc/charm-ontology",
-		"dymo": "http://tiny.cc/dymo-ontology",
-		"mobile": "http://tiny.cc/mobile-audio-ontology",
+		"@base" : "http://tiny.cc/dymo-context#",
+		"charm": "http://tiny.cc/charm-ontology#",
+		"dymo": "http://tiny.cc/dymo-ontology#",
+		"mobile": "http://tiny.cc/mobile-audio-ontology#",
 		
 		"adt": "@type",
 		"cdt": "charm:cdt",
