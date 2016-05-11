@@ -22,10 +22,11 @@
 		"PartDurationRatio": "dy:PartDurationRatio",
 		"PartProportion": "dy:PartProportion",
 		"PartCount": "dy:PartCount",
-		"source": { "@id":"dy:hasSource", "@type":"xsd:string" },
+		"source":"dy:hasSource",
 		"presets": "dy:hasPreset",
 		
 		"param": "dy:hasParameter",
+		"name": "dy:hasName",
 		"val": { "@id":"dy:hasValue", "@type":"xsd:float" },
 		
 		"Rendering": "mo:Rendering",
@@ -33,7 +34,10 @@
 		"dymo": "mo:hasDymo",
 		
 		"Mapping": "mo:Mapping",
+		"domainDims": "mo:hasDomainDimension",
 		"function": "mo:hasFunction",
+		"args": "mo:hasArguments",
+		"body": "mo:hasBody",
 		"dymos": "mo:toDymo",
 		"parameter": "mo:toParameter",
 		
