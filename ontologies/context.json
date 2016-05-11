@@ -6,7 +6,6 @@
 		"dy": "http://tiny.cc/dymo-ontology#",
 		"mo": "http://tiny.cc/mobile-audio-ontology#",
 		
-		"adt": "@type",
 		"cdt": "ch:cdt",
 		"value": "ch:value",
 		"parts": "ch:hasPart",
