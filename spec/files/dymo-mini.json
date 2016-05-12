@@ -1,0 +1,12 @@
+{
+	"@context":"http://tiny.cc/dymo-context",
+	"@id":"blib",
+	"@type":"Dymo",
+	"parts":[],
+	"source":"blib.m4a",
+	"presets":[
+		{"param":"Loop", "val":1},
+		{"param":"Amplitude", "val":0.2},
+		{"param":"PlaybackRate", "val":0.7}
+	]
+}

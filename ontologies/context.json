@@ -2,11 +2,15 @@
 	"@context" : {
 		"@base" : "http://tiny.cc/dymo-context/",
 		"xsd": "http://www.w3.org/2001/XMLSchema#",
+		"sch": "http://schema.org/",
 		"ch": "http://tiny.cc/charm-ontology#",
 		"dy": "http://tiny.cc/dymo-ontology#",
 		"mo": "http://tiny.cc/mobile-audio-ontology#",
 		
+		"name": "sch:name",
+		
 		"cdt": "ch:cdt",
+		"adt": "ch:adt",
 		"value": "ch:value",
 		"parts": "ch:hasPart",
 		
@@ -24,10 +28,8 @@
 		"PartCount": "dy:PartCount",
 		"source":"dy:hasSource",
 		"presets": "dy:hasPreset",
-		
-		"param": "dy:hasParameter",
-		"name": "dy:hasName",
-		"val": { "@id":"dy:hasValue", "@type":"xsd:float" },
+		"parameter": "dy:hasParameter",
+		"features": "dy:hasFeature",
 		
 		"Rendering": "mo:Rendering",
 		"mappings": "mo:hasMapping",
@@ -39,7 +41,7 @@
 		"args": "mo:hasArguments",
 		"body": "mo:hasBody",
 		"dymos": "mo:toDymo",
-		"parameter": "mo:toParameter",
+		"range": "mo:toParameter",
 		
 		"Custom": "mo:CustomControl",
 		"AccelerometerX": "mo:AccelerometerX",

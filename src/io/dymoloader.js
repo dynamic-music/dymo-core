@@ -13,7 +13,7 @@ function DymoLoader(scheduler, $scope) {
 	var features = {};
 	
 	//TODO PUT IN CENTRAL PLACE!!
-	var jsonKeys = ["@id", "@type", "ct", "source", "navigator", "similars", "mappings", "parts"];
+	var jsonKeys = ["@id", "@type", "cdt", "source", "navigator", "similars", "mappings", "parts"];
 	
 	var dymoBasePath = '';
 	
@@ -44,20 +44,28 @@ function DymoLoader(scheduler, $scope) {
 		var request = new XMLHttpRequest();
 		request.open('GET', jsonUri, true);
 		request.onload = function() {
-			//console.log(this.responseText.substring(0,20), isJsonString(this.responseText))
-			if (isJsonString(this.responseText)) {
-				if (jsonString) {
-					jsonString = jsonString.replace('"'+jsonUri+'"', this.responseText);
-				} else {
-					jsonString = this.responseText;
+			if (!this.responseText.includes("Cannot GET")) {
+				//console.log(this.responseText.substring(0,20), isJsonString(this.responseText))
+				if (isJsonString(this.responseText)) {
+					if (jsonString) {
+						if (jsonUri.includes(dymoBasePath)) {
+							jsonUri = jsonUri.replace(dymoBasePath, "");
+						}
+						jsonString = jsonString.replace('"'+jsonUri+'"', this.responseText);
+					} else {
+						jsonString = this.responseText;
+					}
 				}
-			}
-			var nextUri = findNextJsonUri(jsonString);
-			if (nextUri) {
-				recursiveLoadJson(nextUri, jsonString, dymoMap, callback, creatingFunction);
-			} else if (jsonString) {
-				var result = creatingFunction(JSON.parse(jsonString), dymoMap);
-				callback(result);
+				var nextUri = findNextJsonUri(jsonString);
+				if (nextUri) {
+					if (!nextUri.includes(dymoBasePath)) {
+						nextUri = dymoBasePath+nextUri;
+					}
+					recursiveLoadJson(nextUri, jsonString, dymoMap, callback, creatingFunction);
+				} else if (jsonString) {
+					var result = creatingFunction(JSON.parse(jsonString), dymoMap);
+					callback(result);
+				}
 			}
 		}
 		request.error = function(e){
@@ -97,20 +105,20 @@ function DymoLoader(scheduler, $scope) {
 	}
 	
 	function recursiveCreateDymoAndParts(json, dymoMap) {
-		var dymo = new DynamicMusicObject(json["@id"], json["ct"], scheduler);
+		var dymo = new DynamicMusicObject(json["@id"], json["cdt"], scheduler);
 		dymo.setBasePath(dymoBasePath);
 		dymoMap[json["@id"]] = dymo;
 		if (json["source"]) {
 			dymo.setSourcePath(json["source"]);
 		}
-		for (var attribute in json) {
-			if (jsonKeys.indexOf(attribute) < 0) {
-				if (json[attribute]["type"] == FEATURE) {
-					dymo.setFeature(attribute, json[attribute].value);
-				}
-				else if (json[attribute]["type"] == PARAMETER) {
-					addOrUpdateDymoParameter(dymo, attribute, json[attribute].value);
-				}
+		if (json["features"]) {
+			for (var i = 0; i < json["features"].length; i++) {
+				dymo.setFeature(json["features"][i]["@id"], json["features"][i]["value"]);
+			}
+		}
+		if (json["presets"]) {
+			for (var i = 0; i < json["presets"].length; i++) {
+				addOrUpdateDymoParameter(dymo, json["presets"][i]["parameter"], json["presets"][i]["value"]);
 			}
 		}
 		if (json["parts"]) {
@@ -152,7 +160,7 @@ function DymoLoader(scheduler, $scope) {
 		}
 		if (json["navigator"]) {
 			var dymosFunction = Function.apply(null, json["navigator"]["dymos"]["args"].concat(json["navigator"]["dymos"]["body"]));
-			rendering.addNavigator(getNavigator(json["navigator"]["type"]), dymosFunction);
+			rendering.addNavigator(getNavigator(json["navigator"]["@type"]), dymosFunction);
 		}
 		return [rendering, controls];
 	}
@@ -190,7 +198,7 @@ function DymoLoader(scheduler, $scope) {
 		for (var j = 0; j < json["domainDims"].length; j++) {
 			var currentDim = json["domainDims"][j];
 			var currentName = currentDim["name"];
-			var currentType = currentDim["type"];
+			var currentType = currentDim["@type"];
 			if (currentType == FEATURE) {
 				domainDims.push(currentName);
 			} else if (currentType == PARAMETER) {
@@ -217,7 +225,7 @@ function DymoLoader(scheduler, $scope) {
 				domainDims.push(control);
 			}
 		}
-		return new Mapping(domainDims, isRelative, json["function"], targets, json["parameter"], dymoConstraint);
+		return new Mapping(domainDims, isRelative, json["function"], targets, json["range"], dymoConstraint);
 	}
 	
 	function addOrUpdateDymoParameter(dymo, name, value) {
@@ -254,7 +262,7 @@ function DymoLoader(scheduler, $scope) {
 	}
 	
 	function getControl(options) {
-		var type = options["type"];
+		var type = options["@type"];
 		var label = options["name"];
 		if (type == ACCELEROMETER_X) {
 			return getAccelerometerControl(0);

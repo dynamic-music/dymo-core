@@ -14,8 +14,8 @@ describe("a manager", function() {
 	
 	
 	it("manages a dymo", function(done) {
-		console.profile("dymo");
-		manager.loadDymoAndRendering('files/mixdymo.json', 'mixdymo-rendering.json', function() {
+		//console.profile("dymo");
+		manager.loadDymoAndRendering('files/mixdymo.json', 'files/mixdymo-rendering.json', function() {
 			manager.loadDymoFromJson('files/dymo4.json', function(loadedDymo) {
 				expect(manager.getTopDymo()).not.toBeUndefined();
 				replace(loadedDymo, function() {
@@ -29,7 +29,7 @@ describe("a manager", function() {
 										manager.stopPlaying();
 										expect(manager.getTopDymo()).not.toBeUndefined();
 										done();
-										console.profileEnd();
+										//console.profileEnd();
 									}, 100);
 								});
 							});
@@ -41,7 +41,7 @@ describe("a manager", function() {
 	});
 	
 	it("can sync and update navigators", function(done) {
-		manager.loadDymoAndRendering('files/mixdymo.json', 'mixdymo-rendering.json', function() {
+		manager.loadDymoAndRendering('files/mixdymo.json', 'files/mixdymo-rendering.json', function() {
 			manager.loadDymoFromJson('files/dymo4.json', function(loadedDymo) {
 				expect(manager.getTopDymo()).not.toBeUndefined();
 				replace(loadedDymo, function() {

@@ -1,11 +1,12 @@
 describe("a dynamic music object graph store", function() {
 	
-	jasmine.DEFAULT_TIMEOUT_INTERVAL = 25000;
+	//jasmine.DEFAULT_TIMEOUT_INTERVAL = 25000;
 	
 	it("loads a dymo from json", function(done) {
 		loadFile("files/dymo-real.json", function(loaded) {
 		loadFile("../ontologies/context.json", function(context) {
 			jsonld.toRDF(loaded, {format: 'application/nquads'}, function(err, nquads) {
+				console.log(nquads)
 				var store = N3.Store();
 				var writer = N3.Writer({ format: 'application/nquads' });
 				N3.Parser().parse(nquads, function (error, triple, prefixes) {
@@ -14,6 +15,7 @@ describe("a dynamic music object graph store", function() {
 						writer.addTriple(triple);
 					} else {
 						writer.end(function (error, result) {
+							//console.log(result)
 							jsonld.fromRDF(result.split('b0_').join(''), {format: 'application/nquads'}, function(err, doc) {
 								jsonld.frame(doc, {"@id":"http://tiny.cc/dymo-context/"+loaded["@id"]}, function(err, framed) {
 									jsonld.compact(framed, context, function(err, compacted) {

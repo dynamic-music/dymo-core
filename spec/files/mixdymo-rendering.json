@@ -1,34 +1,38 @@
 {
+	"@context":"http://tiny.cc/dymo-context",
+	"@id":"demoBeatRendering",
+	"@type":"Rendering",
+	"dymo":"demoBeat",
 	"mappings":[
 		{
-			"domainDims":[{"name":"fadeRamp","type":"Ramp","value":0,"duration":1}],
+			"domainDims":[{"name":"fadeRamp","@type":"Ramp","value":0,"duration":1}],
 			"function":{"args":["a"],"body":"return a;"},
 			"dymos":["mixdymo"],
-			"parameter":"Fade"
+			"range":"Fade"
 		},
 		{
-			"domainDims":[{"name":"fade","type":"Slider"}],
+			"domainDims":[{"name":"fade","@type":"Slider"}],
 			"function":{"args":["a"],"body":"return a;"},
 			"dymos":["mixdymo"],
-			"parameter":"Fade"
+			"range":"Fade"
 		},
 		{
-			"domainDims":[{"name":"beats per bar","type":"Slider"}],
+			"domainDims":[{"name":"beats per bar","@type":"Slider"}],
 			"function":{"args":["a"],"body":"return 4*a;"},
 			"dymos":{"args":["d"],"body":"return d.getLevel() == 2;"},
-			"parameter":"PartCount"
+			"range":"PartCount"
 		},
 		{
-			"domainDims":[{"name":"offbeat duration","type":"Slider"}],
+			"domainDims":[{"name":"offbeat duration","@type":"Slider"}],
 			"function":{"args":["a"],"body":"return a;"},
 			"dymos":{"args":["d"],"body":"return d.getLevel() == 3 && d.getIndex()%2 == 1;"},
-			"parameter":"DurationRatio"
+			"range":"DurationRatio"
 		},
 		{
-			"domainDims":[{"name":"transition","type":"Button"}],
+			"domainDims":[{"name":"transition","@type":"Button"}],
 			"function":{"args":["a"],"body":"return a;"},
 			"controls":["fadeRamp"],
-			"parameter":"AutoControlTrigger"
+			"range":"AutoControlTrigger"
 		}
 	]
 }
