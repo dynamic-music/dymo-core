@@ -65,10 +65,10 @@
 			"@type":"Dymo",
 			"parts":[],
 			"source":"pad.m4a",
-			"presets":[
-				{"parameter":"Loop", "value":1},
-				{"parameter":"Amplitude", "value":0.2},
-				{"parameter":"PlaybackRate", "value":1}
+			"parameters":[
+				{"@type":"Loop", "value":1},
+				{"@type":"Amplitude", "value":0.2},
+				{"@type":"PlaybackRate", "value":1}
 			],
 			"features":[
 				{"@id":"onset","value":0.607,"adt":"Onset"}

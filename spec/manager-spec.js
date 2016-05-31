@@ -56,6 +56,7 @@ describe("a manager", function() {
 						manager.syncNavigators(parts[1], parts[0], 0);
 						//manager.syncNavigators(parts[1-fadePosition], parts[fadePosition], 0);
 						var pos = parts.map(function(p){return manager.getNavigatorPosition(p, 0);})
+						console.log(pos)
 						expect(pos[0]).toEqual(pos[1]);
 						setTimeout(function() {
 							manager.stopPlaying();

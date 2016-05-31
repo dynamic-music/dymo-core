@@ -12,9 +12,6 @@ function DymoLoader(scheduler, $scope) {
 	var dmos = {}; //dmos at all hierarchy levels for quick access during mapping assignment
 	var features = {};
 	
-	//TODO PUT IN CENTRAL PLACE!!
-	var jsonKeys = ["@id", "@type", "cdt", "source", "navigator", "similars", "mappings", "parts"];
-	
 	var dymoBasePath = '';
 	
 	this.loadDymoFromJson = function(jsonUri, callback) {

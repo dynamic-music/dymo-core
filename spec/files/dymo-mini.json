@@ -5,8 +5,8 @@
 	"parts":[],
 	"source":"blib.m4a",
 	"presets":[
-		{"param":"Loop", "val":1},
-		{"param":"Amplitude", "val":0.2},
-		{"param":"PlaybackRate", "val":0.7}
+		{"parameter":"Loop", "value":1},
+		{"parameter":"Amplitude", "value":0.2},
+		{"parameter":"PlaybackRate", "value":0.7}
 	]
 }
