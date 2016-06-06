@@ -1,9 +1,8 @@
 /**
  * A DymoLoader loads dymos from rdf, jams, or json-ld.
  * @constructor
- * @param {Object=} $scope angular scope (optional, to be removed soon)
  */
-function DymoLoader(scheduler, $scope) {
+function DymoLoader(scheduler) {
 	
 	var mobileRdfUri = "rdf/mobile.n3";
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
@@ -261,24 +260,16 @@ function DymoLoader(scheduler, $scope) {
 	function getControl(options) {
 		var type = options["@type"];
 		var label = options["name"];
-		if (type == ACCELEROMETER_X) {
-			return getAccelerometerControl(0);
-		} else if (type == ACCELEROMETER_Y) {
-			return getAccelerometerControl(1);
-		}	else if (type == ACCELEROMETER_Z) {
-			return getAccelerometerControl(2);
-		} else if (type == TILT_X) {
-			return getAccelerometerControl(3);
-		} else if (type == TILT_Y) {
-			return getAccelerometerControl(4);
-		} else if (type == GEOLOCATION_LATITUDE) {
-			return getGeolocationControl(0);
-		}	else if (type == GEOLOCATION_LONGITUDE) {
-			return getGeolocationControl(1);
+		if (type == ACCELEROMETER_X || type == ACCELEROMETER_Y || type == ACCELEROMETER_Z) {
+			return new AccelerometerControl(type);
+		} else if (type == TILT_X || type == TILT_Y) {
+			return new TiltControl(type);
+		} else if (type == GEOLOCATION_LATITUDE || type == GEOLOCATION_LONGITUDE) {
+			return new GeolocationControl(type);
 		}	else if (type == GEOLOCATION_DISTANCE) {
-			return getGeolocationControl(2);
+			return new DistanceControl();
 		}	else if (type == COMPASS_HEADING) {
-			return getCompassControl(0);
+			return new CompassControl();
 		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM) {
 			return new Control(label, type);
 		} else if (type == RANDOM) {
@@ -288,47 +279,6 @@ function DymoLoader(scheduler, $scope) {
 		} else if (type == RAMP) {
 			var milisDuration = Math.round(parseFloat(options["duration"])*1000);
 			return new RampControl(milisDuration, parseFloat(options["value"]));
-		}
-	}
-	
-	function getAccelerometerControl(index) {
-		if (!$scope.accelerometerWatcher) {
-			$scope.accelerometerWatcher = new AccelerometerWatcher();
-		}
-		if (index == 0) {
-			return $scope.accelerometerWatcher.xControl;
-		} else if (index == 1) {
-			return $scope.accelerometerWatcher.yControl;
-		} else if (index == 2){
-			return $scope.accelerometerWatcher.zControl;
-		} else if (index == 3){
-			return $scope.accelerometerWatcher.tiltXControl;
-		} else if (index == 4){
-			return $scope.accelerometerWatcher.tiltYControl;
-		}
-	}
-	
-	function getGeolocationControl(index) {
-		if (!$scope.geolocationWatcher) {
-			$scope.geolocationWatcher = new GeolocationWatcher();
-		}
-		if (index == 0) {
-			return $scope.geolocationWatcher.latitudeControl;
-		} else if (index == 1) {
-			return $scope.geolocationWatcher.longitudeControl;
-		} else {
-			return $scope.geolocationWatcher.distanceControl;
-		}
-	}
-	
-	function getCompassControl(index) {
-		if (!$scope.compassWatcher) {
-			$scope.compassWatcher = new CompassWatcher();
-		}
-		if (index == 0) {
-			return $scope.compassWatcher.headingControl;
-		} else {
-			return $scope.compassWatcher.accuracyControl;
 		}
 	}
 	

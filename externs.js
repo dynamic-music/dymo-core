@@ -14,8 +14,12 @@ N3.Writer = function(p1){};
 N3.Writer.addTriple = function(p1,p2,p3){};
 
 /** @constructor */
-function AccelerometerWatcher(){};
+function AccelerometerControl(type){};
 /** @constructor */
-function GeolocationWatcher(){};
+function TiltControl(type){};
 /** @constructor */
-function CompassWatcher(){};
+function CompassControl(){};
+/** @constructor */
+function GeolocationControl(type){};
+/** @constructor */
+function DistanceControl(){};

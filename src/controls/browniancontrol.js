@@ -1,5 +1,5 @@
 /**
- * Controls based on brownian motion
+ * A control based on brownian motion
  * @constructor
  * @extends {AutoControl}
  */
