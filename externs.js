@@ -23,3 +23,5 @@ function CompassControl(){};
 function GeolocationControl(type){};
 /** @constructor */
 function DistanceControl(){};
+/** @constructor */
+function BeaconControl(uuid, major, minor){};

@@ -40,11 +40,11 @@ function DymoLoader(scheduler) {
 		var request = new XMLHttpRequest();
 		request.open('GET', jsonUri, true);
 		request.onload = function() {
-			if (!this.responseText.includes("Cannot GET")) {
+			if (this.responseText.indexOf("Cannot GET") < 0) {
 				//console.log(this.responseText.substring(0,20), isJsonString(this.responseText))
 				if (isJsonString(this.responseText)) {
 					if (jsonString) {
-						if (jsonUri.includes(dymoBasePath)) {
+						if (jsonUri.indexOf(dymoBasePath) >= 0) {
 							jsonUri = jsonUri.replace(dymoBasePath, "");
 						}
 						jsonString = jsonString.replace('"'+jsonUri+'"', this.responseText);
@@ -54,7 +54,7 @@ function DymoLoader(scheduler) {
 				}
 				var nextUri = findNextJsonUri(jsonString);
 				if (nextUri) {
-					if (!nextUri.includes(dymoBasePath)) {
+					if (nextUri.indexOf(dymoBasePath) < 0) {
 						nextUri = dymoBasePath+nextUri;
 					}
 					recursiveLoadJson(nextUri, jsonString, dymoMap, callback, creatingFunction);
@@ -270,6 +270,11 @@ function DymoLoader(scheduler) {
 			return new DistanceControl();
 		}	else if (type == COMPASS_HEADING) {
 			return new CompassControl();
+		}	else if (type == BEACON) {
+			var uuid = options["uuid"];
+			var major = parseInt(options["major"], 10);
+			var minor = parseInt(options["minor"], 10);
+			return new BeaconControl(uuid, major, minor);
 		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM) {
 			return new Control(label, type);
 		} else if (type == RANDOM) {
