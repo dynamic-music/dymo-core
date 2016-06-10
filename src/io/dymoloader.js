@@ -112,9 +112,9 @@ function DymoLoader(scheduler) {
 				dymo.setFeature(json["features"][i]["@id"], json["features"][i]["value"]);
 			}
 		}
-		if (json["presets"]) {
-			for (var i = 0; i < json["presets"].length; i++) {
-				addOrUpdateDymoParameter(dymo, json["presets"][i]["parameter"], json["presets"][i]["value"]);
+		if (json["parameters"]) {
+			for (var i = 0; i < json["parameters"].length; i++) {
+				addOrUpdateDymoParameter(dymo, json["parameters"][i]["@type"], json["parameters"][i]["value"]);
 			}
 		}
 		if (json["parts"]) {
