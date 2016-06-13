@@ -126,9 +126,11 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	this.getSources = function(dymo) {
 		var sources = [];
 		for (var i = 0; i < threads.length; i++) {
-			var currentSource = threads[i].getSource(dymo);
-			if (currentSource) {
-				sources.push(currentSource);
+			var currentSources = threads[i].getSources(dymo);
+			if (currentSources) {
+				for (var j = 0; j < currentSources.length; j++) {
+					sources = sources.concat(currentSources);
+				}
 			}
 		}
 		return sources;
@@ -141,7 +143,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	function updatePlayingDymos() {
 		var uris = [];
 		for (var i = 0; i < threads.length; i++) {
-			for (var currentDymo of threads[i].getSources().keys()) {
+			for (var currentDymo of threads[i].getAllSources().keys()) {
 				while (currentDymo != null) {
 					if (uris.indexOf(currentDymo.getUri()) < 0) {
 						uris.push(currentDymo.getUri());

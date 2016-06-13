@@ -148,9 +148,10 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 		setParameterValue(name, value);
 		if (positionParameters.indexOf(name) >= 0) {
 			updatePannerPosition();
-		} else if (name == LOOP) {
+		}/* loop now done in navigators..
+			else if (name == LOOP) {
 			source.loop = (value == 1);
-		}
+		}*/
 	}
 	
 	this.getDymo = function() {

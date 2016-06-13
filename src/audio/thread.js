@@ -6,11 +6,11 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	
 	var self = this;
 	
-	var sources = new Map(); //dymo->source
+	var sources = new Map(); //dymo->list<source>
+	var nextSources;
 	var timeoutID;
 	var currentSources = [];
 	var currentEndTime;
-	var nextSources;
 	var previousOnset;
 	
 	if (!navigator) {
@@ -34,9 +34,11 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	this.pause = function(dymo) {
 		var dymos = dymo.getAllDymosInHierarchy();
 		for (var i = 0, ii = dymos.length; i < ii; i++) {
-			var currentSource = sources.get(dymos[i]);
-			if (currentSource) {
-				currentSource.pause();
+			var currentSources = sources.get(dymos[i]);
+			if (currentSources) {
+				for (var j = 0; j < currentSources.length; j++) {
+					currentSources[j].pause();
+				}
 			}
 		}
 	}
@@ -44,20 +46,22 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	this.stop = function(dymo) {
 		var dymos = dymo.getAllDymosInHierarchy();
 		for (var i = 0, ii = dymos.length; i < ii; i++) {
-			var currentSource = sources.get(dymos[i]);
-			if (currentSource) {
-				currentSource.stop();
-				//TODO REMOVE NEXT SOURCES
+			var currentSources = sources.get(dymos[i]);
+			if (currentSources) {
+				for (var j = 0; j < currentSources.length; j++) {
+					currentSources[j].stop();
+				}
 			}
+			nextSources.delete(dymos[i]);
 		}
 	}
 	
-	this.getSources = function() {
+	this.getAllSources = function() {
 		return sources;
 	}
 	
-	/** @private returns the source correponding to the given dymo */
-	this.getSource = function(dymo) {
+	/** @private returns the sources correponding to the given dymo */
+	this.getSources = function(dymo) {
 		return sources.get(dymo);
 	}
 	
@@ -67,18 +71,18 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 		registerSources(currentSources);
 		if (!previousOnset) {
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
-			previousOnset = currentSources[0].getDymo().getParameter(ONSET).getValue();
+			previousOnset = currentSources.keys().next().value.getParameter(ONSET).getValue();
 		}
 		//calculate delay and schedule
 		var delay = getCurrentDelay();
 		var startTime = audioContext.currentTime+delay;
-		for (var i = 0; i < currentSources.length; i++) {
-			currentSources[i].play(startTime);
+		for (var source of currentSources.values()) {
+			source.play(startTime);
 		}
 		setTimeout(function() { onChanged(); }, delay);
 		//create next sources and wait or end and reset
 		nextSources = createNextSources();
-		if (nextSources) {
+		if (nextSources.size > 0) {
 			currentEndTime = getCurrentEndTime(startTime);
 			var wakeupTime = (currentEndTime-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000;
 			timeoutID = setTimeout(function() { recursivePlay(); }, wakeupTime);
@@ -92,7 +96,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	}
 	
 	function endThreadIfNoMoreSources() {
-		if (sources.size == 0) {
+		if (sources.size == 0 && nextSources.size == 0) {
 			window.clearTimeout(timeoutID);
 			navigator.reset();
 			if (onEnded) {
@@ -112,13 +116,20 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	}
 	
 	function registerSources(newSources) {
-		for (var i = 0; i < newSources.length; i++) {
-			sources.set(newSources[i].getDymo(), newSources[i]);
+		for (var dymoKey of newSources.keys()) {
+			if (!sources.get(dymoKey)) {
+				sources.set(dymoKey, []);
+			}
+			sources.get(dymoKey).push(newSources.get(dymoKey));
 		}
 	}
 	
 	function sourceEnded(source) {
-		sources.delete(source.getDymo());
+		var sourceList = sources.get(source.getDymo());
+		sourceList.slice(sourceList.indexOf(source), 1);
+		if (sourceList.length <= 0) {
+			sources.delete(source.getDymo());
+		}
 		onChanged();
 		endThreadIfNoMoreSources();
 	}
@@ -134,14 +145,18 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	function getCurrentEndTime(startTime) {
 		if (nextSources) {
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
-			var nextOnset = nextSources[0].getDymo().getParameter(ONSET).getValue();
+			var nextOnset = nextSources.keys().next().value.getParameter(ONSET).getValue();
 			var timeToNextOnset = nextOnset-previousOnset;
 			previousOnset = nextOnset;
 			if (!isNaN(nextOnset)) {
 				return startTime+timeToNextOnset;
 			}
 		}
-		return startTime+getSourceDuration(currentSources[0]);
+		var maxDuration = 0;
+		for (var source of currentSources.values()) {
+			maxDuration = Math.max(maxDuration, getSourceDuration(source));
+		}
+		return startTime+maxDuration;
 	}
 	
 	function getSourceDuration(source) {
@@ -153,11 +168,11 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 		var nextParts = navigator.getNextParts();
 		if (nextParts) {
 			console.log(nextParts.map(function(s){return s.getIndex();}))
-			var nextSources = [];
+			var nextSources = new Map();
 			for (var i = 0; i < nextParts.length; i++) {
 				if (nextParts[i].getSourcePath()) {
 					var buffer = buffers[nextParts[i].getSourcePath()];
-					nextSources.push(new Source(nextParts[i], audioContext, buffer, convolverSend, delaySend, sourceEnded));
+					nextSources.set(nextParts[i], new Source(nextParts[i], audioContext, buffer, convolverSend, delaySend, sourceEnded));
 				}
 			}
 			return nextSources;
