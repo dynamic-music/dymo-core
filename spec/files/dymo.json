@@ -11,8 +11,8 @@
 
 			],
 			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.m4a",
-			"presets":[
-				{"parameter":"Amplitude", "value":0.5}
+			"parameters":[
+				{"@type":"Amplitude", "value":0.5}
 			],
 			"features":[
 				{"@id":"onset","value":0.607,"adt":"Onset"},

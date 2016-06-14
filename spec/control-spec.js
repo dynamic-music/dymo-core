@@ -12,7 +12,8 @@ describe("a control", function() {
 		expect(control.requestValue()).toBe(3);
 	});*/
 	
-	it("can create a reference value from the average input", function() {
+	/* TODO MOVE TO SENSOR CONTROL SPEC
+		it("can create a reference value from the average input", function() {
 		var control = new Control("control2", COMPASS_HEADING);
 		control.setReferenceAverageCount(3);
 		expect(control.getReferenceValue()).toBeUndefined();
@@ -41,7 +42,7 @@ describe("a control", function() {
 		control.update(4);
 		expect(control.getReferenceValue()).toBe(5);
 		expect(control.getValue()).toBe(-1);
-	});
+	});*/
 	
 	it("can be a random control", function(done) {
 		var randomControl = new RandomControl();

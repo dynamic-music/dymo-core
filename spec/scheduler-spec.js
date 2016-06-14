@@ -114,8 +114,8 @@ describe("a scheduler", function() {
 			expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo0"]);
 			//expect(audioContext.activeSourceCount).toBe(1);
 			//console.log(dymo0.getParameter(LOOP).getObservers().map(function(s){return s.getDymo().getUri();}))
-			expect(dymo0.getParameter(LOOP).getObservers().length).toBe(1);
-			expect(dymo0.getParameter(AMPLITUDE).getObservers().length).toBe(1);
+			expect(dymo0.getParameter(LOOP).getObservers().length).toBe(2); //nextSource is already observing..
+			expect(dymo0.getParameter(AMPLITUDE).getObservers().length).toBe(2);
 			dymo0.getParameter(LOOP).update(0);
 			setTimeout(function() {
 				//not quite done playing yet

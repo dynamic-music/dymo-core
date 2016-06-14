@@ -52,7 +52,9 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 					currentSources[j].stop();
 				}
 			}
-			nextSources.delete(dymos[i]);
+			if (nextSources) {
+				nextSources.delete(dymos[i]);
+			}
 		}
 	}
 	
@@ -82,7 +84,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 		setTimeout(function() { onChanged(); }, delay);
 		//create next sources and wait or end and reset
 		nextSources = createNextSources();
-		if (nextSources.size > 0) {
+		if (nextSources && nextSources.size > 0) {
 			currentEndTime = getCurrentEndTime(startTime);
 			var wakeupTime = (currentEndTime-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000;
 			timeoutID = setTimeout(function() { recursivePlay(); }, wakeupTime);
@@ -96,7 +98,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	}
 	
 	function endThreadIfNoMoreSources() {
-		if (sources.size == 0 && nextSources.size == 0) {
+		if (sources.size == 0 && (!nextSources || nextSources.size == 0)) {
 			window.clearTimeout(timeoutID);
 			navigator.reset();
 			if (onEnded) {
@@ -126,7 +128,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	
 	function sourceEnded(source) {
 		var sourceList = sources.get(source.getDymo());
-		sourceList.slice(sourceList.indexOf(source), 1);
+		sourceList.splice(sourceList.indexOf(source), 1);
 		if (sourceList.length <= 0) {
 			sources.delete(source.getDymo());
 		}
