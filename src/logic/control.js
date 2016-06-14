@@ -5,109 +5,83 @@
  */
 function Control(name, type, parameters) {
 	
-	var value;
-	var referenceValue;
-	var referenceAverageCount;
-	var mappings = [];
-	var currentNumAddends, currentSum;
-	var updateFunction;
+	/** @private */
+	this.name = name;
+	/** @private */
+	this.type = type;
+	/** @private */
+	this.parameters = parameters;
+	/** @private */
+	this.value;
+	/** @private */
+	this.mappings = [];
+	/** @private */
+	this.updateFunction;
 	
-	
-	this.getName = function() {
-		return name;
+}
+
+Control.prototype.getName = function() {
+	return this.name;
+}
+
+Control.prototype.getParameter = function(name) {
+	if (this.parameters) {
+		return this.parameters[name];
 	}
-	
-	this.getParameter = function(name) {
-		if (parameters) {
-			return parameters[name];
+}
+
+Control.prototype.getValue = function() {
+	return this.value;
+}
+
+Control.prototype.getType = function() {
+	return this.type;
+}
+
+Control.prototype.setUpdateFunction = function(func) {
+	this.updateFunction = func;
+}
+
+Control.prototype.addMapping = function(mapping) {
+	this.mappings.push(mapping);
+	mapping.updateParameter(this.value, this);
+}
+
+Control.prototype.removeMapping = function(mapping) {
+	var i = this.mappings.indexOf(mapping);
+	if (i > -1) {
+		this.mappings.splice(i, 1);
+	}
+}
+
+Control.prototype.backpropagate = function(newValue, mapping) {
+	if (isFinite(newValue)) {
+		this.setValue(newValue, mapping);
+		if (this.updateFunction) {
+			this.updateFunction(this.value);
 		}
 	}
-	
-	this.getValue = function() {
-		return value;
+}
+
+Control.prototype.update = function(newValue) {
+	if (!isNaN(newValue)) {
+		this.setValue(newValue);
 	}
-	
-	this.getType = function() {
-		return type;
+}
+
+/** @private @param {Object=} mapping (optional) */
+Control.prototype.setValue = function(newValue, mapping) {
+	if (this.value == undefined || Math.abs(newValue - this.value) > 0.000001) { //deal with floating point errors
+		this.value = newValue;
+		this.updateMappings(mapping);
 	}
-	
-	this.getReferenceValue = function() {
-		return referenceValue;
-	}
-	
-	this.setReferenceAverageCount = function(count) {
-		referenceAverageCount = count;
-		this.resetReferenceValue();
-	}
-	
-	this.resetReferenceValue = function() {
-		value = undefined;
-		referenceValue = undefined;
-		currentNumAddends = 0;
-		currentSum = 0;
-	}
-	
-	this.setUpdateFunction = function(func) {
-		updateFunction = func;
-	}
-	
-	this.addMapping = function(mapping) {
-		mappings.push(mapping);
-		mapping.updateParameter(value, this);
-	}
-	
-	this.removeMapping = function(mapping) {
-		var i = mappings.indexOf(mapping);
-		if (i > -1) {
-			mappings.splice(i, 1);
+}
+
+/** @private updates all mappings different from the one given as an argument */
+Control.prototype.updateMappings = function(mapping) {
+	for (var i = 0; i < this.mappings.length; i++) {
+		if (this.mappings[i] != mapping) {
+			this.mappings[i].updateParameter(this.value, this);
 		}
 	}
-	
-	this.backpropagate = function(newValue, mapping) {
-		if (isFinite(newValue)) {
-			setValue(newValue, mapping);
-			if (updateFunction) {
-				updateFunction(value);
-			}
-		}
-	}
-	
-	this.update = function(newValue) {
-		//still measuring reference value
-		if (referenceAverageCount && currentNumAddends < referenceAverageCount) {
-			currentSum += newValue;
-			currentNumAddends++;
-			//done measuring values. calculate average
-			if (currentNumAddends == referenceAverageCount) {
-				currentSum /= referenceAverageCount;
-				referenceValue = currentSum;
-			}
-		//done measuring. adjust value if initialvalue taken
-		} else {
-			if (!isNaN(newValue)) {
-				if (referenceValue) {
-					newValue -= referenceValue;
-				}
-				setValue(newValue);
-			}
-		}
-	}
-	
-	/** @param {Object=} mapping (optional) */
-	function setValue(newValue, mapping) {
-		if (value == undefined || Math.abs(newValue - value) > 0.000001) { //deal with floating point errors
-			value = newValue;
-			updateMappings(mapping);
-		}
-	}
-	
-	//updates all mappings different from the one given as an argument
-	function updateMappings(mapping) {
-		for (var i = 0; i < mappings.length; i++) {
-			if (mappings[i] != mapping) {
-				mappings[i].updateParameter(value, this);
-			}
-		}
-	}
-	
 }
