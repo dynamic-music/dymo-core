@@ -40,6 +40,10 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 	if (!duration && buffer) {
 		duration = buffer.duration-time;
 	}
+	var durationRatio = dymo.getParameter(DURATION_RATIO).getValue();
+	if (0 < durationRatio && durationRatio < 1) {
+		duration *= durationRatio;
+	}
 	if (!buffer) {
 		requestBufferFromAudioServer(dymo.getSourcePath(), time, time+duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, function(loadedBuffer) {
 			buffer = loadedBuffer;

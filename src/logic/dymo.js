@@ -290,7 +290,7 @@ function DynamicMusicObject(uri, type, scheduler) {
 	}
 	
 	this.getSegment = function() {
-		return [this.getFeature("time"), parameters[DURATION_RATIO].getValue()*this.getFeature("duration")];
+		return [this.getFeature("time"), this.getFeature("duration")];
 	}
 	
 	this.addParameter = function(parameter) {

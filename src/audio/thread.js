@@ -169,7 +169,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	function createNextSources() {
 		var nextParts = navigator.getNextParts();
 		if (nextParts) {
-			console.log(nextParts.map(function(s){return s.getIndex();}))
+			console.log(nextParts.map(function(s){if (!isNaN(s.getIndex())) {return s.getIndex();} return "top"}))
 			var nextSources = new Map();
 			for (var i = 0; i < nextParts.length; i++) {
 				if (nextParts[i].getSourcePath()) {
