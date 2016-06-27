@@ -211,6 +211,13 @@ function DymoLoader(scheduler) {
 					control = controls[currentName];
 				} else {
 					control = getControl(currentDim);
+					//TODO implement in better way (only works for sensor controls)
+					if (currentDim["smooth"] && control.setSmooth) {
+						control.setSmooth(true);
+					}
+					if (!isNaN(currentDim["average"]) && control.setAverageOf) {
+						control.setAverageOf(currentDim["average"]);
+					}
 				}
 				if ("value" in currentDim) {
 					control.update(currentDim["value"]);

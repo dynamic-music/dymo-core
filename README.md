@@ -69,7 +69,7 @@ In order to make the dymo dynamic, adaptive, or interactive you can define a *re
 			"domainDims":[{"name":"randomControl","type":"Random"}],
 			"function":{"args":["a"],"body":"return a;"},
 			"dymos":["exampleDymo"],
-			"parameter":"Amplitude"
+			"range":"Amplitude"
 		}
 	]
 }
@@ -89,5 +89,23 @@ For now, *sensor controls* and automatically *generated UI controls* can only be
 
 
 
+```json
+{
+	"@context":"http://tiny.cc/dymo-context",
+	"@id":"exampleRendering",
+	"@type":"Rendering",
+	"mappings":[
+		{
+			"domainDims":[{"name":"randomControl","type":"Random"}],
+			"function":{"args":["a"],"body":"return a;"},
+			"dymos":["exampleDymo"],
+			"range":"Amplitude"
+		}
+	]
+}
+```
+
 ### Defining higher-level parameters
+
+### Setting parameter and feature values
 
