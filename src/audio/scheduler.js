@@ -34,12 +34,15 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		});
 	}
 	
-	this.loadBuffers = function(dymo) {
+	this.loadBuffers = function(dymo, callback) {
 		var allPaths = dymo.getAllSourcePaths();
 		for (var i = 0, ii = allPaths.length; i < ii; i++) {
+			//only add if not there yet..
 			if (!buffers[allPaths[i]]) {
-				//only add if not there yet..
-				loadAudio(allPaths[i]);
+				loadAudio(allPaths[i], function(buffer, path) {
+					buffers[path] = buffer;
+					sourceReady(callback);
+				});
 			}
 		}
 	}
@@ -48,12 +51,18 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		return buffers[dymo.getSourcePath()];
 	}
 	
-	function sourceReady() {
+	/** @param {Function=} callback (optional) */
+	function sourceReady(callback) {
 		if (numCurrentlyLoading > 0) {
 			numCurrentlyLoading--;
 		}
-		if (numCurrentlyLoading == 0 && onSourcesChange) {
-			onSourcesChange(numCurrentlyLoading);
+		if (numCurrentlyLoading == 0) {
+			if (onSourcesChange) {
+				onSourcesChange(numCurrentlyLoading);
+			}
+			if (callback) {
+				callback();
+			}
 		}
 	}
 	
@@ -168,7 +177,6 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
 	}
 	
-	/** @param {Function=} callback (optional) */
 	function loadAudio(path, callback) {
 		//console.log(path)
 		numCurrentlyLoading++;
@@ -177,12 +185,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		request.responseType = 'arraybuffer';
 		request.onload = function() {
 			audioContext.decodeAudioData(request.response, function(buffer) {
-				if (callback) {
-					callback(buffer);
-				} else {
-					buffers[path] = buffer;
-					sourceReady();
-				}
+				callback(buffer, path);
 			});
 		}
 		request.error = function(){};

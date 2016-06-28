@@ -45,24 +45,26 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 		duration *= durationRatio;
 	}
 	if (!buffer) {
-		requestBufferFromAudioServer(dymo.getSourcePath(), time, time+duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, function(loadedBuffer) {
-			buffer = loadedBuffer;
-			var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();
-			if (stretchRatio != 1) {
-				buffer = new AudioProcessor(audioContext).timeStretch(buffer, stretchRatio);
-				//trim it down again
-				var shouldBeDuration = duration/stretchRatio;
-				//add time for fade after source officially done
-				buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration+FADE_LENGTH, buffer));
-				duration = shouldBeDuration;
-			} else {
-				//add time for fade after source officially done
-				buffer = getSubBuffer(buffer, 0, toSamples(duration+FADE_LENGTH, buffer));
-			}
-			fadeBuffer(buffer, buffer.length);
+		if (!isNaN(time+duration)) {
+			requestBufferFromAudioServer(dymo.getSourcePath(), time, time+duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, function(loadedBuffer) {
+				buffer = loadedBuffer;
+				var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();
+				if (stretchRatio != 1) {
+					buffer = new AudioProcessor(audioContext).timeStretch(buffer, stretchRatio);
+					//trim it down again
+					var shouldBeDuration = duration/stretchRatio;
+					//add time for fade after source officially done
+					buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration+FADE_LENGTH, buffer));
+					duration = shouldBeDuration;
+				} else {
+					//add time for fade after source officially done
+					buffer = getSubBuffer(buffer, 0, toSamples(duration+FADE_LENGTH, buffer));
+				}
+				fadeBuffer(buffer, buffer.length);
 		
-			source.buffer = buffer;
-		});
+				source.buffer = buffer;
+			});
+		}
 	} else {
 		initBuffer();
 	}
