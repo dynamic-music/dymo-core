@@ -6,7 +6,6 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 	
 	var self = this;
 	
-	var FADE_LENGTH = 0.02; //seconds
 	var SHITTY_TIMESTRETCH_BUFFER_ZONE = 0.3; //seconds
 	
 	var startTime, endTime, currentPausePosition = 0;

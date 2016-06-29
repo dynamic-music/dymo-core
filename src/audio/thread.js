@@ -86,6 +86,12 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 		nextSources = createNextSources();
 		if (nextSources && nextSources.size > 0) {
 			currentEndTime = getCurrentEndTime(startTime);
+			var longestSource = currentEndTime[1];
+			currentEndTime = currentEndTime[0];
+			//smooth transition in case of a loop
+			if (longestSource.getDymo().getParameter(LOOP).getValue()) {
+				currentEndTime -= FADE_LENGTH;
+			}
 			var wakeupTime = (currentEndTime-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000;
 			timeoutID = setTimeout(function() { recursivePlay(); }, wakeupTime);
 		} else {
@@ -155,10 +161,15 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			}
 		}
 		var maxDuration = 0;
+		var longestSource;
 		for (var source of currentSources.values()) {
-			maxDuration = Math.max(maxDuration, getSourceDuration(source));
+			var currentDuration = getSourceDuration(source);
+			if (currentDuration > maxDuration) {
+				maxDuration = currentDuration;
+				longestSource = source;
+			}
 		}
-		return startTime+maxDuration;
+		return [startTime+maxDuration, longestSource];
 	}
 	
 	function getSourceDuration(source) {
