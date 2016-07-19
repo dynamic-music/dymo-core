@@ -173,8 +173,7 @@
 	rdfs:comment "" .
 
 :ListenerOrientation
-	a owl:Class ;
-	rdfs:subClassOf :GlobalParameter ;
+	a :GlobalParameter ;
 	rdfs:comment "" .
 
 :ControlParameter
@@ -183,18 +182,15 @@
 	rdfs:comment "" .
 
 :StatsFrequency
-	a owl:Class ;
-	rdfs:subClassOf :ControlParameter ;
+	a :ControlParameter ;
 	rdfs:comment "" .
 
 :LeapingProbability
-	a owl:Class ;
-	rdfs:subClassOf :ControlParameter ;
+	a :ControlParameter ;
 	rdfs:comment "" .
 
 :ContinueAfterLeaping
-	a owl:Class ;
-	rdfs:subClassOf :ControlParameter ;
+	a :ControlParameter ;
 	rdfs:comment "" .
 
 
