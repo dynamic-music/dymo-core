@@ -17,6 +17,9 @@
 		"Dymo": "dy:Dymo",
 		"Feature": "dy:Feature",
 		"Parameter": "dy:Parameter",
+		"Play": "dy:Play",
+		"Loop": "dy:Loop",
+		"Onset": "dy:Onset",
 		"Amplitude": "dy:Amplitude",
 		"PlaybackRate": "dy:PlaybackRate",
 		"Pan": "dy:Pan",
@@ -38,9 +41,10 @@
 		"Mapping": "mo:Mapping",
 		"domainDims": "mo:hasDomainDimension",
 		"function": "mo:hasFunction",
-		"args": "mo:hasArguments",
+		"args": "mo:hasArgument",
 		"body": "mo:hasBody",
 		"dymos": "mo:toDymo",
+		"targets": "mo:toTarget",
 		"range": "mo:toParameter",
 		
 		"Custom": "mo:CustomControl",
@@ -59,9 +63,11 @@
 		"Random": "mo:Random",
 		"Brownian": "mo:Brownian",
 		"Ramp": "mo:Ramp",
+		"smooth": "mo:isSmooth",
+		"average": "mo:isAverageOf",
 		
-		"ListenerOrientation": "mo:ListenerOrientation",
-		"LeapingProbability": "mo:LeapingProbability",
-		"ContinueAfterLeaping": "mo:ContinueAfterLeaping"
+		"ListenerOrientation": "dy:ListenerOrientation",
+		"LeapingProbability": "dy:LeapingProbability",
+		"ContinueAfterLeaping": "dy:ContinueAfterLeaping"
 	}
 }
