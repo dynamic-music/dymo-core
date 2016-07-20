@@ -1,7 +1,6 @@
 {
-	"@context" : {
-		"@base" : "http://tiny.cc/dymo-context/",
-		"@vocab" : "",
+	"@context": {
+		"@base": "http://tiny.cc/dymo-context/",
 		"xsd": "http://www.w3.org/2001/XMLSchema#",
 		"sch": "http://schema.org/",
 		"ch": "http://tiny.cc/charm-ontology#",
@@ -31,7 +30,7 @@
 		"PartDurationRatio": "dy:PartDurationRatio",
 		"PartProportion": "dy:PartProportion",
 		"PartCount": "dy:PartCount",
-		"source":"dy:hasSource",
+		"source": "dy:hasSource",
 		"parameters": "dy:hasParameter",
 		"features": "dy:hasFeature",
 		
