@@ -45,7 +45,7 @@
 		"body": "mo:hasBody",
 		"dymos": "mo:toDymo",
 		"targets": "mo:toTarget",
-		"range": { "@id": "mo:toParameter", "@type": "@id" },
+		"range": { "@id": "mo:toParameter", "@type": "@vocab" },
 		
 		"Custom": "mo:CustomControl",
 		"AccelerometerX": "mo:AccelerometerX",
