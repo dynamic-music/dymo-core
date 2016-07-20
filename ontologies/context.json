@@ -1,6 +1,7 @@
 {
 	"@context" : {
 		"@base" : "http://tiny.cc/dymo-context/",
+		"@vocab" : "",
 		"xsd": "http://www.w3.org/2001/XMLSchema#",
 		"sch": "http://schema.org/",
 		"ch": "http://tiny.cc/charm-ontology#",
