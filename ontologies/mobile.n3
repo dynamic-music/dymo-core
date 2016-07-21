@@ -1,11 +1,10 @@
-#@base <http://purl.org/ontology/studio/mobile#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix mo: <http://purl.org/ontology/mo/> .
 @prefix mt: <http://purl.org/ontology/studio/multitrack#> .
-@prefix dmo: <???/dmo#> .
-@prefix : <#> .
+@prefix dy: <http://tiny.cc/dymo-ontology#> .
+@prefix : <http://tiny.cc/mobile-audio-ontology#> .
 
 
 <#>
@@ -201,7 +200,7 @@
 :hasDymo
 	a owl:ObjectProperty, owl:FunctionalProperty ;
 	rdfs:domain :Rendering ; 
-	rdfs:range dmo:Dymo ;
+	rdfs:range dy:Dymo ;
 	rdfs:comment "" .
 
 :hasMapping
@@ -227,7 +226,7 @@
 :fromFeature
 	a owl:ObjectProperty ;
 	rdfs:domain :MappingDimension ;
-	rdfs:range dmo:Feature ;
+	rdfs:range dy:Feature ;
 	rdfs:comment "" .
 
 :hasFunction
@@ -239,13 +238,13 @@
 :toDymo
 	a owl:ObjectProperty ;
 	rdfs:domain :Mapping ;
-	rdfs:range dmo:Dymo ;
+	rdfs:range dy:Dymo ;
 	rdfs:comment "" .
 
 :toParameter
 	a owl:ObjectProperty ;
 	rdfs:domain :Mapping ;
-	rdfs:range dmo:Parameter ;
+	rdfs:range dy:Parameter ;
 	rdfs:comment "" .
 
 :toMobileParameter

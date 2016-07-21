@@ -1,11 +1,10 @@
-#@base <http://purl.org/ontology/studio/mobile#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix mo: <http://purl.org/ontology/mo/> .
 @prefix mt: <http://purl.org/ontology/studio/multitrack#> .
-@prefix ch: <http://???/co/charm#> .
-@prefix : <#> .
+@prefix ch: <http://tiny.cc/charm-ontology#> .
+@prefix : <http://tiny.cc/dymo-ontology#> .
 
 
 <#>
