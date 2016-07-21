@@ -4,80 +4,80 @@
 @prefix mo: <http://purl.org/ontology/mo/> .
 @prefix mt: <http://purl.org/ontology/studio/multitrack#> .
 @prefix ch: <http://tiny.cc/charm-ontology#> .
-@prefix : <http://tiny.cc/dymo-ontology#> .
+@prefix dy: <http://tiny.cc/dymo-ontology#> .
 
 
-<#>
+dy:
 	a owl:Ontology ;
 	rdfs:comment "An ontology for describing Dynamic Music Objects" .
 
-:Dymo
+dy:Dymo
 	a owl:Class ;
 	rdfs:subClassOf ch:Constituent ;
 	rdfs:comment "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters" .
 
-:Feature
+dy:Feature
 	a owl:Class ;
 	rdfs:subClassOf ch:Attribute ;
 	rdfs:comment "A parameter is an immutable attribute of a Dymo" .
 
-:Parameter
+dy:Parameter
 	a owl:Class ;
 	rdfs:subClassOf ch:Attribute ;
 	rdfs:comment "A parameter is a mutable attribute of a Dymo" .
 
-:ParameterPreset
+dy:ParameterPreset
 	a owl:Class ;
 	rdfs:comment "A parameter preset" .
 
 #Audio parameters
 
-:AudioParameter
+dy:AudioParameter
 	a owl:Class ;
-	rdfs:subClassOf :Parameter ;
+	rdfs:subClassOf dy:Parameter ;
 	rdfs:comment "" .
 
-:Amplitude
-	a :AudioParameter ;
+dy:Amplitude
+	a dy:AudioParameter ;
 	rdfs:comment "" .
 
-:PlaybackRate
-	a :AudioParameter ;
+dy:PlaybackRate
+	a dy:AudioParameter ;
 	rdfs:comment "" .
 
-:Pan
-	a :AudioParameter ;
+dy:Pan
+	a dy:AudioParameter ;
 	rdfs:comment "" .
 
-:Distance
-	a :AudioParameter ;
+dy:Distance
+	a dy:AudioParameter ;
 	rdfs:comment "" .
 
-:Reverb
-	a :AudioParameter ;
+dy:Reverb
+	a dy:AudioParameter ;
 	rdfs:comment "" .
 
 #Structural parameters
 
-:StructuralParameter
+dy:StructuralParameter
 	a owl:Class ;
-	rdfs:subClassOf :Parameter ;
+	rdfs:subClassOf dy:Parameter ;
 	rdfs:comment "" .
 
-:PartOrder
-	a :StructuralParameter ;
+dy:PartOrder
+	a dy:StructuralParameter ;
 	rdfs:comment "" .
 
-:PartCount
-	a :StructuralParameter ;
+dy:PartCount
+	a dy:StructuralParameter ;
 	rdfs:comment "" .
 
-:PartDurationRatio
-	a :StructuralParameter ;
+dy:PartDurationRatio
+	a dy:StructuralParameter ;
 	rdfs:comment "" .
 
-:PartProportion
-	a :StructuralParameter ;
+dy:PartProportion
+	a dy:StructuralParameter ;
 	rdfs:comment "" .
 
 
@@ -85,28 +85,28 @@
 
 #Dymo properties
 
-:hasSource
+dy:hasSource
 	a owl:DatatypeProperty ;
-	rdfs:domain :Dymo ;
+	rdfs:domain dy:Dymo ;
 	rdfs:range xsd:string ;
 	rdfs:comment "" .
 
-:hasPreset
+dy:hasPreset
 	a owl:ObjectProperty ;
-	rdfs:domain :Dymo ;
-	rdfs:range :Parameter ;
+	rdfs:domain dy:Dymo ;
+	rdfs:range dy:Parameter ;
 	rdfs:comment "" .
 
 #Preset properties
 
-:hasParameter
+dy:hasParameter
 	a owl:ObjectProperty ;
-	rdfs:domain :ParameterPreset ;
-	rdfs:range :Parameter ;
+	rdfs:domain dy:ParameterPreset ;
+	rdfs:range dy:Parameter ;
 	rdfs:comment "" .
 
-:hasValue
+dy:hasValue
 	a owl:DatatypeProperty ;
-	rdfs:domain :ParameterPreset ;
+	rdfs:domain dy:ParameterPreset ;
 	rdfs:range xsd:float ;
 	rdfs:comment "" .
