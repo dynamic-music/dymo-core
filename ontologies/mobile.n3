@@ -153,6 +153,16 @@ mb:Random
 	rdfs:subClassOf mb:AutoControl ;
 	rdfs:comment "" .
 
+mb:Brownian
+	a owl:Class ;
+	rdfs:subClassOf mb:AutoControl ;
+	rdfs:comment "" .
+
+mb:Ramp
+	a owl:Class ;
+	rdfs:subClassOf mb:AutoControl ;
+	rdfs:comment "" .
+
 mb:GraphControl
 	a owl:Class ;
 	rdfs:subClassOf mb:AutoControl ;

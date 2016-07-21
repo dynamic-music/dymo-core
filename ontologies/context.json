@@ -49,7 +49,7 @@
 		"args": "mo:hasArgument",
 		"body": "mo:hasBody",
 		"dymos": { "@id": "mo:toDymo", "@type": "@id" },
-		"targets": { "@id": "mo:toTarget", "@type": "@id" },
+		"targets": "mo:toTarget",
 		"range": { "@id": "mo:toParameter", "@type": "@vocab" },
 		
 		"Custom": "mo:CustomControl",
