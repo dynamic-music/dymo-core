@@ -9,8 +9,8 @@
 		
 		"name": "sch:name",
 		
-		"cdt": "ch:cdt",
-		"adt": "ch:adt",
+		"cdt": { "@id": "ch:cdt", "@type": "@vocab" },
+		"adt": { "@id": "ch:adt", "@type": "@vocab" },
 		"value": "ch:value",
 		"parts": "ch:hasPart",
 		
@@ -38,6 +38,11 @@
 		"source": { "@id": "dy:hasSource", "@type": "xsd:string" },
 		"parameters": { "@id": "dy:hasParameter", "@type": "@vocab" },
 		"features": { "@id": "dy:hasFeature", "@type": "@vocab" },
+		
+		"conjunction": "dy:Conjunction",
+		"disjunction": "dy:Disjunction",
+		"sequential": "dy:Sequence",
+		"parallel": "dy:Conjunction",
 		
 		"Rendering": "mo:Rendering",
 		"mappings": "mo:hasMapping",
