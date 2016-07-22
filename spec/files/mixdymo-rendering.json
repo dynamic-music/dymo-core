@@ -1,5 +1,5 @@
 {
-	"@context":"http://tiny.cc/dymo-context",
+	"@context": "http://tiny.cc/dymo-context/",
 	"@id":"demoBeatRendering",
 	"@type":"Rendering",
 	"dymo":"demoBeat",
@@ -29,9 +29,9 @@
 			"range":"DurationRatio"
 		},
 		{
-			"domainDims":[{"name":"transition","@type":"Button"}],
+			"domainDims":[{"@id":"transition","name":"transition","@type":"Button"}],
 			"function":{"args":["a"],"body":"return a;"},
-			"controls":["fadeRamp"],
+			"targets":["fadeRamp"],
 			"range":"AutoControlTrigger"
 		}
 	]

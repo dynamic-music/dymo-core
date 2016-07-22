@@ -18,39 +18,44 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 	var sensorControls = {};
 	
 	this.loadDymoAndRendering = function(dymoUri, renderingUri, dymoCallback, buffersCallback) {
-		var loader = new DymoLoader(scheduler);
-		loader.loadDymoFromJson(dymoUri, function(loadedDymo) {
-			loader.loadRenderingFromJson(renderingUri, loadedDymo[1], function(loadedRendering) {
-				rendering = loadedRendering[0];
-				rendering.dymo = loadedDymo[0];
-				for (var key in loadedRendering[1]) {
-					var currentControl = loadedRendering[1][key];
-					if (UI_CONTROLS.indexOf(currentControl.getType()) >= 0) {
-						uiControls[key] = new UIControl(currentControl, $scope);
+		var loader = new DymoLoader(scheduler, function() {
+			loader.loadDymoFromJson(dymoUri, function(loadedDymo) {
+				loader.loadRenderingFromJson(renderingUri, loadedDymo[1], function(loadedRendering) {
+					rendering = loadedRendering[0];
+					rendering.dymo = loadedDymo[0];
+					for (var key in loadedRendering[1]) {
+						var currentControl = loadedRendering[1][key];
+						if (UI_CONTROLS.indexOf(currentControl.getType()) >= 0) {
+							uiControls[key] = new UIControl(currentControl, $scope);
+						}
+						if (SENSOR_CONTROLS.indexOf(currentControl.getType()) >= 0) {
+							sensorControls[key] = currentControl;
+						}
 					}
-					if (SENSOR_CONTROLS.indexOf(currentControl.getType()) >= 0) {
-						sensorControls[key] = currentControl;
+					scheduler.loadBuffers(rendering.dymo, buffersCallback);
+					if (dymoCallback) {
+						dymoCallback();
 					}
-				}
-				scheduler.loadBuffers(rendering.dymo, buffersCallback);
-				if (dymoCallback) {
-					dymoCallback();
-				}
+				});
 			});
 		});
 	}
 	
 	this.loadDymoFromJson = function(jsonDymo, callback) {
-		new DymoLoader(scheduler).loadDymoFromJson(jsonDymo, function(loadedDymo) {
-			if (callback) {
-				callback(loadedDymo[0]);
-			}
+		var loader = new DymoLoader(scheduler, function() {
+			loader.loadDymoFromJson(jsonDymo, function(loadedDymo) {
+				if (callback) {
+					callback(loadedDymo[0]);
+				}
+			});
 		});
 	}
 	
 	this.parseDymoFromJson = function(jsonDymo, callback) {
-		new DymoLoader(scheduler).parseDymoFromJson(jsonDymo, function(loadedDymo) {
-			callback(loadedDymo[0]);
+		var loader = new DymoLoader(scheduler, function() {
+			loader.parseDymoFromJson(jsonDymo, function(loadedDymo) {
+				callback(loadedDymo[0]);
+			});
 		});
 	}
 	

@@ -102,7 +102,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		//only sync if goalNav already exists..
 		if (goalNav) {
 			var position = goalNav.getPosition(level, goalDymo);
-			syncNav.setPosition(position+1, level, syncDymo);
+			syncNav.setPosition(position, level, syncDymo);
 		}
 	}
 	

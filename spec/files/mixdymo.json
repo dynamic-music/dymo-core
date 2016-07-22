@@ -5,13 +5,13 @@
 	"cdt":"parallel",
 	"mappings":[
 		{
-			"domainDims":[{"name":"Fade","@type":"Parameter"},{"name":"index","@type":"Feature"}],
+			"domainDims":[{"@id":"Fade","@type":"Parameter"},{"@id":"index","@type":"Feature"}],
 			"function":{"args":["a", "b"],"body":"return (1-b)*(1-a)+b*a;"},
 			"dymos":{"args":["d"],"body":"return d.getLevel() == 1;"},
 			"range":"Amplitude"
 		},
 		{
-			"domainDims":[{"name":"Tempo","@type":"Parameter"},{"name":"duration","@type":"Feature"}],
+			"domainDims":[{"@id":"Tempo","@type":"Parameter"},{"@id":"duration","@type":"Feature"}],
 			"function":{"args":["a", "b"],"body":"return a/60*b;"},
 			"dymos":{"args":["d"],"body":"return d.getLevel() == 3;"},
 			"range":"TimeStretchRatio"

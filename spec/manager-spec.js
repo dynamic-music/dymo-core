@@ -4,7 +4,7 @@ describe("a manager", function() {
 	var audioContext = new AudioContext();
 	
 	var manager, fadePosition, isPlaying;
-	//jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
+	jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 	
 	beforeEach(function() {
 		manager = new DymoManager(audioContext, 0.1, '../audio/impulse_rev.wav');
@@ -48,7 +48,7 @@ describe("a manager", function() {
 					manager.loadDymoFromJson('files/dymo2.json', function(loadedDymo) {
 						expect(manager.getTopDymo()).not.toBeUndefined();
 						var parts = manager.getTopDymo().getParts();
-						var pos = parts.map(function(p){return manager.getNavigatorPosition(p, 0);})
+						var pos = parts.map(function(p){return manager.getNavigatorPosition(p, 0);});
 						expect(pos[0]).toEqual(1);
 						expect(pos[0]).toEqual(pos[1]);
 						manager.updateNavigatorPosition(parts[0], 0, 2);
@@ -56,7 +56,6 @@ describe("a manager", function() {
 						manager.syncNavigators(parts[1], parts[0], 0);
 						//manager.syncNavigators(parts[1-fadePosition], parts[fadePosition], 0);
 						var pos = parts.map(function(p){return manager.getNavigatorPosition(p, 0);})
-						console.log(pos)
 						expect(pos[0]).toEqual(pos[1]);
 						setTimeout(function() {
 							manager.stopPlaying();
@@ -79,7 +78,7 @@ describe("a manager", function() {
 				manager.startPlaying();
 				isPlaying = true;
 			}
-			manager.getUIControl("transition").update();
+			manager.getUIControl(CONTEXT_URI+"transition").update();
 			callback();
 		}, 300);
 	}

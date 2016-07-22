@@ -2,54 +2,72 @@
  * A DymoLoader loads dymos from rdf, jams, or json-ld.
  * @constructor
  */
-function DymoLoader(scheduler) {
+function DymoLoader(scheduler, callback) {
 	
-	var mobileRdfUri = "rdf/mobile.n3";
-	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
-	var rdfsUri = "http://www.w3.org/2000/01/rdf-schema";
-	
-	var dmos = {}; //dmos at all hierarchy levels for quick access during mapping assignment
-	var features = {};
-	
+	var store = new EasyStore();
 	var dymoBasePath = '';
+	
+	initStore();
+	
+	//creates the store and loads some basic ontology files
+	function initStore() {
+		loadFileIntoStore("http://tiny.cc/dymo-ontology", false, function() {
+			loadFileIntoStore("http://tiny.cc/mobile-audio-ontology", false, function() {
+				if (callback) {
+					callback();
+				}
+			});
+		});
+	}
 	
 	this.loadDymoFromJson = function(jsonUri, callback) {
 		var fileIndex = jsonUri.lastIndexOf('/')+1;
 		dymoBasePath = jsonUri.substring(0, fileIndex);
-		loadJson(jsonUri, {}, callback, createDymoFromJson);
+		loadJsonld(jsonUri, function() {
+			callback(createDymoFromStore({}));
+		});
 	}
 	
 	this.parseDymoFromJson = function(json, callback) {
-		callback(createDymoFromJson(json, {}));
+		store.loadData(json, true, function() {
+			callback(createDymoFromStore({}));
+		});
 	}
 	
 	this.loadRenderingFromJson = function(jsonUri, dymoMap, callback) {
-		loadJson(jsonUri, dymoMap, callback, createRenderingFromJson);
+		if (!dymoMap) {
+			dymoMap = {};
+		}
+		loadJsonld(jsonUri, function() {
+			callback(createRendering(dymoMap));
+		});
 	}
 	
 	this.loadGraphFromJson = function(jsonUri, dymoMap, callback) {
-		loadJson(jsonUri, dymoMap, callback, createGraphFromJson);
+		recursiveLoadJson(jsonUri, "", function(json) {
+			callback(createGraphFromJson(json, dymoMap));
+		});
 	}
 	
-	//only calls callback once all file references within the json are loaded
-	function loadJson(jsonUri, dymoMap, callback, creatingFunction) {
-		recursiveLoadJson(jsonUri, "", dymoMap, callback, creatingFunction);
+	//load jsonld into triple store
+	function loadJsonld(jsonUri, callback) {
+		recursiveLoadJson(jsonUri, "", function(loaded) {
+			store.loadData(loaded, true, callback);
+		});
 	}
 	
-	function recursiveLoadJson(jsonUri, jsonString, dymoMap, callback, creatingFunction) {
-		var request = new XMLHttpRequest();
-		request.open('GET', jsonUri, true);
-		request.onload = function() {
-			if (this.responseText.indexOf("Cannot GET") < 0) {
+	function recursiveLoadJson(jsonUri, jsonString, callback) {
+		loadFile(jsonUri, function(responseText) {
+			if (responseText.indexOf("Cannot GET") < 0) {
 				//console.log(this.responseText.substring(0,20), isJsonString(this.responseText))
-				if (isJsonString(this.responseText)) {
+				if (isJsonString(responseText)) {
 					if (jsonString) {
 						if (jsonUri.indexOf(dymoBasePath) >= 0) {
 							jsonUri = jsonUri.replace(dymoBasePath, "");
 						}
-						jsonString = jsonString.replace('"'+jsonUri+'"', this.responseText);
+						jsonString = jsonString.replace('"'+jsonUri+'"', responseText);
 					} else {
-						jsonString = this.responseText;
+						jsonString = responseText;
 					}
 				}
 				var nextUri = findNextJsonUri(jsonString);
@@ -57,17 +75,12 @@ function DymoLoader(scheduler) {
 					if (nextUri.indexOf(dymoBasePath) < 0) {
 						nextUri = dymoBasePath+nextUri;
 					}
-					recursiveLoadJson(nextUri, jsonString, dymoMap, callback, creatingFunction);
+					recursiveLoadJson(nextUri, jsonString, callback);
 				} else if (jsonString) {
-					var result = creatingFunction(JSON.parse(jsonString), dymoMap);
-					callback(result);
+					callback(JSON.parse(jsonString));
 				}
 			}
-		}
-		request.error = function(e){
-			console.log(e);
-		};
-		request.send();
+		});
 	}
 	
 	function isJsonString(str) {
@@ -92,109 +105,158 @@ function DymoLoader(scheduler) {
 		}
 	}
 	
-	function createDymoFromJson(json, dymoMap) {
+	function createDymoFromStore(dymoMap) {
 		//first create all dymos and save references in map
-		var dymo = recursiveCreateDymoAndParts(json, dymoMap);
+		var topDymoUri = findTopDymos()[0];
+		var topDymo = recursiveCreateDymoAndParts(topDymoUri, dymoMap);
 		//then add similarity relations
-		recursiveAddMappingsAndSimilars(json, dymoMap);
-		return [dymo, dymoMap];
+		recursiveAddMappingsAndSimilars(topDymoUri, dymoMap);
+		return [topDymo, dymoMap];
 	}
 	
-	function recursiveCreateDymoAndParts(json, dymoMap) {
-		var dymo = new DynamicMusicObject(json["@id"], json["cdt"], scheduler);
+	//returns an array with all uris of dymos that do not have parents
+	function findTopDymos() {
+		var allPartTriples = store.find(null, CHARM_URI+"hasPart", null);
+		var allParents = Array.from(new Set(allPartTriples.map(function(t){return t.subject;})), x => x);
+		var allParts = Array.from(new Set(allPartTriples.map(function(t){return t.object;})), x => x);
+		return allParents.filter(function(p) { return allParts.indexOf(p) < 0 });
+	}
+	
+	function findFunction(uri) {
+		var [args, body] = findArgsAndBody(uri);
+		if (args && body) {
+			return Function.apply(null, args.concat(body));
+		}
+	}
+	
+	function findArgsAndBody(uri) {
+		var args = store.findAllObjectValues(uri, MOBILE_URI+"hasArgument");
+		var body = store.findFirstObjectValue(uri, MOBILE_URI+"hasBody");
+		return [args, body];
+	}
+	
+	function recursiveCreateDymoAndParts(currentDymoUri, dymoMap) {
+		var cdt = store.findFirstObjectUri(currentDymoUri, CHARM_URI+"cdt");
+		var dymo = new DynamicMusicObject(currentDymoUri, cdt, scheduler);
 		dymo.setBasePath(dymoBasePath);
-		dymoMap[json["@id"]] = dymo;
-		if (json["source"]) {
-			dymo.setSourcePath(json["source"]);
+		dymoMap[currentDymoUri] = dymo;
+		dymo.setSourcePath(store.findFirstObjectValue(currentDymoUri, DYMO_URI+"hasSource"));
+		var features = store.findAllObjectUris(currentDymoUri, DYMO_URI+"hasFeature");
+		for (var i = 0; i < features.length; i++) {
+			dymo.setFeature(features[i], store.findFirstObjectUri(features[i], CHARM_URI+"value"));
 		}
-		if (json["features"]) {
-			for (var i = 0; i < json["features"].length; i++) {
-				dymo.setFeature(json["features"][i]["@id"], json["features"][i]["value"]);
-			}
+		var parameters = store.findAllObjectUris(currentDymoUri, DYMO_URI+"hasParameter");
+		for (var i = 0; i < parameters.length; i++) {
+			addOrUpdateDymoParameter(dymo, store.findFirstObjectUri(parameters[i], RDF_URI+"type"), store.findFirstObjectValue(parameters[i], CHARM_URI+"value"));
 		}
-		if (json["parameters"]) {
-			for (var i = 0; i < json["parameters"].length; i++) {
-				addOrUpdateDymoParameter(dymo, json["parameters"][i]["@type"], json["parameters"][i]["value"]);
-			}
-		}
-		if (json["parts"]) {
-			for (var i = 0; i < json["parts"].length; i++) {
-				dymo.addPart(recursiveCreateDymoAndParts(json["parts"][i], dymoMap));
-			}
+		var parts = store.findAllObjectUris(currentDymoUri, CHARM_URI+"hasPart");
+		for (var i = 0; i < parts.length; i++) {
+			dymo.addPart(recursiveCreateDymoAndParts(parts[i], dymoMap));
 		}
 		return dymo;
 	}
 	
-	function recursiveAddMappingsAndSimilars(json, dymoMap) {
-		var dymo = dymoMap[json["@id"]];
+	function recursiveAddMappingsAndSimilars(currentDymoUri, dymoMap) {
+		var dymo = dymoMap[currentDymoUri];
 		//first add similars
-		if (json["similars"]) {
-			for (var i = 0; i < json["similars"].length; i++) {
-				dymo.addSimilar(dymoMap[json["similars"][i]]);
-			}
+		var similars = store.findAllObjectUris(currentDymoUri, DYMO_URI+"hasSimilar");
+		for (var i = 0; i < similars.length; i++) {
+			dymo.addSimilar(dymoMap[similars[i]]);
 		}
 		//then add mappings
-		if (json["mappings"]) {
-			for (var i = 0; i < json["mappings"].length; i++) {
-				dymo.addMapping(createMappingFromJson(json["mappings"][i], dymoMap, dymo));
-			}
+		var mappings = store.findAllObjectUris(currentDymoUri, MOBILE_URI+"hasMapping");
+		for (var i = 0; i < mappings.length; i++) {
+			dymo.addMapping(createMapping(mappings[i], dymoMap, dymo));
 		}
 		//iterate through parts
-		if (json["parts"]) {
-			for (var i = 0; i < json["parts"].length; i++) {
-				recursiveAddMappingsAndSimilars(json["parts"][i], dymoMap);
-			}
+		var parts = store.findAllObjectUris(currentDymoUri, CHARM_URI+"hasPart");
+		for (var i = 0; i < parts.length; i++) {
+			recursiveAddMappingsAndSimilars(parts[i], dymoMap);
 		}
 	}
 	
-	function createRenderingFromJson(json, dymoMap) {
-		var rendering = new Rendering(dymoMap[json["dymo"]]);
-		var controls = {};
-		for (var i = 0; i < json["mappings"].length; i++) {
-			var currentMapping = json["mappings"][i];
-			rendering.addMapping(createMappingFromJson(currentMapping, dymoMap, undefined, controls));
+	function createRendering(dymoMap) {
+		var renderingUri = store.findFirstSubjectUri(RDF_URI+"type", MOBILE_URI+"Rendering");
+		var rendering = new Rendering(dymoMap[store.findFirstObjectUri(renderingUri, MOBILE_URI+"hasDymo")]);
+		var mappingUris = store.findAllObjectUris(renderingUri, MOBILE_URI+"hasMapping");
+		var controls = createControls(mappingUris);
+		
+		for (var i = 0; i < mappingUris.length; i++) {
+			rendering.addMapping(createMapping(mappingUris[i], dymoMap, undefined, controls));
 		}
-		if (json["navigator"]) {
-			var dymosFunction = Function.apply(null, json["navigator"]["dymos"]["args"].concat(json["navigator"]["dymos"]["body"]));
-			rendering.addNavigator(getNavigator(json["navigator"]["@type"]), dymosFunction);
+		var navigator = store.findFirstObjectUri(renderingUri, DYMO_URI+"hasNavigator");
+		if (navigator) {
+			var dymosFunction = store.findFirstObjectUri(navigator, MOBILE_URI+"toDymo");
+			dymosFunction = findFunction(dymosFunction);
+			rendering.addNavigator(getNavigator(store.findFirstObjectUri(navigator, RDF_URI+"type")), dymosFunction);
 		}
 		return [rendering, controls];
 	}
 	
-	/** @param {Object=} controls (optional) */
-	function createMappingFromJson(json, dymoMap, dymo, controls) {
-		if (json["controls"]) {
-			var targetControls = [];
-			for (var j = 0; j < json["controls"].length; j++) {
-				targetControls.push(controls[json["controls"][j]]);
-			}
-			return createMappingToObjectsFromJson(json, dymoMap, dymo, targetControls, controls);
-		} else if (json["dymos"]) {
-			var dymos = [];
-			var constraintFunction;
-			if (json["dymos"] instanceof Array) {
-				for (var j = 0; j < json["dymos"].length; j++) {
-					dymos.push(dymoMap[json["dymos"][j]]);
+	function createControls(mappingUris) {
+		var controls = {};
+		for (var i = 0; i < mappingUris.length; i++) {
+			var domainDimUris = store.findAllObjectUris(mappingUris[i], MOBILE_URI+"hasDomainDimension");
+			for (var j = 0; j < domainDimUris.length; j++) {
+				var currentType = store.findFirstObjectUri(domainDimUris[j], RDF_URI+"type");
+				var currentName = store.findFirstObjectValue(domainDimUris[j], SCHEMA_URI+"name");
+				if (!currentName) {
+					currentName = domainDimUris[j];
 				}
-			} else {
-				constraintFunction = Function.apply(null, json["dymos"]["args"].concat(json["dymos"]["body"]));
+				if (store.isSubclassOf(currentType, MOBILE_URI+"MobileControl")) {
+					if (!controls[domainDimUris[j]]) {
+						var control = getControl(domainDimUris[j], currentName, currentType);
+						var value = Number(store.findFirstObjectUri(domainDimUris[j], CHARM_URI+"value"));
+						if (!isNaN(value)) {
+							control.update(value);
+						}
+						controls[domainDimUris[j]] = control;
+					}
+				}
+			}
+		}
+		return controls;
+	}
+	
+	/** @param {Object=} controls (optional) */
+	function createMapping(mappingUri, dymoMap, dymo, controls) {
+		var targetUris = store.findAllObjectUris(mappingUri, MOBILE_URI+"toTarget");
+		var dymoUris = store.findAllObjectUris(mappingUri, MOBILE_URI+"toDymo");
+		if (targetUris.length > 0) {
+			var targetControls = [];
+			for (var j = 0; j < targetUris.length; j++) {
+				var targetUri = store.findFirstSubjectUri(SCHEMA_URI+"name", targetUris[j]);
+				targetControls.push(controls[targetUri]);
+			}
+			return createMappingToObjects(mappingUri, dymoMap, dymo, targetControls, controls);
+		} else if (dymoUris.length > 0) {
+			var dymos = [];
+			var constraintFunction = findFunction(dymoUris[0]);
+			if (constraintFunction) {
 				var allDymos = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
 				Array.prototype.push.apply(dymos, allDymos.filter(constraintFunction));
+			} else {
+				for (var j = 0; j < dymoUris.length; j++) {
+					dymos.push(dymoMap[dymoUris[j]]);
+				}
 			}
-			return createMappingToObjectsFromJson(json, dymoMap, dymo, dymos, controls, constraintFunction);
+			return createMappingToObjects(mappingUri, dymoMap, dymo, dymos, controls, constraintFunction);
 		} else {
-			return createMappingToObjectsFromJson(json, dymoMap, dymo, [scheduler], controls);
+			return createMappingToObjects(mappingUri, dymoMap, dymo, [scheduler], controls);
 		}
 	}
 	
 	/** @param {Function=} dymoConstraint (optional) */
-	function createMappingToObjectsFromJson(json, dymoMap, dymo, targets, controls, dymoConstraint) {
-		var isRelative = json["relative"];
+	function createMappingToObjects(mappingUri, dymoMap, dymo, targets, controls, dymoConstraint) {
+		var isRelative = store.findFirstObjectUri(mappingUri, MOBILE_URI+"isRelative");
 		var domainDims = [];
-		for (var j = 0; j < json["domainDims"].length; j++) {
-			var currentDim = json["domainDims"][j];
-			var currentName = currentDim["name"];
-			var currentType = currentDim["@type"];
+		var domainDimUris = store.findAllObjectUris(mappingUri, MOBILE_URI+"hasDomainDimension");
+		for (var j = 0; j < domainDimUris.length; j++) {
+			var currentType = store.findFirstObjectUri(domainDimUris[j], RDF_URI+"type");
+			var currentName = store.findFirstObjectValue(domainDimUris[j], SCHEMA_URI+"name");
+			if (!currentName) {
+				currentName = domainDimUris[j];
+			}
 			if (currentType == FEATURE) {
 				domainDims.push(currentName);
 			} else if (currentType == PARAMETER) {
@@ -206,29 +268,14 @@ function DymoLoader(scheduler) {
 				}
 				domainDims.push(currentParameter);
 			} else {
-				var control;
-				if (controls && controls[currentName]) {
-					control = controls[currentName];
-				} else {
-					control = getControl(currentDim);
-					//TODO implement in better way (only works for sensor controls)
-					if (currentDim["smooth"] && control.setSmooth) {
-						control.setSmooth(true);
-					}
-					if (!isNaN(currentDim["average"]) && control.setAverageOf) {
-						control.setAverageOf(currentDim["average"]);
-					}
-				}
-				if ("value" in currentDim) {
-					control.update(currentDim["value"]);
-				}
-				if (controls && !controls[currentName]) {
-					controls[currentName] = control;
-				}
-				domainDims.push(control);
+				//it's a control
+				domainDims.push(controls[domainDimUris[j]]);
 			}
 		}
-		return new Mapping(domainDims, isRelative, json["function"], targets, json["range"], dymoConstraint);
+		var [args, body] = findArgsAndBody(store.findFirstObjectUri(mappingUri, MOBILE_URI+"hasFunction"));
+		var range = store.findFirstObjectUri(mappingUri, MOBILE_URI+"toParameter");
+		//console.log(domainDims, targets, range)
+		return new Mapping(domainDims, isRelative, {"args":args,"body":body}, targets, range, dymoConstraint);
 	}
 	
 	function addOrUpdateDymoParameter(dymo, name, value) {
@@ -247,8 +294,8 @@ function DymoLoader(scheduler) {
 		for (var i = 0; i < json.length; i++) {
 			if (json[i]) {
 				for (var j = 0; j < json[i].length; j++) {
-					var dymo = dymoMap["dymo"+i];
-					var similarDymo = dymoMap["dymo"+json[i][j]];
+					var dymo = dymoMap[CONTEXT_URI+"dymo"+i];
+					var similarDymo = dymoMap[CONTEXT_URI+"dymo"+json[i][j]];
 					if (dymo && similarDymo) {
 						dymo.addSimilar(similarDymo);
 					}
@@ -264,320 +311,66 @@ function DymoLoader(scheduler) {
 		return new SequentialNavigator(undefined);
 	}
 	
-	function getControl(options) {
-		var type = options["@type"];
-		var label = options["name"];
+	function getControl(id, name, type) {
+		var control;
 		if (type == ACCELEROMETER_X || type == ACCELEROMETER_Y || type == ACCELEROMETER_Z) {
-			return new AccelerometerControl(type);
+			control = new AccelerometerControl(type);
 		} else if (type == TILT_X || type == TILT_Y) {
-			return new TiltControl(type);
+			control = new TiltControl(type);
 		} else if (type == GEOLOCATION_LATITUDE || type == GEOLOCATION_LONGITUDE) {
-			return new GeolocationControl(type);
+			control = new GeolocationControl(type);
 		}	else if (type == GEOLOCATION_DISTANCE) {
-			return new DistanceControl();
+			control = new DistanceControl();
 		}	else if (type == COMPASS_HEADING) {
-			return new CompassControl();
+			control = new CompassControl();
 		}	else if (type == BEACON) {
-			var uuid = options["uuid"];
+			//TODO FIX!!!!!!
+			/*var uuid = options["uuid"];
 			var major = parseInt(options["major"], 10);
-			var minor = parseInt(options["minor"], 10);
-			return new BeaconControl(uuid, major, minor);
+			var minor = parseInt(options["minor"], 10);*/
+			var uuid, major, minor;
+			control = new BeaconControl(uuid, major, minor);
 		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM) {
-			return new Control(label, type);
+			control = new Control(name, type);
 		} else if (type == RANDOM) {
-			return new RandomControl();
+			control = new RandomControl();
 		} else if (type == BROWNIAN) {
-			return new BrownianControl(parseFloat(options["value"]));
+			//TODO FIX!!
+			control = new BrownianControl(0);//parseFloat(options["value"]));
 		} else if (type == RAMP) {
-			var milisDuration = Math.round(parseFloat(options["duration"])*1000);
-			return new RampControl(milisDuration, parseFloat(options["value"]));
+			//store.findFirstObjectUri(domainDimUris[j], RDF_URI+"duration");
+			//var milisDuration = Math.round(parseFloat(options["duration"])*1000);
+			//TODO FIX DURATION!!!!!!
+			var value = store.findFirstObjectValue(id, CHARM_URI+"value"); //TODO SHOULDNT BE CHARM
+			control = new RampControl(3000, value);
 		}
+		//TODO implement in better way (only works for sensor controls)
+		if (store.findFirstObjectUri(id, MOBILE_URI+"isSmooth") && control.setSmooth) {
+			control.setSmooth(true);
+		}
+		var average = Number(store.findFirstObjectUri(id, MOBILE_URI+"isAverageOf"));
+		if (!isNaN(average) && control.setAverageOf) {
+			control.setAverageOf(average);
+		}
+		return control;
 	}
 	
+	function loadFile(path, callback) {
+		var request = new XMLHttpRequest();
+		request.open('GET', path, true);
+		request.onload = function() {
+			callback(this.responseText);
+		};
+		request.error = function(e){
+			console.log(e);
+		};
+		request.send();
+	}
 	
-	/*this.loadDmo = function(rdfUri) {
-		$http.get(dmoPath+rdfUri).success(function(data) {
-			rdfstore.create(function(err, store) {
-				store.load('text/turtle', data, function(err, results) {
-					if (err) {
-						console.log(err);
-					}
-					store.execute("SELECT ?rendering ?label \
-					WHERE { ?rendering a <"+mobileRdfUri+"#Rendering> . \
-					?rendering <"+rdfsUri+"#label> ?label }", function(err, results) {
-						for (var i = 0; i < results.length; i++) {
-							//TODO MAKE LIST WITH SEVERAL SELECTABLE RENDERINGS!!
-							loadRendering(store, results[i].rendering.value, results[i].label.value);
-						}
-					});
-				});
-			});
+	function loadFileIntoStore(path, isJsonld, callback) {
+		loadFile(path, function(data) {
+			store.loadData(data, isJsonld, callback);
 		});
 	}
-	
-	function loadRendering(store, renderingUri, label) {
-		store.execute("SELECT ?dmo \
-		WHERE { <"+renderingUri+"> <"+mobileRdfUri+"#hasDMO> ?dmo }", function(err, results) {
-			$scope.rendering = new Rendering(label, $scope);
-			$scope.scheduler = new Scheduler($scope.audioContext, function() {
-				$scope.sourcesReady = true;
-			});
-			for (var i = 0; i < results.length; i++) {
-				loadDMO(store, results[i].dmo.value);
-			}
-			loadMappings(store, renderingUri);
-		});
-	}
-	
-	function loadDMO(store, dmoUri, parentDMO) {
-		var dmo = new DynamicMusicObject(dmoUri, $scope.scheduler);
-		dmos[dmoUri] = dmo;
-		if (parentDMO) {
-			parentDMO.addPart(dmo);
-		} else {
-			$scope.rendering.dmo = dmo; //pass top-level dmo to rendering
-		}
-		loadAudioPath(store, dmoUri, dmo);
-		loadParameters(store, dmoUri, dmo);
-		loadChildren(store, dmoUri, dmo);
-	}
-	
-	function loadAudioPath(store, dmoUri, dmo) {
-		store.execute("SELECT ?audioPath \
-		WHERE { <"+dmoUri+"> <"+mobileRdfUri+"#hasAudioPath> ?audioPath }", function(err, results) {
-			for (var i = 0; i < results.length; i++) {
-				var audioPath = dmoPath+"/"+results[i].audioPath.value;
-				dmo.setSourcePath(audioPath);
-				$scope.scheduler.addSourceFile(audioPath);
-			}
-		});
-	}
-	
-	function loadParameters(store, dmoUri, dmo) {
-		store.execute("SELECT ?parameter ?parameterType ?value ?featuresPath ?subsetCondition ?graphPath ?label \
-		WHERE { <"+dmoUri+"> <"+mobileRdfUri+"#hasParameter> ?parameter . \
-		OPTIONAL { ?parameter a ?parameterType . \
-			?parameter <"+mobileRdfUri+"#hasValue> ?value . } \
-		OPTIONAL { ?parameter <"+mobileRdfUri+"#hasFeaturesPath> ?featuresPath . } \
-		OPTIONAL { ?parameter <"+mobileRdfUri+"#isSubset> ?subsetCondition . } \
-		OPTIONAL { ?parameter <"+mobileRdfUri+"#hasGraphPath> ?graphPath . } \
-		OPTIONAL { ?parameter <"+rdfsUri+"#label> ?label . } }", function(err, results) {
-			for (var i = 0; i < results.length; i++) {
-				var label = getValue(results[i].label);
-				var value = getNumberValue(results[i].value);
-				if (value) {
-					var parameter = getParameter(dmo, results[i].parameter.value, results[i].parameterType.value);
-					parameter.update(value);
-				}
-				if (results[i].featuresPath) {
-					var featuresPath = dmoPath+"/"+results[i].featuresPath.value;
-					var subsetCondition = getValue(results[i].subsetCondition);
-					loadFeatures(dmo, results[i].parameter.value, featuresPath, subsetCondition, label);
-				}
-				if (results[i].graphPath) {
-					var graphPath = dmoPath+"/"+results[i].graphPath.value;
-					loadGraph(dmo, results[i].parameter.value, graphPath, label);
-				}
-			}
-			if (results.length <= 0) {
-				$scope.ontologiesLoaded = true;
-			}
-		});
-	}
-	
-	function loadChildren(store, dmoUri, dmo) {
-		store.execute("SELECT ?child \
-		WHERE { <"+dmoUri+"> <"+mobileRdfUri+"#hasChild> ?child }", function(err, results) {
-			for (var i = 0; i < results.length; i++) {
-				loadDMO(store, results[i].child.value, dmo);
-			}
-		});
-	}
-	
-	function loadMappings(store, renderingUri) {
-		store.execute("SELECT ?mapping WHERE { <"+renderingUri+"> <"+mobileRdfUri+"#hasMapping> ?mapping }", function(err, results) {
-			for (var i = 0; i < results.length; i++) {
-				loadMapping(store, results[i].mapping.value);
-			}
-		});
-	}
-	
-	function loadMapping(store, mappingUri) {
-		$scope.mappingLoadingThreads++;
-		store.execute("SELECT ?mappingType ?object ?parameter ?parameterType \
-		WHERE { <"+mappingUri+"> a ?mappingType . \
-			<"+mappingUri+"> <"+mobileRdfUri+"#toParameter> ?parameter . \
-		OPTIONAL { <"+mappingUri+"> <"+mobileRdfUri+"#toObject> ?object . } \
-		OPTIONAL { ?parameter a ?parameterType . } }", function(err, results) {
-			for (var i = 0; i < results.length; i++) {
-				if (results[i].object) {
-					var object = dmos[results[i].object.value];
-					if (!object) {
-						object = getGraphControl(undefined, results[i].object.value);
-						if (!object) {
-							object = getStatsControl(undefined, results[i].object.value);
-						}
-					}
-				}
-				if (results[i].parameterType) {
-					var parameterType = results[i].parameterType.value;
-				}
-				var mappingType = MappingTypes.PRODUCT_MAPPING;
-				if (results[i].mappingType.value == mobileRdfUri+"#SumMapping") {
-					mappingType = MappingTypes.SUM_MAPPING;
-				}
-				var parameter = getParameter(object, results[i].parameter.value, parameterType);
-				loadMappingDimensions(store, mappingUri, mappingType, parameter);
-			}
-		});
-	}
-	
-	function loadMappingDimensions(store, mappingUri, mappingType, parameter) {
-		store.execute("SELECT ?control ?controlType ?label ?controlDMO ?function ?functionType ?position ?range ?multiplier ?addend ?modulus \
-		WHERE { <"+mappingUri+"> <"+mobileRdfUri+"#hasDimension> ?dimension . \
-			?dimension <"+mobileRdfUri+"#fromControl> ?control . \
-		OPTIONAL { ?dimension <"+mobileRdfUri+"#withFunction> ?function . \
-			?function a ?functionType . } \
-		OPTIONAL { ?control a ?controlType . } \
-		OPTIONAL { ?control <"+rdfsUri+"#label> ?label . } \
-		OPTIONAL { ?control <"+mobileRdfUri+"#fromDMO> ?controlDMO . } \
-		OPTIONAL { ?dimension <"+mobileRdfUri+"#hasMultiplier> ?multiplier . } \
-		OPTIONAL { ?dimension <"+mobileRdfUri+"#hasAddend> ?addend . } \
-		OPTIONAL { ?dimension <"+mobileRdfUri+"#hasModulus> ?modulus . } \
-		OPTIONAL { ?function <"+mobileRdfUri+"#hasPosition> ?position . } \
-		OPTIONAL { ?function <"+mobileRdfUri+"#hasRange> ?range . } }", function(err, results) {
-			var controls = [];
-			var functions = [];
-			var multipliers = [];
-			var addends = [];
-			var moduli = [];
-			for (var i = 0; i < results.length; i++) {
-				controls[i] = getControlFromResults(results[i].control, results[i].controlType, results[i].label, results[i].controlDMO);
-				var position = getNumberValue(results[i].position);
-				var range = getNumberValue(results[i].range);
-				functions[i] = getFunction(results[i].functionType, position, range);
-				multipliers[i] = getNumberValue(results[i].multiplier, 1);
-				addends[i] = getNumberValue(results[i].addend, 0);
-				moduli[i] = getNumberValue(results[i].modulus);
-			}
-			$scope.mappings[mappingUri] = new Mapping(mappingType, controls, functions, multipliers, addends, moduli, parameter);
-			$scope.mappingLoadingThreads--;
-			$scope.$apply();
-		});
-	}
-	
-	function getFunction(functionTypeResult, position, range) {
-		if (functionTypeResult) {
-			functionType = functionTypeResult.value;
-			if (functionType == mobileRdfUri+"#TriangleFunction") {
-				return new TriangleFunction(position, range);
-			} else if (functionType == mobileRdfUri+"#RectangleFunction") {
-				return new RectangleFunction(position, range);
-			}
-		}
-		return new LinearFunction();
-	}
-	
-	function getControlFromResults(controlResult, controlTypeResult, labelResult, dmoResult) {
-		if (labelResult) {
-			var label = labelResult.value;
-		}
-		if (controlResult) {
-			var control = controlResult.value;
-		}
-		if (controlTypeResult) {
-			var controlType = controlTypeResult.value;
-		}
-		if (dmoResult) {
-			var dmo = dmos[dmoResult.value];
-		}
-		return getControl(control, controlType, label, dmo);
-	}
-	
-	function getValue(result) {
-		if (result) {
-			return result.value;
-		}
-	}
-	
-	function getNumberValue(result, defaultValue) {
-		if (result) {
-			return Number(result.value);
-		}
-		return defaultValue;
-	}*/
-	
-	/*function getControl(controlUri, controlTypeUri, label, dmo) {
-		if (controlUri == mobileRdfUri+"#AccelerometerX") {
-			return getAccelerometerControl(0);
-		} else if (controlUri == mobileRdfUri+"#AccelerometerY") {
-			return getAccelerometerControl(1);
-		}	else if (controlUri == mobileRdfUri+"#AccelerometerZ") {
-			return getAccelerometerControl(2);
-		} else if (controlUri == mobileRdfUri+"#TiltX") {
-			return getAccelerometerControl(3);
-		} else if (controlUri == mobileRdfUri+"#TiltY") {
-			return getAccelerometerControl(4);
-		} else if (controlUri == mobileRdfUri+"#GeolocationLatitude") {
-			return getGeolocationControl(0);
-		}	else if (controlUri == mobileRdfUri+"#GeolocationLongitude") {
-			return getGeolocationControl(1);
-		}	else if (controlUri == mobileRdfUri+"#GeolocationDistance") {
-			return getGeolocationControl(2);
-		}	else if (controlUri == mobileRdfUri+"#CompassHeading") {
-			return getCompassControl(0);
-		}	else if (controlTypeUri == mobileRdfUri+"#Slider") {
-			return getUIControl(0, controlUri, label);
-		} else if (controlTypeUri == mobileRdfUri+"#Toggle") {
-			return getUIControl(1, controlUri, label);
-		} else if (controlUri == mobileRdfUri+"#Random" || controlTypeUri == mobileRdfUri+"#Random") {
-			return getStatsControl(0, controlUri);
-		} else if (controlTypeUri == mobileRdfUri+"#GraphControl") {
-			if (dmo) {
-				var graph = dmo.getGraph();
-			}
-			return getGraphControl(0, controlUri, graph);
-		}
-	}
-	
-	function getUIControl(type, uri, label) {
-		if (!$scope.uiControls[uri]) {
-			$scope.uiControls[uri] = new Control(0, label, type, $scope);
-			$scope.$apply();
-		}
-		return $scope.uiControls[uri];
-	}
-	
-	function getParameter(owner, parameterUri, parameterTypeUri ) {
-		if (parameterUri == mobileRdfUri+"#Play" || parameterTypeUri == mobileRdfUri+"#Play") {
-			return owner.play;
-		} if (parameterUri == mobileRdfUri+"#Amplitude" || parameterTypeUri == mobileRdfUri+"#Amplitude") {
-			return owner.amplitude;
-		} if (parameterUri == mobileRdfUri+"#PlaybackRate" || parameterTypeUri == mobileRdfUri+"#PlaybackRate") {
-			return owner.playbackRate;
-		} else if (parameterUri == mobileRdfUri+"#Pan" || parameterTypeUri == mobileRdfUri+"#Pan") {
-			return owner.pan;
-		}	else if (parameterUri == mobileRdfUri+"#Distance" || parameterTypeUri == mobileRdfUri+"#Distance") {
-			return owner.distance;
-		} else if (parameterUri == mobileRdfUri+"#Reverb" || parameterTypeUri == mobileRdfUri+"#Reverb") {
-			return owner.reverb;
-		} else if (parameterUri == mobileRdfUri+"#Segmentation" || parameterTypeUri == mobileRdfUri+"#Segmentation") {
-			return owner.segmentIndex;
-		} else if (parameterUri == mobileRdfUri+"#SegmentCount" || parameterTypeUri == mobileRdfUri+"#SegmentCount") {
-			return owner.segmentCount;
-		} else if (parameterUri == mobileRdfUri+"#SegmentDurationRatio" || parameterTypeUri == mobileRdfUri+"#SegmentDurationRatio") {
-			return owner.segmentDurationRatio;
-		} else if (parameterUri == mobileRdfUri+"#SegmentProportion" || parameterTypeUri == mobileRdfUri+"#SegmentProportion") {
-			return owner.segmentProportion;
-		} else if (parameterUri == mobileRdfUri+"#ListenerOrientation" || parameterTypeUri == mobileRdfUri+"#ListenerOrientation") {
-			return $scope.scheduler.listenerOrientation;
-		} else if (parameterUri == mobileRdfUri+"#StatsFrequency" || parameterTypeUri == mobileRdfUri+"#StatsFrequency") {
-			return owner.frequency;
-		} else if (parameterUri == mobileRdfUri+"#LeapingProbability" || parameterTypeUri == mobileRdfUri+"#LeapingProbability") {
-			return owner.leapingProbability;
-		} else if (parameterUri == mobileRdfUri+"#ContinueAfterLeaping" || parameterTypeUri == mobileRdfUri+"#ContinueAfterLeaping") {
-			return owner.continueAfterLeaping;
-		}
-	}*/
 
 }
