@@ -50,6 +50,7 @@
 		"parameters": { "@id": "dy:hasParameter", "@type": "@vocab" },
 		"features": { "@id": "dy:hasFeature", "@type": "@vocab" },
 		"navigator": "dy:hasNavigator",
+		"similars": "dy:hasSimilar",
 		"Rendering": "mb:Rendering",
 		"Mapping": "mb:Mapping",
 		"DomainDimension": "mb:DomainDimension",
@@ -57,7 +58,7 @@
 		"MobileControl": "mb:MobileControl",
 		"CustomControl": "mb:CustomControl",
 		"SensorControl": "mb:SensorControl",
-		"UIControl": "mb:UIControl",
+		"UiControl": "mb:UiControl",
 		"AutoControl": "mb:AutoControl",
 		"AccelerometerX": "mb:AccelerometerX",
 		"AccelerometerY": "mb:AccelerometerY",
@@ -97,7 +98,13 @@
 		"dymos": { "@id": "mb:toDymo", "@type": "@id" },
 		"targets": "mb:toTarget",
 		"range": { "@id": "mb:toParameter", "@type": "@vocab" },
+		"relative": { "@id": "mb:isRelative", "@type": "xsd:boolean" },
+		"init": { "@id": "mb:hasInitialValue", "@type": "xsd:float" },
 		"smooth": { "@id": "mb:isSmooth", "@type": "xsd:boolean" },
-		"average": { "@id": "mb:isAverageOf", "@type": "xsd:integer" }
+		"average": { "@id": "mb:isAverageOf", "@type": "xsd:integer" },
+		"uuid": { "@id": "mb:hasUuid", "@type": "xsd:string" },
+		"major": { "@id": "mb:hasMajor", "@type": "xsd:integer" },
+		"minor": { "@id": "mb:hasMinor", "@type": "xsd:integer" },
+		"duration": { "@id": "mb:hasDuration", "@type": "xsd:integer" }
 	}
 }

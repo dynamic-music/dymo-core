@@ -20,7 +20,7 @@ mb:CustomControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
 mb:SensorControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
-mb:UIControl a owl:Class;
+mb:UiControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
 mb:AutoControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
@@ -47,11 +47,11 @@ mb:CompassHeading a owl:Class;
 mb:Beacon a owl:Class;
     rdfs:subClassOf mb:SensorControl.
 mb:Slider a owl:Class;
-    rdfs:subClassOf mb:UIControl.
+    rdfs:subClassOf mb:UiControl.
 mb:Toggle a owl:Class;
-    rdfs:subClassOf mb:UIControl.
+    rdfs:subClassOf mb:UiControl.
 mb:Button a owl:Class;
-    rdfs:subClassOf mb:UIControl.
+    rdfs:subClassOf mb:UiControl.
 mb:Random a owl:Class;
     rdfs:subClassOf mb:AutoControl.
 mb:Brownian a owl:Class;
@@ -106,9 +106,27 @@ mb:toTarget a owl:ObjectProperty;
 mb:toParameter a owl:ObjectProperty;
     rdfs:domain mb:Mapping;
     rdfs:range dy:Parameter.
+mb:isRelative a owl:DatatypeProperty;
+    rdfs:domain mb:Mapping;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#:boolean>.
+mb:hasInitialValue a owl:DatatypeProperty;
+    rdfs:domain mb:MobileControl;
+    rdfs:range xsd:float.
 mb:isSmooth a owl:DatatypeProperty;
     rdfs:domain mb:SensorControl;
     rdfs:range xsd:boolean.
 mb:isAverageOf a owl:DatatypeProperty;
     rdfs:domain mb:SensorControl;
+    rdfs:range xsd:integer.
+mb:hasUuid a owl:DatatypeProperty;
+    rdfs:domain mb:Beacon;
+    rdfs:range xsd:string.
+mb:hasMajor a owl:DatatypeProperty;
+    rdfs:domain mb:Beacon;
+    rdfs:range xsd:integer.
+mb:hasMinor a owl:DatatypeProperty;
+    rdfs:domain mb:Beacon;
+    rdfs:range xsd:integer.
+mb:hasDuration a owl:DatatypeProperty;
+    rdfs:domain mb:Ramp;
     rdfs:range xsd:integer.

@@ -83,3 +83,6 @@ dy:hasFeature a owl:ObjectProperty;
 dy:hasNavigator a owl:ObjectProperty;
     rdfs:domain dy:Dymo;
     rdfs:range dy:Navigator.
+dy:hasSimilar a owl:ObjectProperty;
+    rdfs:domain dy:Dymo;
+    rdfs:range dy:Dymo.

@@ -41,6 +41,7 @@ function initWriter(base) {
 function initContext() {
 	currentBase = "sch";
 	addToContext("name");
+	//mock charm stuff
 	currentBase = "ch";
 	addToContext("cdt", "cdt", "@vocab");
 	addToContext("adt", "adt", "@vocab");
@@ -49,13 +50,16 @@ function initContext() {
 }
 
 function initGlobals() {
-	addGlobal("RDF_URI", rdfPrefix);
 	addGlobal("RDFS_URI", prefixes["rdfs"]);
-	addGlobal("SCHEMA_URI", prefixes["sch"]);
-	addGlobal("CHARM_URI", prefixes["ch"]);
-	addGlobal("DYMO_URI", prefixes["dy"]);
-	addGlobal("MOBILE_URI", prefixes["mb"]);
 	addGlobal("CONTEXT_URI", contextBase);
+	//SOME PROPERTIES
+	addGlobal("TYPE", rdfType);
+	addGlobal("NAME", prefixes["sch"]+"name");
+	//mock charm stuff
+	addGlobal("CDT", prefixes["ch"]+"cdt");
+	addGlobal("ADT", prefixes["ch"]+"adt");
+	addGlobal("VALUE", prefixes["ch"]+"value");
+	addGlobal("HAS_PART", prefixes["ch"]+"hasPart");
 }
 
 function endGlobals() {
@@ -111,6 +115,7 @@ function createDymoOntology(path) {
 	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
 	addProperty({term:"features", iri:"hasFeature", type:"@vocab"}, "Dymo", "Feature", true);
 	addProperty({term:"navigator", iri:"hasNavigator"}, "Dymo", "Navigator", true);
+	addProperty({term:"similars", iri:"hasSimilar"}, "Dymo", "Dymo", true);
 	
 	writeN3ToFile(path);
 }
@@ -127,7 +132,7 @@ function createMobileAudioOntology(path) {
 	addClass("MobileControl");
 	addClass("CustomControl", "MobileControl");
 	addClass("SensorControl", "MobileControl");
-	addClass("UIControl", "MobileControl");
+	addClass("UiControl", "MobileControl");
 	addClass("AutoControl", "MobileControl");
 	//sensor controls
 	addClass("AccelerometerX", "SensorControl");
@@ -142,9 +147,9 @@ function createMobileAudioOntology(path) {
 	addClass("CompassHeading", "SensorControl");
 	addClass("Beacon", "SensorControl");
 	//ui controls
-	addClass("Slider", "UIControl");
-	addClass("Toggle", "UIControl");
-	addClass("Button", "UIControl");
+	addClass("Slider", "UiControl");
+	addClass("Toggle", "UiControl");
+	addClass("Button", "UiControl");
 	//auto controls
 	addClass("Random", "AutoControl");
 	addClass("Brownian", "AutoControl");
@@ -159,7 +164,7 @@ function createMobileAudioOntology(path) {
 	addIndividual("BrownianMaxStepSize", "ControlParameter");
 	addIndividual("LeapingProbability", "ControlParameter");
 	addIndividual("ContinueAfterLeaping", "ControlParameter");
-	//properties
+	//mapping properties
 	addProperty({term:"dymo", iri:"hasDymo"}, "Rendering", "Dymo", true, true);
 	addProperty({term:"mappings", iri:"hasMapping"}, "Rendering", "Mapping", true);
 	addProperty({term:"domainDims", iri:"hasDomainDimension"}, "Mapping", "DomainDimension", true);
@@ -172,9 +177,15 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"dymos", iri:"toDymo", type: "@id"}, "Mapping", "Dymo", true);
 	addProperty({term:"targets", iri:"toTarget"}, "Mapping", "MobileControl", true);
 	addProperty({term:"range", iri:"toParameter", type: "@vocab"}, "Mapping", "Parameter", true);
+	addProperty({term:"relative", iri:"isRelative", type: "xsd:boolean"}, "Mapping", prefixes["xsd"]+":boolean", false);
+	//control properties
+	addProperty({term:"init", iri:"hasInitialValue", type: "xsd:float"}, "MobileControl", prefixes["xsd"]+"float", false);
 	addProperty({term:"smooth", iri:"isSmooth", type: "xsd:boolean"}, "SensorControl", prefixes["xsd"]+"boolean", false);
 	addProperty({term:"average", iri:"isAverageOf", type: "xsd:integer"}, "SensorControl", prefixes["xsd"]+"integer", false);
-	
+	addProperty({term:"uuid", iri:"hasUuid", type: "xsd:string"}, "Beacon", prefixes["xsd"]+"string", false);
+	addProperty({term:"major", iri:"hasMajor", type: "xsd:integer"}, "Beacon", prefixes["xsd"]+"integer", false);
+	addProperty({term:"minor", iri:"hasMinor", type: "xsd:integer"}, "Beacon", prefixes["xsd"]+"integer", false);
+	addProperty({term:"duration", iri:"hasDuration", type: "xsd:integer"}, "Ramp", prefixes["xsd"]+"integer", false);
 	writeN3ToFile(path);
 }
 

@@ -116,7 +116,7 @@ function DymoLoader(scheduler, callback) {
 	
 	//returns an array with all uris of dymos that do not have parents
 	function findTopDymos() {
-		var allPartTriples = store.find(null, CHARM_URI+"hasPart", null);
+		var allPartTriples = store.find(null, HAS_PART, null);
 		var allParents = Array.from(new Set(allPartTriples.map(function(t){return t.subject;})), x => x);
 		var allParts = Array.from(new Set(allPartTriples.map(function(t){return t.object;})), x => x);
 		return allParents.filter(function(p) { return allParts.indexOf(p) < 0 });
@@ -130,26 +130,26 @@ function DymoLoader(scheduler, callback) {
 	}
 	
 	function findArgsAndBody(uri) {
-		var args = store.findAllObjectValues(uri, MOBILE_URI+"hasArgument");
-		var body = store.findFirstObjectValue(uri, MOBILE_URI+"hasBody");
+		var args = store.findAllObjectValues(uri, HAS_ARGUMENT);
+		var body = store.findFirstObjectValue(uri, HAS_BODY);
 		return [args, body];
 	}
 	
 	function recursiveCreateDymoAndParts(currentDymoUri, dymoMap) {
-		var cdt = store.findFirstObjectUri(currentDymoUri, CHARM_URI+"cdt");
+		var cdt = store.findFirstObjectUri(currentDymoUri, CDT);
 		var dymo = new DynamicMusicObject(currentDymoUri, cdt, scheduler);
 		dymo.setBasePath(dymoBasePath);
 		dymoMap[currentDymoUri] = dymo;
-		dymo.setSourcePath(store.findFirstObjectValue(currentDymoUri, DYMO_URI+"hasSource"));
-		var features = store.findAllObjectUris(currentDymoUri, DYMO_URI+"hasFeature");
+		dymo.setSourcePath(store.findFirstObjectValue(currentDymoUri, HAS_SOURCE));
+		var features = store.findAllObjectUris(currentDymoUri, HAS_FEATURE);
 		for (var i = 0; i < features.length; i++) {
-			dymo.setFeature(features[i], store.findFirstObjectUri(features[i], CHARM_URI+"value"));
+			dymo.setFeature(features[i], store.findFirstObjectUri(features[i], VALUE));
 		}
-		var parameters = store.findAllObjectUris(currentDymoUri, DYMO_URI+"hasParameter");
+		var parameters = store.findAllObjectUris(currentDymoUri, HAS_PARAMETER);
 		for (var i = 0; i < parameters.length; i++) {
-			addOrUpdateDymoParameter(dymo, store.findFirstObjectUri(parameters[i], RDF_URI+"type"), store.findFirstObjectValue(parameters[i], CHARM_URI+"value"));
+			addOrUpdateDymoParameter(dymo, store.findFirstObjectUri(parameters[i], TYPE), store.findFirstObjectValue(parameters[i], VALUE));
 		}
-		var parts = store.findAllObjectUris(currentDymoUri, CHARM_URI+"hasPart");
+		var parts = store.findAllObjectUris(currentDymoUri, HAS_PART);
 		for (var i = 0; i < parts.length; i++) {
 			dymo.addPart(recursiveCreateDymoAndParts(parts[i], dymoMap));
 		}
@@ -159,36 +159,36 @@ function DymoLoader(scheduler, callback) {
 	function recursiveAddMappingsAndSimilars(currentDymoUri, dymoMap) {
 		var dymo = dymoMap[currentDymoUri];
 		//first add similars
-		var similars = store.findAllObjectUris(currentDymoUri, DYMO_URI+"hasSimilar");
+		var similars = store.findAllObjectUris(currentDymoUri, HAS_SIMILAR);
 		for (var i = 0; i < similars.length; i++) {
 			dymo.addSimilar(dymoMap[similars[i]]);
 		}
 		//then add mappings
-		var mappings = store.findAllObjectUris(currentDymoUri, MOBILE_URI+"hasMapping");
+		var mappings = store.findAllObjectUris(currentDymoUri, HAS_MAPPING);
 		for (var i = 0; i < mappings.length; i++) {
 			dymo.addMapping(createMapping(mappings[i], dymoMap, dymo));
 		}
 		//iterate through parts
-		var parts = store.findAllObjectUris(currentDymoUri, CHARM_URI+"hasPart");
+		var parts = store.findAllObjectUris(currentDymoUri, HAS_PART);
 		for (var i = 0; i < parts.length; i++) {
 			recursiveAddMappingsAndSimilars(parts[i], dymoMap);
 		}
 	}
 	
 	function createRendering(dymoMap) {
-		var renderingUri = store.findFirstSubjectUri(RDF_URI+"type", MOBILE_URI+"Rendering");
-		var rendering = new Rendering(dymoMap[store.findFirstObjectUri(renderingUri, MOBILE_URI+"hasDymo")]);
-		var mappingUris = store.findAllObjectUris(renderingUri, MOBILE_URI+"hasMapping");
+		var renderingUri = store.findFirstSubjectUri(TYPE, RENDERING);
+		var rendering = new Rendering(dymoMap[store.findFirstObjectUri(renderingUri, HAS_DYMO)]);
+		var mappingUris = store.findAllObjectUris(renderingUri, HAS_MAPPING);
 		var controls = createControls(mappingUris);
 		
 		for (var i = 0; i < mappingUris.length; i++) {
 			rendering.addMapping(createMapping(mappingUris[i], dymoMap, undefined, controls));
 		}
-		var navigator = store.findFirstObjectUri(renderingUri, DYMO_URI+"hasNavigator");
+		var navigator = store.findFirstObjectUri(renderingUri, HAS_NAVIGATOR);
 		if (navigator) {
-			var dymosFunction = store.findFirstObjectUri(navigator, MOBILE_URI+"toDymo");
+			var dymosFunction = store.findFirstObjectUri(navigator, TO_DYMO);
 			dymosFunction = findFunction(dymosFunction);
-			rendering.addNavigator(getNavigator(store.findFirstObjectUri(navigator, RDF_URI+"type")), dymosFunction);
+			rendering.addNavigator(getNavigator(store.findFirstObjectUri(navigator, TYPE)), dymosFunction);
 		}
 		return [rendering, controls];
 	}
@@ -196,17 +196,17 @@ function DymoLoader(scheduler, callback) {
 	function createControls(mappingUris) {
 		var controls = {};
 		for (var i = 0; i < mappingUris.length; i++) {
-			var domainDimUris = store.findAllObjectUris(mappingUris[i], MOBILE_URI+"hasDomainDimension");
+			var domainDimUris = store.findAllObjectUris(mappingUris[i], HAS_DOMAIN_DIMENSION);
 			for (var j = 0; j < domainDimUris.length; j++) {
-				var currentType = store.findFirstObjectUri(domainDimUris[j], RDF_URI+"type");
-				var currentName = store.findFirstObjectValue(domainDimUris[j], SCHEMA_URI+"name");
+				var currentType = store.findFirstObjectUri(domainDimUris[j], TYPE);
+				var currentName = store.findFirstObjectValue(domainDimUris[j], NAME);
 				if (!currentName) {
 					currentName = domainDimUris[j];
 				}
-				if (store.isSubclassOf(currentType, MOBILE_URI+"MobileControl")) {
+				if (store.isSubclassOf(currentType, MOBILE_CONTROL)) {
 					if (!controls[domainDimUris[j]]) {
 						var control = getControl(domainDimUris[j], currentName, currentType);
-						var value = Number(store.findFirstObjectUri(domainDimUris[j], CHARM_URI+"value"));
+						var value = Number(store.findFirstObjectUri(domainDimUris[j], VALUE));
 						if (!isNaN(value)) {
 							control.update(value);
 						}
@@ -220,12 +220,12 @@ function DymoLoader(scheduler, callback) {
 	
 	/** @param {Object=} controls (optional) */
 	function createMapping(mappingUri, dymoMap, dymo, controls) {
-		var targetUris = store.findAllObjectUris(mappingUri, MOBILE_URI+"toTarget");
-		var dymoUris = store.findAllObjectUris(mappingUri, MOBILE_URI+"toDymo");
+		var targetUris = store.findAllObjectUris(mappingUri, TO_TARGET);
+		var dymoUris = store.findAllObjectUris(mappingUri, TO_DYMO);
 		if (targetUris.length > 0) {
 			var targetControls = [];
 			for (var j = 0; j < targetUris.length; j++) {
-				var targetUri = store.findFirstSubjectUri(SCHEMA_URI+"name", targetUris[j]);
+				var targetUri = store.findFirstSubjectUri(NAME, targetUris[j]);
 				targetControls.push(controls[targetUri]);
 			}
 			return createMappingToObjects(mappingUri, dymoMap, dymo, targetControls, controls);
@@ -248,12 +248,12 @@ function DymoLoader(scheduler, callback) {
 	
 	/** @param {Function=} dymoConstraint (optional) */
 	function createMappingToObjects(mappingUri, dymoMap, dymo, targets, controls, dymoConstraint) {
-		var isRelative = store.findFirstObjectUri(mappingUri, MOBILE_URI+"isRelative");
+		var isRelative = store.findFirstObjectUri(mappingUri, IS_RELATIVE);
 		var domainDims = [];
-		var domainDimUris = store.findAllObjectUris(mappingUri, MOBILE_URI+"hasDomainDimension");
+		var domainDimUris = store.findAllObjectUris(mappingUri, HAS_DOMAIN_DIMENSION);
 		for (var j = 0; j < domainDimUris.length; j++) {
-			var currentType = store.findFirstObjectUri(domainDimUris[j], RDF_URI+"type");
-			var currentName = store.findFirstObjectValue(domainDimUris[j], SCHEMA_URI+"name");
+			var currentType = store.findFirstObjectUri(domainDimUris[j], TYPE);
+			var currentName = store.findFirstObjectValue(domainDimUris[j], NAME);
 			if (!currentName) {
 				currentName = domainDimUris[j];
 			}
@@ -272,8 +272,8 @@ function DymoLoader(scheduler, callback) {
 				domainDims.push(controls[domainDimUris[j]]);
 			}
 		}
-		var [args, body] = findArgsAndBody(store.findFirstObjectUri(mappingUri, MOBILE_URI+"hasFunction"));
-		var range = store.findFirstObjectUri(mappingUri, MOBILE_URI+"toParameter");
+		var [args, body] = findArgsAndBody(store.findFirstObjectUri(mappingUri, HAS_FUNCTION));
+		var range = store.findFirstObjectUri(mappingUri, TO_PARAMETER);
 		//console.log(domainDims, targets, range)
 		return new Mapping(domainDims, isRelative, {"args":args,"body":body}, targets, range, dymoConstraint);
 	}
@@ -324,31 +324,27 @@ function DymoLoader(scheduler, callback) {
 		}	else if (type == COMPASS_HEADING) {
 			control = new CompassControl();
 		}	else if (type == BEACON) {
-			//TODO FIX!!!!!!
-			/*var uuid = options["uuid"];
-			var major = parseInt(options["major"], 10);
-			var minor = parseInt(options["minor"], 10);*/
-			var uuid, major, minor;
+			var uuid = store.findFirstObjectValue(id, HAS_UUID);
+			var major = store.findFirstObjectValue(id, HAS_MAJOR);
+			var minor = store.findFirstObjectValue(id, HAS_MINOR);
 			control = new BeaconControl(uuid, major, minor);
 		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM_CONTROL) {
 			control = new Control(name, type);
 		} else if (type == RANDOM) {
 			control = new RandomControl();
 		} else if (type == BROWNIAN) {
-			//TODO FIX!!
-			control = new BrownianControl(0);//parseFloat(options["value"]));
+			var init = store.findFirstObjectValue(id, HAS_INITIAL_VALUE);
+			control = new BrownianControl(init);
 		} else if (type == RAMP) {
-			//store.findFirstObjectUri(domainDimUris[j], RDF_URI+"duration");
-			//var milisDuration = Math.round(parseFloat(options["duration"])*1000);
-			//TODO FIX DURATION!!!!!!
-			var value = store.findFirstObjectValue(id, CHARM_URI+"value"); //TODO SHOULDNT BE CHARM
-			control = new RampControl(3000, value);
+			var milisDuration = Math.round(store.findFirstObjectUri(id, HAS_DURATION)*1000);
+			var init = store.findFirstObjectValue(id, HAS_INITIAL_VALUE);
+			control = new RampControl(milisDuration, init);
 		}
 		//TODO implement in better way (only works for sensor controls)
-		if (store.findFirstObjectUri(id, MOBILE_URI+"isSmooth") && control.setSmooth) {
+		if (store.findFirstObjectUri(id, IS_SMOOTH) && control.setSmooth) {
 			control.setSmooth(true);
 		}
-		var average = Number(store.findFirstObjectUri(id, MOBILE_URI+"isAverageOf"));
+		var average = Number(store.findFirstObjectUri(id, IS_AVERAGE_OF));
 		if (!isNaN(average) && control.setAverageOf) {
 			control.setAverageOf(average);
 		}
