@@ -3,7 +3,8 @@
 var fs = require('fs');
 var N3 = require('n3');
 
-var rdfType = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+var rdfPrefix = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+var rdfType = rdfPrefix+"type";
 
 var prefixes = {
 	"xsd": "http://www.w3.org/2001/XMLSchema#",
@@ -25,10 +26,12 @@ var currentBase = "";
 var currentTerms = {};
 
 initContext();
-createDymoOntology("ontologies/test/dymo-ontology.n3");
-createMobileAudioOntology("ontologies/test/mobile-audio-ontology.n3");
-writeContextToFile("ontologies/test/dymo-context.json");
-writeGlobalsToFile("ontologies/test/globals.js");
+initGlobals();
+createDymoOntology("ontologies/dymo-ontology.n3");
+createMobileAudioOntology("ontologies/mobile-audio-ontology.n3");
+writeContextToFile("ontologies/dymo-context.json");
+endGlobals();
+writeGlobalsToFile("src/globals2.js");
 
 function initWriter(base) {
 	writer = N3.Writer({ prefixes:prefixes });
@@ -45,6 +48,24 @@ function initContext() {
 	addToContext("parts", "hasPart");
 }
 
+function initGlobals() {
+	addGlobal("RDF_URI", rdfPrefix);
+	addGlobal("RDFS_URI", prefixes["rdfs"]);
+	addGlobal("SCHEMA_URI", prefixes["sch"]);
+	addGlobal("CHARM_URI", prefixes["ch"]);
+	addGlobal("DYMO_URI", prefixes["dy"]);
+	addGlobal("MOBILE_URI", prefixes["mb"]);
+	addGlobal("CONTEXT_URI", contextBase);
+}
+
+function endGlobals() {
+	addGlobal("DYMO_TYPES", "[CONJUNCTION, DISJUNCTION, SEQUENCE]");
+	addGlobal("PARAMETERS", "[PLAY, LOOP, ONSET, DURATION_RATIO, AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, PAN, DISTANCE, HEIGHT, REVERB, DELAY, FILTER, PART_COUNT, LISTENER_ORIENTATION, AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER]");
+	addGlobal("CONTROLS", "[SLIDER, TOGGLE, BUTTON, CUSTOM_CONTROL, ACCELEROMETER_X, ACCELEROMETER_Y, ACCELEROMETER_Z, TILT_X, TILT_Y, GEOLOCATION_LATITUDE, GEOLOCATION_LONGITUDE, GEOLOCATION_DISTANCE, COMPASS_HEADING, RANDOM, BROWNIAN, RAMP]");
+	addGlobal("UI_CONTROLS", "[SLIDER, TOGGLE, BUTTON, CUSTOM_CONTROL]");
+	addGlobal("SENSOR_CONTROLS", "[ACCELEROMETER_X, ACCELEROMETER_Y, ACCELEROMETER_Z, TILT_X, TILT_Y, GEOLOCATION_LATITUDE, GEOLOCATION_LONGITUDE, GEOLOCATION_DISTANCE, COMPASS_HEADING, BEACON]");
+}
+
 function createDymoOntology(path) {
 	initWriter("dy");
 	addOntology("An ontology for describing Dynamic Music Objects");
@@ -57,17 +78,21 @@ function createDymoOntology(path) {
 	addIndividual("Conjunction", "DymoType");
 	addIndividual("Disjunction", "DymoType");
 	addIndividual("Sequence", "DymoType");
-	//TODO REMOVE SOON
-	addToContext("parallel", "Conjunction");
+	//features
+	addClass("Level", "Feature");
+	addClass("Index", "Feature");
 	//audio parameters
 	addClass("AudioParameter", "Parameter");
 	addClass("Play", "AudioParameter");
 	addClass("Loop", "AudioParameter");
 	addClass("Onset", "AudioParameter");
+	addClass("DurationRatio", "AudioParameter");
 	addClass("Amplitude", "AudioParameter");
 	addClass("PlaybackRate", "AudioParameter");
+	addClass("TimeStretchRatio", "AudioParameter");
 	addClass("Pan", "AudioParameter");
 	addClass("Distance", "AudioParameter");
+	addClass("Height", "AudioParameter");
 	addClass("Reverb", "AudioParameter");
 	addClass("Delay", "AudioParameter");
 	addClass("Filter", "AudioParameter");
@@ -76,10 +101,16 @@ function createDymoOntology(path) {
 	addClass("PartCount", "StructuralParameter");
 	addClass("PartDurationRatio", "StructuralParameter");
 	addClass("PartProportion", "StructuralParameter");
+	//navigators
+	addClass("Navigator");
+	addClass("OneShotNavigator", "Navigator");
+	addClass("SequentialNavigator", "Navigator");
+	addClass("SimilarityNavigator", "Navigator");
 	//properties
 	addProperty({term:"source", iri:"hasSource", type:"xsd:string"}, "Dymo", prefixes["xsd"]+"string", false);
-	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", false);
-	addProperty({term:"features", iri:"hasFeature", type:"@vocab"}, "Dymo", "Feature", false);
+	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
+	addProperty({term:"features", iri:"hasFeature", type:"@vocab"}, "Dymo", "Feature", true);
+	addProperty({term:"navigator", iri:"hasNavigator"}, "Dymo", "Navigator", true);
 	
 	writeN3ToFile(path);
 }
@@ -109,6 +140,7 @@ function createMobileAudioOntology(path) {
 	addClass("GeolocationLongitude", "SensorControl");
 	addClass("GeolocationDistance", "SensorControl");
 	addClass("CompassHeading", "SensorControl");
+	addClass("Beacon", "SensorControl");
 	//ui controls
 	addClass("Slider", "UIControl");
 	addClass("Toggle", "UIControl");
@@ -127,9 +159,6 @@ function createMobileAudioOntology(path) {
 	addIndividual("BrownianMaxStepSize", "ControlParameter");
 	addIndividual("LeapingProbability", "ControlParameter");
 	addIndividual("ContinueAfterLeaping", "ControlParameter");
-	
-	//TODO NAVIGATORS!!
-	
 	//properties
 	addProperty({term:"dymo", iri:"hasDymo"}, "Rendering", "Dymo", true, true);
 	addProperty({term:"mappings", iri:"hasMapping"}, "Rendering", "Mapping", true);
@@ -206,7 +235,7 @@ function addToTermsContextAndGlobals(definition) {
 	}
 	var fullName = prefixes[currentBase]+name;
 	currentTerms[name] = fullName;
-	addGlobal(name.toUpperCase(), fullName);
+	addGlobal(toUpperCaseWithUnderscores(name), fullName);
 	return fullName;
 }
 
@@ -231,6 +260,12 @@ function addToContext(term, value, type) {
 
 function addGlobal(name, value) {
 	globals.push([name, value]);
+}
+
+function toUpperCaseWithUnderscores(string) {
+	string = string[0].toLowerCase() + string.substr(1);
+	string = string.replace(/[A-Z]/g, function(m){ return '_' + m;});
+	return string.toUpperCase();
 }
 
 function writeN3ToFile(path) {
@@ -261,15 +296,14 @@ function writeContextToFile(path) {
 function writeGlobalsToFile(path) {
 	globalsString = "";
 	for (var i = 0; i < globals.length; i++) {
-		globalsString += 'var ' + globals[i][0] + ' = "' + globals[i][1] + '";\n';
+		var key = globals[i][0];
+		var value = globals[i][1];
+		if (value[0] != '[') {
+			value = '"' + value + '"';
+		}
+		globalsString += 'var ' + key + ' = ' + value + ';\n';
 	}
 	fs.writeFile(path, globalsString, function(err) {
 		console.log("Saved "+ path);
 	});
 }
-
-
-
-/*fs.writeFile("www/dymos/beacons/rendering.json", JSON.stringify(rendering, null, '\t'), function(err) {
-	console.log("Rendering saved");
-});*/

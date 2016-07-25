@@ -330,7 +330,7 @@ function DymoLoader(scheduler, callback) {
 			var minor = parseInt(options["minor"], 10);*/
 			var uuid, major, minor;
 			control = new BeaconControl(uuid, major, minor);
-		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM) {
+		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM_CONTROL) {
 			control = new Control(name, type);
 		} else if (type == RANDOM) {
 			control = new RandomControl();

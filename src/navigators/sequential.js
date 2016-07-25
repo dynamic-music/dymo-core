@@ -34,7 +34,7 @@ function SequentialNavigator(dymo, backwards) {
 	this.getCurrentParts = function() {
 		var parts = dymo.getParts();
 		if (parts.length > 0) {
-			if (dymo.getType() == PARALLEL) {
+			if (dymo.getType() == CONJUNCTION) {
 				return getParallelParts();
 			}
 			return getSequentialPart(); //SEQUENTIAL FOR EVERYTHING ELSE

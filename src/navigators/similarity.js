@@ -32,7 +32,7 @@ function SimilarityNavigator(dymo) {
 	this.getCurrentParts = function() {
 		var parts = dymo.getParts();
 		if (parts.length > 0) {
-			if (dymo.getType() == PARALLEL) {
+			if (dymo.getType() == CONJUNCTION) {
 				return replaceWithSimilars(getParallelParts());
 			}
 			return replaceWithSimilars(getSequentialPart()); //SEQUENTIAL FOR EVERYTHING ELSE

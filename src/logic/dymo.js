@@ -34,10 +34,8 @@ function DynamicMusicObject(uri, type, scheduler) {
 		parameters[REVERB] = new Parameter(REVERB, 0);
 		parameters[DELAY] = new Parameter(DELAY, 0);
 		parameters[FILTER] = new Parameter(FILTER, 20000);
-		parameters[PART_INDEX] = new Parameter(PART_INDEX, 0, true);
 		parameters[PART_COUNT] = new Parameter(PART_COUNT, Number.POSITIVE_INFINITY, true);
 		parameters[PLAY].addObserver(self);
-		parameters[PART_INDEX].addObserver(self);
 		parameters[PART_COUNT].addObserver(self);
 	}
 	
@@ -56,7 +54,7 @@ function DynamicMusicObject(uri, type, scheduler) {
 	this.setParent = function(dymo) {
 		parent = dymo;
 		for (var name in parameters) {
-			if (name != PLAY && name != PART_COUNT && name != PART_INDEX) {
+			if (name != PLAY && name != PART_COUNT) {
 				//create standard relative mappings to child parameters
 				parentMappings.push(new Mapping([dymo.getParameter(name)], true, undefined, [this], name));
 			}
