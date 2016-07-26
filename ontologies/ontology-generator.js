@@ -83,9 +83,9 @@ function createDymoOntology(path) {
 	addIndividual("Disjunction", "DymoType");
 	addIndividual("Sequence", "DymoType");
 	//features
-	addClass("Level", "Feature");
-	addClass("Index", "Feature");
-	addClass("OnsetFeature", "Feature");
+	addClass({term:"level", iri:"LevelFeature"}, "Feature");
+	addClass({term:"index", iri:"IndexFeature"}, "Feature");
+	addClass({term:"onset", iri:"OnsetFeature"}, "Feature");
 	//audio parameters
 	addClass("AudioParameter", "Parameter");
 	addClass("Play", "AudioParameter");

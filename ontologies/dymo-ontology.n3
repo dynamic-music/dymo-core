@@ -24,9 +24,9 @@ dy:DymoType a owl:Class;
 dy:Conjunction a dy:DymoType.
 dy:Disjunction a dy:DymoType.
 dy:Sequence a dy:DymoType.
-dy:Level a owl:Class;
+dy:LevelFeature a owl:Class;
     rdfs:subClassOf dy:Feature.
-dy:Index a owl:Class;
+dy:IndexFeature a owl:Class;
     rdfs:subClassOf dy:Feature.
 dy:OnsetFeature a owl:Class;
     rdfs:subClassOf dy:Feature.
