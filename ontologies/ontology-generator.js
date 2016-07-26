@@ -127,7 +127,6 @@ function createMobileAudioOntology(path) {
 	//main classes
 	addClass("Rendering", prefixes["mt"]+"MultitrackProject");
 	addClass("Mapping");
-	addClass("DomainDimension");
 	addClass("Function");
 	//control taxonomy
 	addClass("MobileControl");
@@ -155,6 +154,8 @@ function createMobileAudioOntology(path) {
 	addClass("Random", "AutoControl");
 	addClass("Brownian", "AutoControl");
 	addClass("Ramp", "AutoControl");
+	//domain dimension
+	addUnionClass("DomainDimension", ["MobileControl", "Parameter", "Feature"])
 	//parameters
 	addClass("MobileParameter", prefixes["mt"]+"AutomationParameter");
 	addClass("GlobalParameter", "MobileParameter");
@@ -168,11 +169,8 @@ function createMobileAudioOntology(path) {
 	//mapping properties
 	addProperty({term:"dymo", iri:"hasDymo"}, "Rendering", "Dymo", true, true);
 	addProperty({term:"mappings", iri:"hasMapping"}, "Rendering", "Mapping", true);
-	addProperty({term:"domainDims", iri:"hasDomainDimension"}, "Mapping", "DomainDimension", true);
-	addProperty("fromControl", "DomainDimension", "MobileControl", true);
-	addProperty("fromFeature", "DomainDimension", "Feature", true);
-	addProperty("fromParameter", "DomainDimension", "Parameter", true);
-	addProperty({term:"function", iri:"hasFunction"}, "DomainDimension", "Function", true);
+	addProperty({term:"domainDims", iri:"hasDomainDimension", type: "@vocab"}, "Mapping", "DomainDimension", true);
+	addProperty({term:"function", iri:"hasFunction"}, "Mapping", "Function", true);
 	addProperty({term:"args", iri:"hasArgument"}, "Function", prefixes["xsd"]+"string", false);
 	addProperty({term:"body", iri:"hasBody"}, "Function", prefixes["xsd"]+"string", false);
 	addProperty({term:"dymos", iri:"toDymo", type: "@id"}, "Mapping", "Dymo", true);
@@ -202,9 +200,15 @@ function addClass(name, subClassOf, comment) {
 	if (subClassOf) {
 		addTriple(fullName, prefixes["rdfs"]+"subClassOf", subClassOf);
 	}
-	if (comment) {
-		addTriple(fullName, prefixes["rdfs"]+"comment", '"'+comment+'"');
-	}
+	addComment(fullName, comment);
+}
+
+function addUnionClass(name, classes, comment) {
+	var fullName = addToTermsContextAndGlobals(name);
+	addTriple(fullName, rdfType, prefixes["owl"]+"Class");
+	classes = classes.map(function(c){ return getFromTerms(c); });
+	addTriple(fullName, prefixes["owl"]+"unionOf", writer.list(classes));
+	addComment(fullName, comment);
 }
 
 function addProperty(definition, domain, range, isObjectProperty, isFunctional, comment) {
@@ -221,15 +225,17 @@ function addProperty(definition, domain, range, isObjectProperty, isFunctional, 
 		range = '"'+range+'"';
 	}
 	addTriple(fullName, prefixes["rdfs"]+"range", range);
-	if (comment) {
-		addTriple(fullName, prefixes["rdfs"]+"comment", '"'+comment+'"');
-	}
+	addComment(fullName, comment);
 }
 
 function addIndividual(name, type, comment) {
 	var fullName = addToTermsContextAndGlobals(name);
 	type = getFromTerms(type);
-	addTriple(prefixes[currentBase]+name, rdfType, type);
+	addTriple(fullName, rdfType, type);
+	addComment(fullName, comment);
+}
+
+function addComment(name, comment) {
 	if (comment) {
 		addTriple(prefixes[currentBase]+name, prefixes["rdfs"]+"comment", '"'+comment+'"');
 	}

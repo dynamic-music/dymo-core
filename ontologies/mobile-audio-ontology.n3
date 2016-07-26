@@ -13,7 +13,6 @@
 mb:Rendering a owl:Class;
     rdfs:subClassOf mt:MultitrackProject.
 mb:Mapping a owl:Class.
-mb:DomainDimension a owl:Class.
 mb:Function a owl:Class.
 mb:MobileControl a owl:Class.
 mb:CustomControl a owl:Class;
@@ -58,6 +57,8 @@ mb:Brownian a owl:Class;
     rdfs:subClassOf mb:AutoControl.
 mb:Ramp a owl:Class;
     rdfs:subClassOf mb:AutoControl.
+mb:DomainDimension a owl:Class;
+    owl:unionOf (mb:MobileControl dy:Parameter dy:Feature).
 mb:MobileParameter a owl:Class;
     rdfs:subClassOf mt:AutomationParameter.
 mb:GlobalParameter a owl:Class;
@@ -79,17 +80,8 @@ mb:hasMapping a owl:ObjectProperty;
 mb:hasDomainDimension a owl:ObjectProperty;
     rdfs:domain mb:Mapping;
     rdfs:range mb:DomainDimension.
-mb:fromControl a owl:ObjectProperty;
-    rdfs:domain mb:DomainDimension;
-    rdfs:range mb:MobileControl.
-mb:fromFeature a owl:ObjectProperty;
-    rdfs:domain mb:DomainDimension;
-    rdfs:range dy:Feature.
-mb:fromParameter a owl:ObjectProperty;
-    rdfs:domain mb:DomainDimension;
-    rdfs:range dy:Parameter.
 mb:hasFunction a owl:ObjectProperty;
-    rdfs:domain mb:DomainDimension;
+    rdfs:domain mb:Mapping;
     rdfs:range mb:Function.
 mb:hasArgument a owl:DatatypeProperty;
     rdfs:domain mb:Function;

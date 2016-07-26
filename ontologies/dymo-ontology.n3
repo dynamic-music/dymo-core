@@ -11,14 +11,14 @@
 <http://tiny.cc/dymo-ontology#> a owl:Ontology;
     rdfs:comment "An ontology for describing Dynamic Music Objects".
 dy:Dymo a owl:Class;
-    rdfs:subClassOf ch:Constituent;
-    rdfs:comment "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters".
+    rdfs:subClassOf ch:Constituent.
+<http://tiny.cc/dymo-ontology#http://tiny.cc/dymo-ontology#Dymo> rdfs:comment "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters".
 dy:Feature a owl:Class;
-    rdfs:subClassOf ch:Attribute;
-    rdfs:comment "A feature is an immutable attribute of a Dymo".
+    rdfs:subClassOf ch:Attribute.
+<http://tiny.cc/dymo-ontology#http://tiny.cc/dymo-ontology#Feature> rdfs:comment "A feature is an immutable attribute of a Dymo".
 dy:Parameter a owl:Class;
-    rdfs:subClassOf ch:Attribute;
-    rdfs:comment "A parameter is a mutable attribute of a Dymo".
+    rdfs:subClassOf ch:Attribute.
+<http://tiny.cc/dymo-ontology#http://tiny.cc/dymo-ontology#Parameter> rdfs:comment "A parameter is a mutable attribute of a Dymo".
 dy:DymoType a owl:Class;
     rdfs:subClassOf ch:ConstituentType.
 dy:Conjunction a dy:DymoType.
