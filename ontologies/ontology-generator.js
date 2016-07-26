@@ -83,34 +83,34 @@ function createDymoOntology(path) {
 	addIndividual("Disjunction", "DymoType");
 	addIndividual("Sequence", "DymoType");
 	//features
-	addClass({term:"level", iri:"LevelFeature"}, "Feature");
-	addClass({term:"index", iri:"IndexFeature"}, "Feature");
-	addClass({term:"onset", iri:"OnsetFeature"}, "Feature");
+	addIndividual({term:"level", iri:"LevelFeature"}, "Feature");
+	addIndividual({term:"index", iri:"IndexFeature"}, "Feature");
+	addIndividual({term:"onset", iri:"OnsetFeature"}, "Feature");
 	//audio parameters
 	addClass("AudioParameter", "Parameter");
-	addClass("Play", "AudioParameter");
-	addClass("Loop", "AudioParameter");
-	addClass("Onset", "AudioParameter");
-	addClass("DurationRatio", "AudioParameter");
-	addClass("Amplitude", "AudioParameter");
-	addClass("PlaybackRate", "AudioParameter");
-	addClass("TimeStretchRatio", "AudioParameter");
-	addClass("Pan", "AudioParameter");
-	addClass("Distance", "AudioParameter");
-	addClass("Height", "AudioParameter");
-	addClass("Reverb", "AudioParameter");
-	addClass("Delay", "AudioParameter");
-	addClass("Filter", "AudioParameter");
+	addIndividual("Play", "AudioParameter");
+	addIndividual("Loop", "AudioParameter");
+	addIndividual("Onset", "AudioParameter");
+	addIndividual("DurationRatio", "AudioParameter");
+	addIndividual("Amplitude", "AudioParameter");
+	addIndividual("PlaybackRate", "AudioParameter");
+	addIndividual("TimeStretchRatio", "AudioParameter");
+	addIndividual("Pan", "AudioParameter");
+	addIndividual("Distance", "AudioParameter");
+	addIndividual("Height", "AudioParameter");
+	addIndividual("Reverb", "AudioParameter");
+	addIndividual("Delay", "AudioParameter");
+	addIndividual("Filter", "AudioParameter");
 	//structural parameters
 	addClass("StructuralParameter", "Parameter");
-	addClass("PartCount", "StructuralParameter");
-	addClass("PartDurationRatio", "StructuralParameter");
-	addClass("PartProportion", "StructuralParameter");
+	addIndividual("PartCount", "StructuralParameter");
+	addIndividual("PartDurationRatio", "StructuralParameter");
+	addIndividual("PartProportion", "StructuralParameter");
 	//navigators
 	addClass("Navigator");
-	addClass("OneShotNavigator", "Navigator");
-	addClass("SequentialNavigator", "Navigator");
-	addClass("SimilarityNavigator", "Navigator");
+	addIndividual("OneShotNavigator", "Navigator");
+	addIndividual("SequentialNavigator", "Navigator");
+	addIndividual("SimilarityNavigator", "Navigator");
 	//properties
 	addProperty({term:"source", iri:"hasSource", type:"xsd:string"}, "Dymo", prefixes["xsd"]+"string", false);
 	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
