@@ -1,0 +1,76 @@
+{
+  "@context": "http://tiny.cc/dymo-context",
+  "@id": "dymo0",
+  "@type": "Dymo",
+  "ch:cdt": {
+    "@id": "dy:Conjunction",
+    "@type": "DymoType"
+  },
+  "parts": [
+    {
+      "@id": "dymo3",
+      "@type": "Dymo",
+      "features": "http://tiny.cc/dymo-context/onset",
+      "dy:hasSource": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav"
+    },
+    {
+      "@id": "dymo2",
+      "@type": "Dymo",
+      "features": [
+        "http://tiny.cc/dymo-context/pitch",
+        "http://tiny.cc/dymo-context/onset"
+      ],
+      "dy:hasSource": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p055_ne0001_s000827.wav"
+    },
+    {
+      "@id": "dymo1",
+      "@type": "Dymo",
+      "features": [
+        "http://tiny.cc/dymo-context/pitch",
+        "http://tiny.cc/dymo-context/onset"
+      ],
+      "dy:hasSource": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav"
+    }
+  ],
+  "dy:hasFeature": [
+    {
+      "@id": "pitch",
+      "adt": "http://tiny.cc/dymo-context/Pitch",
+      "value": [
+        {
+          "@type": "xsd:integer",
+          "@value": "55"
+        },
+        {
+          "@type": "xsd:integer",
+          "@value": "36"
+        },
+        {
+          "@type": "xsd:integer",
+          "@value": "0"
+        }
+      ]
+    },
+    {
+      "@id": "onset",
+      "ch:adt": {
+        "@id": "dy:Onset",
+        "@type": "AudioParameter"
+      },
+      "value": [
+        {
+          "@type": "xsd:double",
+          "@value": "8.27E-1"
+        },
+        {
+          "@type": "xsd:double",
+          "@value": "6.07E-1"
+        },
+        {
+          "@type": "xsd:integer",
+          "@value": "0"
+        }
+      ]
+    }
+  ]
+}

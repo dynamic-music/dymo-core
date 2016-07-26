@@ -2,7 +2,7 @@
 	"@context":"http://tiny.cc/dymo-context",
 	"@id":"mixdymo",
 	"@type":"Dymo",
-	"cdt":"parallel",
+	"cdt":"Conjunction",
 	"features":["index","duration"],
 	"mappings":[
 		{

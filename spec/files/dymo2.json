@@ -2,7 +2,7 @@
 	"@context":"http://tiny.cc/dymo-context",
 	"@id": "dymo0",
 	"@type": "Dymo",
-	"cdt": "parallel",
+	"cdt": "Conjunction",
 	"features":[
 		{"@id":"onset","value":0,"adt":"Onset"},
 		{"@id":"pitch","value":0,"adt":"Pitch"}

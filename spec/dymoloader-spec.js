@@ -5,6 +5,7 @@ describe("a dymoloader", function() {
 	
 	var dymo, dymoMap, scheduler, rendering, manager;
 	var dymoPath = 'files/dymo.json';
+	var fixdymoPath = 'files/fixdymo.json'
 	var dymo2Path = 'files/dymo2.json';
 	var dymo3Path = 'files/dymo3.json';
 	var mixDymoPath = 'files/mixdymo.json';
@@ -88,14 +89,17 @@ describe("a dymoloader", function() {
 		var oReq = new XMLHttpRequest();
 		oReq.addEventListener("load", function() {
 			var loadedJson = JSON.parse(this.responseText);
-			loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
-				var writtenJson = loadedDymo[0].toJsonHierarchy();
-				expect(JSON.stringify(writtenJson)).toEqual(JSON.stringify(loadedJson));
-				expect(writtenJson).toEqual(loadedJson);
-				done();
+			loader.loadDymoFromJson(fixdymoPath, function(loadedDymo) {
+				loader.getStore().writeJsonld(function(writtenJson){
+					//expect(JSON.stringify(writtenJson)).toEqual(JSON.stringify(loadedJson));
+					//TODO CHECK WHY JSONLD DOESNT USE SOME TERMS!!!!
+					expect(JSON.parse(writtenJson)).toEqual(loadedJson);
+					console.log(loadedJson, JSON.parse(writtenJson));
+					done();
+				});
 			});
 		});
-		oReq.open("GET", dymo2Path);
+		oReq.open("GET", fixdymoPath);
 		oReq.send();
 	});
 	

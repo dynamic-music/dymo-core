@@ -20,6 +20,10 @@ function DymoLoader(scheduler, callback) {
 		});
 	}
 	
+	this.getStore = function() {
+		return store;
+	}
+	
 	this.loadDymoFromJson = function(jsonUri, callback) {
 		var fileIndex = jsonUri.lastIndexOf('/')+1;
 		dymoBasePath = jsonUri.substring(0, fileIndex);

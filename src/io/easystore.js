@@ -20,6 +20,35 @@ function EasyStore() {
 		});
 	}
 	
+	this.writeJsonld = function(callback) {
+		var prefixes = {
+			"xsd": "http://www.w3.org/2001/XMLSchema#",
+			"rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+			"owl": "http://www.w3.org/2002/07/owl#",
+			"sch": "http://schema.org/",
+			"mo": "http://purl.org/ontology/mo/",
+			"mt": "http://purl.org/ontology/studio/multitrack#",
+			"ch": "http://tiny.cc/charm-ontology#",
+			"dy": "http://tiny.cc/dymo-ontology#",
+			"mb": "http://tiny.cc/mobile-audio-ontology#",
+		};
+		var allTriples = store.find(null, null, null);
+		var writer = N3.Writer({ format: 'application/nquads' });
+		for (var i = 0; i < allTriples.length; i++) {
+			writer.addTriple(allTriples[i]);
+		}
+		writer.end(function (error, result) {
+			jsonld.fromRDF(result, {format: 'application/nquads'}, function(err, doc) {
+				jsonld.frame(doc, {"@id":"http://tiny.cc/dymo-context/dymo0"}, function(err, framed) {
+					jsonld.compact(framed, "http://tiny.cc/dymo-context", function(err, compacted) {
+						removeBlankNodeIds(compacted);
+						callback(JSON.stringify(compacted, null, 2));
+					});
+				});
+			});
+		});
+	}
+	
 	function jsonldToNquads(data, isJsonld, callback) {
 		if (isJsonld) {
 			jsonld.toRDF(data, {format: 'application/nquads'}, function(err, nquads) {
@@ -27,6 +56,18 @@ function EasyStore() {
 			});
 		} else {
 			callback(data);
+		}
+	}
+	
+	function removeBlankNodeIds(obj) {
+		if (obj && obj instanceof Object) {
+			for (var key in obj) {
+				if (key == "@id" && obj[key].includes("_:b")) {
+					delete obj[key];
+				} else {
+					removeBlankNodeIds(obj[key]);
+				}
+			}
 		}
 	}
 	
