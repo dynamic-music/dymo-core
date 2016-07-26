@@ -85,6 +85,7 @@ function createDymoOntology(path) {
 	//features
 	addClass("Level", "Feature");
 	addClass("Index", "Feature");
+	addClass("OnsetFeature", "Feature");
 	//audio parameters
 	addClass("AudioParameter", "Parameter");
 	addClass("Play", "AudioParameter");
@@ -191,7 +192,7 @@ function createMobileAudioOntology(path) {
 
 function addOntology(comment) {
 	addTriple(prefixes[currentBase], rdfType, prefixes["owl"]+"Ontology");
-	addTriple(prefixes[currentBase], prefixes["rdfs"]+"comment", comment);
+	addTriple(prefixes[currentBase], prefixes["rdfs"]+"comment", '"'+comment+'"');
 }
 
 function addClass(name, subClassOf, comment) {
@@ -202,7 +203,7 @@ function addClass(name, subClassOf, comment) {
 		addTriple(fullName, prefixes["rdfs"]+"subClassOf", subClassOf);
 	}
 	if (comment) {
-		addTriple(fullName, prefixes["rdfs"]+"comment", comment);
+		addTriple(fullName, prefixes["rdfs"]+"comment", '"'+comment+'"');
 	}
 }
 
@@ -216,9 +217,12 @@ function addProperty(definition, domain, range, isObjectProperty, isFunctional, 
 		addTriple(fullName, rdfType, prefixes["owl"]+"FunctionalProperty");
 	}
 	addTriple(fullName, prefixes["rdfs"]+"domain", domain);
+	if (!isObjectProperty) {
+		range = '"'+range+'"';
+	}
 	addTriple(fullName, prefixes["rdfs"]+"range", range);
 	if (comment) {
-		addTriple(fullName, prefixes["rdfs"]+"comment", comment);
+		addTriple(fullName, prefixes["rdfs"]+"comment", '"'+comment+'"');
 	}
 }
 
@@ -227,7 +231,7 @@ function addIndividual(name, type, comment) {
 	type = getFromTerms(type);
 	addTriple(prefixes[currentBase]+name, rdfType, type);
 	if (comment) {
-		addTriple(prefixes[currentBase]+name, prefixes["rdfs"]+"comment", comment);
+		addTriple(prefixes[currentBase]+name, prefixes["rdfs"]+"comment", '"'+comment+'"');
 	}
 }
 

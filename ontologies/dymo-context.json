@@ -24,6 +24,7 @@
 		"Sequence": "dy:Sequence",
 		"Level": "dy:Level",
 		"Index": "dy:Index",
+		"OnsetFeature": "dy:OnsetFeature",
 		"AudioParameter": "dy:AudioParameter",
 		"Play": "dy:Play",
 		"Loop": "dy:Loop",

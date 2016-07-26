@@ -9,16 +9,16 @@
 @prefix mb: <http://tiny.cc/mobile-audio-ontology#>.
 
 <http://tiny.cc/dymo-ontology#> a owl:Ontology;
-    rdfs:comment <An ontology for describing Dynamic Music Objects>.
+    rdfs:comment "An ontology for describing Dynamic Music Objects".
 dy:Dymo a owl:Class;
     rdfs:subClassOf ch:Constituent;
-    rdfs:comment <A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters>.
+    rdfs:comment "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters".
 dy:Feature a owl:Class;
     rdfs:subClassOf ch:Attribute;
-    rdfs:comment <A feature is an immutable attribute of a Dymo>.
+    rdfs:comment "A feature is an immutable attribute of a Dymo".
 dy:Parameter a owl:Class;
     rdfs:subClassOf ch:Attribute;
-    rdfs:comment <A parameter is a mutable attribute of a Dymo>.
+    rdfs:comment "A parameter is a mutable attribute of a Dymo".
 dy:DymoType a owl:Class;
     rdfs:subClassOf ch:ConstituentType.
 dy:Conjunction a dy:DymoType.
@@ -27,6 +27,8 @@ dy:Sequence a dy:DymoType.
 dy:Level a owl:Class;
     rdfs:subClassOf dy:Feature.
 dy:Index a owl:Class;
+    rdfs:subClassOf dy:Feature.
+dy:OnsetFeature a owl:Class;
     rdfs:subClassOf dy:Feature.
 dy:AudioParameter a owl:Class;
     rdfs:subClassOf dy:Parameter.
@@ -73,7 +75,7 @@ dy:SimilarityNavigator a owl:Class;
     rdfs:subClassOf dy:Navigator.
 dy:hasSource a owl:DatatypeProperty;
     rdfs:domain dy:Dymo;
-    rdfs:range xsd:string.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
 dy:hasParameter a owl:ObjectProperty;
     rdfs:domain dy:Dymo;
     rdfs:range dy:Parameter.

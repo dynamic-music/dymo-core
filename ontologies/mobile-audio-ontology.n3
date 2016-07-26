@@ -9,7 +9,7 @@
 @prefix mb: <http://tiny.cc/mobile-audio-ontology#>.
 
 <http://tiny.cc/mobile-audio-ontology#> a owl:Ontology;
-    rdfs:comment <An ontology for describing renderings of Dynamic Music Objects on mobile devices>.
+    rdfs:comment "An ontology for describing renderings of Dynamic Music Objects on mobile devices".
 mb:Rendering a owl:Class;
     rdfs:subClassOf mt:MultitrackProject.
 mb:Mapping a owl:Class.
@@ -93,10 +93,10 @@ mb:hasFunction a owl:ObjectProperty;
     rdfs:range mb:Function.
 mb:hasArgument a owl:DatatypeProperty;
     rdfs:domain mb:Function;
-    rdfs:range xsd:string.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
 mb:hasBody a owl:DatatypeProperty;
     rdfs:domain mb:Function;
-    rdfs:range xsd:string.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
 mb:toDymo a owl:ObjectProperty;
     rdfs:domain mb:Mapping;
     rdfs:range dy:Dymo.
@@ -108,25 +108,25 @@ mb:toParameter a owl:ObjectProperty;
     rdfs:range dy:Parameter.
 mb:isRelative a owl:DatatypeProperty;
     rdfs:domain mb:Mapping;
-    rdfs:range <http://www.w3.org/2001/XMLSchema#:boolean>.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#:boolean".
 mb:hasInitialValue a owl:DatatypeProperty;
     rdfs:domain mb:MobileControl;
-    rdfs:range xsd:float.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#float".
 mb:isSmooth a owl:DatatypeProperty;
     rdfs:domain mb:SensorControl;
-    rdfs:range xsd:boolean.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#boolean".
 mb:isAverageOf a owl:DatatypeProperty;
     rdfs:domain mb:SensorControl;
-    rdfs:range xsd:integer.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#integer".
 mb:hasUuid a owl:DatatypeProperty;
     rdfs:domain mb:Beacon;
-    rdfs:range xsd:string.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
 mb:hasMajor a owl:DatatypeProperty;
     rdfs:domain mb:Beacon;
-    rdfs:range xsd:integer.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#integer".
 mb:hasMinor a owl:DatatypeProperty;
     rdfs:domain mb:Beacon;
-    rdfs:range xsd:integer.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#integer".
 mb:hasDuration a owl:DatatypeProperty;
     rdfs:domain mb:Ramp;
-    rdfs:range xsd:integer.
+    rdfs:range "http://www.w3.org/2001/XMLSchema#integer".
