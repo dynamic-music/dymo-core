@@ -274,7 +274,7 @@ function DymoLoader(scheduler, callback) {
 		}
 		var [args, body] = findArgsAndBody(store.findFirstObjectUri(mappingUri, HAS_FUNCTION));
 		var range = store.findFirstObjectUri(mappingUri, TO_PARAMETER);
-		//console.log(domainDims, targets, range)
+		//console.log(domainDims, isRelative, {"args":args,"body":body}, targets, range, dymoConstraint)
 		return new Mapping(domainDims, isRelative, {"args":args,"body":body}, targets, range, dymoConstraint);
 	}
 	

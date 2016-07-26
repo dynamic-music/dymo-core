@@ -4,7 +4,7 @@ describe("a dynamic music object graph store", function() {
 	
 	it("loads a dymo from json", function(done) {
 		loadFile("files/dymo-real.json", function(loaded) {
-		loadFile("../ontologies/context.json", function(context) {
+		loadFile("../ontologies/dymo-context.json", function(context) {
 			jsonld.toRDF(loaded, {format: 'application/nquads'}, function(err, nquads) {
 				console.log(nquads)
 				var store = N3.Store();

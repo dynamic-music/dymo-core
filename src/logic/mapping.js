@@ -143,14 +143,18 @@ Mapping.prototype.calculateParameter = function(dymo) {
 	var currentDomainValues = [];
 	for (var i = 0; i < this.domainDims.length; i++) {
 		var currentValue;
+		//console.log(this.domainDims[i], typeof this.domainDims[i] === 'string', this.domainDims[i] instanceof String)
 		if (typeof this.domainDims[i] === 'string' || this.domainDims[i] instanceof String) {
+			//console.log(dymo, dymo.getFeature(this.domainDims[i]))
 			currentValue = dymo.getFeature(this.domainDims[i]);
 		} else if (this.relative) {
 			currentValue = this.domainDims[i].getChange();
 		} else {
+			//console.log(this.domainDims[i].getValue())
 			currentValue = this.domainDims[i].getValue();
 		}
 		currentDomainValues[i] = currentValue;
 	}
+	//console.log(this.domainDims, currentDomainValues)
 	return this.mappingFunction.apply(this, currentDomainValues);
 }

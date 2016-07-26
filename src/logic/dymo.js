@@ -252,9 +252,9 @@ function DynamicMusicObject(uri, type, scheduler) {
 	}
 	
 	this.getFeature = function(name) {
-		if (name === LEVEL) {
+		if (name === LEVEL_FEATURE) {
 			return this.getLevel();
-		} else if (name === INDEX) {
+		} else if (name === INDEX_FEATURE) {
 			return this.getIndex();
 		} else if (features.hasOwnProperty(name)) {
 			return features[name];

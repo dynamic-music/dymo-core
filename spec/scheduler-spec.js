@@ -14,7 +14,7 @@ describe("a scheduler", function() {
 		scheduler = new Scheduler(audioContext, function() {
 			done();
 		});
-		dymo1 = new DynamicMusicObject("dymo1", PARALLEL);
+		dymo1 = new DynamicMusicObject("dymo1", CONJUNCTION);
 		dymo2 = new DynamicMusicObject("dymo2");
 		dymo3 = new DynamicMusicObject("dymo3");
 		dymo1.setBasePath(basePath);
@@ -70,7 +70,7 @@ describe("a scheduler", function() {
 	});
 	
 	it("plays a sequential dymo", function(done) {
-		dymo1.setType(SEQUENTIAL);
+		dymo1.setType(SEQUENCE);
 		expect(scheduler.getUrisOfPlayingDymos()).toEqual([]);
 		scheduler.play(dymo1);
 		setTimeout(function() {

@@ -107,8 +107,8 @@ describe("a navigator", function() {
 	
 	it("can handle conjunctions", function() {
 		var navigator = new DymoNavigator(dymo1, new SequentialNavigator(dymo1));
-		dymo2.setType(PARALLEL);
-		dymo8.setType(PARALLEL);
+		dymo2.setType(CONJUNCTION);
+		dymo8.setType(CONJUNCTION);
 		var nextParts = navigator.getNextParts();
 		expect(nextParts[0].getUri()).toBe("dymo5");
 		expect(nextParts[1].getUri()).toBe("dymo6");
