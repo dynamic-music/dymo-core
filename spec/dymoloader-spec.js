@@ -89,17 +89,17 @@ describe("a dymoloader", function() {
 		var oReq = new XMLHttpRequest();
 		oReq.addEventListener("load", function() {
 			var loadedJson = JSON.parse(this.responseText);
-			loader.loadDymoFromJson(fixdymoPath, function(loadedDymo) {
+			loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
+				//loader.getStore().logData();
 				loader.getStore().writeJsonld(function(writtenJson){
-					//expect(JSON.stringify(writtenJson)).toEqual(JSON.stringify(loadedJson));
 					//TODO CHECK WHY JSONLD DOESNT USE SOME TERMS!!!!
 					expect(JSON.parse(writtenJson)).toEqual(loadedJson);
-					console.log(loadedJson, JSON.parse(writtenJson));
+					console.log(JSON.stringify(loadedJson), JSON.stringify(JSON.parse(writtenJson)));
 					done();
 				});
 			});
 		});
-		oReq.open("GET", fixdymoPath);
+		oReq.open("GET", dymo2Path);
 		oReq.send();
 	});
 	

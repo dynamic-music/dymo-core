@@ -4,8 +4,8 @@
 	"@type": "Dymo",
 	"cdt": "Conjunction",
 	"features":[
-		{"@id":"onset","value":0,"adt":"Onset"},
-		{"@id":"pitch","value":0,"adt":"Pitch"}
+		{"@type":"onset","value":0},
+		{"@type":"pitch","value":0}
 	],
 	"parts": [
 		{
@@ -13,8 +13,8 @@
 			"@type": "Dymo",
 			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav",
 			"features":[
-				{"@id":"onset","value":0.607,"adt":"Onset"},
-				{"@id":"pitch","value":36,"adt":"Pitch"}
+				{"@type":"onset","value":0.607},
+				{"@type":"pitch","value":36}
 			]
 		},
 		{
@@ -22,8 +22,8 @@
 			"@type": "Dymo",
 			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p055_ne0001_s000827.wav",
 			"features":[
-				{"@id":"onset","value":0.827,"adt":"Onset"},
-				{"@id":"pitch","value":55,"adt":"Pitch"}
+				{"@type":"onset","value":0.827},
+				{"@type":"pitch","value":55}
 			]
 		},
 		{
@@ -31,7 +31,7 @@
 			"@type": "Dymo",
 			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav",
 			"features":[
-				{"@id":"onset","value":0.607,"adt":"Onset"}
+				{"@type":"onset","value":0.607}
 			]
 		}
 	]

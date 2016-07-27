@@ -20,6 +20,13 @@ function EasyStore() {
 		});
 	}
 	
+	this.logData = function() {
+		var rows = store.find(null).map(function(t){return t.subject +"\n" + t.predicate + "\n" + t.object});
+		for (var i in rows) {
+			console.log(rows[i]);
+		}
+	}
+	
 	this.writeJsonld = function(callback) {
 		var prefixes = {
 			"xsd": "http://www.w3.org/2001/XMLSchema#",
@@ -38,6 +45,7 @@ function EasyStore() {
 			writer.addTriple(allTriples[i]);
 		}
 		writer.end(function (error, result) {
+			result = result.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
 			jsonld.fromRDF(result, {format: 'application/nquads'}, function(err, doc) {
 				jsonld.frame(doc, {"@id":"http://tiny.cc/dymo-context/dymo0"}, function(err, framed) {
 					jsonld.compact(framed, "http://tiny.cc/dymo-context", function(err, compacted) {
