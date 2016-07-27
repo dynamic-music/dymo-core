@@ -18,8 +18,10 @@ N3.Util;
 N3.Util.getLiteralValue = function(p1){};
 N3.Util.getLiteralType = function(p1){};
 N3.subject; //otherwise compiler complains when used on result quads
+N3.predicate; //otherwise compiler complains when used on result quads
 var jsonld;
 jsonld.toRDF = function(p1,p2,p3){};
+jsonld.fromRDF = function(p1,p2,p3){};
 
 /** @constructor */
 function AccelerometerControl(type){};

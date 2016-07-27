@@ -18,9 +18,11 @@ var prefixes = {
 	"mb": "http://tiny.cc/mobile-audio-ontology#",
 };
 var contextBase = "http://tiny.cc/dymo-context/";
+var simpleContextBase = "http://tiny.cc/dymo-context-simple/";
 
 var writer = N3.Writer({ prefixes:prefixes });
 var context = [];
+var simpleContext = [];
 var globals = [];
 var currentBase = "";
 var currentTerms = {};
@@ -29,7 +31,8 @@ initContext();
 initGlobals();
 createDymoOntology("ontologies/dymo-ontology.n3");
 createMobileAudioOntology("ontologies/mobile-audio-ontology.n3");
-writeContextToFile("ontologies/dymo-context.json");
+writeContextToFile("ontologies/dymo-context.json", context, contextBase);
+writeContextToFile("ontologies/dymo-context-simple.json", simpleContext, simpleContextBase);
 endGlobals();
 writeGlobalsToFile("src/globals2.js");
 
@@ -83,34 +86,34 @@ function createDymoOntology(path) {
 	addIndividual("Disjunction", "DymoType");
 	addIndividual("Sequence", "DymoType");
 	//features
-	addIndividual({term:"level", iri:"LevelFeature"}, "Feature");
-	addIndividual({term:"index", iri:"IndexFeature"}, "Feature");
-	addIndividual({term:"onset", iri:"OnsetFeature"}, "Feature");
+	addClass({term:"level", iri:"LevelFeature"}, "Feature");
+	addClass({term:"index", iri:"IndexFeature"}, "Feature");
+	addClass({term:"onset", iri:"OnsetFeature"}, "Feature");
 	//audio parameters
 	addClass("AudioParameter", "Parameter");
-	addIndividual("Play", "AudioParameter");
-	addIndividual("Loop", "AudioParameter");
-	addIndividual("Onset", "AudioParameter");
-	addIndividual("DurationRatio", "AudioParameter");
-	addIndividual("Amplitude", "AudioParameter");
-	addIndividual("PlaybackRate", "AudioParameter");
-	addIndividual("TimeStretchRatio", "AudioParameter");
-	addIndividual("Pan", "AudioParameter");
-	addIndividual("Distance", "AudioParameter");
-	addIndividual("Height", "AudioParameter");
-	addIndividual("Reverb", "AudioParameter");
-	addIndividual("Delay", "AudioParameter");
-	addIndividual("Filter", "AudioParameter");
+	addClass("Play", "AudioParameter");
+	addClass("Loop", "AudioParameter");
+	addClass("Onset", "AudioParameter");
+	addClass("DurationRatio", "AudioParameter");
+	addClass("Amplitude", "AudioParameter");
+	addClass("PlaybackRate", "AudioParameter");
+	addClass("TimeStretchRatio", "AudioParameter");
+	addClass("Pan", "AudioParameter");
+	addClass("Distance", "AudioParameter");
+	addClass("Height", "AudioParameter");
+	addClass("Reverb", "AudioParameter");
+	addClass("Delay", "AudioParameter");
+	addClass("Filter", "AudioParameter");
 	//structural parameters
 	addClass("StructuralParameter", "Parameter");
-	addIndividual("PartCount", "StructuralParameter");
-	addIndividual("PartDurationRatio", "StructuralParameter");
-	addIndividual("PartProportion", "StructuralParameter");
+	addClass("PartCount", "StructuralParameter");
+	addClass("PartDurationRatio", "StructuralParameter");
+	addClass("PartProportion", "StructuralParameter");
 	//navigators
 	addClass("Navigator");
-	addIndividual("OneShotNavigator", "Navigator");
-	addIndividual("SequentialNavigator", "Navigator");
-	addIndividual("SimilarityNavigator", "Navigator");
+	addClass("OneShotNavigator", "Navigator");
+	addClass("SequentialNavigator", "Navigator");
+	addClass("SimilarityNavigator", "Navigator");
 	//properties
 	addProperty({term:"source", iri:"hasSource", type:"xsd:string"}, "Dymo", prefixes["xsd"]+"string", false);
 	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
@@ -273,6 +276,7 @@ function addToContext(term, value, type) {
 		value = term;
 	}
 	value = '"' + currentBase+':'+value + '"';
+	simpleContext.push([term, value]);
 	if (type) {
 		value = '{ "@id": '+ value +', "@type": "'+ type +'" }';
 	}
@@ -297,7 +301,7 @@ function writeN3ToFile(path) {
 	});
 }
 
-function writeContextToFile(path) {
+function writeContextToFile(path, context, contextBase) {
 	contextString = '{';
 	contextString += '\n\t"@context": {';
 	contextString += '\n\t\t"@base": "' + contextBase + '"';
