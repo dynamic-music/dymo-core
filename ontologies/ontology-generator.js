@@ -18,7 +18,6 @@ var prefixes = {
 	"mb": "http://tiny.cc/mobile-audio-ontology#",
 };
 var contextBase = "http://tiny.cc/dymo-context/";
-var simpleContextBase = "http://tiny.cc/dymo-context-simple/";
 
 var writer = N3.Writer({ prefixes:prefixes });
 var context = [];
@@ -32,8 +31,7 @@ initGlobals();
 createDymoOntology("ontologies/dymo-ontology.n3");
 createMobileAudioOntology("ontologies/mobile-audio-ontology.n3");
 writeContextToFile("ontologies/dymo-context.json", context, contextBase);
-writeContextToFile("ontologies/dymo-context-simple.json", simpleContext, simpleContextBase);
-endGlobals();
+writeContextToFile("ontologies/dymo-context-simple.json", simpleContext, contextBase);
 writeGlobalsToFile("src/globals2.js");
 
 function initWriter(base) {
@@ -63,14 +61,6 @@ function initGlobals() {
 	addGlobal("ADT", prefixes["ch"]+"adt");
 	addGlobal("VALUE", prefixes["ch"]+"value");
 	addGlobal("HAS_PART", prefixes["ch"]+"hasPart");
-}
-
-function endGlobals() {
-	addGlobal("DYMO_TYPES", "[CONJUNCTION, DISJUNCTION, SEQUENCE]");
-	addGlobal("PARAMETERS", "[PLAY, LOOP, ONSET, DURATION_RATIO, AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, PAN, DISTANCE, HEIGHT, REVERB, DELAY, FILTER, PART_COUNT, LISTENER_ORIENTATION, AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER]");
-	addGlobal("CONTROLS", "[SLIDER, TOGGLE, BUTTON, CUSTOM_CONTROL, ACCELEROMETER_X, ACCELEROMETER_Y, ACCELEROMETER_Z, TILT_X, TILT_Y, GEOLOCATION_LATITUDE, GEOLOCATION_LONGITUDE, GEOLOCATION_DISTANCE, COMPASS_HEADING, RANDOM, BROWNIAN, RAMP]");
-	addGlobal("UI_CONTROLS", "[SLIDER, TOGGLE, BUTTON, CUSTOM_CONTROL]");
-	addGlobal("SENSOR_CONTROLS", "[ACCELEROMETER_X, ACCELEROMETER_Y, ACCELEROMETER_Z, TILT_X, TILT_Y, GEOLOCATION_LATITUDE, GEOLOCATION_LONGITUDE, GEOLOCATION_DISTANCE, COMPASS_HEADING, BEACON]");
 }
 
 function createDymoOntology(path) {
@@ -133,7 +123,6 @@ function createMobileAudioOntology(path) {
 	addClass("Function");
 	//control taxonomy
 	addClass("MobileControl");
-	addClass("CustomControl", "MobileControl");
 	addClass("SensorControl", "MobileControl");
 	addClass("UiControl", "MobileControl");
 	addClass("AutoControl", "MobileControl");
@@ -153,6 +142,7 @@ function createMobileAudioOntology(path) {
 	addClass("Slider", "UiControl");
 	addClass("Toggle", "UiControl");
 	addClass("Button", "UiControl");
+	addClass("CustomControl", "UiControl");
 	//auto controls
 	addClass("Random", "AutoControl");
 	addClass("Brownian", "AutoControl");

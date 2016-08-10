@@ -15,8 +15,6 @@ mb:Rendering a owl:Class;
 mb:Mapping a owl:Class.
 mb:Function a owl:Class.
 mb:MobileControl a owl:Class.
-mb:CustomControl a owl:Class;
-    rdfs:subClassOf mb:MobileControl.
 mb:SensorControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
 mb:UiControl a owl:Class;
@@ -50,6 +48,8 @@ mb:Slider a owl:Class;
 mb:Toggle a owl:Class;
     rdfs:subClassOf mb:UiControl.
 mb:Button a owl:Class;
+    rdfs:subClassOf mb:UiControl.
+mb:CustomControl a owl:Class;
     rdfs:subClassOf mb:UiControl.
 mb:Random a owl:Class;
     rdfs:subClassOf mb:AutoControl.

@@ -94,7 +94,7 @@ describe("a dymoloader", function() {
 				loader.getStore().writeJsonld(function(writtenJson){
 					//TODO CHECK WHY JSONLD DOESNT USE SOME TERMS!!!!
 					expect(JSON.parse(writtenJson)).toEqual(loadedJson);
-					console.log(JSON.stringify(loadedJson), JSON.stringify(JSON.parse(writtenJson)));
+					//console.log(JSON.stringify(loadedJson), JSON.stringify(JSON.parse(writtenJson)));
 					done();
 				});
 			});

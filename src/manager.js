@@ -13,6 +13,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 	if (!isNaN(scheduleAheadTime)) {
 		SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	}
+	var store;
 	var rendering;
 	var uiControls = {};
 	var sensorControls = {};
@@ -21,14 +22,15 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 		var loader = new DymoLoader(scheduler, function() {
 			loader.loadDymoFromJson(dymoUri, function(loadedDymo) {
 				loader.loadRenderingFromJson(renderingUri, loadedDymo[1], function(loadedRendering) {
+					store = loader.getStore();
 					rendering = loadedRendering[0];
 					rendering.dymo = loadedDymo[0];
 					for (var key in loadedRendering[1]) {
 						var currentControl = loadedRendering[1][key];
-						if (UI_CONTROLS.indexOf(currentControl.getType()) >= 0) {
+						if (store.isSubclassOf(currentControl.getType(), UI_CONTROL)) {
 							uiControls[key] = new UIControl(currentControl, $scope);
 						}
-						if (SENSOR_CONTROLS.indexOf(currentControl.getType()) >= 0) {
+						if (store.isSubclassOf(currentControl.getType(), SENSOR_CONTROL)) {
 							sensorControls[key] = currentControl;
 						}
 					}

@@ -261,6 +261,7 @@ function DymoLoader(scheduler, callback) {
 			if (!currentName) {
 				currentName = domainDimUris[j];
 			}
+			console.log(currentType)
 			if (currentType == FEATURE) {
 				domainDims.push(currentName);
 			} else if (currentType == PARAMETER) {

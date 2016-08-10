@@ -48,13 +48,16 @@ function EasyStore() {
 			result = result.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
 			jsonld.fromRDF(result, {format: 'application/nquads'}, function(err, doc) {
 				jsonld.frame(doc, {"@id":"http://tiny.cc/dymo-context/dymo0"}, function(err, framed) {
-					jsonld.compact(framed, "http://tiny.cc/dymo-context/", function(err, compacted) {
+					jsonld.compact(framed, "http://tiny.cc/dymo-context", function(err, compacted) {
 						//deal with imperfections of jsonld.js compaction algorithm to make it reeaally nice
-						jsonld.compact(compacted, "http://tiny.cc/dymo-context-simple/", function(err, compacted) {
-							compacted = compacted.replace("http://tiny.cc/dymo-context-simple/", "http://tiny.cc/dymo-context/");
+						jsonld.compact(compacted, "http://tiny.cc/dymo-context-simple", function(err, compacted) {
 							//make it even nicer by removing blank nodes
 							removeBlankNodeIds(compacted);
-							callback(JSON.stringify(compacted, null, 2));
+							compacted = JSON.stringify(compacted, null, 2);
+							//put the right context back
+							compacted = compacted.replace("http://tiny.cc/dymo-context-simple", "http://tiny.cc/dymo-context");
+							console.log(compacted)
+							callback(compacted);
 						});
 					});
 				});
