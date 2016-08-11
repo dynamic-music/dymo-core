@@ -31,6 +31,7 @@ dy:ParameterType a owl:Class;
 dy:LevelFeature a dy:FeatureType.
 dy:IndexFeature a dy:FeatureType.
 dy:OnsetFeature a dy:FeatureType.
+dy:DurationFeature a dy:FeatureType.
 dy:AudioParameter a owl:Class;
     rdfs:subClassOf dy:ParameterType.
 dy:Play a dy:AudioParameter.
@@ -51,13 +52,6 @@ dy:StructuralParameter a owl:Class;
 dy:PartCount a dy:StructuralParameter.
 dy:PartDurationRatio a dy:StructuralParameter.
 dy:PartProportion a dy:StructuralParameter.
-dy:Navigator a owl:Class.
-dy:OneShotNavigator a owl:Class;
-    rdfs:subClassOf dy:Navigator.
-dy:SequentialNavigator a owl:Class;
-    rdfs:subClassOf dy:Navigator.
-dy:SimilarityNavigator a owl:Class;
-    rdfs:subClassOf dy:Navigator.
 dy:hasSource a owl:DatatypeProperty;
     rdfs:domain dy:Dymo;
     rdfs:range "http://www.w3.org/2001/XMLSchema#string".
@@ -73,9 +67,6 @@ dy:hasParameterType a owl:ObjectProperty;
 dy:hasFeatureType a owl:ObjectProperty;
     rdfs:domain dy:Feature;
     rdfs:range dy:FeatureType.
-dy:hasNavigator a owl:ObjectProperty;
-    rdfs:domain dy:Dymo;
-    rdfs:range dy:Navigator.
 dy:hasSimilar a owl:ObjectProperty;
     rdfs:domain dy:Dymo;
     rdfs:range dy:Dymo.

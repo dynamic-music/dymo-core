@@ -69,6 +69,13 @@ mb:AutoControlTrigger a mb:ControlParameter.
 mb:BrownianMaxStepSize a mb:ControlParameter.
 mb:LeapingProbability a mb:ControlParameter.
 mb:ContinueAfterLeaping a mb:ControlParameter.
+mb:Navigator a owl:Class.
+mb:OneShotNavigator a owl:Class;
+    rdfs:subClassOf mb:Navigator.
+mb:SequentialNavigator a owl:Class;
+    rdfs:subClassOf mb:Navigator.
+mb:SimilarityNavigator a owl:Class;
+    rdfs:subClassOf mb:Navigator.
 mb:DomainDimension a owl:Class;
     owl:unionOf (mb:MobileControl dy:ParameterType dy:FeatureType).
 mb:MappingTarget a owl:Class;
@@ -123,3 +130,9 @@ mb:hasMinor a owl:DatatypeProperty;
 mb:hasDuration a owl:DatatypeProperty;
     rdfs:domain mb:Ramp;
     rdfs:range "http://www.w3.org/2001/XMLSchema#integer".
+mb:hasNavigator a owl:DatatypeProperty;
+    rdfs:domain mb:Rendering;
+    rdfs:range "http://tiny.cc/mobile-audio-ontology#Navigator".
+mb:toDymo a owl:DatatypeProperty;
+    rdfs:domain mb:Navigator;
+    rdfs:range "http://tiny.cc/dymo-ontology#Dymo".

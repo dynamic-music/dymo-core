@@ -81,6 +81,7 @@ function createDymoOntology(path) {
 	addIndividual({term:"level", iri:"LevelFeature"}, "FeatureType");
 	addIndividual({term:"index", iri:"IndexFeature"}, "FeatureType");
 	addIndividual({term:"onset", iri:"OnsetFeature"}, "FeatureType");
+	addIndividual({term:"duration", iri:"DurationFeature"}, "FeatureType");
 	//audio parameters
 	addClass("AudioParameter", "ParameterType");
 	addIndividual("Play", "AudioParameter");
@@ -101,18 +102,12 @@ function createDymoOntology(path) {
 	addIndividual("PartCount", "StructuralParameter");
 	addIndividual("PartDurationRatio", "StructuralParameter");
 	addIndividual("PartProportion", "StructuralParameter");
-	//navigators
-	addClass("Navigator");
-	addClass("OneShotNavigator", "Navigator");
-	addClass("SequentialNavigator", "Navigator");
-	addClass("SimilarityNavigator", "Navigator");
 	//properties
 	addProperty({term:"source", iri:"hasSource", type:"xsd:string"}, "Dymo", prefixes["xsd"]+"string", false);
 	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
 	addProperty({term:"features", iri:"hasFeature", type:"@vocab"}, "Dymo", "Feature", true);
 	addProperty({term:"paramType", iri:"hasParameterType", type:"@vocab"}, "Parameter", "ParameterType", true);
 	addProperty({term:"featureType", iri:"hasFeatureType", type:"@vocab"}, "Feature", "FeatureType", true);
-	addProperty({term:"navigator", iri:"hasNavigator"}, "Dymo", "Navigator", true);
 	addProperty({term:"similars", iri:"hasSimilar"}, "Dymo", "Dymo", true);
 	
 	writeN3ToFile(path);
@@ -161,6 +156,11 @@ function createMobileAudioOntology(path) {
 	addIndividual("BrownianMaxStepSize", "ControlParameter");
 	addIndividual("LeapingProbability", "ControlParameter");
 	addIndividual("ContinueAfterLeaping", "ControlParameter");
+	//navigators
+	addClass("Navigator");
+	addClass("OneShotNavigator", "Navigator");
+	addClass("SequentialNavigator", "Navigator");
+	addClass("SimilarityNavigator", "Navigator");
 	//domain dimension and mapping target
 	addUnionClass("DomainDimension", ["MobileControl", "ParameterType", "FeatureType"]);
 	addUnionClass("MappingTarget", ["MobileControl", "Dymo"]);
@@ -182,7 +182,10 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"uuid", iri:"hasUuid", type: "xsd:string"}, "Beacon", prefixes["xsd"]+"string", false);
 	addProperty({term:"major", iri:"hasMajor", type: "xsd:integer"}, "Beacon", prefixes["xsd"]+"integer", false);
 	addProperty({term:"minor", iri:"hasMinor", type: "xsd:integer"}, "Beacon", prefixes["xsd"]+"integer", false);
-	addProperty({term:"duration", iri:"hasDuration", type: "xsd:integer"}, "Ramp", prefixes["xsd"]+"integer", false);
+	addProperty({term:"rampDuration", iri:"hasDuration", type: "xsd:integer"}, "Ramp", prefixes["xsd"]+"integer", false);
+	//navigator properties
+	addProperty({term:"navigator", iri:"hasNavigator"}, "Rendering", "Navigator", false);
+	addProperty({term:"dymo", iri:"toDymo"}, "Navigator", "Dymo", false);
 	writeN3ToFile(path);
 }
 
