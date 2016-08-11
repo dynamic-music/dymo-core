@@ -225,7 +225,6 @@ function DymoLoader(scheduler, callback) {
 	/** @param {Object=} controls (optional) */
 	function createMapping(mappingUri, dymoMap, dymo, controls) {
 		var targetUris = store.findAllObjectUris(mappingUri, TO_TARGET);
-		console.log(mappingUri, targetUris)
 		if (targetUris.length > 0) {
 			var targets = [];
 			var constraintFunction = findFunction(targetUris[0]);
@@ -260,9 +259,9 @@ function DymoLoader(scheduler, callback) {
 			if (!currentName) {
 				currentName = domainDimUris[j];
 			}
-			if (currentType == FEATURE_TYPE) {
+			if (currentType == FEATURE_TYPE || store.isSubclassOf(currentType, FEATURE_TYPE)) {
 				domainDims.push(currentName);
-			} else if (currentType == PARAMETER_TYPE) {
+			} else if (currentType == PARAMETER_TYPE || store.isSubclassOf(currentType, PARAMETER_TYPE)) {
 				var currentParameter;
 				if (dymo) {
 					currentParameter = addOrUpdateDymoParameter(dymo, currentName, 0);
@@ -272,7 +271,6 @@ function DymoLoader(scheduler, callback) {
 				domainDims.push(currentParameter);
 			} else {
 				//it's a control
-				console.log(domainDimUris[j], controls, currentType, currentName);
 				domainDims.push(controls[domainDimUris[j]]);
 			}
 		}

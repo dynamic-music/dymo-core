@@ -6,13 +6,13 @@
 	"features":["index","duration"],
 	"mappings":[
 		{
-			"domainDims":[{"@id":"Fade","@type":"ParameterType"},"index"],
+			"domainDims":[{"@id":"Fade","@type":"CustomParameter"},"index"],
 			"function":{"args":["a", "b"],"body":"return (1-b)*(1-a)+b*a;"},
 			"targets":{"args":["d"],"body":"return d.getLevel() == 1;"},
 			"range":"Amplitude"
 		},
 		{
-			"domainDims":[{"@id":"Tempo","@type":"ParameterType"},"duration"],
+			"domainDims":[{"@id":"Tempo","@type":"CustomParameter"},"duration"],
 			"function":{"args":["a", "b"],"body":"return a/60*b;"},
 			"targets":{"args":["d"],"body":"return d.getLevel() == 3;"},
 			"range":"TimeStretchRatio"
