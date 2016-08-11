@@ -57,8 +57,6 @@ mb:Brownian a owl:Class;
     rdfs:subClassOf mb:AutoControl.
 mb:Ramp a owl:Class;
     rdfs:subClassOf mb:AutoControl.
-mb:DomainDimension a owl:Class;
-    owl:unionOf (mb:MobileControl dy:Parameter dy:Feature).
 mb:MobileParameter a owl:Class;
     rdfs:subClassOf mt:AutomationParameter.
 mb:GlobalParameter a owl:Class;
@@ -71,6 +69,12 @@ mb:AutoControlTrigger a mb:ControlParameter.
 mb:BrownianMaxStepSize a mb:ControlParameter.
 mb:LeapingProbability a mb:ControlParameter.
 mb:ContinueAfterLeaping a mb:ControlParameter.
+mb:DomainDimension a owl:Class;
+    owl:unionOf (mb:MobileControl dy:ParameterType dy:FeatureType).
+mb:MappingTarget a owl:Class;
+    owl:unionOf (mb:MobileControl dy:Dymo).
+mb:MappingRange a owl:Class;
+    owl:unionOf (dy:ParameterType mb:MobileParameter).
 mb:hasDymo a owl:ObjectProperty, owl:FunctionalProperty;
     rdfs:domain mb:Rendering;
     rdfs:range dy:Dymo.
@@ -89,15 +93,12 @@ mb:hasArgument a owl:DatatypeProperty;
 mb:hasBody a owl:DatatypeProperty;
     rdfs:domain mb:Function;
     rdfs:range "http://www.w3.org/2001/XMLSchema#string".
-mb:toDymo a owl:ObjectProperty;
-    rdfs:domain mb:Mapping;
-    rdfs:range dy:Dymo.
 mb:toTarget a owl:ObjectProperty;
     rdfs:domain mb:Mapping;
-    rdfs:range mb:MobileControl.
-mb:toParameter a owl:ObjectProperty;
+    rdfs:range mb:MappingTarget.
+mb:hasRange a owl:ObjectProperty;
     rdfs:domain mb:Mapping;
-    rdfs:range dy:Parameter.
+    rdfs:range mb:MappingRange.
 mb:isRelative a owl:DatatypeProperty;
     rdfs:domain mb:Mapping;
     rdfs:range "http://www.w3.org/2001/XMLSchema#:boolean".

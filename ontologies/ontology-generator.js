@@ -66,39 +66,41 @@ function initGlobals() {
 function createDymoOntology(path) {
 	initWriter("dy");
 	addOntology("An ontology for describing Dynamic Music Objects");
-	//main classes
+	//dymos and dymo types
 	addClass("Dymo", prefixes["ch"]+"Constituent", "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters");
-	addClass("Feature", prefixes["ch"]+"Attribute", "A feature is an immutable attribute of a Dymo");
-	addClass("Parameter", prefixes["ch"]+"Attribute", "A parameter is a mutable attribute of a Dymo");
-	//dymo types
 	addClass("DymoType", prefixes["ch"]+"ConstituentType");
 	addIndividual("Conjunction", "DymoType");
 	addIndividual("Disjunction", "DymoType");
 	addIndividual("Sequence", "DymoType");
+	//parameters, features, and their types
+	addClass("Feature", prefixes["ch"]+"Attribute", "A feature is an immutable attribute of a Dymo");
+	addClass("Parameter", prefixes["ch"]+"Attribute", "A parameter is a mutable attribute of a Dymo");
+	addClass("FeatureType", prefixes["ch"]+"AttributeType");
+	addClass("ParameterType", prefixes["ch"]+"AttributeType");
 	//features
-	addClass({term:"level", iri:"LevelFeature"}, "Feature");
-	addClass({term:"index", iri:"IndexFeature"}, "Feature");
-	addClass({term:"onset", iri:"OnsetFeature"}, "Feature");
+	addIndividual({term:"level", iri:"LevelFeature"}, "FeatureType");
+	addIndividual({term:"index", iri:"IndexFeature"}, "FeatureType");
+	addIndividual({term:"onset", iri:"OnsetFeature"}, "FeatureType");
 	//audio parameters
-	addClass("AudioParameter", "Parameter");
-	addClass("Play", "AudioParameter");
-	addClass("Loop", "AudioParameter");
-	addClass("Onset", "AudioParameter");
-	addClass("DurationRatio", "AudioParameter");
-	addClass("Amplitude", "AudioParameter");
-	addClass("PlaybackRate", "AudioParameter");
-	addClass("TimeStretchRatio", "AudioParameter");
-	addClass("Pan", "AudioParameter");
-	addClass("Distance", "AudioParameter");
-	addClass("Height", "AudioParameter");
-	addClass("Reverb", "AudioParameter");
-	addClass("Delay", "AudioParameter");
-	addClass("Filter", "AudioParameter");
+	addClass("AudioParameter", "ParameterType");
+	addIndividual("Play", "AudioParameter");
+	addIndividual("Loop", "AudioParameter");
+	addIndividual("Onset", "AudioParameter");
+	addIndividual("DurationRatio", "AudioParameter");
+	addIndividual("Amplitude", "AudioParameter");
+	addIndividual("PlaybackRate", "AudioParameter");
+	addIndividual("TimeStretchRatio", "AudioParameter");
+	addIndividual("Pan", "AudioParameter");
+	addIndividual("Distance", "AudioParameter");
+	addIndividual("Height", "AudioParameter");
+	addIndividual("Reverb", "AudioParameter");
+	addIndividual("Delay", "AudioParameter");
+	addIndividual("Filter", "AudioParameter");
 	//structural parameters
-	addClass("StructuralParameter", "Parameter");
-	addClass("PartCount", "StructuralParameter");
-	addClass("PartDurationRatio", "StructuralParameter");
-	addClass("PartProportion", "StructuralParameter");
+	addClass("StructuralParameter", "ParameterType");
+	addIndividual("PartCount", "StructuralParameter");
+	addIndividual("PartDurationRatio", "StructuralParameter");
+	addIndividual("PartProportion", "StructuralParameter");
 	//navigators
 	addClass("Navigator");
 	addClass("OneShotNavigator", "Navigator");
@@ -108,6 +110,8 @@ function createDymoOntology(path) {
 	addProperty({term:"source", iri:"hasSource", type:"xsd:string"}, "Dymo", prefixes["xsd"]+"string", false);
 	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
 	addProperty({term:"features", iri:"hasFeature", type:"@vocab"}, "Dymo", "Feature", true);
+	addProperty({term:"paramType", iri:"hasParameterType", type:"@vocab"}, "Parameter", "ParameterType", true);
+	addProperty({term:"featureType", iri:"hasFeatureType", type:"@vocab"}, "Feature", "FeatureType", true);
 	addProperty({term:"navigator", iri:"hasNavigator"}, "Dymo", "Navigator", true);
 	addProperty({term:"similars", iri:"hasSimilar"}, "Dymo", "Dymo", true);
 	
@@ -147,8 +151,6 @@ function createMobileAudioOntology(path) {
 	addClass("Random", "AutoControl");
 	addClass("Brownian", "AutoControl");
 	addClass("Ramp", "AutoControl");
-	//domain dimension
-	addUnionClass("DomainDimension", ["MobileControl", "Parameter", "Feature"])
 	//parameters
 	addClass("MobileParameter", prefixes["mt"]+"AutomationParameter");
 	addClass("GlobalParameter", "MobileParameter");
@@ -159,6 +161,10 @@ function createMobileAudioOntology(path) {
 	addIndividual("BrownianMaxStepSize", "ControlParameter");
 	addIndividual("LeapingProbability", "ControlParameter");
 	addIndividual("ContinueAfterLeaping", "ControlParameter");
+	//domain dimension and mapping target
+	addUnionClass("DomainDimension", ["MobileControl", "ParameterType", "FeatureType"]);
+	addUnionClass("MappingTarget", ["MobileControl", "Dymo"]);
+	addUnionClass("MappingRange", ["ParameterType", "MobileParameter"]);
 	//mapping properties
 	addProperty({term:"dymo", iri:"hasDymo"}, "Rendering", "Dymo", true, true);
 	addProperty({term:"mappings", iri:"hasMapping"}, "Rendering", "Mapping", true);
@@ -166,9 +172,8 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"function", iri:"hasFunction"}, "Mapping", "Function", true);
 	addProperty({term:"args", iri:"hasArgument"}, "Function", prefixes["xsd"]+"string", false);
 	addProperty({term:"body", iri:"hasBody"}, "Function", prefixes["xsd"]+"string", false);
-	addProperty({term:"dymos", iri:"toDymo", type: "@id"}, "Mapping", "Dymo", true);
-	addProperty({term:"targets", iri:"toTarget"}, "Mapping", "MobileControl", true);
-	addProperty({term:"range", iri:"toParameter", type: "@vocab"}, "Mapping", "Parameter", true);
+	addProperty({term:"targets", iri:"toTarget"}, "Mapping", "MappingTarget", true);
+	addProperty({term:"range", iri:"hasRange", type: "@vocab"}, "Mapping", "MappingRange", true);
 	addProperty({term:"relative", iri:"isRelative", type: "xsd:boolean"}, "Mapping", prefixes["xsd"]+":boolean", false);
 	//control properties
 	addProperty({term:"init", iri:"hasInitialValue", type: "xsd:float"}, "MobileControl", prefixes["xsd"]+"float", false);

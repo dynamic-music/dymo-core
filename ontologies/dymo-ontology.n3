@@ -13,59 +13,44 @@
 dy:Dymo a owl:Class;
     rdfs:subClassOf ch:Constituent.
 <http://tiny.cc/dymo-ontology#http://tiny.cc/dymo-ontology#Dymo> rdfs:comment "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters".
+dy:DymoType a owl:Class;
+    rdfs:subClassOf ch:ConstituentType.
+dy:Conjunction a dy:DymoType.
+dy:Disjunction a dy:DymoType.
+dy:Sequence a dy:DymoType.
 dy:Feature a owl:Class;
     rdfs:subClassOf ch:Attribute.
 <http://tiny.cc/dymo-ontology#http://tiny.cc/dymo-ontology#Feature> rdfs:comment "A feature is an immutable attribute of a Dymo".
 dy:Parameter a owl:Class;
     rdfs:subClassOf ch:Attribute.
 <http://tiny.cc/dymo-ontology#http://tiny.cc/dymo-ontology#Parameter> rdfs:comment "A parameter is a mutable attribute of a Dymo".
-dy:DymoType a owl:Class;
-    rdfs:subClassOf ch:ConstituentType.
-dy:Conjunction a dy:DymoType.
-dy:Disjunction a dy:DymoType.
-dy:Sequence a dy:DymoType.
-dy:LevelFeature a owl:Class;
-    rdfs:subClassOf dy:Feature.
-dy:IndexFeature a owl:Class;
-    rdfs:subClassOf dy:Feature.
-dy:OnsetFeature a owl:Class;
-    rdfs:subClassOf dy:Feature.
+dy:FeatureType a owl:Class;
+    rdfs:subClassOf ch:AttributeType.
+dy:ParameterType a owl:Class;
+    rdfs:subClassOf ch:AttributeType.
+dy:LevelFeature a dy:FeatureType.
+dy:IndexFeature a dy:FeatureType.
+dy:OnsetFeature a dy:FeatureType.
 dy:AudioParameter a owl:Class;
-    rdfs:subClassOf dy:Parameter.
-dy:Play a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:Loop a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:Onset a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:DurationRatio a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:Amplitude a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:PlaybackRate a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:TimeStretchRatio a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:Pan a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:Distance a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:Height a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:Reverb a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:Delay a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
-dy:Filter a owl:Class;
-    rdfs:subClassOf dy:AudioParameter.
+    rdfs:subClassOf dy:ParameterType.
+dy:Play a dy:AudioParameter.
+dy:Loop a dy:AudioParameter.
+dy:Onset a dy:AudioParameter.
+dy:DurationRatio a dy:AudioParameter.
+dy:Amplitude a dy:AudioParameter.
+dy:PlaybackRate a dy:AudioParameter.
+dy:TimeStretchRatio a dy:AudioParameter.
+dy:Pan a dy:AudioParameter.
+dy:Distance a dy:AudioParameter.
+dy:Height a dy:AudioParameter.
+dy:Reverb a dy:AudioParameter.
+dy:Delay a dy:AudioParameter.
+dy:Filter a dy:AudioParameter.
 dy:StructuralParameter a owl:Class;
-    rdfs:subClassOf dy:Parameter.
-dy:PartCount a owl:Class;
-    rdfs:subClassOf dy:StructuralParameter.
-dy:PartDurationRatio a owl:Class;
-    rdfs:subClassOf dy:StructuralParameter.
-dy:PartProportion a owl:Class;
-    rdfs:subClassOf dy:StructuralParameter.
+    rdfs:subClassOf dy:ParameterType.
+dy:PartCount a dy:StructuralParameter.
+dy:PartDurationRatio a dy:StructuralParameter.
+dy:PartProportion a dy:StructuralParameter.
 dy:Navigator a owl:Class.
 dy:OneShotNavigator a owl:Class;
     rdfs:subClassOf dy:Navigator.
@@ -82,6 +67,12 @@ dy:hasParameter a owl:ObjectProperty;
 dy:hasFeature a owl:ObjectProperty;
     rdfs:domain dy:Dymo;
     rdfs:range dy:Feature.
+dy:hasParameterType a owl:ObjectProperty;
+    rdfs:domain dy:Parameter;
+    rdfs:range dy:ParameterType.
+dy:hasFeatureType a owl:ObjectProperty;
+    rdfs:domain dy:Feature;
+    rdfs:range dy:FeatureType.
 dy:hasNavigator a owl:ObjectProperty;
     rdfs:domain dy:Dymo;
     rdfs:range dy:Navigator.
