@@ -225,26 +225,25 @@ function DymoLoader(scheduler, callback) {
 	/** @param {Object=} controls (optional) */
 	function createMapping(mappingUri, dymoMap, dymo, controls) {
 		var targetUris = store.findAllObjectUris(mappingUri, TO_TARGET);
-		var dymoUris = store.findAllObjectUris(mappingUri, TO_DYMO);
+		console.log(mappingUri, targetUris)
 		if (targetUris.length > 0) {
-			var targetControls = [];
-			for (var j = 0; j < targetUris.length; j++) {
-				var targetUri = store.findFirstSubjectUri(NAME, targetUris[j]);
-				targetControls.push(controls[targetUri]);
-			}
-			return createMappingToObjects(mappingUri, dymoMap, dymo, targetControls, controls);
-		} else if (dymoUris.length > 0) {
-			var dymos = [];
-			var constraintFunction = findFunction(dymoUris[0]);
+			var targets = [];
+			var constraintFunction = findFunction(targetUris[0]);
 			if (constraintFunction) {
 				var allDymos = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
-				Array.prototype.push.apply(dymos, allDymos.filter(constraintFunction));
+				Array.prototype.push.apply(targets, allDymos.filter(constraintFunction));
 			} else {
-				for (var j = 0; j < dymoUris.length; j++) {
-					dymos.push(dymoMap[dymoUris[j]]);
+				for (var j = 0; j < targetUris.length; j++) {
+					var targetType = store.findFirstObjectUri(targetUris[j], TYPE);
+					if (targetType == DYMO) {
+						targets.push(dymoMap[targetUris[j]]);
+					} else {
+						//it's a control
+						targets.push(controls[targetUris[j]]);
+					}
 				}
 			}
-			return createMappingToObjects(mappingUri, dymoMap, dymo, dymos, controls, constraintFunction);
+			return createMappingToObjects(mappingUri, dymoMap, dymo, targets, controls, constraintFunction);
 		} else {
 			return createMappingToObjects(mappingUri, dymoMap, dymo, [scheduler], controls);
 		}
@@ -261,10 +260,9 @@ function DymoLoader(scheduler, callback) {
 			if (!currentName) {
 				currentName = domainDimUris[j];
 			}
-			console.log(currentType)
-			if (currentType == FEATURE) {
+			if (currentType == FEATURE_TYPE) {
 				domainDims.push(currentName);
-			} else if (currentType == PARAMETER) {
+			} else if (currentType == PARAMETER_TYPE) {
 				var currentParameter;
 				if (dymo) {
 					currentParameter = addOrUpdateDymoParameter(dymo, currentName, 0);
@@ -274,11 +272,12 @@ function DymoLoader(scheduler, callback) {
 				domainDims.push(currentParameter);
 			} else {
 				//it's a control
+				console.log(domainDimUris[j], controls, currentType, currentName);
 				domainDims.push(controls[domainDimUris[j]]);
 			}
 		}
 		var [args, body] = findArgsAndBody(store.findFirstObjectUri(mappingUri, HAS_FUNCTION));
-		var range = store.findFirstObjectUri(mappingUri, TO_PARAMETER);
+		var range = store.findFirstObjectUri(mappingUri, HAS_RANGE);
 		//console.log(domainDims, isRelative, {"args":args,"body":body}, targets, range, dymoConstraint)
 		return new Mapping(domainDims, isRelative, {"args":args,"body":body}, targets, range, dymoConstraint);
 	}

@@ -79,7 +79,7 @@ mb:SimilarityNavigator a owl:Class;
 mb:DomainDimension a owl:Class;
     owl:unionOf (mb:MobileControl dy:ParameterType dy:FeatureType).
 mb:MappingTarget a owl:Class;
-    owl:unionOf (mb:MobileControl dy:Dymo).
+    owl:unionOf (mb:MobileControl dy:Dymo mb:Function).
 mb:MappingRange a owl:Class;
     owl:unionOf (dy:ParameterType mb:MobileParameter).
 mb:hasDymo a owl:ObjectProperty, owl:FunctionalProperty;

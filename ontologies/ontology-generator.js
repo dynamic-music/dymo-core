@@ -82,6 +82,7 @@ function createDymoOntology(path) {
 	addIndividual({term:"index", iri:"IndexFeature"}, "FeatureType");
 	addIndividual({term:"onset", iri:"OnsetFeature"}, "FeatureType");
 	addIndividual({term:"duration", iri:"DurationFeature"}, "FeatureType");
+	addClass("CustomFeature", "FeatureType");
 	//audio parameters
 	addClass("AudioParameter", "ParameterType");
 	addIndividual("Play", "AudioParameter");
@@ -102,6 +103,7 @@ function createDymoOntology(path) {
 	addIndividual("PartCount", "StructuralParameter");
 	addIndividual("PartDurationRatio", "StructuralParameter");
 	addIndividual("PartProportion", "StructuralParameter");
+	addClass("CustomParameter", "ParameterType");
 	//properties
 	addProperty({term:"source", iri:"hasSource", type:"xsd:string"}, "Dymo", prefixes["xsd"]+"string", false);
 	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
@@ -163,7 +165,7 @@ function createMobileAudioOntology(path) {
 	addClass("SimilarityNavigator", "Navigator");
 	//domain dimension and mapping target
 	addUnionClass("DomainDimension", ["MobileControl", "ParameterType", "FeatureType"]);
-	addUnionClass("MappingTarget", ["MobileControl", "Dymo"]);
+	addUnionClass("MappingTarget", ["MobileControl", "Dymo", "Function"]);
 	addUnionClass("MappingRange", ["ParameterType", "MobileParameter"]);
 	//mapping properties
 	addProperty({term:"dymo", iri:"hasDymo"}, "Rendering", "Dymo", true, true);
@@ -172,7 +174,7 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"function", iri:"hasFunction"}, "Mapping", "Function", true);
 	addProperty({term:"args", iri:"hasArgument"}, "Function", prefixes["xsd"]+"string", false);
 	addProperty({term:"body", iri:"hasBody"}, "Function", prefixes["xsd"]+"string", false);
-	addProperty({term:"targets", iri:"toTarget"}, "Mapping", "MappingTarget", true);
+	addProperty({term:"targets", iri:"toTarget", type: "@id"}, "Mapping", "MappingTarget", true);
 	addProperty({term:"range", iri:"hasRange", type: "@vocab"}, "Mapping", "MappingRange", true);
 	addProperty({term:"relative", iri:"isRelative", type: "xsd:boolean"}, "Mapping", prefixes["xsd"]+":boolean", false);
 	//control properties

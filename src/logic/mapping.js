@@ -155,6 +155,5 @@ Mapping.prototype.calculateParameter = function(dymo) {
 		}
 		currentDomainValues[i] = currentValue;
 	}
-	//console.log(this.domainDims, currentDomainValues)
 	return this.mappingFunction.apply(this, currentDomainValues);
 }

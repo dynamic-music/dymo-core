@@ -1,31 +1,31 @@
 {
-	"@context": "http://tiny.cc/dymo-context/",
+	"@context":"http://tiny.cc/dymo-context",
 	"@id":"demoBeatRendering",
 	"@type":"Rendering",
 	"dymo":"demoBeat",
 	"mappings":[
 		{
-			"domainDims":[{"name":"fadeRamp","@type":"Ramp","value":0,"duration":1}],
+			"domainDims":[{"@id":"fadeRamp","@type":"Ramp","value":0,"duration":1}],
 			"function":{"args":["a"],"body":"return a;"},
-			"dymos":["mixdymo"],
+			"targets":["mixdymo"],
 			"range":"Fade"
 		},
 		{
-			"domainDims":[{"name":"fade","@type":"Slider"}],
+			"domainDims":[{"@id":"fade","name":"fade","@type":"Slider"}],
 			"function":{"args":["a"],"body":"return a;"},
-			"dymos":["mixdymo"],
+			"targets":["mixdymo"],
 			"range":"Fade"
 		},
 		{
 			"domainDims":[{"name":"beats per bar","@type":"Slider"}],
 			"function":{"args":["a"],"body":"return 4*a;"},
-			"dymos":{"args":["d"],"body":"return d.getLevel() == 2;"},
+			"targets":{"args":["d"],"body":"return d.getLevel() == 2;"},
 			"range":"PartCount"
 		},
 		{
 			"domainDims":[{"name":"offbeat duration","@type":"Slider"}],
 			"function":{"args":["a"],"body":"return a;"},
-			"dymos":{"args":["d"],"body":"return d.getLevel() == 3 && d.getIndex()%2 == 1;"},
+			"targets":{"args":["d"],"body":"return d.getLevel() == 3 && d.getIndex()%2 == 1;"},
 			"range":"DurationRatio"
 		},
 		{

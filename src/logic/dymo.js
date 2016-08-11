@@ -53,10 +53,10 @@ function DynamicMusicObject(uri, type, scheduler) {
 	
 	this.setParent = function(dymo) {
 		parent = dymo;
-		for (var name in parameters) {
-			if (name != PLAY && name != PART_COUNT) {
+		for (var type in parameters) {
+			if (type != PLAY && type != PART_COUNT) {
 				//create standard relative mappings to child parameters
-				parentMappings.push(new Mapping([dymo.getParameter(name)], true, undefined, [this], name));
+				parentMappings.push(new Mapping([dymo.getParameter(type)], true, undefined, [this], type));
 			}
 		}
 		//add all appropriate subdymos to the parent's mappings
@@ -247,25 +247,25 @@ function DynamicMusicObject(uri, type, scheduler) {
 		return features;
 	}
 	
-	this.setFeature = function(name, value) {
-		features[name] = value;
+	this.setFeature = function(type, value) {
+		features[type] = value;
 	}
 	
-	this.getFeature = function(name) {
-		if (name === LEVEL_FEATURE) {
+	this.getFeature = function(type) {
+		if (type === LEVEL_FEATURE) {
 			return this.getLevel();
-		} else if (name === INDEX_FEATURE) {
+		} else if (type === INDEX_FEATURE) {
 			return this.getIndex();
-		} else if (features.hasOwnProperty(name)) {
-			return features[name];
+		} else if (features.hasOwnProperty(type)) {
+			return features[type];
 		} else if (parent) {
-			return parent.getFeature(name);
+			return parent.getFeature(type);
 		//may seem weird but helps a lot for now
 		} else {
 			var partFeatures = [];
 			for (var i = 0; i < parts.length; i++) {
 				if (parts[i]) {
-					var currentPartFeature = parts[i].getFeatureWithoutLookingFurther(name);
+					var currentPartFeature = parts[i].getFeatureWithoutLookingFurther(type);
 					if (!isNaN(currentPartFeature)) {
 						partFeatures.push(currentPartFeature);
 					}
@@ -277,9 +277,9 @@ function DynamicMusicObject(uri, type, scheduler) {
 		}
 	}
 	
-	this.getFeatureWithoutLookingFurther = function(name) {
-		if (features[name]) {
-			return features[name];
+	this.getFeatureWithoutLookingFurther = function(type) {
+		if (features[type]) {
+			return features[type];
 		}
 	}
 	
