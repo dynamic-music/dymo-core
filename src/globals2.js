@@ -86,6 +86,7 @@ var SIMILARITY_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#SimilarityNavig
 var DOMAIN_DIMENSION = "http://tiny.cc/mobile-audio-ontology#DomainDimension";
 var MAPPING_TARGET = "http://tiny.cc/mobile-audio-ontology#MappingTarget";
 var MAPPING_RANGE = "http://tiny.cc/mobile-audio-ontology#MappingRange";
+var MAPPING_OWNERS = "http://tiny.cc/mobile-audio-ontology#MappingOwners";
 var HAS_DYMO = "http://tiny.cc/mobile-audio-ontology#hasDymo";
 var HAS_MAPPING = "http://tiny.cc/mobile-audio-ontology#hasMapping";
 var HAS_DOMAIN_DIMENSION = "http://tiny.cc/mobile-audio-ontology#hasDomainDimension";

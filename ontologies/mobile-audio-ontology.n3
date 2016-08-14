@@ -82,11 +82,13 @@ mb:MappingTarget a owl:Class;
     owl:unionOf (mb:MobileControl dy:Dymo mb:Function).
 mb:MappingRange a owl:Class;
     owl:unionOf (dy:ParameterType mb:MobileParameter).
+mb:MappingOwners a owl:Class;
+    owl:unionOf (dy:Dymo mb:Rendering).
 mb:hasDymo a owl:ObjectProperty, owl:FunctionalProperty;
     rdfs:domain mb:Rendering;
     rdfs:range dy:Dymo.
 mb:hasMapping a owl:ObjectProperty;
-    rdfs:domain mb:Rendering;
+    rdfs:domain mb:MappingOwners;
     rdfs:range mb:Mapping.
 mb:hasDomainDimension a owl:ObjectProperty;
     rdfs:domain mb:Mapping;

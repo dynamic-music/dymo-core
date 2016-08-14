@@ -95,6 +95,7 @@
 		"DomainDimension": "mb:DomainDimension",
 		"MappingTarget": "mb:MappingTarget",
 		"MappingRange": "mb:MappingRange",
+		"MappingOwners": "mb:MappingOwners",
 		"dymo": "mb:hasDymo",
 		"mappings": "mb:hasMapping",
 		"domainDims": { "@id": "mb:hasDomainDimension", "@type": "@vocab" },
