@@ -32,7 +32,6 @@ Mapping.prototype.init = function() {
 	}
 	this.mappingFunction = FunctionTools.createFunction(this.functionJson["args"], this.functionJson["body"]);
 	this.inverseFunction = FunctionTools.invertFunction(this.functionJson["body"]);
-	
 	for (var i = 0; i < this.domainDims.length; i++) {
 		if (this.domainDims[i].addMapping) {
 			this.domainDims[i].addMapping(this);

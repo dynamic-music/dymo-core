@@ -167,9 +167,10 @@ function createMobileAudioOntology(path) {
 	addUnionClass("DomainDimension", ["MobileControl", "ParameterType", "FeatureType"]);
 	addUnionClass("MappingTarget", ["MobileControl", "Dymo", "Function"]);
 	addUnionClass("MappingRange", ["ParameterType", "MobileParameter"]);
+	addUnionClass("MappingOwners", ["Dymo", "Rendering"]);
 	//mapping properties
 	addProperty({term:"dymo", iri:"hasDymo"}, "Rendering", "Dymo", true, true);
-	addProperty({term:"mappings", iri:"hasMapping"}, "Rendering", "Mapping", true);
+	addProperty({term:"mappings", iri:"hasMapping"}, "MappingOwners", "Mapping", true);
 	addProperty({term:"domainDims", iri:"hasDomainDimension", type: "@vocab"}, "Mapping", "DomainDimension", true);
 	addProperty({term:"function", iri:"hasFunction"}, "Mapping", "Function", true);
 	addProperty({term:"args", iri:"hasArgument"}, "Function", prefixes["xsd"]+"string", false);

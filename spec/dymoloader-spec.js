@@ -64,7 +64,7 @@ describe("a dymoloader", function() {
 	});
 	
 	it("loads a control rendering from json", function(done) {
-		loader.loadRenderingFromJson(controlRenderingPath, dymoMap, function(loadedRendering) {
+		loader.loadRenderingFromJson(controlRenderingPath, function(loadedRendering) {
 			rendering = loadedRendering[0];
 			controls = loadedRendering[1];
 			expect(rendering.getMappings().length).toEqual(3);
@@ -77,11 +77,14 @@ describe("a dymoloader", function() {
 	});
 	
 	it("loads a similarity graph from json", function(done) {
-		loader.loadGraphFromJson(similarityGraphPath, dymoMap, function() {
-			var graph = dymo.toJsonSimilarityGraph();
-			expect(graph["nodes"].length).toEqual(331);
-			expect(graph["links"].length).toEqual(274);
-			done();
+		loader.loadDymoFromJson(dymoPath, function(loadedDymo) {
+			loader.loadGraphFromJson(similarityGraphPath, function() {
+				dymo = loadedDymo[0];
+				var graph = dymo.toJsonSimilarityGraph();
+				expect(graph["nodes"].length).toEqual(331);
+				expect(graph["links"].length).toEqual(274);
+				done();
+			});
 		});
 	});
 	

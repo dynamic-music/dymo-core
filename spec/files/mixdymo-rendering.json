@@ -5,7 +5,7 @@
 	"dymo":"demoBeat",
 	"mappings":[
 		{
-			"domainDims":[{"@id":"fadeRamp","@type":"Ramp","value":0,"duration":1}],
+			"domainDims":[{"@id":"fadeRamp","@type":"Random","value":0,"duration":1}],
 			"function":{"args":["a"],"body":"return a;"},
 			"targets":["mixdymo"],
 			"range":"Fade"

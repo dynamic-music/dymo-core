@@ -21,7 +21,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 	this.loadDymoAndRendering = function(dymoUri, renderingUri, dymoCallback, buffersCallback) {
 		var loader = new DymoLoader(scheduler, function() {
 			loader.loadDymoFromJson(dymoUri, function(loadedDymo) {
-				loader.loadRenderingFromJson(renderingUri, loadedDymo[1], function(loadedRendering) {
+				loader.loadRenderingFromJson(renderingUri, function(loadedRendering) {
 					store = loader.getStore();
 					rendering = loadedRendering[0];
 					rendering.dymo = loadedDymo[0];
