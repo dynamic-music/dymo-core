@@ -15,23 +15,27 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	this.listenerOrientation = new Parameter(LISTENER_ORIENTATION, 0);
 	this.listenerOrientation.addObserver(this);
 	
-	var convolverSend = audioContext.createConvolver();
-	convolverSend.connect(audioContext.destination);
-	var delaySend = audioContext.createDelay();
-	delaySend.delayTime.value = 0.5;
-	delaySend.connect(audioContext.destination);
-	var delayFeedback = audioContext.createGain();
-	delayFeedback.gain.value = 0.6;
-	delaySend.connect(delayFeedback);
-	delayFeedback.connect(delaySend);
-	
+	var convolverSend, delaySend;
 	var numCurrentlyLoading = 0;
 	
-	this.setReverbFile = function(filePath) {
-		loadAudio(filePath, function(buffer) {
-			convolverSend.buffer = buffer;
-			sourceReady();
-		});
+	this.initEffectSends = function(store, reverbFile) {
+		if (store.find(null, null, REVERB).length > 0) {
+			convolverSend = audioContext.createConvolver();
+			convolverSend.connect(audioContext.destination);
+			loadAudio(reverbFile, function(buffer) {
+				convolverSend.buffer = buffer;
+				sourceReady();
+			});
+		}
+		if (store.find(null, null, DELAY).length > 0) {
+			var delaySend = audioContext.createDelay();
+			delaySend.delayTime.value = 0.5;
+			delaySend.connect(audioContext.destination);
+			var delayFeedback = audioContext.createGain();
+			delayFeedback.gain.value = 0.6;
+			delaySend.connect(delayFeedback);
+			delayFeedback.connect(delaySend);
+		}
 	}
 	
 	this.loadBuffers = function(dymo, callback) {

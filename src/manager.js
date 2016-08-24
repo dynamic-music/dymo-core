@@ -6,10 +6,6 @@
 function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 	
 	var scheduler = new Scheduler(audioContext, function(){});
-	if (!reverbFile) {
-		reverbFile = 'bower_components/dymo-core/audio/impulse_rev.wav';
-	}
-	scheduler.setReverbFile(reverbFile);
 	if (!isNaN(scheduleAheadTime)) {
 		SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	}
@@ -34,6 +30,10 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 							sensorControls[key] = currentControl;
 						}
 					}
+					if (!reverbFile) {
+						reverbFile = 'bower_components/dymo-core/audio/impulse_rev.wav';
+					}
+					scheduler.initEffectSends(store, reverbFile);
 					scheduler.loadBuffers(rendering.dymo, buffersCallback);
 					if (dymoCallback) {
 						dymoCallback();

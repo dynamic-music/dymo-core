@@ -30,25 +30,20 @@ describe("a scheduler", function() {
 		scheduler.loadBuffers(dymo0);
 	});
 	
-	it("plays a parallel dymo", function(done) {
+	it("plays and stops a parallel dymo", function(done) {
 		expect(scheduler.getUrisOfPlayingDymos()).toEqual([]);
 		scheduler.play(dymo1);
 		setTimeout(function() {
 			expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1", "dymo2", "dymo3"]);
 			expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(1);
 			expect(dymo3.getParameter(AMPLITUDE).getObservers().length).toBe(1);
-			done();
-		}, 100);
-	});
-	
-	it("stops a parallel dymo", function(done) {
-		expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1", "dymo2", "dymo3"]);
-		scheduler.stop(dymo1);
-		setTimeout(function() {
-			expect(scheduler.getUrisOfPlayingDymos()).toEqual([]);
-			expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(0);
-			expect(dymo3.getParameter(AMPLITUDE).getObservers().length).toBe(0);
-			done();
+			scheduler.stop(dymo1);
+			setTimeout(function() {
+				expect(scheduler.getUrisOfPlayingDymos()).toEqual([]);
+				expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(0);
+				expect(dymo3.getParameter(AMPLITUDE).getObservers().length).toBe(0);
+				done();
+			}, 100);
 		}, 100);
 	});
 	

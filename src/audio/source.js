@@ -14,21 +14,34 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 	var allParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, DELAY, FILTER, PAN, HEIGHT, DISTANCE, LOOP];
 	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, DELAY, FILTER];
 	var positionParameters = [PAN, HEIGHT, DISTANCE];
+	
 	var source = audioContext.createBufferSource();
 	//var source = new AudioProcessorSource(audioContext, buffer, filter);
 	
 	var dryGain = audioContext.createGain();
 	dryGain.connect(audioContext.destination);
-	var reverbGain = createGain(dryGain, reverbSend);
-	var delayGain = createGain(dryGain, delaySend);
+	parameters[AMPLITUDE] = dryGain.gain;
+	var reverbGain, delayGain;
+	if (reverbSend) {
+		reverbGain = createGain(dryGain, reverbSend);
+	}
+	if (delaySend) {
+		delayGain = createGain(dryGain, delaySend);
+		parameters[DELAY] = delayGain.gain;
+	}
 	var panner = audioContext.createPanner();
 	panner.connect(dryGain);
-	//panner.connect(reverbGain);
-	var filter = audioContext.createBiquadFilter();
-	filter.type = "lowpass";
-	filter.frequency.value = 20000;
-	filter.connect(panner);
-	source.connect(filter);
+	
+	if (dymo.getParameter(FILTER)) {
+		var filter = audioContext.createBiquadFilter();
+		filter.type = "lowpass";
+		filter.frequency.value = 20000;
+		filter.connect(panner);
+		source.connect(filter);
+		parameters[FILTER] = filter.frequency;
+	} else {
+		source.connect(panner);
+	}
 	
 	var segment = dymo.getSegment();
 	var time = segment[0];
@@ -68,11 +81,7 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 		initBuffer();
 	}
 	
-	parameters[AMPLITUDE] = dryGain.gain;
 	parameters[TIME_STRETCH_RATIO] = {value:0};
-	parameters[REVERB] = reverbGain.gain;
-	parameters[DELAY] = delayGain.gain;
-	parameters[FILTER] = filter.frequency;
 	parameters[PAN] = {value:0}; //mock parameters since panner non-readable
 	parameters[HEIGHT] = {value:0};
 	parameters[DISTANCE] = {value:0};
@@ -200,7 +209,12 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 			//disconnect all nodes
 			source.disconnect();
 			dryGain.disconnect();
-			reverbGain.disconnect();
+			if (reverbGain) {
+				reverbGain.disconnect();
+			}
+			if (delayGain) {
+				delayGain.disconnect();
+			}
 			if (onEnded) {
 				onEnded(self);
 			}

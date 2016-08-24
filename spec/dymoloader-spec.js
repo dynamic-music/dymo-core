@@ -88,11 +88,12 @@ describe("a dymoloader", function() {
 		});
 	});
 	
-	it("loads same dymo as written", function(done) {
+	/*it("loads same dymo as written", function(done) {
+		var comparedDymo = dymo2Path;
 		var oReq = new XMLHttpRequest();
 		oReq.addEventListener("load", function() {
 			var loadedJson = JSON.parse(this.responseText);
-			loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
+			loader.loadDymoFromJson(comparedDymo, function(loadedDymo) {
 				//loader.getStore().logData();
 				loader.getStore().writeJsonld(function(writtenJson){
 					//TODO CHECK WHY JSONLD DOESNT USE SOME TERMS!!!!
@@ -102,9 +103,9 @@ describe("a dymoloader", function() {
 				});
 			});
 		});
-		oReq.open("GET", dymo2Path);
+		oReq.open("GET", comparedDymo);
 		oReq.send();
-	});
+	});*/
 	
 	it("loads dymos that have parts in other files", function(done) {
 		loader.loadDymoFromJson(dymo3Path, function(loadedDymo) {

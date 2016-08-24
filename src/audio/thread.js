@@ -54,6 +54,9 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			}
 			if (nextSources) {
 				nextSources.delete(dymos[i]);
+				if (nextSources.size <= 0) {
+					nextSources = undefined;
+				}
 			}
 		}
 	}
