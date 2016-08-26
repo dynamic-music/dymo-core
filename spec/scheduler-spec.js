@@ -17,6 +17,9 @@ describe("a scheduler", function() {
 		dymo1 = new DynamicMusicObject("dymo1", CONJUNCTION);
 		dymo2 = new DynamicMusicObject("dymo2");
 		dymo3 = new DynamicMusicObject("dymo3");
+		dymo1.addParameter(new Parameter(AMPLITUDE, 1));
+		dymo2.addParameter(new Parameter(AMPLITUDE, 1));
+		dymo3.addParameter(new Parameter(AMPLITUDE, 1));
 		dymo1.setBasePath(basePath);
 		dymo1.addPart(dymo2);
 		dymo1.addPart(dymo3);
@@ -24,6 +27,8 @@ describe("a scheduler", function() {
 		dymo3.setSourcePath(sourcePath2);
 		
 		dymo0 = new DynamicMusicObject("dymo0");
+		dymo0.addParameter(new Parameter(AMPLITUDE, 0));
+		dymo0.addParameter(new Parameter(LOOP, 0));
 		dymo0.setSourcePath(sourcePath3);
 		dymo0.setBasePath(basePath);
 		scheduler.loadBuffers(dymo1);
@@ -35,11 +40,13 @@ describe("a scheduler", function() {
 		scheduler.play(dymo1);
 		setTimeout(function() {
 			expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1", "dymo2", "dymo3"]);
+			expect(dymo1.getParameter(AMPLITUDE).getObservers().length).toBe(1);
 			expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(1);
 			expect(dymo3.getParameter(AMPLITUDE).getObservers().length).toBe(1);
 			scheduler.stop(dymo1);
 			setTimeout(function() {
 				expect(scheduler.getUrisOfPlayingDymos()).toEqual([]);
+				expect(dymo1.getParameter(AMPLITUDE).getObservers().length).toBe(0);
 				expect(dymo2.getParameter(AMPLITUDE).getObservers().length).toBe(0);
 				expect(dymo3.getParameter(AMPLITUDE).getObservers().length).toBe(0);
 				done();

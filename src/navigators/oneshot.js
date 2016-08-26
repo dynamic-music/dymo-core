@@ -17,7 +17,7 @@ function OneShotNavigator(dymo) {
 	this.getCurrentParts = function() {
 		if (!navigated) {
 			//only done navigating if not looping
-			if (dymo.getParameter(LOOP).getValue() != 1) {
+			if (!dymo.getParameter(LOOP) || dymo.getParameter(LOOP).getValue() != 1) {
 				navigated = true;
 			}
 			return [dymo];

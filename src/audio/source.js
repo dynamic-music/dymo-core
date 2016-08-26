@@ -1,8 +1,11 @@
 /**
  * Plays back a buffer and offers lots of changeable parameters.
  * @constructor
+ * @extends {DymoNode}
  */
-function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
+function DymoSource(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
+	
+	DymoNode.call(this, dymo, audioContext, reverbSend, delaySend);
 	
 	var self = this;
 	
@@ -10,167 +13,86 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 	
 	var startTime, endTime, currentPausePosition = 0;
 	var isPlaying, isPaused;
-	var parameters = {};
-	var allParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, DELAY, FILTER, PAN, HEIGHT, DISTANCE, LOOP];
-	var positiveParameters = [AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, REVERB, DELAY, FILTER];
-	var positionParameters = [PAN, HEIGHT, DISTANCE];
+	var duration;
 	
 	var source = audioContext.createBufferSource();
 	//var source = new AudioProcessorSource(audioContext, buffer, filter);
 	
-	var dryGain = audioContext.createGain();
-	dryGain.connect(audioContext.destination);
-	parameters[AMPLITUDE] = dryGain.gain;
-	var reverbGain, delayGain;
-	if (reverbSend) {
-		reverbGain = createGain(dryGain, reverbSend);
-	}
-	if (delaySend) {
-		delayGain = createGain(dryGain, delaySend);
-		parameters[DELAY] = delayGain.gain;
-	}
-	var panner = audioContext.createPanner();
-	panner.connect(dryGain);
+	source.connect(this.getInput());
 	
-	if (dymo.getParameter(FILTER)) {
-		var filter = audioContext.createBiquadFilter();
-		filter.type = "lowpass";
-		filter.frequency.value = 20000;
-		filter.connect(panner);
-		source.connect(filter);
-		parameters[FILTER] = filter.frequency;
-	} else {
-		source.connect(panner);
+	init();
+	
+	function init() {
+		var segment = getSegment();
+		duration = segment[1];
+		var stretchRatio = getStretchRatio();
+		source.buffer = getProcessedBuffer(segment, stretchRatio);
 	}
 	
-	var segment = dymo.getSegment();
-	var time = segment[0];
-	var duration = segment[1];
-	if (!time) {
-		time = 0;
-	}
-	if (!duration && buffer) {
-		duration = buffer.duration-time;
-	}
-	var durationRatio = dymo.getParameter(DURATION_RATIO).getValue();
-	if (0 < durationRatio && durationRatio < 1) {
-		duration *= durationRatio;
-	}
-	if (!buffer) {
-		if (!isNaN(time+duration)) {
-			requestBufferFromAudioServer(dymo.getSourcePath(), time, time+duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, function(loadedBuffer) {
-				buffer = loadedBuffer;
-				var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();
-				if (stretchRatio != 1) {
-					buffer = new AudioProcessor(audioContext).timeStretch(buffer, stretchRatio);
-					//trim it down again
-					var shouldBeDuration = duration/stretchRatio;
-					//add time for fade after source officially done
-					buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration+FADE_LENGTH, buffer));
-					duration = shouldBeDuration;
-				} else {
-					//add time for fade after source officially done
-					buffer = getSubBuffer(buffer, 0, toSamples(duration+FADE_LENGTH, buffer));
-				}
-				fadeBuffer(buffer, buffer.length);
-		
-				source.buffer = buffer;
-			});
+	function getSegment() {
+		var segment = dymo.getSegment();
+		if (!segment[0]) {
+			segment[0] = 0;
 		}
-	} else {
-		initBuffer();
-	}
-	
-	parameters[TIME_STRETCH_RATIO] = {value:0};
-	parameters[PAN] = {value:0}; //mock parameters since panner non-readable
-	parameters[HEIGHT] = {value:0};
-	parameters[DISTANCE] = {value:0};
-	parameters[LOOP] = {value:0};
-
-	initParameter(AMPLITUDE, dymo.getParameter(AMPLITUDE));
-	initParameter(TIME_STRETCH_RATIO, dymo.getParameter(TIME_STRETCH_RATIO));
-	initParameter(REVERB, dymo.getParameter(REVERB));
-	initParameter(DELAY, dymo.getParameter(DELAY));
-	initParameter(FILTER, dymo.getParameter(FILTER));
-	initParameter(PAN, dymo.getParameter(PAN));
-	initParameter(HEIGHT, dymo.getParameter(HEIGHT));
-	initParameter(DISTANCE, dymo.getParameter(DISTANCE));
-	initParameter(LOOP, dymo.getParameter(LOOP));
-	//console.log(dymo.getParameter(AMPLITUDE).getValue())
-	
-	function createGain(source, sink) {
-		var newGain = audioContext.createGain();
-		newGain.connect(sink);
-		newGain.gain.value = 0;
-		source.connect(newGain);
-		return newGain;
-	}
-	
-	function initBuffer() {
-		var stretchRatio = dymo.getParameter(TIME_STRETCH_RATIO).getValue();
-		if (stretchRatio != 1) {
-			if (time != 0 || duration < buffer.duration) {
-				//get too much cause of shitty timestretch algorithm
-				buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+SHITTY_TIMESTRETCH_BUFFER_ZONE, buffer));
+		if (!segment[1] && buffer) {
+			segment[1] = buffer.duration-segment[0];
+		}
+		if (dymo.hasParameter(DURATION_RATIO)) {
+			var durationRatio = dymo.getParameter(DURATION_RATIO).getValue();
+			if (0 < durationRatio && durationRatio < 1) {
+				segment[1] *= durationRatio;
 			}
+		}
+		return segment;
+	}
+	
+	function getStretchRatio() {
+		if (dymo.hasParameter(TIME_STRETCH_RATIO)) {
+			return dymo.getParameter(TIME_STRETCH_RATIO).getValue();
+		}
+		return 1; //TODO THIS SHOULD BE STANDARD VALUE FROM GRAPH STORE
+	}
+	
+	function getProcessedBuffer(segment, stretchRatio) {
+		var time = segment[0];
+		var duration = segment[1];
+		if (stretchRatio != 1) {
+			//get too much cause of shitty timestretch algorithm
+			duration += SHITTY_TIMESTRETCH_BUFFER_ZONE;
+		} else {
+			//add time for fade after source officially done
+			duration += FADE_LENGTH;
+		}
+		if (!buffer && !isNaN(time+duration)) {
+			//buffer doesn't exist, try to get from server
+			requestBufferFromAudioServer(dymo.getSourcePath(), time, time+duration, function(loadedBuffer) {
+				return getStretchedAndFadedBuffer(loadedBuffer, duration, stretchRatio);
+			});
+		} else {
+			//trim if buffer too long
+			if (time != 0 || duration < buffer.duration) {
+				buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration, buffer));
+			}
+			return getStretchedAndFadedBuffer(buffer, duration, stretchRatio);
+		}
+	}
+	
+	function getStretchedAndFadedBuffer(buffer, duration, stretchRatio) {
+		if (stretchRatio != 1) {
 			buffer = new AudioProcessor(audioContext).timeStretch(buffer, stretchRatio);
 			//trim it down again
 			var shouldBeDuration = duration/stretchRatio;
 			//add time for fade after source officially done
 			buffer = getSubBuffer(buffer, 0, toSamples(shouldBeDuration+FADE_LENGTH, buffer));
 			duration = shouldBeDuration;
-		} else {
-			if (time != 0 || duration < buffer.duration) {
-				//add time for fade after source officially done
-				buffer = getSubBuffer(buffer, toSamples(time, buffer), toSamples(duration+FADE_LENGTH, buffer));
-			}
 		}
 		fadeBuffer(buffer, buffer.length);
-		
-		source.buffer = buffer;
-		
-		parameters[PLAYBACK_RATE] = source.playbackRate;
-		initParameter(PLAYBACK_RATE, dymo.getParameter(PLAYBACK_RATE));
+		return buffer;
 	}
 	
-	function initParameter(name, dymoParam) {
-		setParameter(name, dymoParam.getValue());
-		dymoParam.addObserver(self);
-	}
-	
-	function removeFromObserved() {
-		for (var i = 0; i < allParameters.length; i++) {
-			var dymoParam = dymo.getParameter(allParameters[i]);
-			if (dymoParam) {
-				dymoParam.removeObserver(self);
-			}
-		}
-	}
-	
-	this.observedParameterChanged = function(param) {
-		setParameter(param.getName(), param.getChange(), true);
-	}
-	
-	/** @param {boolean=} relative (optional) */
-	function setParameter(name, value, relative) {
-		if (relative) {
-			value += self.getParameterValue(name);
-		}
-		if (value < 0 && positiveParameters.indexOf(name) >= 0) {
-			value = 0;
-		}
-		setParameterValue(name, value);
-		if (positionParameters.indexOf(name) >= 0) {
-			updatePannerPosition();
-		}/* loop now done in navigators..
-			else if (name == LOOP) {
-			source.loop = (value == 1);
-		}*/
-	}
-	
-	this.getDymo = function() {
-		return dymo;
-	}
+	this.addParameter(PLAYBACK_RATE, source.playbackRate);
+	this.addParameter(TIME_STRETCH_RATIO, {value:0});
+	this.addParameter(LOOP, {value:0});
 	
 	this.getDuration = function() {
 		return duration;
@@ -180,41 +102,12 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 		return source.loop && isPlaying;
 	}
 	
-	this.getParameterValue = function(name) {
-		if (parameters[name]) {
-			if (parameters[name].value || parameters[name].value == 0) {
-				return parameters[name].value;
-			} else {
-				return parameters[name].getValue();
-			}
-		}
-	}
-	
-	function setParameterValue(name, value) {
-		if (parameters[name]) {
-			if (parameters[name].value || parameters[name].value == 0) {
-				parameters[name].value = value;
-			} else {
-				parameters[name].setValue(value);
-			}
-		}
-	}
-	
 	/** @param {number=} startTime (optional) */
 	this.play = function(startTime) {
 		source.onended = function() {
-			removeFromObserved();
-			//overwrite buffer just to make sure memory gets cleared!
-			//source.buffer = audioContext.createBuffer(buffer.numberOfChannels, 1, buffer.sampleRate);
 			//disconnect all nodes
 			source.disconnect();
-			dryGain.disconnect();
-			if (reverbGain) {
-				reverbGain.disconnect();
-			}
-			if (delayGain) {
-				delayGain.disconnect();
-			}
+			self.removeAndDisconnect();
 			if (onEnded) {
 				onEnded(self);
 			}
@@ -249,16 +142,9 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 	function stopAndRemoveAudioSources() {
 		isPlaying = false;
 		var now = audioContext.currentTime;
-		parameters[AMPLITUDE].setValueAtTime(parameters[AMPLITUDE].value, now);
-		parameters[AMPLITUDE].linearRampToValueAtTime(0, now+FADE_LENGTH);
+		self.parameters[AMPLITUDE].setValueAtTime(self.parameters[AMPLITUDE].value, now);
+		self.parameters[AMPLITUDE].linearRampToValueAtTime(0, now+FADE_LENGTH);
 		source.stop(now+2*FADE_LENGTH);
-	}
-	
-	function updatePannerPosition() {
-		if (parameters[DISTANCE].value == 0) {
-			parameters[DISTANCE].value = -0.01; //for chrome :( source not audible at z = 0
-		}
-		panner.setPosition(parameters[PAN].value, parameters[HEIGHT].value, parameters[DISTANCE].value);
 	}
 	
 	function toSamples(seconds, buffer) {
@@ -319,3 +205,4 @@ function Source(dymo, audioContext, buffer, reverbSend, delaySend, onEnded) {
 	}
 	
 }
+inheritPrototype(DymoSource, DymoNode);

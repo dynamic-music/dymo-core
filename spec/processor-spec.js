@@ -13,6 +13,7 @@ describe("a processor", function() {
 			done();
 		});
 		dymo1 = new DynamicMusicObject("dymo1");
+		dymo1.addParameter(new Parameter(TIME_STRETCH_RATIO, 1));
 		dymo1.setBasePath(basePath);
 		dymo1.setSourcePath(sourcePath1);
 		scheduler.loadBuffers(dymo1);

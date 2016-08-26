@@ -26,6 +26,7 @@ function Mapping(domainDims, relative, functionJson, targets, parameterName, dym
 	this.init();
 }
 
+/** @private */
 Mapping.prototype.init = function() {
 	if (!this.functionJson) {
 		this.functionJson = FunctionTools.IDENTITY_JSON; //make identity in standard case
@@ -51,6 +52,12 @@ Mapping.prototype.setTargets = function(newTargets) {
 	this.targetParameters = [];
 	for (var i = 0, ii = this.targets.length; i < ii; i++) {
 		this.targetParameters[i] = this.targets[i].getParameter(this.parameterName);
+		if (!this.targetParameters[i]) {
+			//TODO SHOULD ALL PARAMETERS BE CREATED HERE INSTEAD OF IN DYMOLOADER?
+			//TODO GET THE STANDARD VALUE FROM STORE!!
+			this.targetParameters[i] = new Parameter(this.parameterName);
+			this.targets[i].addParameter(this.targetParameters[i]);
+		}
 		this.targetParameters[i].addUpdater(this);
 	}
 }

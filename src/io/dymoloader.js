@@ -107,6 +107,7 @@ function DymoLoader(scheduler, callback) {
 		}
 	}
 	
+	
 	function createDymoFromStore() {
 		//first create all dymos and save references in map
 		var topDymoUri = findTopDymos()[0];
@@ -119,8 +120,8 @@ function DymoLoader(scheduler, callback) {
 	//returns an array with all uris of dymos that do not have parents
 	function findTopDymos() {
 		var allPartTriples = store.find(null, HAS_PART, null);
-		var allParents = Array.from(new Set(allPartTriples.map(function(t){return t.subject;})), x => x);
-		var allParts = Array.from(new Set(allPartTriples.map(function(t){return t.object;})), x => x);
+		var allParents = Array.from(new Set(allPartTriples.map(function(t){return t.subject;})), function(x){return x;});
+		var allParts = Array.from(new Set(allPartTriples.map(function(t){return t.object;})), function(x){return x;});
 		return allParents.filter(function(p) { return allParts.indexOf(p) < 0 });
 	}
 	
@@ -262,7 +263,7 @@ function DymoLoader(scheduler, callback) {
 			} else if (currentType == PARAMETER_TYPE || store.isSubclassOf(currentType, PARAMETER_TYPE)) {
 				var currentParameter;
 				if (dymo) {
-					currentParameter = addOrUpdateDymoParameter(dymo, currentName, 0);
+					currentParameter = addOrUpdateDymoParameter(dymo, currentName);
 				} else {
 					currentParameter = new Parameter(currentName, 0);
 				}
@@ -274,13 +275,27 @@ function DymoLoader(scheduler, callback) {
 		}
 		var [args, body] = findArgsAndBody(store.findFirstObjectUri(mappingUri, HAS_FUNCTION));
 		var range = store.findFirstObjectUri(mappingUri, HAS_RANGE);
+		//add necessary parameters to targets if they are dymos
+		for (var i = 0; i < targets.length; i++) {
+			if (targets[i] instanceof DynamicMusicObject && !targets[i].getParameter(range)) {
+				addOrUpdateDymoParameter(targets[i], range);
+			}
+		}
 		return new Mapping(domainDims, isRelative, {"args":args,"body":body}, targets, range, dymoConstraint);
 	}
 	
+	/** @param {number=} value (optional) */
 	function addOrUpdateDymoParameter(dymo, name, value) {
 		var currentParameter = dymo.getParameter(name);
 		if (!currentParameter) {
-			currentParameter = new Parameter(name, value);
+			if (isNaN(value)) {
+				value = store.findFirstObjectValue(name, HAS_STANDARD_VALUE, null);
+				if (isNaN(value)) {
+					value = 0;
+				}
+			}
+			var isInteger = store.findFirstObjectValue(name, IS_INTEGER, null);
+			currentParameter = new Parameter(name, value, isInteger);
 			dymo.addParameter(currentParameter);
 		} else {
 			currentParameter.update(value);

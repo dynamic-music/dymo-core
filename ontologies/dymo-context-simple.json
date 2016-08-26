@@ -30,6 +30,8 @@
 		"duration": "dy:DurationFeature",
 		"CustomFeature": "dy:CustomFeature",
 		"AudioParameter": "dy:AudioParameter",
+		"hasStandardValue": "dy:hasStandardValue",
+		"isInteger": "dy:isInteger",
 		"Play": "dy:Play",
 		"Loop": "dy:Loop",
 		"Onset": "dy:Onset",

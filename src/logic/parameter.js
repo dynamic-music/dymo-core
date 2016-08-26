@@ -1,5 +1,6 @@
 /**
  * A parameter that has updaters and observers.
+ * @param {number=} initialValue (optional)
  * @param {boolean=} isInteger (optional)
  * @constructor
  */

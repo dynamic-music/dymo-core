@@ -18,9 +18,9 @@ function DynamicMusicObject(uri, type, scheduler) {
 	var sourcePath;
 	var skipProportionAdjustment = false;
 	var previousIndex = null;
-	initFeaturesAndParameters();
+	//initFeaturesAndParameters();
 	
-	function initFeaturesAndParameters() {
+	/*function initFeaturesAndParameters() {
 		parameters[PLAY] = new Parameter(PLAY, 0, true);
 		parameters[LOOP] = new Parameter(LOOP, 0, true);
 		parameters[ONSET] = new Parameter(ONSET, undefined);
@@ -37,7 +37,7 @@ function DynamicMusicObject(uri, type, scheduler) {
 		parameters[PART_COUNT] = new Parameter(PART_COUNT, Number.POSITIVE_INFINITY, true);
 		parameters[PLAY].addObserver(self);
 		parameters[PART_COUNT].addObserver(self);
-	}
+	}*/
 	
 	this.setType = function(t) {
 		type = t;
@@ -53,20 +53,23 @@ function DynamicMusicObject(uri, type, scheduler) {
 	
 	this.setParent = function(dymo) {
 		parent = dymo;
+		/* PARAMETER MAPPINGS NO LONGER EXIST
 		for (var type in parameters) {
 			if (type != PLAY && type != PART_COUNT) {
 				//create standard relative mappings to child parameters
-				parentMappings.push(new Mapping([dymo.getParameter(type)], true, undefined, [this], type));
+				if (dymo.getParameter(type)) { //TODO THINK ABOUT THIS
+					parentMappings.push(new Mapping([dymo.getParameter(type)], true, undefined, [this], type));
+				}
 			}
-		}
-		//add all appropriate subdymos to the parent's mappings
+		}*/
+		//add all subdymos that fulfill the parent's mappings' constraints
 		var additionalMappings = parent.getMappings();
-		var dymoMap = this.getDymoMap();
-		dymoMap = Object.keys(dymoMap).map(function(key) { return dymoMap[key]; });
+		var dymosInSubtree = this.getMapOfDymosInSubtree();
+		dymosInSubtree = Object.keys(dymosInSubtree).map(function(key) { return dymosInSubtree[key]; });
 		for (var i = 0; i < additionalMappings.length; i++) {
 			var dymoConstraint = additionalMappings[i].getDymoConstraint();
 			if (dymoConstraint) {
-				var newTargets = additionalMappings[i].getTargets().concat(dymoMap.filter(dymoConstraint));
+				var newTargets = additionalMappings[i].getTargets().concat(dymosInSubtree.filter(dymoConstraint));
 				additionalMappings[i].setTargets(newTargets);
 			}
 		}
@@ -104,16 +107,16 @@ function DynamicMusicObject(uri, type, scheduler) {
 		return false;
 	}
 	
-	this.getDymoMap = function() {
+	this.getMapOfDymosInSubtree = function() {
 		var dymoMap = {};
-		recursiveAddToDymoMap(this, dymoMap);
+		recursiveAddToSubtreeMap(this, dymoMap);
 		return dymoMap;
 	}
 	
-	function recursiveAddToDymoMap(dymo, dymoMap) {
+	function recursiveAddToSubtreeMap(dymo, dymoMap) {
 		dymoMap[dymo.getUri()] = dymo;
 		for (var i = 0; i < dymo.getParts().length; i++) {
-			recursiveAddToDymoMap(dymo.getParts()[i], dymoMap);
+			recursiveAddToSubtreeMap(dymo.getParts()[i], dymoMap);
 		}
 	}
 	
@@ -299,6 +302,10 @@ function DynamicMusicObject(uri, type, scheduler) {
 		return parameters[parameterName];
 	}
 	
+	this.hasParameter = function(name) {
+		return name in parameters;
+	}
+	
 	this.addMapping = function(mapping) {
 		mappings.push(mapping);
 	}
@@ -319,7 +326,7 @@ function DynamicMusicObject(uri, type, scheduler) {
 			parts.sort(function(p,q) {
 				return p.getFeature(featureOrParameterName) - q.getFeature(featureOrParameterName);
 			});
-		} else if (parts) {
+		} else if (parts && parts[0] && parts[0].hasParameter(featureOrParameterName)) {
 			parts.sort(function(p,q) {
 				return p.getParameter(featureOrParameterName).getValue() - q.getParameter(featureOrParameterName).getValue();
 			});

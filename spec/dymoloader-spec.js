@@ -24,15 +24,6 @@ describe("a dymoloader", function() {
 	});
 	
 	it("loads a dymo from json", function(done) {
-		/*scheduler = new Scheduler(audioContext, function(num) {
-			/*setTimeout(function() {
-				scheduler.play(dymo);
-				//expect(scheduler.urisOfPlayingDmos).toEqual(["dymo1"]);
-				scheduler.stop(dymo);
-				done();
-			}, 2000);
-		});
-		scheduler.setReverbFile(reverbPath);*/
 		loader.loadDymoFromJson(dymoPath, function(loadedDymo) {
 			dymo = loadedDymo[0];
 			scheduler.loadBuffers(dymo);
@@ -40,7 +31,8 @@ describe("a dymoloader", function() {
 			expect(dymo.getUri()).toEqual(CONTEXT_URI+"dymo0");
 			//test if initial parameter value loaded correctly
 			expect(dymoMap[CONTEXT_URI+"dymo4"].getParameter(AMPLITUDE).getValue()).toEqual(0.5);
-			expect(dymoMap[CONTEXT_URI+"dymo76"].getParameter(AMPLITUDE).getValue()).toEqual(1);
+			expect(dymoMap[CONTEXT_URI+"dymo76"].getParameter(AMPLITUDE)).toBeUndefined();
+			//expect(dymoMap[CONTEXT_URI+"dymo76"].getParameter(AMPLITUDE).getValue()).toEqual(1);
 			expect(dymo.getParts().length).toBe(330);
 			expect(Object.keys(dymoMap).length).toBe(331);
 			done();

@@ -85,19 +85,21 @@ function createDymoOntology(path) {
 	addClass("CustomFeature", "FeatureType");
 	//audio parameters
 	addClass("AudioParameter", "ParameterType");
-	addIndividual("Play", "AudioParameter");
-	addIndividual("Loop", "AudioParameter");
+	addProperty("hasStandardValue", "ParameterType", prefixes["xsd"]+"float", true);
+	addProperty("isInteger", "ParameterType", prefixes["xsd"]+"boolean", true);
+	addIndividual("Play", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
+	addIndividual("Loop", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
 	addIndividual("Onset", "AudioParameter");
-	addIndividual("DurationRatio", "AudioParameter");
-	addIndividual("Amplitude", "AudioParameter");
-	addIndividual("PlaybackRate", "AudioParameter");
-	addIndividual("TimeStretchRatio", "AudioParameter");
-	addIndividual("Pan", "AudioParameter");
-	addIndividual("Distance", "AudioParameter");
-	addIndividual("Height", "AudioParameter");
-	addIndividual("Reverb", "AudioParameter");
-	addIndividual("Delay", "AudioParameter");
-	addIndividual("Filter", "AudioParameter");
+	addIndividual("DurationRatio", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("Amplitude", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("PlaybackRate", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("TimeStretchRatio", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("Pan", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Distance", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Height", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Reverb", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Delay", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Filter", "AudioParameter", {"hasStandardValue": 0});
 	//structural parameters
 	addClass("StructuralParameter", "ParameterType");
 	addIndividual("PartCount", "StructuralParameter");
@@ -177,7 +179,7 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"body", iri:"hasBody"}, "Function", prefixes["xsd"]+"string", false);
 	addProperty({term:"targets", iri:"toTarget", type: "@id"}, "Mapping", "MappingTarget", true);
 	addProperty({term:"range", iri:"hasRange", type: "@vocab"}, "Mapping", "MappingRange", true);
-	addProperty({term:"relative", iri:"isRelative", type: "xsd:boolean"}, "Mapping", prefixes["xsd"]+":boolean", false);
+	addProperty({term:"relative", iri:"isRelative", type: "xsd:boolean"}, "Mapping", prefixes["xsd"]+"boolean", false);
 	//control properties
 	addProperty({term:"init", iri:"hasInitialValue", type: "xsd:float"}, "MobileControl", prefixes["xsd"]+"float", false);
 	addProperty({term:"smooth", iri:"isSmooth", type: "xsd:boolean"}, "SensorControl", prefixes["xsd"]+"boolean", false);
@@ -232,11 +234,18 @@ function addProperty(definition, domain, range, isObjectProperty, isFunctional, 
 	addComment(fullName, comment);
 }
 
-function addIndividual(name, type, comment) {
+function addIndividual(name, type, properties, comment) {
 	var fullName = addToTermsContextAndGlobals(name);
 	type = getFromTerms(type);
 	addTriple(fullName, rdfType, type);
+	for (var p in properties) {
+		setProperty(fullName, p, properties[p]);
+	}
 	addComment(fullName, comment);
+}
+
+function setProperty(subject, property, value) {
+	addTriple(subject, getFromTerms(property), value);
 }
 
 function addComment(name, comment) {

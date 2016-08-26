@@ -4,8 +4,10 @@ describe("a mapping", function() {
 	var control = new Control("control1", SLIDER);
 	var dymo1 = new DynamicMusicObject("dymo1");
 	dymo1.setFeature(ONSET_FEATURE, 5);
+	dymo1.addParameter(new Parameter(AMPLITUDE, 1));
 	var dymo2 = new DynamicMusicObject("dymo2");
 	dymo2.setFeature(ONSET_FEATURE, 3);
+	dymo2.addParameter(new Parameter(AMPLITUDE, 1));
 	var mapping = new Mapping([control, ONSET_FEATURE], undefined, {args:["a", "b"], body:"return a * b;"}, [dymo1, dymo2], AMPLITUDE);
 	
 	it("updates a dymo parameter", function() {
@@ -36,6 +38,7 @@ describe("a mapping", function() {
 		expect(control.getValue()).toBe(0.1); //doesn't update
 		//currently invertible function
 		var dymo3 = new DynamicMusicObject("dymo3");
+		dymo3.addParameter(new Parameter(AMPLITUDE, 1));
 		var mapping = new Mapping([control, ONSET_FEATURE], undefined, {args:["a", "b"], body:"return 5*a-1;"}, [dymo3], AMPLITUDE);
 		expect(dymo3.getParameter(AMPLITUDE).getValue()).toBe(-0.5);
 		control.update(0.3);
