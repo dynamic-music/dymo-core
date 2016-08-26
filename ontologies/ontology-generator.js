@@ -248,9 +248,9 @@ function setProperty(subject, property, value) {
 	addTriple(subject, getFromTerms(property), value);
 }
 
-function addComment(name, comment) {
+function addComment(subject, comment) {
 	if (comment) {
-		addTriple(prefixes[currentBase]+name, prefixes["rdfs"]+"comment", '"'+comment+'"');
+		addTriple(subject, prefixes["rdfs"]+"comment", '"'+comment+'"');
 	}
 }
 
