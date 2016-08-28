@@ -43,32 +43,32 @@ dy:isInteger a owl:ObjectProperty;
     rdfs:domain dy:ParameterType;
     rdfs:range xsd:boolean.
 dy:Play a dy:AudioParameter;
-    dy:hasStandardValue <0>;
-    dy:isInteger <true>.
+    dy:hasStandardValue "0"^^xsd:float;
+    dy:isInteger "true"^^xsd:boolean.
 dy:Loop a dy:AudioParameter;
-    dy:hasStandardValue <0>;
-    dy:isInteger <true>.
+    dy:hasStandardValue "0"^^xsd:float;
+    dy:isInteger "true"^^xsd:boolean.
 dy:Onset a dy:AudioParameter.
 dy:DurationRatio a dy:AudioParameter;
-    dy:hasStandardValue <1>.
+    dy:hasStandardValue "1"^^xsd:float.
 dy:Amplitude a dy:AudioParameter;
-    dy:hasStandardValue <1>.
+    dy:hasStandardValue "1"^^xsd:float.
 dy:PlaybackRate a dy:AudioParameter;
-    dy:hasStandardValue <1>.
+    dy:hasStandardValue "1"^^xsd:float.
 dy:TimeStretchRatio a dy:AudioParameter;
-    dy:hasStandardValue <1>.
+    dy:hasStandardValue "1"^^xsd:float.
 dy:Pan a dy:AudioParameter;
-    dy:hasStandardValue <0>.
+    dy:hasStandardValue "0"^^xsd:float.
 dy:Distance a dy:AudioParameter;
-    dy:hasStandardValue <0>.
+    dy:hasStandardValue "0"^^xsd:float.
 dy:Height a dy:AudioParameter;
-    dy:hasStandardValue <0>.
+    dy:hasStandardValue "0"^^xsd:float.
 dy:Reverb a dy:AudioParameter;
-    dy:hasStandardValue <0>.
+    dy:hasStandardValue "0"^^xsd:float.
 dy:Delay a dy:AudioParameter;
-    dy:hasStandardValue <0>.
+    dy:hasStandardValue "0"^^xsd:float.
 dy:Filter a dy:AudioParameter;
-    dy:hasStandardValue <0>.
+    dy:hasStandardValue "0"^^xsd:float.
 dy:StructuralParameter a owl:Class;
     rdfs:subClassOf dy:ParameterType.
 dy:PartCount a dy:StructuralParameter.
