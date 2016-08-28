@@ -80,7 +80,7 @@ DymoNode.prototype.setParameter = function(name, value) {
 				this.parameters[name].setValue(value);
 			}
 		}
-		if (this.POSITION_PARAMS.indexOf(name) >= 0) {
+		if (this.POSITION_PARAMS.indexOf(name) >= 0 && this.parameters[PAN] && this.parameters[HEIGHT] && this.parameters[DISTANCE]) {
 			if (this.parameters[DISTANCE].value == 0) {
 				this.parameters[DISTANCE].value = -0.01; //for chrome :( source not audible at z = 0
 			}

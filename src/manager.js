@@ -5,7 +5,7 @@
  */
 function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 	
-	var scheduler = new Scheduler(audioContext, function(){});
+	var scheduler = new Scheduler(audioContext);
 	if (!isNaN(scheduleAheadTime)) {
 		SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	}

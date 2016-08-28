@@ -87,19 +87,19 @@ function createDymoOntology(path) {
 	addClass("AudioParameter", "ParameterType");
 	addProperty("hasStandardValue", "ParameterType", prefixes["xsd"]+"float", true);
 	addProperty("isInteger", "ParameterType", prefixes["xsd"]+"boolean", true);
-	addIndividual("Play", "AudioParameter", {"hasStandardValue": xsdFloat(0), "isInteger": xsdBool(true)});
-	addIndividual("Loop", "AudioParameter", {"hasStandardValue": xsdFloat(0), "isInteger": xsdBool(true)});
+	addIndividual("Play", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
+	addIndividual("Loop", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
 	addIndividual("Onset", "AudioParameter");
-	addIndividual("DurationRatio", "AudioParameter", {"hasStandardValue": xsdFloat(1)});
-	addIndividual("Amplitude", "AudioParameter", {"hasStandardValue": xsdFloat(1)});
-	addIndividual("PlaybackRate", "AudioParameter", {"hasStandardValue": xsdFloat(1)});
-	addIndividual("TimeStretchRatio", "AudioParameter", {"hasStandardValue": xsdFloat(1)});
-	addIndividual("Pan", "AudioParameter", {"hasStandardValue": xsdFloat(0)});
-	addIndividual("Distance", "AudioParameter", {"hasStandardValue": xsdFloat(0)});
-	addIndividual("Height", "AudioParameter", {"hasStandardValue": xsdFloat(0)});
-	addIndividual("Reverb", "AudioParameter", {"hasStandardValue": xsdFloat(0)});
-	addIndividual("Delay", "AudioParameter", {"hasStandardValue": xsdFloat(0)});
-	addIndividual("Filter", "AudioParameter", {"hasStandardValue": xsdFloat(0)});
+	addIndividual("DurationRatio", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("Amplitude", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("PlaybackRate", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("TimeStretchRatio", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("Pan", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Distance", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Height", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Reverb", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Delay", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Filter", "AudioParameter", {"hasStandardValue": 0});
 	//structural parameters
 	addClass("StructuralParameter", "ParameterType");
 	addIndividual("PartCount", "StructuralParameter");
@@ -239,7 +239,7 @@ function addIndividual(name, type, properties, comment) {
 	type = getFromTerms(type);
 	addTriple(fullName, rdfType, type);
 	for (var p in properties) {
-		setProperty(fullName, p, properties[p]);
+		setProperty(fullName, p, N3.Util.createLiteral(properties[p]));
 	}
 	addComment(fullName, comment);
 }
@@ -301,14 +301,6 @@ function toUpperCaseWithUnderscores(string) {
 	string = string[0].toLowerCase() + string.substr(1);
 	string = string.replace(/[A-Z]/g, function(m){ return '_' + m;});
 	return string.toUpperCase();
-}
-
-function xsdFloat(float) {
-	return '"'+float.toString()+'"^^'+prefixes["xsd"]+'float';
-}
-
-function xsdBool(bool) {
-	return '"'+bool.toString()+'"^^'+prefixes["xsd"]+'boolean';
 }
 
 function writeN3ToFile(path) {

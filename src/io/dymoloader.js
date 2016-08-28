@@ -146,7 +146,7 @@ function DymoLoader(scheduler, callback) {
 		dymo.setSourcePath(store.findFirstObjectValue(currentDymoUri, HAS_SOURCE));
 		var features = store.findAllObjectUris(currentDymoUri, HAS_FEATURE);
 		for (var i = 0; i < features.length; i++) {
-			dymo.setFeature(features[i], store.findFirstObjectUri(features[i], VALUE));
+			dymo.setFeature(features[i], store.findFirstObjectValue(features[i], VALUE));
 		}
 		var parameters = store.findAllObjectUris(currentDymoUri, HAS_PARAMETER);
 		for (var i = 0; i < parameters.length; i++) {
@@ -209,10 +209,6 @@ function DymoLoader(scheduler, callback) {
 				if (store.isSubclassOf(currentType, MOBILE_CONTROL)) {
 					if (!controls[domainDimUris[j]]) {
 						var control = getControl(domainDimUris[j], currentName, currentType);
-						var value = Number(store.findFirstObjectUri(domainDimUris[j], VALUE));
-						if (!isNaN(value)) {
-							control.update(value);
-						}
 						controls[domainDimUris[j]] = control;
 					}
 				}
@@ -344,6 +340,8 @@ function DymoLoader(scheduler, callback) {
 			control = new BeaconControl(uuid, major, minor);
 		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM_CONTROL) {
 			control = new Control(name, type);
+			var init = store.findFirstObjectValue(id, HAS_INITIAL_VALUE);
+			control.update(init);
 		} else if (type == RANDOM) {
 			control = new RandomControl();
 		} else if (type == BROWNIAN) {
@@ -355,10 +353,10 @@ function DymoLoader(scheduler, callback) {
 			control = new RampControl(milisDuration, init);
 		}
 		//TODO implement in better way (only works for sensor controls)
-		if (store.findFirstObjectUri(id, IS_SMOOTH) && control.setSmooth) {
+		if (store.findFirstObjectValue(id, IS_SMOOTH) && control.setSmooth) {
 			control.setSmooth(true);
 		}
-		var average = Number(store.findFirstObjectUri(id, IS_AVERAGE_OF));
+		var average = store.findFirstObjectValue(id, IS_AVERAGE_OF);
 		if (!isNaN(average) && control.setAverageOf) {
 			control.setAverageOf(average);
 		}

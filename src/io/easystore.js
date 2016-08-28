@@ -63,7 +63,8 @@ function EasyStore() {
 		var object = this.findFirstObjectUri(subject, predicate);
 		if (object) {
 			var value = N3.Util.getLiteralValue(object);
-			if (N3.Util.getLiteralType(object) != "http://www.w3.org/2001/XMLSchema#string") {
+			var type = N3.Util.getLiteralType(object);
+			if (type != "http://www.w3.org/2001/XMLSchema#string") {
 				value = Number(value);
 			}
 			return value;

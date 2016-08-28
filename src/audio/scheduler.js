@@ -3,7 +3,7 @@
  * @constructor
  * @param {Function=} onPlaybackChange (optional)
  */
-function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
+function Scheduler(audioContext, onPlaybackChange) {
 	
 	var self = this;
 	
@@ -17,6 +17,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	
 	var convolverSend, delaySend;
 	var numCurrentlyLoading = 0;
+	var onAllBuffersLoaded;
 	
 	this.initEffectSends = function(store, reverbFile) {
 		if (store.find(null, null, REVERB).length > 0) {
@@ -24,7 +25,7 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 			convolverSend.connect(audioContext.destination);
 			loadAudio(reverbFile, function(buffer) {
 				convolverSend.buffer = buffer;
-				sourceReady();
+				bufferLoaded();
 			});
 		}
 		if (store.find(null, null, DELAY).length > 0) {
@@ -39,13 +40,14 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 	}
 	
 	this.loadBuffers = function(dymo, callback) {
+		onAllBuffersLoaded = callback;
 		var allPaths = dymo.getAllSourcePaths();
 		for (var i = 0, ii = allPaths.length; i < ii; i++) {
 			//only add if not there yet..
 			if (!buffers[allPaths[i]]) {
 				loadAudio(allPaths[i], function(buffer, path) {
 					buffers[path] = buffer;
-					sourceReady(callback);
+					bufferLoaded();
 				});
 			}
 		}
@@ -55,17 +57,13 @@ function Scheduler(audioContext, onSourcesChange, onPlaybackChange) {
 		return buffers[dymo.getSourcePath()];
 	}
 	
-	/** @param {Function=} callback (optional) */
-	function sourceReady(callback) {
+	function bufferLoaded() {
 		if (numCurrentlyLoading > 0) {
 			numCurrentlyLoading--;
 		}
 		if (numCurrentlyLoading == 0) {
-			if (onSourcesChange) {
-				onSourcesChange(numCurrentlyLoading);
-			}
-			if (callback) {
-				callback();
+			if (onAllBuffersLoaded) {
+				onAllBuffersLoaded();
 			}
 		}
 	}
