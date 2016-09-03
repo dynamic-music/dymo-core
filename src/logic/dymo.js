@@ -291,7 +291,7 @@ function DynamicMusicObject(uri, type, scheduler) {
 	}
 	
 	this.getSegment = function() {
-		return [this.getFeature("time"), this.getFeature("duration")];
+		return [this.getFeature(TIME_FEATURE), this.getFeature(DURATION_FEATURE)];
 	}
 	
 	this.addParameter = function(parameter) {

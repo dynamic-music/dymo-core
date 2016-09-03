@@ -28,6 +28,8 @@
 		"index": "dy:IndexFeature",
 		"onset": "dy:OnsetFeature",
 		"duration": "dy:DurationFeature",
+		"time": "dy:TimeFeature",
+		"segmentLabel": "dy:SegmentLabelFeature",
 		"CustomFeature": "dy:CustomFeature",
 		"AudioParameter": "dy:AudioParameter",
 		"hasStandardValue": "dy:hasStandardValue",

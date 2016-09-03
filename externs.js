@@ -7,6 +7,8 @@ math.expression.node.OperatorNode = function(p1,p2,p3){};
 /** @constructor */
 math.expression.node.SymbolNode = function(p1){};
 
+var async;
+
 var $scope;
 $scope.prototype.$apply;
 var N3;

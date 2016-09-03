@@ -4,7 +4,7 @@
  */
 function DymoLoader(scheduler, callback) {
 	
-	var store = new EasyStore();
+	var store = new DymoStore();
 	var dymoBasePath = '';
 	var controls = {}, dymos = {}; //dicts with all the objects created
 	
@@ -110,32 +110,11 @@ function DymoLoader(scheduler, callback) {
 	
 	function createDymoFromStore() {
 		//first create all dymos and save references in map
-		var topDymoUri = findTopDymos()[0];
+		var topDymoUri = store.findTopDymos()[0];
 		var topDymo = recursiveCreateDymoAndParts(topDymoUri);
 		//then add similarity relations
 		recursiveAddMappingsAndSimilars(topDymoUri);
 		return [topDymo, dymos];
-	}
-	
-	//returns an array with all uris of dymos that do not have parents
-	function findTopDymos() {
-		var allPartTriples = store.find(null, HAS_PART, null);
-		var allParents = Array.from(new Set(allPartTriples.map(function(t){return t.subject;})), function(x){return x;});
-		var allParts = Array.from(new Set(allPartTriples.map(function(t){return t.object;})), function(x){return x;});
-		return allParents.filter(function(p) { return allParts.indexOf(p) < 0 });
-	}
-	
-	function findFunction(uri) {
-		var [args, body] = findArgsAndBody(uri);
-		if (args && body) {
-			return Function.apply(null, args.concat(body));
-		}
-	}
-	
-	function findArgsAndBody(uri) {
-		var args = store.findAllObjectValues(uri, HAS_ARGUMENT);
-		var body = store.findFirstObjectValue(uri, HAS_BODY);
-		return [args, body];
 	}
 	
 	function recursiveCreateDymoAndParts(currentDymoUri) {
@@ -191,7 +170,7 @@ function DymoLoader(scheduler, callback) {
 		var navigator = store.findFirstObjectUri(renderingUri, HAS_NAVIGATOR);
 		if (navigator) {
 			var dymosFunction = store.findFirstObjectUri(navigator, TO_DYMO);
-			dymosFunction = findFunction(dymosFunction);
+			dymosFunction = store.findFunction(dymosFunction);
 			rendering.addNavigator(getNavigator(store.findFirstObjectUri(navigator, TYPE)), dymosFunction);
 		}
 		return [rendering, controls];
@@ -221,7 +200,7 @@ function DymoLoader(scheduler, callback) {
 		var targetUris = store.findAllObjectUris(mappingUri, TO_TARGET);
 		if (targetUris.length > 0) {
 			var targets = [];
-			var constraintFunction = findFunction(targetUris[0]);
+			var constraintFunction = store.findFunction(targetUris[0]);
 			if (constraintFunction) {
 				var allDymos = Object.keys(dymos).map(function(key) { return dymos[key]; });
 				Array.prototype.push.apply(targets, allDymos.filter(constraintFunction));
@@ -269,7 +248,7 @@ function DymoLoader(scheduler, callback) {
 				domainDims.push(controls[domainDimUris[j]]);
 			}
 		}
-		var [args, body] = findArgsAndBody(store.findFirstObjectUri(mappingUri, HAS_FUNCTION));
+		var [args, body] = store.findArgsAndBody(store.findFirstObjectUri(mappingUri, HAS_FUNCTION));
 		var range = store.findFirstObjectUri(mappingUri, HAS_RANGE);
 		//add necessary parameters to targets if they are dymos
 		for (var i = 0; i < targets.length; i++) {

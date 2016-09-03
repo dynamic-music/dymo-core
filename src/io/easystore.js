@@ -6,6 +6,14 @@ function EasyStore() {
 	
 	var store = N3.Store();
 	
+	this.addTriple = function(subject, predicate, object) {
+		return store.addTriple(subject, predicate, object);
+	}
+	
+	this.createBlankNode = function() {
+		return store.createBlankNode();
+	}
+	
 	this.loadData = function(data, isJsonld, callback) {
 		jsonldToNquads(data, isJsonld, function(nquads) {
 			N3.Parser().parse(nquads, function (error, triple, prefixes) {
@@ -30,12 +38,8 @@ function EasyStore() {
 		}
 	}
 	
-	this.logData = function() {
-		var rows = store.find(null).map(function(t){return t.subject +"\n" + t.predicate + "\n" + t.object});
-		for (var i in rows) {
-			console.log(rows[i]);
-		}
-	}
+	
+	///////// QUERY FUNCTIONS //////////
 	
 	//calls regular store.find function
 	this.find = function(subject, predicate, object) {
@@ -45,6 +49,9 @@ function EasyStore() {
 	//returns the uri of the object of the first result found in the store
 	this.findFirstObjectUri = function(subject, predicate) {
 		var results = store.find(subject, predicate, null);
+		if (predicate == HAS_FEATURE) {
+			console.log(results)
+		}
 		if (results.length > 0) {
 			return results[0].object;
 		}
@@ -81,6 +88,22 @@ function EasyStore() {
 		return this.findAllObjectUris(subject, predicate).map(function(a){return N3.Util.getLiteralValue(a);});
 	}
 	
+	//return all triples about the given uri and the respective 
+	this.recursiveFindAllTriplesExcept = function(uri, type) {
+		//find all triples for given uri
+		var triples = store.find(uri, null, null);
+		var subTriples = [];
+		for (var i = triples.length-1; i >= 0; i--) {
+			//remove all triples whose object is of the given type
+			if (store.find(triples[i].object, TYPE, type).length > 0) {
+				triples.splice(i, 1);
+			} else {
+				subTriples = subTriples.concat(this.recursiveFindAllTriplesExcept(triples[i].object, type));
+			}
+		}
+		return triples.concat(subTriples);
+	}
+	
 	this.isSubclassOf = function(class1, class2) {
 		var superClass = this.findFirstObjectUri(class1, RDFS_URI+"subClassOf");
 		while (superClass) {
@@ -91,6 +114,31 @@ function EasyStore() {
 			superClass = this.findFirstObjectUri(superClass, RDFS_URI+"subClassOf");
 		}
 		return false;
+	}
+	
+	
+	///////// WRITING FUNCTIONS //////////
+	
+	this.toRdf = function(callback) {
+		var allTriples = store.find(null, null, null);
+		this.triplesToRdf(allTriples, callback);
+	}
+	
+	this.triplesToRdf = function(triples, callback) {
+		var writer = N3.Writer({ format: 'application/nquads' });
+		for (var i = 0; i < triples.length; i++) {
+			writer.addTriple(triples[i]);
+		}
+		writer.end(function(err, rdf) {
+			callback(rdf);
+		});
+	}
+	
+	this.logData = function() {
+		var rows = store.find(null).map(function(t){return t.subject +"\n" + t.predicate + "\n" + t.object});
+		for (var i in rows) {
+			console.log(rows[i]);
+		}
 	}
 
 }

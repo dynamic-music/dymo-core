@@ -31,6 +31,7 @@
   "dependencies": {
     "jsonld": "jsonld.js#*",
     "mathjs": "*",
-    "n3": "n3js#*"
+    "n3": "n3js#*",
+    "async": "^2.0.1"
   }
 }

@@ -24,7 +24,8 @@ var context = [];
 var simpleContext = [];
 var globals = [];
 var currentBase = "";
-var currentTerms = {};
+var nameToUri = {};
+var uriToTerm = {};
 
 initContext();
 initGlobals();
@@ -32,6 +33,7 @@ createDymoOntology("ontologies/dymo-ontology.n3");
 createMobileAudioOntology("ontologies/mobile-audio-ontology.n3");
 writeContextToFile("ontologies/dymo-context.json", context, contextBase);
 writeContextToFile("ontologies/dymo-context-simple.json", simpleContext, contextBase);
+writeTermDictToFile("src/terms.js")
 writeGlobalsToFile("src/globals2.js");
 
 function initWriter(base) {
@@ -82,6 +84,8 @@ function createDymoOntology(path) {
 	addIndividual({term:"index", iri:"IndexFeature"}, "FeatureType");
 	addIndividual({term:"onset", iri:"OnsetFeature"}, "FeatureType");
 	addIndividual({term:"duration", iri:"DurationFeature"}, "FeatureType");
+	addIndividual({term:"time", iri:"TimeFeature"}, "FeatureType");
+	addIndividual({term:"segmentLabel", iri:"SegmentLabelFeature"}, "FeatureType");
 	addClass("CustomFeature", "FeatureType");
 	//audio parameters
 	addClass("AudioParameter", "ParameterType");
@@ -268,15 +272,16 @@ function addToTermsContextAndGlobals(definition) {
 		addToContext(definition.term, definition.iri, definition.type);
 	}
 	var fullName = prefixes[currentBase]+name;
-	currentTerms[name] = fullName;
+	nameToUri[name] = fullName;
+	uriToTerm[fullName] = definition.term;
 	addGlobal(toUpperCaseWithUnderscores(name), fullName);
 	return fullName;
 }
 
 //returns the full name if it exists in the terms map, the give name instead
 function getFromTerms(name) {
-	if (currentTerms[name]) {
-		return currentTerms[name];
+	if (nameToUri[name]) {
+		return nameToUri[name];
 	}
 	return name;
 }
@@ -324,6 +329,12 @@ function writeContextToFile(path, context, contextBase) {
 	contextString += '\n\t}';
 	contextString += '\n}';
 	fs.writeFile(path, contextString, function(err) {
+		console.log("Saved "+ path);
+	});
+}
+
+function writeTermDictToFile(path) {
+	fs.writeFile(path, "var URI_TO_TERM = "+JSON.stringify(uriToTerm), function(err) {
 		console.log("Saved "+ path);
 	});
 }
