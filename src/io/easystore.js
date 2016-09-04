@@ -10,6 +10,14 @@ function EasyStore() {
 		return store.addTriple(subject, predicate, object);
 	}
 	
+	//removes the specified triple from the store. if no object specified, removes the first one found
+	this.removeTriple = function(subject, predicate, object) {
+		if (!object) {
+			object = this.findFirstObjectUri(subject, predicate);
+		}
+		return store.removeTriple(subject, predicate, object);
+	}
+	
 	this.createBlankNode = function() {
 		return store.createBlankNode();
 	}
@@ -81,6 +89,11 @@ function EasyStore() {
 			}
 			return value;
 		}
+	}
+	
+	//returns the subjects of all results found in the store
+	this.findAllSubjectUris = function(predicate, object) {
+		return store.find(null, predicate, object).map(function(t){return t.subject;});
 	}
 	
 	//returns the objects of all results found in the store

@@ -25,10 +25,15 @@ function DymoStore() {
 	}
 	
 	this.setFeature = function(dymoUri, featureType, value) {
-		var featureBlank = this.createBlankNode();
-		this.addTriple(dymoUri, HAS_FEATURE, featureBlank);
-		this.addTriple(featureBlank, TYPE, featureType);
-		this.addTriple(featureBlank, VALUE, N3.Util.createLiteral(value));
+		var featureUri = this.findFirstObjectUriOfType(dymoUri, HAS_FEATURE, featureType);
+		if (!featureUri) {
+			featureUri = this.createBlankNode();
+			this.addTriple(dymoUri, HAS_FEATURE, featureUri);
+			this.addTriple(featureUri, TYPE, featureType);
+		} else {
+			this.removeTriple(featureUri, VALUE);
+		}
+		this.addTriple(featureUri, VALUE, N3.Util.createLiteral(value));
 	}
 	
 	
@@ -101,6 +106,8 @@ function DymoStore() {
 						//make it even nicer by removing blank nodes
 						removeBlankNodeIds(compacted);
 						compacted = JSON.stringify(compacted, null, 2);
+						//compact local uris
+						compacted = compacted.replace(new RegExp('http://tiny.cc/dymo-context/', 'g'), "");
 						//put the right context back
 						compacted = compacted.replace("http://tiny.cc/dymo-context-simple", "http://tiny.cc/dymo-context");
 						callback(compacted);
