@@ -9,8 +9,26 @@ function DymoStore() {
 	
 	EasyStore.call(this);
 	
-	this.addDymo = function() {
-		
+	///////// ADDING FUNCTIONS //////////
+	
+	this.addDymo = function(dymoUri, parentUri, partUri, sourcePath) {
+		this.addTriple(dymoUri, TYPE, DYMO);
+		if (parentUri) {
+			this.addTriple(parentUri, HAS_PART, dymoUri);
+		}
+		if (partUri) {
+			this.addTriple(dymoUri, HAS_PART, partUri);
+		}
+		if (sourcePath) {
+			this.addTriple(dymoUri, HAS_SOURCE, sourcePath);
+		}
+	}
+	
+	this.setFeature = function(dymoUri, featureType, value) {
+		var featureBlank = this.createBlankNode();
+		this.addTriple(dymoUri, HAS_FEATURE, featureBlank);
+		this.addTriple(featureBlank, TYPE, featureType);
+		this.addTriple(featureBlank, VALUE, N3.Util.createLiteral(value));
 	}
 	
 	
@@ -22,6 +40,11 @@ function DymoStore() {
 		var allParents = Array.from(new Set(allPartTriples.map(function(t){return t.subject;})), function(x){return x;});
 		var allParts = Array.from(new Set(allPartTriples.map(function(t){return t.object;})), function(x){return x;});
 		return allParents.filter(function(p) { return allParts.indexOf(p) < 0 });
+	}
+	
+	//returns an array with the uris of all parts of the object with the given uri
+	this.findParts = function(dymoUri) {
+		return this.findAllObjectUris(dymoUri, HAS_PART);
 	}
 	
 	this.findFunction = function(uri) {
@@ -37,8 +60,8 @@ function DymoStore() {
 		return [args, body];
 	}
 	
-	this.findFeature = function(dymoUri, feature) {
-		var featureUri = this.findFirstObjectUri(dymoUri, HAS_FEATURE);
+	this.findFeature = function(dymoUri, featureType) {
+		var featureUri = this.findFirstObjectUriOfType(dymoUri, HAS_FEATURE, featureType);
 		return this.findFirstObjectValue(featureUri, VALUE);
 	}
 	

@@ -48,12 +48,17 @@ function EasyStore() {
 	
 	//returns the uri of the object of the first result found in the store
 	this.findFirstObjectUri = function(subject, predicate) {
-		var results = store.find(subject, predicate, null);
-		if (predicate == HAS_FEATURE) {
-			console.log(results)
-		}
+		var results = store.find(subject, predicate);
 		if (results.length > 0) {
 			return results[0].object;
+		}
+	}
+	
+	this.findFirstObjectUriOfType = function(subject, predicate, type) {
+		var objects = store.find(subject, predicate).map(function(t){return t.object;});
+		objects = objects.filter(function(o){return store.find(o, TYPE, type).length > 0;});
+		if (objects.length > 0) {
+			return objects[0];
 		}
 	}
 	
