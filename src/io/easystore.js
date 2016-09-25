@@ -4,6 +4,8 @@
  */
 function EasyStore() {
 	
+	var self = this;
+	
 	var store = N3.Store();
 	
 	this.addTriple = function(subject, predicate, object) {
@@ -33,6 +35,12 @@ function EasyStore() {
 					callback();
 				}
 			});
+		});
+	}
+	
+	this.loadFileIntoStore = function(path, isJsonld, callback) {
+		loadFile(path, function(data) {
+			self.loadData(data, isJsonld, callback);
 		});
 	}
 	

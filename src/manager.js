@@ -10,37 +10,51 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 		SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	}
 	var store;
+	var dymos; //map with all dymos created accessible by keys
 	var rendering;
 	var uiControls = {};
 	var sensorControls = {};
+	
+	this.loadDymoAndRenderingFromStore = function(newStore, callback) {
+		store = newStore;
+		var loader = new DymoLoader(scheduler);
+		loader.setStore(store);
+		processLoadedDymoAndRendering(loader.createDymoFromStore(), loader.createRenderingFromStore());
+		scheduler.loadBuffers(rendering.dymos, callback);
+	}
 	
 	this.loadDymoAndRendering = function(dymoUri, renderingUri, dymoCallback, buffersCallback) {
 		var loader = new DymoLoader(scheduler, function() {
 			loader.loadDymoFromJson(dymoUri, function(loadedDymo) {
 				loader.loadRenderingFromJson(renderingUri, function(loadedRendering) {
 					store = loader.getStore();
-					rendering = loadedRendering[0];
-					rendering.dymo = loadedDymo[0];
-					for (var key in loadedRendering[1]) {
-						var currentControl = loadedRendering[1][key];
-						if (store.isSubclassOf(currentControl.getType(), UI_CONTROL)) {
-							uiControls[key] = new UIControl(currentControl, $scope);
-						}
-						if (store.isSubclassOf(currentControl.getType(), SENSOR_CONTROL)) {
-							sensorControls[key] = currentControl;
-						}
-					}
-					if (!reverbFile) {
-						reverbFile = 'bower_components/dymo-core/audio/impulse_rev.wav';
-					}
-					scheduler.initEffectSends(store, reverbFile);
-					scheduler.loadBuffers(rendering.dymo, buffersCallback);
+					processLoadedDymoAndRendering(loadedDymo, loadedRendering);
+					scheduler.loadBuffers(rendering.dymos, buffersCallback);
 					if (dymoCallback) {
 						dymoCallback();
 					}
 				});
 			});
 		});
+	}
+	
+	function processLoadedDymoAndRendering(loadedDymo, loadedRendering) {
+		rendering = loadedRendering[0];
+		rendering.dymos = loadedDymo[0];
+		dymos = loadedDymo[1];
+		for (var key in loadedRendering[1]) {
+			var currentControl = loadedRendering[1][key];
+			if (store.isSubclassOf(currentControl.getType(), UI_CONTROL)) {
+				uiControls[key] = new UIControl(currentControl, $scope);
+			}
+			if (store.isSubclassOf(currentControl.getType(), SENSOR_CONTROL)) {
+				sensorControls[key] = currentControl;
+			}
+		}
+		if (!reverbFile) {
+			reverbFile = 'bower_components/dymo-core/audio/impulse_rev.wav';
+		}
+		scheduler.initEffectSends(store, reverbFile);
 	}
 	
 	this.loadDymoFromJson = function(jsonDymo, callback) {
@@ -62,8 +76,8 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 	}
 	
 	this.replacePartOfTopDymo = function(index, dymo) {
-		var oldDymo = rendering.dymo.getPart(index);
-		rendering.dymo.replacePart(index, dymo);
+		var oldDymo = rendering.dymos[0].getPart(index);
+		rendering.dymos[0].replacePart(index, dymo);
 		scheduler.stop(oldDymo);
 	}
 	
@@ -80,17 +94,25 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 		scheduler.syncNavigators(syncDymo, goalDymo, level);
 	}
 	
+	this.startPlayingUri = function(dymoUri) {
+		scheduler.play(dymos[dymoUri]);
+	}
+	
+	this.stopPlayingUri = function(dymoUri) {
+		scheduler.stop(dymos[dymoUri]);
+	}
+	
 	this.startPlaying = function() {
-		rendering.dymo.updatePartOrder(ONSET); //TODO WHERE TO PUT THIS??
-		scheduler.play(rendering.dymo);
+		rendering.dymos[0].updatePartOrder(ONSET); //TODO WHERE TO PUT THIS??
+		scheduler.play(rendering.dymos[0]);
 	}
 	
 	this.stopPlaying = function() {
-		scheduler.stop(rendering.dymo);
+		scheduler.stop(rendering.dymos[0]);
 	}
 	
 	this.getTopDymo = function() {
-		return rendering.dymo;
+		return rendering.dymos[0];
 	}
 	
 	this.getRendering = function() {

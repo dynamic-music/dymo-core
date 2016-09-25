@@ -1,24 +1,16 @@
 /**
  * A DymoLoader loads dymos from rdf, jams, or json-ld.
  * @constructor
+ * @param {Function=} callback (optional)
  */
 function DymoLoader(scheduler, callback) {
 	
-	var store = new DymoStore();
+	var store = new DymoStore(callback);
 	var dymoBasePath = '';
 	var controls = {}, dymos = {}; //dicts with all the objects created
 	
-	initStore();
-	
-	//creates the store and loads some basic ontology files
-	function initStore() {
-		loadFileIntoStore("http://tiny.cc/dymo-ontology", false, function() {
-			loadFileIntoStore("http://tiny.cc/mobile-audio-ontology", false, function() {
-				if (callback) {
-					callback();
-				}
-			});
-		});
+	this.setStore = function(newStore) {
+		store = newStore;
 	}
 	
 	this.getStore = function() {
@@ -29,19 +21,19 @@ function DymoLoader(scheduler, callback) {
 		var fileIndex = jsonUri.lastIndexOf('/')+1;
 		dymoBasePath = jsonUri.substring(0, fileIndex);
 		loadJsonld(jsonUri, function() {
-			callback(createDymoFromStore());
+			callback(this.createDymoFromStore());
 		});
 	}
 	
 	this.parseDymoFromJson = function(json, callback) {
 		store.loadData(json, true, function() {
-			callback(createDymoFromStore());
+			callback(this.createDymoFromStore());
 		});
 	}
 	
 	this.loadRenderingFromJson = function(jsonUri, callback) {
 		loadJsonld(jsonUri, function() {
-			callback(createRendering());
+			callback(this.createRenderingFromStore());
 		});
 	}
 	
@@ -108,13 +100,16 @@ function DymoLoader(scheduler, callback) {
 	}
 	
 	
-	function createDymoFromStore() {
+	this.createDymoFromStore = function() {
+		var topDymos = [];
 		//first create all dymos and save references in map
-		var topDymoUri = store.findTopDymos()[0];
-		var topDymo = recursiveCreateDymoAndParts(topDymoUri);
-		//then add similarity relations
-		recursiveAddMappingsAndSimilars(topDymoUri);
-		return [topDymo, dymos];
+		var topDymoUris = store.findTopDymos();
+		for (var i = 0; i < topDymoUris.length; i++) {
+			topDymos.push(recursiveCreateDymoAndParts(topDymoUris[i]));
+			//then add similarity relations
+			recursiveAddMappingsAndSimilars(topDymoUris[i]);
+		}
+		return [topDymos, dymos]; //for now topDymo is just the last one loaded ~
 	}
 	
 	function recursiveCreateDymoAndParts(currentDymoUri) {
@@ -158,7 +153,7 @@ function DymoLoader(scheduler, callback) {
 		}
 	}
 	
-	function createRendering() {
+	this.createRenderingFromStore = function() {
 		var renderingUri = store.findFirstSubjectUri(TYPE, RENDERING);
 		var rendering = new Rendering(dymos[store.findFirstObjectUri(renderingUri, HAS_DYMO)]);
 		var mappingUris = store.findAllObjectUris(renderingUri, HAS_MAPPING);
@@ -340,24 +335,6 @@ function DymoLoader(scheduler, callback) {
 			control.setAverageOf(average);
 		}
 		return control;
-	}
-	
-	function loadFile(path, callback) {
-		var request = new XMLHttpRequest();
-		request.open('GET', path, true);
-		request.onload = function() {
-			callback(this.responseText);
-		};
-		request.error = function(e){
-			console.log(e);
-		};
-		request.send();
-	}
-	
-	function loadFileIntoStore(path, isJsonld, callback) {
-		loadFile(path, function(data) {
-			store.loadData(data, isJsonld, callback);
-		});
 	}
 
 }

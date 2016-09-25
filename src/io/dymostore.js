@@ -3,11 +3,24 @@
  * @constructor
  * @extends {EasyStore}
  */
-function DymoStore() {
+function DymoStore(callback) {
 	
 	var self = this;
 	
 	EasyStore.call(this);
+	
+	init();
+	
+	//creates the store and loads some basic ontology files
+	function init() {
+		self.loadFileIntoStore("http://tiny.cc/dymo-ontology", false, function() {
+			self.loadFileIntoStore("http://tiny.cc/mobile-audio-ontology", false, function() {
+				if (callback) {
+					callback();
+				}
+			});
+		});
+	}
 	
 	///////// ADDING FUNCTIONS //////////
 	
@@ -20,7 +33,7 @@ function DymoStore() {
 			this.addTriple(dymoUri, HAS_PART, partUri);
 		}
 		if (sourcePath) {
-			this.addTriple(dymoUri, HAS_SOURCE, sourcePath);
+			this.addTriple(dymoUri, HAS_SOURCE, N3.Util.createLiteral(sourcePath));
 		}
 	}
 	
@@ -42,14 +55,24 @@ function DymoStore() {
 	//returns an array with all uris of dymos that do not have parents
 	this.findTopDymos = function() {
 		var allPartTriples = this.find(null, HAS_PART, null);
-		var allParents = Array.from(new Set(allPartTriples.map(function(t){return t.subject;})), function(x){return x;});
+		var allDymos = this.findAllSubjectUris(TYPE, DYMO);
 		var allParts = Array.from(new Set(allPartTriples.map(function(t){return t.object;})), function(x){return x;});
-		return allParents.filter(function(p) { return allParts.indexOf(p) < 0 });
+		return allDymos.filter(function(p) { return allParts.indexOf(p) < 0 });
 	}
 	
 	//returns an array with the uris of all parts of the object with the given uri
 	this.findParts = function(dymoUri) {
 		return this.findAllObjectUris(dymoUri, HAS_PART);
+	}
+	
+	//returns an array with the uris of all parts, parts of parts, etc of the object with the given uri
+	this.findAllParts = function(dymoUri) {
+		var allParts = [dymoUri];
+		var immediateParts = this.findParts(dymoUri);
+		for (var i = 0; i < immediateParts.length; i++) {
+			allParts = allParts.concat(this.findAllParts(immediateParts[i]));
+		}
+		return allParts;
 	}
 	
 	this.findFunction = function(uri) {
@@ -67,7 +90,9 @@ function DymoStore() {
 	
 	this.findFeature = function(dymoUri, featureType) {
 		var featureUri = this.findFirstObjectUriOfType(dymoUri, HAS_FEATURE, featureType);
-		return this.findFirstObjectValue(featureUri, VALUE);
+		if (featureUri) {
+			return this.findFirstObjectValue(featureUri, VALUE);
+		}
 	}
 	
 	this.getLevel = function(dymoUri) {
