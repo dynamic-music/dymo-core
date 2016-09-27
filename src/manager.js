@@ -2,10 +2,11 @@
  * A class for easy access of all dymo core functionality.
  * @constructor
  * @param {Object=} $scope angular scope (optional, uicontrols will call $scope.$apply())
+ * @param {Function=} onPlaybackChange (optional)
  */
-function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
+function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope, onPlaybackChange) {
 	
-	var scheduler = new Scheduler(audioContext);
+	var scheduler = new Scheduler(audioContext, onPlaybackChange);
 	if (!isNaN(scheduleAheadTime)) {
 		SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	}
@@ -103,12 +104,16 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope) {
 	}
 	
 	this.startPlaying = function() {
-		rendering.dymos[0].updatePartOrder(ONSET); //TODO WHERE TO PUT THIS??
-		scheduler.play(rendering.dymos[0]);
+		for (var i = 0; i < rendering.dymos.length; i++) {
+			rendering.dymos[i].updatePartOrder(ONSET); //TODO WHERE TO PUT THIS??
+			scheduler.play(rendering.dymos[i]);
+		}
 	}
 	
 	this.stopPlaying = function() {
-		scheduler.stop(rendering.dymos[0]);
+		for (var i = 0; i < rendering.dymos.length; i++) {
+			scheduler.stop(rendering.dymos[i]);
+		}
 	}
 	
 	this.getTopDymo = function() {

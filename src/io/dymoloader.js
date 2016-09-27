@@ -120,13 +120,14 @@ function DymoLoader(scheduler, callback) {
 		dymo.setSourcePath(store.findFirstObjectValue(currentDymoUri, HAS_SOURCE));
 		var features = store.findAllObjectUris(currentDymoUri, HAS_FEATURE);
 		for (var i = 0; i < features.length; i++) {
-			dymo.setFeature(features[i], store.findFirstObjectValue(features[i], VALUE));
+			dymo.setFeature(store.findFirstObjectUri(features[i], TYPE), store.findFirstObjectValue(features[i], VALUE));
 		}
 		var parameters = store.findAllObjectUris(currentDymoUri, HAS_PARAMETER);
 		for (var i = 0; i < parameters.length; i++) {
 			addOrUpdateDymoParameter(dymo, store.findFirstObjectUri(parameters[i], TYPE), store.findFirstObjectValue(parameters[i], VALUE));
 		}
-		var parts = store.findAllObjectUris(currentDymoUri, HAS_PART);
+		var parts = store.findParts(currentDymoUri);
+		console.log(parts)
 		for (var i = 0; i < parts.length; i++) {
 			dymo.addPart(recursiveCreateDymoAndParts(parts[i]));
 		}
@@ -147,7 +148,7 @@ function DymoLoader(scheduler, callback) {
 			dymo.addMapping(createMapping(mappingUris[i], dymo));
 		}
 		//iterate through parts
-		var parts = store.findAllObjectUris(currentDymoUri, HAS_PART);
+		var parts = store.findParts(currentDymoUri);
 		for (var i = 0; i < parts.length; i++) {
 			recursiveAddMappingsAndSimilars(parts[i]);
 		}

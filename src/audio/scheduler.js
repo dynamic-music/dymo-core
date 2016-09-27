@@ -169,7 +169,7 @@ function Scheduler(audioContext, onPlaybackChange) {
 		uris.sort();
 		urisOfPlayingDymos = uris;
 		if (onPlaybackChange) {
-			onPlaybackChange();
+			onPlaybackChange(urisOfPlayingDymos);
 		}
 	}
 	

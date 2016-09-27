@@ -24,6 +24,26 @@ function EasyStore() {
 		return store.createBlankNode();
 	}
 	
+	//adds the given object to the list the given subject has under the given predicate, creates the list if none yet
+	this.addObjectToList = function(subject, predicate, object) {
+		var list = this.findFirstObjectUri(subject, predicate);
+		var newElement = this.createBlankNode();
+		if (!list) {
+			this.addTriple(subject, predicate, newElement);
+		} else {
+			var lastElement = list;
+			var lastElementRest = this.findFirstObjectUri(lastElement, REST);
+			while (lastElementRest != NIL) {
+				lastElement = lastElementRest;
+				lastElementRest = this.findFirstObjectUri(lastElement, REST);
+			}
+			this.removeTriple(lastElement, REST, NIL);
+			this.addTriple(lastElement, REST, newElement);
+		}
+		this.addTriple(newElement, FIRST, object);
+		this.addTriple(newElement, REST, NIL);
+	}
+	
 	this.loadData = function(data, isJsonld, callback) {
 		jsonldToNquads(data, isJsonld, function(nquads) {
 			N3.Parser().parse(nquads, function (error, triple, prefixes) {
@@ -112,6 +132,38 @@ function EasyStore() {
 	//returns the objects of all results found in the store
 	this.findAllObjectValues = function(subject, predicate) {
 		return this.findAllObjectUris(subject, predicate).map(function(a){return N3.Util.getLiteralValue(a);});
+	}
+	
+	this.findObjectListUris = function(subject, predicate) {
+		var objectUris = [];
+		var currentElement = this.findFirstObjectUri(subject, predicate);
+		if (currentElement) {
+			objectUris.push(this.findFirstObjectUri(currentElement, FIRST));
+			var currentRest = this.findFirstObjectUri(currentElement, REST);
+			while (currentRest != NIL) {
+				objectUris.push(this.findFirstObjectUri(currentRest, FIRST));
+				currentRest = this.findFirstObjectUri(currentRest, REST);
+			}
+		}
+		return objectUris;
+	}
+	
+	this.findContainingLists = function(object) {
+		var subjectUris = [];
+		var predicateUris = [];
+		var listElements = this.findAllSubjectUris(FIRST, object);
+		for (var i = 0; i < listElements.length; i++) {
+			var currentElement = listElements[i];
+			var currentPredecessor = this.findFirstSubjectUri(REST, currentElement);
+			while (currentPredecessor) {
+				currentElement = currentPredecessor;
+				currentPredecessor = this.findFirstSubjectUri(REST, currentElement);
+			}
+			var listOrigin = this.find(null, null, currentElement)[0];
+			subjectUris[i] = listOrigin.subject;
+			predicateUris[i] = listOrigin.predicate;
+		}
+		return [subjectUris, predicateUris];
 	}
 	
 	//return all triples about the given uri and the respective 

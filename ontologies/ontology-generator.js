@@ -57,6 +57,9 @@ function initGlobals() {
 	addGlobal("CONTEXT_URI", contextBase);
 	//SOME PROPERTIES
 	addGlobal("TYPE", rdfType);
+	addGlobal("FIRST", rdfPrefix+"first");
+	addGlobal("REST", rdfPrefix+"rest");
+	addGlobal("NIL", rdfPrefix+"nil");
 	addGlobal("NAME", prefixes["sch"]+"name");
 	//mock charm stuff
 	addGlobal("CDT", prefixes["ch"]+"cdt");

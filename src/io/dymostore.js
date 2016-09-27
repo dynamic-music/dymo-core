@@ -27,14 +27,18 @@ function DymoStore(callback) {
 	this.addDymo = function(dymoUri, parentUri, partUri, sourcePath) {
 		this.addTriple(dymoUri, TYPE, DYMO);
 		if (parentUri) {
-			this.addTriple(parentUri, HAS_PART, dymoUri);
+			this.addPart(parentUri, dymoUri);
 		}
 		if (partUri) {
-			this.addTriple(dymoUri, HAS_PART, partUri);
+			this.addPart(dymoUri, partUri);
 		}
 		if (sourcePath) {
 			this.addTriple(dymoUri, HAS_SOURCE, N3.Util.createLiteral(sourcePath));
 		}
+	}
+	
+	this.addPart = function(dymoUri, partUri) {
+		this.addObjectToList(dymoUri, HAS_PART, partUri);
 	}
 	
 	this.setFeature = function(dymoUri, featureType, value) {
@@ -54,25 +58,30 @@ function DymoStore(callback) {
 	
 	//returns an array with all uris of dymos that do not have parents
 	this.findTopDymos = function() {
-		var allPartTriples = this.find(null, HAS_PART, null);
 		var allDymos = this.findAllSubjectUris(TYPE, DYMO);
-		var allParts = Array.from(new Set(allPartTriples.map(function(t){return t.object;})), function(x){return x;});
+		var allParents = this.findAllSubjectUris(HAS_PART);
+		var allParts = [].concat.apply([], allParents.map(function(p){return self.findParts(p);}));
 		return allDymos.filter(function(p) { return allParts.indexOf(p) < 0 });
 	}
 	
 	//returns an array with the uris of all parts of the object with the given uri
 	this.findParts = function(dymoUri) {
-		return this.findAllObjectUris(dymoUri, HAS_PART);
+		return this.findObjectListUris(dymoUri, HAS_PART);
+	}
+	
+	this.findParents = function(dymoUri) {
+		var containingLists = this.findContainingLists(dymoUri);
+		return containingLists[0].filter(function(e,i){return containingLists[1][i] == HAS_PART;});
 	}
 	
 	//returns an array with the uris of all parts, parts of parts, etc of the object with the given uri
-	this.findAllParts = function(dymoUri) {
-		var allParts = [dymoUri];
-		var immediateParts = this.findParts(dymoUri);
-		for (var i = 0; i < immediateParts.length; i++) {
-			allParts = allParts.concat(this.findAllParts(immediateParts[i]));
+	this.findAllObjectsInHierarchy = function(dymoUri) {
+		var allObjects = [dymoUri];
+		var parts = this.findParts(dymoUri);
+		for (var i = 0; i < parts.length; i++) {
+			allObjects = allObjects.concat(this.findAllObjectsInHierarchy(parts[i]));
 		}
-		return allParts;
+		return allObjects;
 	}
 	
 	this.findFunction = function(uri) {
@@ -95,14 +104,25 @@ function DymoStore(callback) {
 		}
 	}
 	
+	//TODO FOR NOW ONLY WORKS WITH SINGLE HIERARCHY..
 	this.getLevel = function(dymoUri) {
 		var level = 0;
-		var parent = this.findFirstSubjectUri(HAS_PART, dymoUri);
+		var parent = this.findParents(dymoUri)[0];
 		while (parent) {
 			level++;
-			parent = this.findFirstSubjectUri(HAS_PART, dymoUri);
+			parent = this.findParents(parent)[0];
 		}
 		return level;
+	}
+	
+	//TODO optimize
+	this.getMaxLevel = function() {
+		var allDymos = this.findAllSubjectUris(TYPE, DYMO);
+		var maxLevel = 0;
+		for (var i = 0; i < allDymos.length; i++) {
+			maxLevel = Math.max(maxLevel, this.getLevel(allDymos[i]));
+		}
+		return maxLevel;
 	}
 	
 	
@@ -154,14 +174,26 @@ function DymoStore(callback) {
 	this.toJsonGraph = function(nodeClass, linkProperty, callback) {
 		var graph = {"nodes":[], "links":[]};
 		var nodeMap = {};
-		var nodeUris = this.find(null, TYPE, nodeClass).map(function(t) {return t.subject;});
+		var nodeUris = this.findAllSubjectUris(TYPE, nodeClass);
 		var linkTriples = this.find(null, linkProperty, null);
 		async.map(nodeUris, toFlatJsonld, function(err, result){
 			graph["nodes"] = result;
 			for (var i = 0; i < nodeUris.length; i++) {
 				nodeMap[nodeUris[i]] = graph["nodes"][i];
 			}
-			graph["links"] = linkTriples.map(function(t){return createLink(nodeMap[t.subject], nodeMap[t.object]);});
+			graph["links"] = [];
+			for (var i = 0; i < linkTriples.length; i++) {
+				if (self.find(linkTriples[i].object, TYPE, nodeClass).length == 0) {
+					if (self.find(linkTriples[i].object, FIRST).length > 0) {
+						//it's a list!!
+						var objects = self.findObjectListUris(linkTriples[i].subject, linkProperty);
+						objects = objects.map(function(t){return createLink(nodeMap[linkTriples[i].subject], nodeMap[t]);});
+						graph["links"] = graph["links"].concat(objects);
+					}
+				} else {
+					graph["links"].push(createLink(nodeMap[linkTriples[i].subject], nodeMap[linkTriples[i].object]));
+				}
+			}
 			callback(graph);
 		});
 	}
