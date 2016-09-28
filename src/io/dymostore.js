@@ -41,6 +41,10 @@ function DymoStore(callback) {
 		this.addObjectToList(dymoUri, HAS_PART, partUri);
 	}
 	
+	this.addSimilar = function(dymoUri, similarUri) {
+		this.addTriple(dymoUri, HAS_SIMILAR, similarUri);
+	}
+	
 	this.setFeature = function(dymoUri, featureType, value) {
 		var featureUri = this.findFirstObjectUriOfType(dymoUri, HAS_FEATURE, featureType);
 		if (!featureUri) {
@@ -50,7 +54,13 @@ function DymoStore(callback) {
 		} else {
 			this.removeTriple(featureUri, VALUE);
 		}
-		this.addTriple(featureUri, VALUE, N3.Util.createLiteral(value));
+		if (Array.isArray(value)) {
+			for (var i = 0; i < value.length; i++) {
+				this.addObjectToList(featureUri, VALUE, N3.Util.createLiteral(value[i]));
+			}
+		} else {
+			this.addTriple(featureUri, VALUE, N3.Util.createLiteral(value));
+		}
 	}
 	
 	
@@ -102,6 +112,15 @@ function DymoStore(callback) {
 		if (featureUri) {
 			return this.findFirstObjectValue(featureUri, VALUE);
 		}
+	}
+	
+	this.findAllFeatureValues = function(dymoUri) {
+		var featureValues = [];
+		var featureUris = this.findAllObjectUris(dymoUri, HAS_FEATURE);
+		for (var i = 0; i < featureUris.length; i++) {
+			featureValues.push(this.findFirstObjectValue(featureUris[i], VALUE));
+		}
+		return featureValues;
 	}
 	
 	//TODO FOR NOW ONLY WORKS WITH SINGLE HIERARCHY..

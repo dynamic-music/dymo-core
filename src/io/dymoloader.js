@@ -127,7 +127,6 @@ function DymoLoader(scheduler, callback) {
 			addOrUpdateDymoParameter(dymo, store.findFirstObjectUri(parameters[i], TYPE), store.findFirstObjectValue(parameters[i], VALUE));
 		}
 		var parts = store.findParts(currentDymoUri);
-		console.log(parts)
 		for (var i = 0; i < parts.length; i++) {
 			dymo.addPart(recursiveCreateDymoAndParts(parts[i]));
 		}

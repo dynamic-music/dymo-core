@@ -110,13 +110,22 @@ function EasyStore() {
 	this.findFirstObjectValue = function(subject, predicate) {
 		var object = this.findFirstObjectUri(subject, predicate);
 		if (object) {
-			var value = N3.Util.getLiteralValue(object);
-			var type = N3.Util.getLiteralType(object);
-			if (type != "http://www.w3.org/2001/XMLSchema#string") {
-				value = Number(value);
+			if (this.isList(object)) {
+				var value = this.findObjectListUris(subject, predicate).map(function(u){return getLiteralValue(u);});
+			} else {
+				var value = getLiteralValue(object);
 			}
 			return value;
 		}
+	}
+	
+	function getLiteralValue(uri) {
+		var value = N3.Util.getLiteralValue(uri);
+		var type = N3.Util.getLiteralType(uri);
+		if (type != "http://www.w3.org/2001/XMLSchema#string") {
+			value = Number(value);
+		}
+		return value;
 	}
 	
 	//returns the subjects of all results found in the store
@@ -180,6 +189,10 @@ function EasyStore() {
 			}
 		}
 		return triples.concat(subTriples);
+	}
+	
+	this.isList = function(uri) {
+		return this.findFirstObjectUri(uri, FIRST) != undefined;
 	}
 	
 	this.isSubclassOf = function(class1, class2) {

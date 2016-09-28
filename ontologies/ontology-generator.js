@@ -61,6 +61,7 @@ function initGlobals() {
 	addGlobal("REST", rdfPrefix+"rest");
 	addGlobal("NIL", rdfPrefix+"nil");
 	addGlobal("NAME", prefixes["sch"]+"name");
+	addGlobal("LABEL", prefixes["rdfs"]+"label");
 	//mock charm stuff
 	addGlobal("CDT", prefixes["ch"]+"cdt");
 	addGlobal("ADT", prefixes["ch"]+"adt");
