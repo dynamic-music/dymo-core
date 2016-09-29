@@ -5,6 +5,8 @@
  */
 function DymoLoader(scheduler, callback) {
 	
+	var self = this;
+	
 	var store = new DymoStore(callback);
 	var dymoBasePath = '';
 	var controls = {}, dymos = {}; //dicts with all the objects created
@@ -21,19 +23,19 @@ function DymoLoader(scheduler, callback) {
 		var fileIndex = jsonUri.lastIndexOf('/')+1;
 		dymoBasePath = jsonUri.substring(0, fileIndex);
 		loadJsonld(jsonUri, function() {
-			callback(this.createDymoFromStore());
+			callback(self.createDymoFromStore());
 		});
 	}
 	
 	this.parseDymoFromJson = function(json, callback) {
 		store.loadData(json, true, function() {
-			callback(this.createDymoFromStore());
+			callback(self.createDymoFromStore());
 		});
 	}
 	
 	this.loadRenderingFromJson = function(jsonUri, callback) {
 		loadJsonld(jsonUri, function() {
-			callback(this.createRenderingFromStore());
+			callback(self.createRenderingFromStore());
 		});
 	}
 	

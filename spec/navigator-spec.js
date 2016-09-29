@@ -151,7 +151,7 @@ describe("a navigator", function() {
 		expect(navigator.getNextParts()[0].getUri()).toBe("dymo4");
 	});
 	
-	/*it("can also be based on similarity", function() {
+	it("can also be based on similarity", function() {
 		//(1:(2:5,6),(3:7,(8:11,12),9),(4:10)))
 		dymo1 = new DynamicMusicObject("dymo1");
 		dymo2 = new DynamicMusicObject("dymo2");
@@ -194,6 +194,6 @@ describe("a navigator", function() {
 		expect(["dymo3"]).toContain(navigator.getNextParts()[0].getUri());
 		expect(["dymo5"]).toContain(navigator.getNextParts()[0].getUri());
 		expect(["dymo6"]).toContain(navigator.getNextParts()[0].getUri());
-	});*/
+	});
 	
 });

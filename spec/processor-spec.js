@@ -9,14 +9,14 @@ describe("a processor", function() {
 	var scheduler;
 	
 	beforeAll(function(done) {
-		scheduler = new Scheduler(audioContext, function() {
-			done();
-		});
+		scheduler = new Scheduler(audioContext);
 		dymo1 = new DynamicMusicObject("dymo1");
 		dymo1.addParameter(new Parameter(TIME_STRETCH_RATIO, 1));
 		dymo1.setBasePath(basePath);
 		dymo1.setSourcePath(sourcePath1);
-		scheduler.loadBuffers(dymo1);
+		scheduler.loadBuffers([dymo1], function(){
+			done();
+		});
 	});
 	
 	it("can timestretch", function() {

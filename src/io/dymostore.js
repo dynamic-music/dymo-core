@@ -76,7 +76,7 @@ function DymoStore(callback) {
 	
 	//returns an array with the uris of all parts of the object with the given uri
 	this.findParts = function(dymoUri) {
-		return this.findObjectListUris(dymoUri, HAS_PART);
+		return this.findAllObjectUris(dymoUri, HAS_PART);
 	}
 	
 	this.findParents = function(dymoUri) {
@@ -110,7 +110,7 @@ function DymoStore(callback) {
 	this.findFeature = function(dymoUri, featureType) {
 		var featureUri = this.findFirstObjectUriOfType(dymoUri, HAS_FEATURE, featureType);
 		if (featureUri) {
-			return this.findFirstObjectValue(featureUri, VALUE);
+			return this.findAllObjectValues(featureUri, VALUE);
 		}
 	}
 	
@@ -118,7 +118,7 @@ function DymoStore(callback) {
 		var featureValues = [];
 		var featureUris = this.findAllObjectUris(dymoUri, HAS_FEATURE);
 		for (var i = 0; i < featureUris.length; i++) {
-			featureValues.push(this.findFirstObjectValue(featureUris[i], VALUE));
+			featureValues.push(this.findAllObjectValues(featureUris[i], VALUE));
 		}
 		return featureValues;
 	}

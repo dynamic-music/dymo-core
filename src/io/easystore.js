@@ -110,22 +110,8 @@ function EasyStore() {
 	this.findFirstObjectValue = function(subject, predicate) {
 		var object = this.findFirstObjectUri(subject, predicate);
 		if (object) {
-			if (this.isList(object)) {
-				var value = this.findObjectListUris(subject, predicate).map(function(u){return getLiteralValue(u);});
-			} else {
-				var value = getLiteralValue(object);
-			}
-			return value;
+			return getLiteralValue(object);
 		}
-	}
-	
-	function getLiteralValue(uri) {
-		var value = N3.Util.getLiteralValue(uri);
-		var type = N3.Util.getLiteralType(uri);
-		if (type != "http://www.w3.org/2001/XMLSchema#string") {
-			value = Number(value);
-		}
-		return value;
 	}
 	
 	//returns the subjects of all results found in the store
@@ -133,28 +119,26 @@ function EasyStore() {
 		return store.find(null, predicate, object).map(function(t){return t.subject;});
 	}
 	
-	//returns the objects of all results found in the store
+	//returns the object uris of all results found in the store, including the list elements if they are lists
 	this.findAllObjectUris = function(subject, predicate) {
-		return store.find(subject, predicate, null).map(function(t){return t.object;});
+		var allObjects = store.find(subject, predicate, null).map(function(t){return t.object;});
+		for (var i = 0; i < allObjects.length; i++) {
+			var listElements = getListElementUrisIfList(allObjects[i]);
+			if (listElements) {
+				allObjects[i] = listElements;
+			}
+		}
+		return flattenArray(allObjects);
 	}
 	
-	//returns the objects of all results found in the store
+	//returns the object values of all results found in the store, including the list elements if they are lists
 	this.findAllObjectValues = function(subject, predicate) {
 		return this.findAllObjectUris(subject, predicate).map(function(a){return N3.Util.getLiteralValue(a);});
 	}
 	
 	this.findObjectListUris = function(subject, predicate) {
-		var objectUris = [];
 		var currentElement = this.findFirstObjectUri(subject, predicate);
-		if (currentElement) {
-			objectUris.push(this.findFirstObjectUri(currentElement, FIRST));
-			var currentRest = this.findFirstObjectUri(currentElement, REST);
-			while (currentRest != NIL) {
-				objectUris.push(this.findFirstObjectUri(currentRest, FIRST));
-				currentRest = this.findFirstObjectUri(currentRest, REST);
-			}
-		}
-		return objectUris;
+		return getListElementUrisIfList(currentElement);
 	}
 	
 	this.findContainingLists = function(object) {
@@ -191,10 +175,6 @@ function EasyStore() {
 		return triples.concat(subTriples);
 	}
 	
-	this.isList = function(uri) {
-		return this.findFirstObjectUri(uri, FIRST) != undefined;
-	}
-	
 	this.isSubclassOf = function(class1, class2) {
 		var superClass = this.findFirstObjectUri(class1, RDFS_URI+"subClassOf");
 		while (superClass) {
@@ -205,6 +185,30 @@ function EasyStore() {
 			superClass = this.findFirstObjectUri(superClass, RDFS_URI+"subClassOf");
 		}
 		return false;
+	}
+	
+	//returns all elements of a list if the given uri is a list, undefined otherwise
+	function getListElementUrisIfList(listUri) {
+		var first = self.findFirstObjectUri(listUri, FIRST);
+		if (first) {
+			var objectUris = [];
+			objectUris.push(first);
+			var currentRest = self.findFirstObjectUri(listUri, REST);
+			while (currentRest != NIL) {
+				objectUris.push(self.findFirstObjectUri(currentRest, FIRST));
+				currentRest = self.findFirstObjectUri(currentRest, REST);
+			}
+			return objectUris;
+		}
+	}
+	
+	function getLiteralValue(uri) {
+		var value = N3.Util.getLiteralValue(uri);
+		var type = N3.Util.getLiteralType(uri);
+		if (type != "http://www.w3.org/2001/XMLSchema#string") {
+			value = Number(value);
+		}
+		return value;
 	}
 	
 	

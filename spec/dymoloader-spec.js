@@ -25,7 +25,7 @@ describe("a dymoloader", function() {
 	
 	it("loads a dymo from json", function(done) {
 		loader.loadDymoFromJson(dymoPath, function(loadedDymo) {
-			dymo = loadedDymo[0];
+			dymo = loadedDymo[0][0];
 			scheduler.loadBuffers(dymo);
 			dymoMap = loadedDymo[1];
 			expect(dymo.getUri()).toEqual(CONTEXT_URI+"dymo0");
@@ -41,7 +41,7 @@ describe("a dymoloader", function() {
 	
 	it("loads higher-level parameters from json", function(done) {
 		loader.loadDymoFromJson(mixDymoPath, function(loadedDymo) {
-			var dymo2 = loadedDymo[0];
+			var dymo2 = loadedDymo[0][0];
 			var dymoMap2 = loadedDymo[1];
 			expect(dymo2.getUri()).toEqual(CONTEXT_URI+"mixdymo");
 			expect(dymo2.getParts().length).toBe(2);
@@ -71,7 +71,7 @@ describe("a dymoloader", function() {
 	it("loads a similarity graph from json", function(done) {
 		loader.loadDymoFromJson(dymoPath, function(loadedDymo) {
 			loader.loadGraphFromJson(similarityGraphPath, function() {
-				dymo = loadedDymo[0];
+				dymo = loadedDymo[0][0];
 				var graph = dymo.toJsonSimilarityGraph();
 				expect(graph["nodes"].length).toEqual(331);
 				expect(graph["links"].length).toEqual(274);
@@ -101,7 +101,7 @@ describe("a dymoloader", function() {
 	
 	it("loads dymos that have parts in other files", function(done) {
 		loader.loadDymoFromJson(dymo3Path, function(loadedDymo) {
-			var dymo3 = loadedDymo[0];
+			var dymo3 = loadedDymo[0][0];
 			var dymoMap3 = loadedDymo[1];
 			expect(dymo3.getUri()).toEqual(CONTEXT_URI+"dymo");
 			expect(dymo3.getParts().length).toBe(1);

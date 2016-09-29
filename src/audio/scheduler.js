@@ -17,7 +17,6 @@ function Scheduler(audioContext, onPlaybackChange) {
 	
 	var convolverSend, delaySend;
 	var numCurrentlyLoading = 0;
-	var onAllBuffersLoaded;
 	
 	this.initEffectSends = function(store, reverbFile) {
 		if (store.find(null, null, REVERB).length > 0) {
@@ -40,7 +39,6 @@ function Scheduler(audioContext, onPlaybackChange) {
 	}
 	
 	this.loadBuffers = function(dymos, callback) {
-		onAllBuffersLoaded = callback;
 		var allPaths = [];
 		for (var i = 0, ii = dymos.length; i < ii; i++) {
 			allPaths = allPaths.concat(dymos[i].getAllSourcePaths());
@@ -50,7 +48,7 @@ function Scheduler(audioContext, onPlaybackChange) {
 			if (!buffers[allPaths[i]]) {
 				loadAudio(allPaths[i], function(buffer, path) {
 					buffers[path] = buffer;
-					bufferLoaded();
+					bufferLoaded(callback);
 				});
 			}
 		}
@@ -60,13 +58,13 @@ function Scheduler(audioContext, onPlaybackChange) {
 		return buffers[dymo.getSourcePath()];
 	}
 	
-	function bufferLoaded() {
+	function bufferLoaded(callback) {
 		if (numCurrentlyLoading > 0) {
 			numCurrentlyLoading--;
 		}
 		if (numCurrentlyLoading == 0) {
-			if (onAllBuffersLoaded) {
-				onAllBuffersLoaded();
+			if (callback) {
+				callback();
 			}
 		}
 	}

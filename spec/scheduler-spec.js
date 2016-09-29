@@ -11,9 +11,7 @@ describe("a scheduler", function() {
 	var scheduler;
 	
 	beforeAll(function(done) {
-		scheduler = new Scheduler(audioContext, function() {
-			done();
-		});
+		scheduler = new Scheduler(audioContext);
 		dymo1 = new DynamicMusicObject("dymo1", CONJUNCTION);
 		dymo2 = new DynamicMusicObject("dymo2");
 		dymo3 = new DynamicMusicObject("dymo3");
@@ -31,8 +29,9 @@ describe("a scheduler", function() {
 		dymo0.addParameter(new Parameter(LOOP, 0));
 		dymo0.setSourcePath(sourcePath3);
 		dymo0.setBasePath(basePath);
-		scheduler.loadBuffers(dymo1);
-		scheduler.loadBuffers(dymo0);
+		scheduler.loadBuffers([dymo0, dymo1], function() {
+			done();
+		});
 	});
 	
 	it("plays and stops a parallel dymo", function(done) {

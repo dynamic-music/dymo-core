@@ -62,7 +62,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope, onPlay
 		var loader = new DymoLoader(scheduler, function() {
 			loader.loadDymoFromJson(jsonDymo, function(loadedDymo) {
 				if (callback) {
-					callback(loadedDymo[0]);
+					callback(loadedDymo[0][0]);
 				}
 			});
 		});
@@ -71,7 +71,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope, onPlay
 	this.parseDymoFromJson = function(jsonDymo, callback) {
 		var loader = new DymoLoader(scheduler, function() {
 			loader.parseDymoFromJson(jsonDymo, function(loadedDymo) {
-				callback(loadedDymo[0]);
+				callback(loadedDymo[0][0]);
 			});
 		});
 	}
