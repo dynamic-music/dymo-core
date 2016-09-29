@@ -1,5 +1,8 @@
 describe("a navigator", function() {
 	
+	window.AudioContext = window.AudioContext || window.webkitAudioContext;
+	var audioContext = new AudioContext();
+	
 	var dymo1, dymo2, dymo3, dymo4, dymo5, dymo6, dymo7;
 	
 	beforeEach(function() {
@@ -221,6 +224,25 @@ describe("a navigator", function() {
 		expect(["dymo2","dymo3","dymo4","dymo5","dymo6"]).toContain(navigator.getNextParts()[0].getUri());
 		expect(["dymo2","dymo3","dymo4","dymo5","dymo6"]).toContain(navigator.getNextParts()[0].getUri());
 		expect(["dymo2","dymo3","dymo4","dymo5","dymo6","dymo7"]).toContain(navigator.getNextParts()[0].getUri());
+	});
+	
+	it("can be loaded from a rendering", function(done) {
+		var manager = new DymoManager(audioContext);
+		manager.loadDymoAndRendering('files/similarity-dymo.json', 'files/similarity-rendering.json', undefined, function() {
+			var dymo = manager.getTopDymo();
+			expect(dymo.getParts().length).toBe(5);
+			expect(dymo.getParts()[1].getSimilars().length).toBe(1);
+			var navigators = manager.getRendering().getNavigator().getSubsetNavigators();
+			expect(navigators.length).toBe(2);
+			//expect(navigators[0][0]).toEqual(REPEATED_NAVIGATOR);
+			expect(navigators[0][1].getType()).toEqual(REPEATED_NAVIGATOR);
+			expect(navigators[1][1].getType()).toEqual(SIMILARITY_NAVIGATOR);
+			manager.startPlaying();
+			setTimeout(function() {
+				manager.stopPlaying();
+				done();
+			}, 50);
+		});
 	});
 	
 });

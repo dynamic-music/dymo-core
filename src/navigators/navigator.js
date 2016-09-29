@@ -14,8 +14,11 @@ function DymoNavigator(dymo, defaultSubsetNavigator, defaultLeafNavigator) {
 	function init() {
 		navigators = new Map();
 		currentNavigators = [];
+		/*if (!defaultSubsetNavigator) {
+			defaultSubsetNavigator = new SequentialNavigator(undefined);
+		}*/
 		if (!defaultLeafNavigator) {
-			defaultLeafNavigator = new OneShotNavigator(null);
+			defaultLeafNavigator = new OneShotNavigator(undefined);
 		}
 	}
 	
@@ -38,6 +41,10 @@ function DymoNavigator(dymo, defaultSubsetNavigator, defaultLeafNavigator) {
 	
 	this.addSubsetNavigator = function(subsetFunction, navigator) {
 		subsetNavigators.push([subsetFunction, navigator]);
+	}
+	
+	this.getSubsetNavigators = function() {
+		return subsetNavigators;
 	}
 	
 	this.getPosition = function(level, currentDymo) {
@@ -86,21 +93,23 @@ function DymoNavigator(dymo, defaultSubsetNavigator, defaultLeafNavigator) {
 	}
 	
 	function recursiveGetNextParts(currentDymo) {
-		var currentNavigator = getNavigator(currentDymo);
-		if (currentNavigator) {
-			currentNavigators[currentDymo.getLevel()] = currentNavigator;
-			if (currentNavigator.getType() == ONE_SHOT_NAVIGATOR || currentNavigator.getType() == REPEATED_NAVIGATOR) {
-				return currentNavigator.getCurrentParts();
+		if (currentDymo) {
+			var currentNavigator = getNavigator(currentDymo);
+			if (currentNavigator) {
+				currentNavigators[currentDymo.getLevel()] = currentNavigator;
+				if (currentNavigator.getType() == ONE_SHOT_NAVIGATOR || currentNavigator.getType() == REPEATED_NAVIGATOR) {
+					return currentNavigator.getCurrentParts();
+				}
+				var par = currentNavigator.getCurrentParts();
+				var nextParts = replaceAndConcat(par);
+				if (nextParts) {
+					return nextParts;
+				} else {
+					return replaceAndConcat(currentNavigator.getNextParts());
+				}
 			}
-			var par = currentNavigator.getCurrentParts();
-			var nextParts = replaceAndConcat(par);
-			if (nextParts) {
-				return nextParts;
-			} else {
-				return replaceAndConcat(currentNavigator.getNextParts());
-			}
+			return [currentDymo];
 		}
-		return [currentDymo];
 	}
 	
 	function replaceAndConcat(dymoArray) {

@@ -1,0 +1,16 @@
+{
+	"@context":"http://tiny.cc/dymo-context",
+	"@id":"similarityRendering",
+	"@type":"Rendering",
+	"dymo":"similarityDymo",
+	"navigators":[
+		{
+			"@type":"SimilarityNavigator",
+			"dymos":{"args":["d"],"body":"return d.getLevel() == 0;"}
+		},
+		{
+			"@type":"RepeatedNavigator",
+			"dymos":{"args":["d"],"body":"return d.getLevel() == 1;"}
+		}
+	]
+}

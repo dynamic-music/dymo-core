@@ -180,7 +180,7 @@ function createMobileAudioOntology(path) {
 	addUnionClass("MappingRange", ["ParameterType", "MobileParameter"]);
 	addUnionClass("MappingOwners", ["Dymo", "Rendering"]);
 	//mapping properties
-	addProperty({term:"dymo", iri:"hasDymo"}, "Rendering", "Dymo", true, true);
+	addProperty({term:"dymo", iri:"hasDymo", type: "@id"}, "Rendering", "Dymo", true, true);
 	addProperty({term:"mappings", iri:"hasMapping"}, "MappingOwners", "Mapping", true);
 	addProperty({term:"domainDims", iri:"hasDomainDimension", type: "@vocab"}, "Mapping", "DomainDimension", true);
 	addProperty({term:"function", iri:"hasFunction"}, "Mapping", "Function", true);
@@ -198,8 +198,8 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"minor", iri:"hasMinor", type: "xsd:integer"}, "Beacon", prefixes["xsd"]+"integer", false);
 	addProperty({term:"rampDuration", iri:"hasDuration", type: "xsd:integer"}, "Ramp", prefixes["xsd"]+"integer", false);
 	//navigator properties
-	addProperty({term:"navigator", iri:"hasNavigator"}, "Rendering", "Navigator", false);
-	addProperty({term:"dymo", iri:"toDymo"}, "Navigator", "Dymo", false);
+	addProperty({term:"navigators", iri:"hasNavigator"}, "Rendering", "Navigator", false);
+	addProperty({term:"dymos", iri:"navDymos"}, "Navigator", "Function", false);
 	writeN3ToFile(path);
 }
 

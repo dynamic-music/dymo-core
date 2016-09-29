@@ -106,7 +106,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, $scope, onPlay
 	this.startPlaying = function() {
 		for (var i = 0; i < rendering.dymos.length; i++) {
 			rendering.dymos[i].updatePartOrder(ONSET); //TODO WHERE TO PUT THIS??
-			scheduler.play(rendering.dymos[i]);
+			scheduler.play(rendering.dymos[i], rendering.getNavigator());
 		}
 	}
 	

@@ -27,18 +27,18 @@ function DymoStore(callback) {
 	this.addDymo = function(dymoUri, parentUri, partUri, sourcePath) {
 		this.addTriple(dymoUri, TYPE, DYMO);
 		if (parentUri) {
-			this.addPart(parentUri, dymoUri);
+			addPart(parentUri, dymoUri);
 		}
 		if (partUri) {
-			this.addPart(dymoUri, partUri);
+			addPart(dymoUri, partUri);
 		}
 		if (sourcePath) {
 			this.addTriple(dymoUri, HAS_SOURCE, N3.Util.createLiteral(sourcePath));
 		}
 	}
 	
-	this.addPart = function(dymoUri, partUri) {
-		this.addObjectToList(dymoUri, HAS_PART, partUri);
+	function addPart(dymoUri, partUri) {
+		self.addObjectToList(dymoUri, HAS_PART, partUri);
 	}
 	
 	this.addSimilar = function(dymoUri, similarUri) {
@@ -110,7 +110,11 @@ function DymoStore(callback) {
 	this.findFeature = function(dymoUri, featureType) {
 		var featureUri = this.findFirstObjectUriOfType(dymoUri, HAS_FEATURE, featureType);
 		if (featureUri) {
-			return this.findAllObjectValues(featureUri, VALUE);
+			var featureValue = this.findAllObjectValues(featureUri, VALUE);
+			if (featureValue.length == 1) {
+				featureValue = featureValue[0];
+			}
+			return featureValue;
 		}
 	}
 	
@@ -118,9 +122,13 @@ function DymoStore(callback) {
 		var featureValues = [];
 		var featureUris = this.findAllObjectUris(dymoUri, HAS_FEATURE);
 		for (var i = 0; i < featureUris.length; i++) {
-			featureValues.push(this.findAllObjectValues(featureUris[i], VALUE));
+			featureValues.push(this.findFeatureValue(featureUris[i]));
 		}
 		return featureValues;
+	}
+	
+	this.findFeatureValue = function(featureUri) {
+		return this.findAllObjectValues(featureUri, VALUE);
 	}
 	
 	//TODO FOR NOW ONLY WORKS WITH SINGLE HIERARCHY..

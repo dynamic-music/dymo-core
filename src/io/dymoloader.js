@@ -120,9 +120,9 @@ function DymoLoader(scheduler, callback) {
 		dymo.setBasePath(dymoBasePath);
 		dymos[currentDymoUri] = dymo;
 		dymo.setSourcePath(store.findFirstObjectValue(currentDymoUri, HAS_SOURCE));
-		var features = store.findAllObjectUris(currentDymoUri, HAS_FEATURE);
-		for (var i = 0; i < features.length; i++) {
-			dymo.setFeature(store.findFirstObjectUri(features[i], TYPE), store.findFirstObjectValue(features[i], VALUE));
+		var featureUris = store.findAllObjectUris(currentDymoUri, HAS_FEATURE);
+		for (var i = 0; i < featureUris.length; i++) {
+			dymo.setFeature(store.findFirstObjectUri(featureUris[i], TYPE), store.findFeatureValue(featureUris[i]));
 		}
 		var parameters = store.findAllObjectUris(currentDymoUri, HAS_PARAMETER);
 		for (var i = 0; i < parameters.length; i++) {
@@ -164,11 +164,11 @@ function DymoLoader(scheduler, callback) {
 		for (var i = 0; i < mappingUris.length; i++) {
 			rendering.addMapping(createMapping(mappingUris[i]));
 		}
-		var navigator = store.findFirstObjectUri(renderingUri, HAS_NAVIGATOR);
-		if (navigator) {
-			var dymosFunction = store.findFirstObjectUri(navigator, TO_DYMO);
+		var navigators = store.findAllObjectUris(renderingUri, HAS_NAVIGATOR);
+		for (var i = 0; i < navigators.length; i++) {
+			var dymosFunction = store.findFirstObjectUri(navigators[i], NAV_DYMOS);
 			dymosFunction = store.findFunction(dymosFunction);
-			rendering.addNavigator(getNavigator(store.findFirstObjectUri(navigator, TYPE)), dymosFunction);
+			rendering.addSubsetNavigator(dymosFunction, getNavigator(store.findFirstObjectUri(navigators[i], TYPE)));
 		}
 		return [rendering, controls];
 	}
@@ -293,6 +293,10 @@ function DymoLoader(scheduler, callback) {
 	function getNavigator(type) {
 		if (type == SIMILARITY_NAVIGATOR) {
 			return new SimilarityNavigator(undefined);
+		} else if (type == ONE_SHOT_NAVIGATOR) {
+			return new OneShotNavigator(undefined);
+		} else if (type == REPEATED_NAVIGATOR) {
+			return new RepeatedNavigator(undefined);
 		}
 		return new SequentialNavigator(undefined);
 	}

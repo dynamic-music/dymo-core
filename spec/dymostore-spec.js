@@ -13,8 +13,8 @@ describe("a dymostore", function() {
 			dymoStore.addDymo("e2", "e1");
 			dymoStore.addDymo("d3", "e1");
 			dymoStore.addDymo("f0");
-			dymoStore.addTriple("d2", HAS_SIMILAR, "e2");
-			dymoStore.addTriple("f0", HAS_SIMILAR, "d0");
+			dymoStore.addSimilar("d2", "e2");
+			dymoStore.addSimilar("f0", "d0");
 			done();
 		});
 	});
@@ -70,6 +70,17 @@ describe("a dymostore", function() {
 			expect(similarityGraph.links.length).toBe(2);
 			done();
 		});
+	});
+	
+	it("can find features", function() {
+		dymoStore.setFeature("d1", ONSET_FEATURE, 0);
+		dymoStore.setFeature("d2", ONSET_FEATURE, 5);
+		dymoStore.setFeature("d3", ONSET_FEATURE, 2);
+		dymoStore.setFeature("e1", "mfcc", [2,4,-1,5]);
+		expect(dymoStore.findFeature("d1", ONSET_FEATURE)).toEqual(0);
+		expect(dymoStore.findFeature("d2", ONSET_FEATURE)).toEqual(5);
+		expect(dymoStore.findFeature("d3", ONSET_FEATURE)).toEqual(2);
+		expect(dymoStore.findFeature("e1", "mfcc")).toEqual([2,4,-1,5]);
 	});
 	
 });

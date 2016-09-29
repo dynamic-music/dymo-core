@@ -117,7 +117,7 @@
 		"major": "mb:hasMajor",
 		"minor": "mb:hasMinor",
 		"rampDuration": "mb:hasDuration",
-		"navigator": "mb:hasNavigator",
-		"dymo": "mb:toDymo"
+		"navigators": "mb:hasNavigator",
+		"dymos": "mb:navDymos"
 	}
 }

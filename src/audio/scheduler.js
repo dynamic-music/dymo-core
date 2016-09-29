@@ -110,8 +110,8 @@ function Scheduler(audioContext, onPlaybackChange) {
 		}
 	}
 	
-	this.play = function(dymo) {
-		var thread = new SchedulerThread(dymo, undefined, audioContext, buffers, convolverSend, delaySend, updatePlayingDymos, threadEnded);
+	this.play = function(dymo, navigator) {
+		var thread = new SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, delaySend, updatePlayingDymos, threadEnded);
 		threads.push(thread);
 	}
 	

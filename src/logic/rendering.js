@@ -7,7 +7,7 @@ function Rendering(dymo) {
 	var self = this;
 	
 	var mappings = [];
-	var navigators = [];
+	var navigator;
 	
 	this.play = function() {
 		if (dymo) {
@@ -30,11 +30,18 @@ function Rendering(dymo) {
 		return mappings;
 	}
 	
-	this.addNavigator = function(dymos, navigator) {
-		navigators.push([dymos, navigator]);
+	this.addSubsetNavigator = function(dymoFunction, nav) {
+		if (!navigator) {
+			navigator = new DymoNavigator(dymo);//, new SequentialNavigator(dymo));
+		}
+		navigator.addSubsetNavigator(dymoFunction, nav);
 	}
 	
-	this.toJson = function() {
+	this.getNavigator = function() {
+		return navigator;
+	}
+	
+	/*this.toJson = function() {
 		var json = {"mappings":[],"navigators":[]};
 		if (dymo) {
 			json["topDymo"] = dymo.getUri();
@@ -49,7 +56,7 @@ function Rendering(dymo) {
 			});
 		}
 		return json;
-	}
+	}*/
 	
 	function navigatorToJson() {
 		

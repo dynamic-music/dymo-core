@@ -101,7 +101,7 @@
 		"MappingTarget": "mb:MappingTarget",
 		"MappingRange": "mb:MappingRange",
 		"MappingOwners": "mb:MappingOwners",
-		"dymo": "mb:hasDymo",
+		"dymo": { "@id": "mb:hasDymo", "@type": "@id" },
 		"mappings": "mb:hasMapping",
 		"domainDims": { "@id": "mb:hasDomainDimension", "@type": "@vocab" },
 		"function": "mb:hasFunction",
@@ -117,7 +117,7 @@
 		"major": { "@id": "mb:hasMajor", "@type": "xsd:integer" },
 		"minor": { "@id": "mb:hasMinor", "@type": "xsd:integer" },
 		"rampDuration": { "@id": "mb:hasDuration", "@type": "xsd:integer" },
-		"navigator": "mb:hasNavigator",
-		"dymo": "mb:toDymo"
+		"navigators": "mb:hasNavigator",
+		"dymos": "mb:navDymos"
 	}
 }

@@ -113,4 +113,4 @@ var HAS_MAJOR = "http://tiny.cc/mobile-audio-ontology#hasMajor";
 var HAS_MINOR = "http://tiny.cc/mobile-audio-ontology#hasMinor";
 var HAS_DURATION = "http://tiny.cc/mobile-audio-ontology#hasDuration";
 var HAS_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#hasNavigator";
-var TO_DYMO = "http://tiny.cc/mobile-audio-ontology#toDymo";
+var NAV_DYMOS = "http://tiny.cc/mobile-audio-ontology#navDymos";

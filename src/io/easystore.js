@@ -24,26 +24,6 @@ function EasyStore() {
 		return store.createBlankNode();
 	}
 	
-	//adds the given object to the list the given subject has under the given predicate, creates the list if none yet
-	this.addObjectToList = function(subject, predicate, object) {
-		var list = this.findFirstObjectUri(subject, predicate);
-		var newElement = this.createBlankNode();
-		if (!list) {
-			this.addTriple(subject, predicate, newElement);
-		} else {
-			var lastElement = list;
-			var lastElementRest = this.findFirstObjectUri(lastElement, REST);
-			while (lastElementRest != NIL) {
-				lastElement = lastElementRest;
-				lastElementRest = this.findFirstObjectUri(lastElement, REST);
-			}
-			this.removeTriple(lastElement, REST, NIL);
-			this.addTriple(lastElement, REST, newElement);
-		}
-		this.addTriple(newElement, FIRST, object);
-		this.addTriple(newElement, REST, NIL);
-	}
-	
 	this.loadData = function(data, isJsonld, callback) {
 		jsonldToNquads(data, isJsonld, function(nquads) {
 			N3.Parser().parse(nquads, function (error, triple, prefixes) {
@@ -72,6 +52,27 @@ function EasyStore() {
 		} else {
 			callback(data);
 		}
+	}
+	
+	
+	//adds the given object to the list the given subject has under the given predicate, creates the list if none yet
+	this.addObjectToList = function(subject, predicate, object) {
+		var list = this.findFirstObjectUri(subject, predicate);
+		var newElement = this.createBlankNode();
+		if (!list) {
+			this.addTriple(subject, predicate, newElement);
+		} else {
+			var lastElement = list;
+			var lastElementRest = this.findFirstObjectUri(lastElement, REST);
+			while (lastElementRest != NIL) {
+				lastElement = lastElementRest;
+				lastElementRest = this.findFirstObjectUri(lastElement, REST);
+			}
+			this.removeTriple(lastElement, REST, NIL);
+			this.addTriple(lastElement, REST, newElement);
+		}
+		this.addTriple(newElement, FIRST, object);
+		this.addTriple(newElement, REST, NIL);
 	}
 	
 	
@@ -133,7 +134,7 @@ function EasyStore() {
 	
 	//returns the object values of all results found in the store, including the list elements if they are lists
 	this.findAllObjectValues = function(subject, predicate) {
-		return this.findAllObjectUris(subject, predicate).map(function(a){return N3.Util.getLiteralValue(a);});
+		return this.findAllObjectUris(subject, predicate).map(getLiteralValue);
 	}
 	
 	this.findObjectListUris = function(subject, predicate) {

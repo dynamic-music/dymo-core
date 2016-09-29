@@ -137,6 +137,6 @@ mb:hasDuration a owl:DatatypeProperty;
 mb:hasNavigator a owl:DatatypeProperty;
     rdfs:domain mb:Rendering;
     rdfs:range "http://tiny.cc/mobile-audio-ontology#Navigator".
-mb:toDymo a owl:DatatypeProperty;
+mb:navDymos a owl:DatatypeProperty;
     rdfs:domain mb:Navigator;
-    rdfs:range "http://tiny.cc/dymo-ontology#Dymo".
+    rdfs:range "http://tiny.cc/mobile-audio-ontology#Function".
