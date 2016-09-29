@@ -72,6 +72,8 @@ mb:ContinueAfterLeaping a mb:ControlParameter.
 mb:Navigator a owl:Class.
 mb:OneShotNavigator a owl:Class;
     rdfs:subClassOf mb:Navigator.
+mb:RepeatedNavigator a owl:Class;
+    rdfs:subClassOf mb:Navigator.
 mb:SequentialNavigator a owl:Class;
     rdfs:subClassOf mb:Navigator.
 mb:SimilarityNavigator a owl:Class;

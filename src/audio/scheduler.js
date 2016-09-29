@@ -58,6 +58,7 @@ function Scheduler(audioContext, onPlaybackChange) {
 		return buffers[dymo.getSourcePath()];
 	}
 	
+	/** @param {Function=} callback (optional) */
 	function bufferLoaded(callback) {
 		if (numCurrentlyLoading > 0) {
 			numCurrentlyLoading--;

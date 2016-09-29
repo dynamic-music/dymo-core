@@ -45,24 +45,27 @@ function SimilarityNavigator(dymo) {
 	}
 	
 	function replaceWithSimilars(parts) {
-		if (parts && parts.length > 0) {
-			for (var i = 0; i < parts.length; i++) {
-				if (parts[i].getSimilars().length > 0) {
-					if (Math.random() < self.leapingProbability.getValue()) {
-						var options = parts[i].getSimilars();
-						var selectedOption = Math.floor(Math.random()*options.length);
-						if (self.continueAfterLeaping.getValue()) {
-							var index = dymo.getParts().indexOf(selectedOption);
-							if (index) {
-								partsNavigated = index+1;
+		if (parts) {
+			//console.log("be", parts.map(function(o){return o.getUri();}), partsNavigated)
+			if (parts && parts.length > 0) {
+				for (var i = 0; i < parts.length; i++) {
+					if (parts[i].getSimilars().length > 0) {
+						if (Math.random() < self.leapingProbability.getValue()) {
+							var options = parts[i].getSimilars();
+							var selectedOption = Math.floor(Math.random()*options.length);
+							if (self.continueAfterLeaping.getValue() > 0) {
+								var index = dymo.getParts().indexOf(selectedOption);
+								if (index) {
+									partsNavigated = index+1;
+								}
 							}
+							parts[i] = options[selectedOption];
 						}
-						parts[i] = options[selectedOption];
 					}
 				}
 			}
+			return parts;
 		}
-		return parts;
 	}
 	
 	function getParallelParts() {

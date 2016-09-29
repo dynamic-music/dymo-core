@@ -94,6 +94,7 @@
 		"ContinueAfterLeaping": "mb:ContinueAfterLeaping",
 		"Navigator": "mb:Navigator",
 		"OneShotNavigator": "mb:OneShotNavigator",
+		"RepeatedNavigator": "mb:RepeatedNavigator",
 		"SequentialNavigator": "mb:SequentialNavigator",
 		"SimilarityNavigator": "mb:SimilarityNavigator",
 		"DomainDimension": "mb:DomainDimension",

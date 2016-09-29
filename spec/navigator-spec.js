@@ -172,10 +172,37 @@ describe("a navigator", function() {
 		dymo4.addSimilar(dymo5);
 		dymo4.addSimilar(dymo6);
 		
-		var navigator = new DymoNavigator(dymo1, new SequentialNavigator());
+		
+		//test without replacing of objects (probability 0)
+		var navigator = new DymoNavigator(dymo1, new SequentialNavigator(), new RepeatedNavigator());
 		var simNav = new SimilarityNavigator(dymo1)
 		navigator.addSubsetNavigator(function(d){return d.getLevel() == 0;}, simNav);
+		simNav.leapingProbability.update(0);
+		simNav.continueAfterLeaping.update(0);
+		expect(["dymo2"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo3"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo4"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo5"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo6"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo7"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(navigator.getNextParts()).toBeUndefined();
+		
+		
+		//test replacing of objects with similars (probability 1)
+		navigator.reset();
 		simNav.leapingProbability.update(1);
+		expect(["dymo3"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo2"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo5","dymo6"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo5"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo6"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo7"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(navigator.getNextParts()).toBeUndefined();
+		
+		
+		//test replacing of objects with similars (probability 0.5)
+		navigator.reset();
+		simNav.leapingProbability.update(0.5);
 		expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0].getUri());
 		expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0].getUri());
 		expect(["dymo4","dymo5","dymo6"]).toContain(navigator.getNextParts()[0].getUri());
@@ -183,17 +210,17 @@ describe("a navigator", function() {
 		expect(["dymo6"]).toContain(navigator.getNextParts()[0].getUri());
 		expect(["dymo7"]).toContain(navigator.getNextParts()[0].getUri());
 		expect(navigator.getNextParts()).toBeUndefined();
+		
+		
+		//test leaping and continuing
 		navigator.reset();
 		simNav.continueAfterLeaping.update(1);
-		expect(["dymo3"]).toContain(navigator.getNextParts()[0].getUri());
-		expect(["dymo2"]).toContain(navigator.getNextParts()[0].getUri());
-		expect(["dymo3"]).toContain(navigator.getNextParts()[0].getUri());
-		expect(["dymo5","dymo6"]).toContain(navigator.getNextParts()[0].getUri());
-		expect(["dymo3"]).toContain(navigator.getNextParts()[0].getUri());
-		expect(["dymo2"]).toContain(navigator.getNextParts()[0].getUri());
-		expect(["dymo3"]).toContain(navigator.getNextParts()[0].getUri());
-		expect(["dymo5"]).toContain(navigator.getNextParts()[0].getUri());
-		expect(["dymo6"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo2","dymo3","dymo4","dymo5","dymo6"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo2","dymo3","dymo4","dymo5","dymo6"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo2","dymo3","dymo4","dymo5","dymo6"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo2","dymo3","dymo4","dymo5","dymo6","dymo7"]).toContain(navigator.getNextParts()[0].getUri());
 	});
 	
 });

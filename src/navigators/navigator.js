@@ -2,8 +2,9 @@
  * A navigator that follows the order of parts.
  * @constructor
  * @param {Object=} defaultSubsetNavigator (optional)
+ * @param {Object=} defaultLeafNavigator (optional)
  */
-function DymoNavigator(dymo, defaultSubsetNavigator) {
+function DymoNavigator(dymo, defaultSubsetNavigator, defaultLeafNavigator) {
 	
 	var subsetNavigators = [];
 	var navigators;
@@ -13,6 +14,9 @@ function DymoNavigator(dymo, defaultSubsetNavigator) {
 	function init() {
 		navigators = new Map();
 		currentNavigators = [];
+		if (!defaultLeafNavigator) {
+			defaultLeafNavigator = new OneShotNavigator(null);
+		}
 	}
 	
 	//resets all subnavigators associated with the given dymo
@@ -85,7 +89,7 @@ function DymoNavigator(dymo, defaultSubsetNavigator) {
 		var currentNavigator = getNavigator(currentDymo);
 		if (currentNavigator) {
 			currentNavigators[currentDymo.getLevel()] = currentNavigator;
-			if (currentNavigator.getType() == ONE_SHOT_NAVIGATOR) {
+			if (currentNavigator.getType() == ONE_SHOT_NAVIGATOR || currentNavigator.getType() == REPEATED_NAVIGATOR) {
 				return currentNavigator.getCurrentParts();
 			}
 			var par = currentNavigator.getCurrentParts();
@@ -101,11 +105,9 @@ function DymoNavigator(dymo, defaultSubsetNavigator) {
 	
 	function replaceAndConcat(dymoArray) {
 		if (dymoArray && dymoArray.length > 0) {
-			//console.log("con", dymoArray.map(function(p){return p.getUri()}))
 			var nextLevelArray = [];
 			for (var i = 0, j = dymoArray.length; i < j; i++) {
 				var nextParts = recursiveGetNextParts(dymoArray[i]);
-				//console.log("nex", nextParts)
 				if (nextParts) {
 					if (nextParts.length) {
 						nextLevelArray = nextLevelArray.concat(nextParts);
@@ -132,7 +134,7 @@ function DymoNavigator(dymo, defaultSubsetNavigator) {
 				if (defaultSubsetNavigator && dymo.hasParts()) {
 					navigators.set(dymo, defaultSubsetNavigator.getCopy(dymo));
 				} else {
-					navigators.set(dymo, new OneShotNavigator(dymo));
+					navigators.set(dymo, defaultLeafNavigator.getCopy(dymo));
 				}
 			}
 		}
