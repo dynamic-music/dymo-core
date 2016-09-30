@@ -19,6 +19,18 @@ describe("a dymostore", function() {
 		});
 	});
 	
+	it("can add renderings, mappings, and navigators", function() {
+		dymoStore.addRendering("r0", "d0");
+		dymoStore.addMapping("r0",[{"name":"c0","@type":SLIDER},{"@type":ONSET_FEATURE}],[["a"],"return 2*a"],null,[["d"],"return d.getLevel()==1"],AMPLITUDE);
+		dymoStore.addMapping("r0",[{"name":"c1","@type":TOGGLE},{"@type":DURATION_FEATURE}],[["a","b"],"return a/b"],["e0","d3","f0"],null,DURATION_RATIO);
+		dymoStore.addNavigator("r0", GRAPH_NAVIGATOR, ["d"], "return d.getLevel()==0");
+		dymoStore.addNavigator("r0", REPEATED_NAVIGATOR, ["d"], "return d.getLevel()==1");
+		expect(dymoStore.find("r0").length).toBe(6);
+		expect(dymoStore.findMappings("r0").length).toBe(2);
+		expect(dymoStore.findNavigators("r0").length).toBe(2);
+		//console.log(dymoStore.findNavigators("r0"))
+	});
+	
 	it("can find top dymos", function() {
 		var topDymos = dymoStore.findTopDymos();
 		expect(topDymos.length).toBe(3);

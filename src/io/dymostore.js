@@ -63,6 +63,53 @@ function DymoStore(callback) {
 		}
 	}
 	
+	this.addRendering = function(renderingUri, dymoUri) {
+		this.addTriple(renderingUri, TYPE, RENDERING);
+		this.addTriple(renderingUri, HAS_DYMO, dymoUri);
+	}
+	
+	this.addMapping = function(renderingUri, domainDims, mappingFunction, targetList, targetFunction, rangeUri) {
+		var mappingUri = this.createBlankNode();
+		this.addTriple(renderingUri, HAS_MAPPING, mappingUri);
+		for (var i = 0; i < domainDims.length; i++) {
+			var currentDomDimUri = this.createBlankNode();
+			this.addTriple(mappingUri, HAS_DOMAIN_DIMENSION, currentDomDimUri);
+			if (domainDims[i]["name"]) {
+				this.addTriple(currentDomDimUri, NAME, domainDims[i]["name"]);
+			}
+			if (domainDims[i]["type"]) {
+				this.addTriple(currentDomDimUri, TYPE, domainDims[i]["type"]);
+			}
+		}
+		var funcUri = this.addFunction(mappingFunction[0], mappingFunction[1]);
+		this.addTriple(mappingUri, HAS_FUNCTION, funcUri);
+		if (targetList) {
+			for (var i = 0; i < targetList.length; i++) {
+				this.addTriple(mappingUri, TO_TARGET, targetList[i]);
+			}
+		}
+		if (targetFunction) {
+			funcUri = this.addFunction(targetFunction[0], targetFunction[1]);
+			this.addTriple(mappingUri, TO_TARGET, funcUri);
+		}
+		this.addTriple(mappingUri, HAS_RANGE, rangeUri);
+	}
+	
+	this.addNavigator = function(renderingUri, navigatorType, subsetFunctionArgs, subsetFunctionBody) {
+		var navUri = this.createBlankNode();
+		this.addTriple(renderingUri, HAS_NAVIGATOR, navUri);
+		this.addTriple(navUri, TYPE, navigatorType);
+		var funcUri = this.addFunction(subsetFunctionArgs, subsetFunctionBody);
+		this.addTriple(navUri, NAV_DYMOS, funcUri);
+	}
+	
+	this.addFunction = function(args, body) {
+		var funcUri = this.createBlankNode();
+		this.addTriple(funcUri, HAS_ARGUMENT, N3.Util.createLiteral(args));
+		this.addTriple(funcUri, HAS_BODY, N3.Util.createLiteral(body));
+		return funcUri;
+	}
+	
 	
 	///////// QUERY FUNCTIONS //////////
 	
@@ -92,6 +139,14 @@ function DymoStore(callback) {
 			allObjects = allObjects.concat(this.findAllObjectsInHierarchy(parts[i]));
 		}
 		return allObjects;
+	}
+	
+	this.findMappings = function(renderingUri) {
+		return this.findAllObjectUris(renderingUri, HAS_MAPPING);
+	}
+	
+	this.findNavigators = function(renderingUri) {
+		return this.findAllObjectUris(renderingUri, HAS_NAVIGATOR);
 	}
 	
 	this.findFunction = function(uri) {

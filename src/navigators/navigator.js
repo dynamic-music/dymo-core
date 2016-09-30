@@ -134,7 +134,7 @@ function DymoNavigator(dymo, defaultSubsetNavigator, defaultLeafNavigator) {
 	function getNavigator(dymo) {
 		if (!navigators.has(dymo)) {
 			for (var i = 0, j = subsetNavigators.length; i < j; i++) {
-				if (subsetNavigators[i][0](dymo) && dymo.hasParts()) {
+				if (subsetNavigators[i][0](dymo)) {
 					navigators.set(dymo, subsetNavigators[i][1].getCopy(dymo));
 				}
 			}

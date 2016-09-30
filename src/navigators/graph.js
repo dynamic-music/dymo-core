@@ -9,7 +9,7 @@ function GraphNavigator(dymo) {
 	var isPlaying = false;
 	var nextPosition = 0;
 	
-	this.leapingProbability = new Parameter(LEAPING_PROBABILITY, 0.5);
+	this.leapingProbability = new Parameter(LEAPING_PROBABILITY, 0.8);
 	//if true the control continues after the part index leaped to
 	//if false it stays on the general timeline and merely replaces parts according to the graph
 	
