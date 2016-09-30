@@ -78,6 +78,8 @@ mb:SequentialNavigator a owl:Class;
     rdfs:subClassOf mb:Navigator.
 mb:SimilarityNavigator a owl:Class;
     rdfs:subClassOf mb:Navigator.
+mb:GraphNavigator a owl:Class;
+    rdfs:subClassOf mb:Navigator.
 mb:DomainDimension a owl:Class;
     owl:unionOf (mb:MobileControl dy:ParameterType dy:FeatureType).
 mb:MappingTarget a owl:Class;

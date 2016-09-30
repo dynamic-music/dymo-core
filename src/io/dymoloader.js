@@ -122,6 +122,7 @@ function DymoLoader(scheduler, callback) {
 		dymo.setSourcePath(store.findFirstObjectValue(currentDymoUri, HAS_SOURCE));
 		var featureUris = store.findAllObjectUris(currentDymoUri, HAS_FEATURE);
 		for (var i = 0; i < featureUris.length; i++) {
+			var type = store.findFirstObjectUri(featureUris[i], TYPE);
 			dymo.setFeature(store.findFirstObjectUri(featureUris[i], TYPE), store.findFeatureValue(featureUris[i]));
 		}
 		var parameters = store.findAllObjectUris(currentDymoUri, HAS_PARAMETER);

@@ -97,6 +97,7 @@
 		"RepeatedNavigator": "mb:RepeatedNavigator",
 		"SequentialNavigator": "mb:SequentialNavigator",
 		"SimilarityNavigator": "mb:SimilarityNavigator",
+		"GraphNavigator": "mb:GraphNavigator",
 		"DomainDimension": "mb:DomainDimension",
 		"MappingTarget": "mb:MappingTarget",
 		"MappingRange": "mb:MappingRange",

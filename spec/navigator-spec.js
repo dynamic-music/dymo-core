@@ -226,6 +226,38 @@ describe("a navigator", function() {
 		expect(["dymo2","dymo3","dymo4","dymo5","dymo6","dymo7"]).toContain(navigator.getNextParts()[0].getUri());
 	});
 	
+	it("can navigate directed graphs", function() {
+		dymo1 = new DynamicMusicObject("dymo1");
+		dymo2 = new DynamicMusicObject("dymo2");
+		dymo3 = new DynamicMusicObject("dymo3");
+		dymo4 = new DynamicMusicObject("dymo4");
+		dymo5 = new DynamicMusicObject("dymo5");
+		dymo6 = new DynamicMusicObject("dymo6");
+		dymo7 = new DynamicMusicObject("dymo7");
+		dymo1.addPart(dymo2);
+		dymo1.addPart(dymo3);
+		dymo1.addPart(dymo4);
+		dymo1.addPart(dymo5);
+		dymo1.addPart(dymo6);
+		dymo1.addPart(dymo7);
+		
+		dymo2.addSimilar(dymo3);
+		dymo3.addSimilar(dymo2);
+		dymo4.addSimilar(dymo5);
+		dymo4.addSimilar(dymo6);
+		
+		
+		//test without replacing of objects (probability 0)
+		var navigator = new DymoNavigator(dymo1, new SequentialNavigator(), new RepeatedNavigator());
+		var graphNav = new GraphNavigator(dymo1)
+		navigator.addSubsetNavigator(function(d){return d.getLevel() == 0;}, graphNav);
+		expect(["dymo2"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo3"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo2","dymo4"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo3","dymo5","dymo6"]).toContain(navigator.getNextParts()[0].getUri());
+		expect(["dymo2","dymo4","dymo6","dymo7"]).toContain(navigator.getNextParts()[0].getUri());
+	});
+	
 	it("can be loaded from a rendering", function(done) {
 		var manager = new DymoManager(audioContext);
 		manager.loadDymoAndRendering('files/similarity-dymo.json', 'files/similarity-rendering.json', undefined, function() {

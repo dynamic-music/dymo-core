@@ -110,11 +110,7 @@ function DymoStore(callback) {
 	this.findFeature = function(dymoUri, featureType) {
 		var featureUri = this.findFirstObjectUriOfType(dymoUri, HAS_FEATURE, featureType);
 		if (featureUri) {
-			var featureValue = this.findAllObjectValues(featureUri, VALUE);
-			if (featureValue.length == 1) {
-				featureValue = featureValue[0];
-			}
-			return featureValue;
+			return this.findFeatureValue(featureUri);
 		}
 	}
 	
@@ -127,8 +123,16 @@ function DymoStore(callback) {
 		return featureValues;
 	}
 	
+	this.findAllNumericFeatureValues = function(dymoUri) {
+		return this.findAllFeatureValues(dymoUri).filter(function(v){return !isNaN(v);});
+	}
+	
 	this.findFeatureValue = function(featureUri) {
-		return this.findAllObjectValues(featureUri, VALUE);
+		var featureValue = this.findAllObjectValues(featureUri, VALUE);
+		if (featureValue.length == 1) {
+			featureValue = featureValue[0];
+		}
+		return featureValue;
 	}
 	
 	//TODO FOR NOW ONLY WORKS WITH SINGLE HIERARCHY..

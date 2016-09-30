@@ -92,6 +92,7 @@ var ONE_SHOT_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#OneShotNavigator"
 var REPEATED_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#RepeatedNavigator";
 var SEQUENTIAL_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#SequentialNavigator";
 var SIMILARITY_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#SimilarityNavigator";
+var GRAPH_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#GraphNavigator";
 var DOMAIN_DIMENSION = "http://tiny.cc/mobile-audio-ontology#DomainDimension";
 var MAPPING_TARGET = "http://tiny.cc/mobile-audio-ontology#MappingTarget";
 var MAPPING_RANGE = "http://tiny.cc/mobile-audio-ontology#MappingRange";
