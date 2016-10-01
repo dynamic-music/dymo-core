@@ -53,6 +53,7 @@ var HAS_FEATURE = "http://tiny.cc/dymo-ontology#hasFeature";
 var HAS_PARAMETER_TYPE = "http://tiny.cc/dymo-ontology#hasParameterType";
 var HAS_FEATURE_TYPE = "http://tiny.cc/dymo-ontology#hasFeatureType";
 var HAS_SIMILAR = "http://tiny.cc/dymo-ontology#hasSimilar";
+var HAS_SUCCESSOR = "http://tiny.cc/dymo-ontology#hasSuccessor";
 var RENDERING = "http://tiny.cc/mobile-audio-ontology#Rendering";
 var MAPPING = "http://tiny.cc/mobile-audio-ontology#Mapping";
 var FUNCTION = "http://tiny.cc/mobile-audio-ontology#Function";

@@ -9,10 +9,6 @@ function GraphNavigator(dymo) {
 	var isPlaying = false;
 	var nextPosition = 0;
 	
-	this.leapingProbability = new Parameter(LEAPING_PROBABILITY, 0.8);
-	//if true the control continues after the part index leaped to
-	//if false it stays on the general timeline and merely replaces parts according to the graph
-	
 	this.resetPartsPlayed = function() {
 		nextPosition = 0;
 	}
@@ -22,10 +18,7 @@ function GraphNavigator(dymo) {
 	}
 	
 	this.getCopy = function(dymo) {
-		var copy = new GraphNavigator(dymo);
-		copy.leapingProbability.update(this.leapingProbability.getValue(), this);
-		//copy.continueAfterLeaping.update(this.continueAfterLeaping.getValue(), this);
-		return copy;
+		return new GraphNavigator(dymo);
 	}
 	
 	this.getCurrentParts = function() {
@@ -47,13 +40,11 @@ function GraphNavigator(dymo) {
 	
 	function getNextPosition(parts) {
 		if (parts && parts.length > 0) {
-			//console.log("be", parts.map(function(o){return o.getUri();}), partsNavigated)
-			var options = parts[0].getSimilars();
-			if (options.length > 0 && Math.random() < self.leapingProbability.getValue()) {
+			var options = parts[0].getSuccessors();
+			if (options.length > 0) {
 				var selectedOption = options[Math.floor(Math.random()*options.length)];
 				return dymo.getParts().indexOf(selectedOption);
 			}
-			return nextPosition+1;
 		}
 	}
 	

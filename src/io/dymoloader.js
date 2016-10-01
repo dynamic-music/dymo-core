@@ -143,6 +143,11 @@ function DymoLoader(scheduler, callback) {
 		for (var i = 0; i < similars.length; i++) {
 			dymo.addSimilar(dymos[similars[i]]);
 		}
+		//then successors
+		var successors = store.findAllObjectUris(currentDymoUri, HAS_SUCCESSOR);
+		for (var i = 0; i < successors.length; i++) {
+			dymo.addSuccessor(dymos[successors[i]]);
+		}
 		//then add mappings
 		var mappingUris = store.findAllObjectUris(currentDymoUri, HAS_MAPPING);
 		createControls(mappingUris);

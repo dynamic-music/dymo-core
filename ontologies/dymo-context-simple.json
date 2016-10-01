@@ -58,6 +58,7 @@
 		"paramType": "dy:hasParameterType",
 		"featureType": "dy:hasFeatureType",
 		"similars": "dy:hasSimilar",
+		"successors": "dy:hasSuccessor",
 		"Rendering": "mb:Rendering",
 		"Mapping": "mb:Mapping",
 		"Function": "mb:Function",

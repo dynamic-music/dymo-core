@@ -9,6 +9,7 @@ function DynamicMusicObject(uri, type, scheduler) {
 	var parent = null;
 	var parts = [];
 	var similars = [];
+	var successors = [];
 	var features = {};
 	var parameters = {};
 	var mappings = [];
@@ -244,6 +245,14 @@ function DynamicMusicObject(uri, type, scheduler) {
 	
 	this.getSimilars = function(dymo) {
 		return similars;
+	}
+	
+	this.addSuccessor = function(dymo) {
+		successors.push(dymo);
+	}
+	
+	this.getSuccessors = function(dymo) {
+		return successors;
 	}
 	
 	this.getFeatures = function() {

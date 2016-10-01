@@ -45,6 +45,10 @@ function DymoStore(callback) {
 		this.addTriple(dymoUri, HAS_SIMILAR, similarUri);
 	}
 	
+	this.addSuccessor = function(dymoUri, successorUri) {
+		this.addTriple(dymoUri, HAS_SUCCESSOR, successorUri);
+	}
+	
 	this.setFeature = function(dymoUri, featureType, value) {
 		var featureUri = this.findFirstObjectUriOfType(dymoUri, HAS_FEATURE, featureType);
 		if (!featureUri) {
@@ -257,27 +261,27 @@ function DymoStore(callback) {
 		});
 	}
 	
-	this.toJsonGraph = function(nodeClass, linkProperty, callback) {
-		var graph = {"nodes":[], "links":[]};
+	this.toJsonGraph = function(nodeClass, edgeProperty, callback) {
+		var graph = {"nodes":[], "edges":[]};
 		var nodeMap = {};
 		var nodeUris = this.findAllSubjectUris(TYPE, nodeClass);
-		var linkTriples = this.find(null, linkProperty, null);
+		var edgeTriples = this.find(null, edgeProperty, null);
 		async.map(nodeUris, toFlatJsonld, function(err, result){
 			graph["nodes"] = result;
 			for (var i = 0; i < nodeUris.length; i++) {
 				nodeMap[nodeUris[i]] = graph["nodes"][i];
 			}
-			graph["links"] = [];
-			for (var i = 0; i < linkTriples.length; i++) {
-				if (self.find(linkTriples[i].object, TYPE, nodeClass).length == 0) {
-					if (self.find(linkTriples[i].object, FIRST).length > 0) {
+			graph["edges"] = [];
+			for (var i = 0; i < edgeTriples.length; i++) {
+				if (self.find(edgeTriples[i].object, TYPE, nodeClass).length == 0) {
+					if (self.find(edgeTriples[i].object, FIRST).length > 0) {
 						//it's a list!!
-						var objects = self.findObjectListUris(linkTriples[i].subject, linkProperty);
-						objects = objects.map(function(t){return createLink(nodeMap[linkTriples[i].subject], nodeMap[t]);});
-						graph["links"] = graph["links"].concat(objects);
+						var objects = self.findObjectListUris(edgeTriples[i].subject, edgeProperty);
+						objects = objects.map(function(t){return createLink(nodeMap[edgeTriples[i].subject], nodeMap[t]);});
+						graph["edges"] = graph["edges"].concat(objects);
 					}
 				} else {
-					graph["links"].push(createLink(nodeMap[linkTriples[i].subject], nodeMap[linkTriples[i].object]));
+					graph["edges"].push(createLink(nodeMap[edgeTriples[i].subject], nodeMap[edgeTriples[i].object]));
 				}
 			}
 			callback(graph);

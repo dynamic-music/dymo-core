@@ -241,10 +241,10 @@ describe("a navigator", function() {
 		dymo1.addPart(dymo6);
 		dymo1.addPart(dymo7);
 		
-		dymo2.addSimilar(dymo3);
-		dymo3.addSimilar(dymo2);
-		dymo4.addSimilar(dymo5);
-		dymo4.addSimilar(dymo6);
+		dymo2.addSuccessor(dymo3);
+		dymo3.addSuccessor(dymo2);
+		dymo4.addSuccessor(dymo5);
+		dymo4.addSuccessor(dymo6);
 		
 		
 		//test without replacing of objects (probability 0)
