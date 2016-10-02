@@ -176,14 +176,28 @@ function EasyStore() {
 		return triples.concat(subTriples);
 	}
 	
+	this.findAllSubClasses = function(superclassUri) {
+		return this.findAllSubjectUris(RDFS_URI+"subClassOf", superclassUri);
+	}
+	
 	this.isSubclassOf = function(class1, class2) {
 		var superClass = this.findFirstObjectUri(class1, RDFS_URI+"subClassOf");
 		while (superClass) {
-			//console.log(superClass, class2)
 			if (superClass == class2) {
 				return true;
 			}
 			superClass = this.findFirstObjectUri(superClass, RDFS_URI+"subClassOf");
+		}
+		return false;
+	}
+	
+	this.isSubtypeOf = function(type1, type2) {
+		var superType = this.findFirstObjectUri(type1, TYPE);
+		while (superType) {
+			if (superType == type2) {
+				return true;
+			}
+			superType = this.findFirstObjectUri(superType, TYPE);
 		}
 		return false;
 	}

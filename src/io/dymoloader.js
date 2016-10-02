@@ -232,18 +232,14 @@ function DymoLoader(scheduler, callback) {
 		var domainDimUris = store.findAllObjectUris(mappingUri, HAS_DOMAIN_DIMENSION);
 		for (var j = 0; j < domainDimUris.length; j++) {
 			var currentType = store.findFirstObjectUri(domainDimUris[j], TYPE);
-			var currentName = store.findFirstObjectValue(domainDimUris[j], NAME);
-			if (!currentName) {
-				currentName = domainDimUris[j];
-			}
-			if (currentType == FEATURE_TYPE || store.isSubclassOf(currentType, FEATURE_TYPE)) {
-				domainDims.push(currentName);
-			} else if (currentType == PARAMETER_TYPE || store.isSubclassOf(currentType, PARAMETER_TYPE)) {
+			if (currentType == FEATURE_TYPE || store.isSubtypeOf(currentType, FEATURE_TYPE)) {
+				domainDims.push(currentType);
+			} else if (currentType == PARAMETER_TYPE || store.isSubtypeOf(currentType, PARAMETER_TYPE)) {
 				var currentParameter;
 				if (dymo) {
-					currentParameter = addOrUpdateDymoParameter(dymo, currentName);
+					currentParameter = addOrUpdateDymoParameter(dymo, currentType);
 				} else {
-					currentParameter = new Parameter(currentName, 0);
+					currentParameter = new Parameter(currentType, 0);
 				}
 				domainDims.push(currentParameter);
 			} else {

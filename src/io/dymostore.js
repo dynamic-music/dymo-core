@@ -79,7 +79,7 @@ function DymoStore(callback) {
 			var currentDomDimUri = this.createBlankNode();
 			this.addTriple(mappingUri, HAS_DOMAIN_DIMENSION, currentDomDimUri);
 			if (domainDims[i]["name"]) {
-				this.addTriple(currentDomDimUri, NAME, domainDims[i]["name"]);
+				this.addTriple(currentDomDimUri, NAME, N3.Util.createLiteral(domainDims[i]["name"]));
 			}
 			if (domainDims[i]["type"]) {
 				this.addTriple(currentDomDimUri, TYPE, domainDims[i]["type"]);
@@ -143,6 +143,13 @@ function DymoStore(callback) {
 			allObjects = allObjects.concat(this.findAllObjectsInHierarchy(parts[i]));
 		}
 		return allObjects;
+	}
+	
+	this.findDymoRelations = function() {
+		var domainUris = this.findAllSubjectUris(DOMAIN, DYMO);
+		var rangeUris = this.findAllSubjectUris(RANGE, DYMO);
+		//TODO FIND HAS_PART AUTOMATICALLY..
+		return [HAS_PART].concat(intersectArrays(domainUris, rangeUris));
 	}
 	
 	this.findMappings = function(renderingUri) {

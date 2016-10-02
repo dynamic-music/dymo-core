@@ -22,12 +22,10 @@ FunctionTools.createFunction = function(args, body) {
 //arithmetic operations, constant leaves, and one variable leaf
 FunctionTools.invertFunction = function(body) {
 	var returnValue = FunctionTools.toReturnValueString(body);
-	if (FunctionTools.inverted[body]) {
-		return FunctionTools.inverted[body];
-	} else {
-		FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(FunctionTools.invertReturnValue(returnValue));;
-		return FunctionTools.inverted[body];
+	if (!FunctionTools.inverted[body]) {
+		FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(FunctionTools.invertReturnValue(returnValue));
 	}
+	return FunctionTools.inverted[body];
 }
 
 //currently inverts functions that are linear binary trees with 
@@ -82,7 +80,11 @@ FunctionTools.invertReturnValue = function(returnValue) {
 }
 
 FunctionTools.toJavaScriptFunction = function(returnString) {
-	return new Function("a", "return " + returnString + ";");
+	try {
+		return new Function("a", "return " + returnString + ";");
+	} catch (e) {
+		return;
+	}
 }
 
 FunctionTools.toReturnValueString = function(functionString) {

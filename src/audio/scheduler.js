@@ -52,6 +52,9 @@ function Scheduler(audioContext, onPlaybackChange) {
 				});
 			}
 		}
+		if (numCurrentlyLoading == 0 && callback) {
+			callback();
+		}
 	}
 	
 	this.getBuffer = function(dymo) {
@@ -63,10 +66,8 @@ function Scheduler(audioContext, onPlaybackChange) {
 		if (numCurrentlyLoading > 0) {
 			numCurrentlyLoading--;
 		}
-		if (numCurrentlyLoading == 0) {
-			if (callback) {
-				callback();
-			}
+		if (numCurrentlyLoading == 0 && callback) {
+			callback();
 		}
 	}
 	
