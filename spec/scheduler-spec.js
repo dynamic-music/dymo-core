@@ -70,7 +70,7 @@ describe("a scheduler", function() {
 	});
 
 	it("plays a sequential dymo", function(done) {
-		DYMO_STORE.setObject("dymo1", CDT, SEQUENCE);
+		DYMO_STORE.setTriple("dymo1", CDT, SEQUENCE);
 		expect(scheduler.getUrisOfPlayingDymos()).toEqual([]);
 		scheduler.play("dymo1");
 		setTimeout(function() {

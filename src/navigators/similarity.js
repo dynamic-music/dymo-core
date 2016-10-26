@@ -29,7 +29,7 @@ function SimilarityNavigator(dymoUri) {
 
 	this.getCurrentParts = function() {
 		if (DYMO_STORE.findParts(dymoUri).length > 0) {
-			if (DYMO_STORE.findObjectUri(dymoUri, CDT) == CONJUNCTION) {
+			if (DYMO_STORE.findObject(dymoUri, CDT) == CONJUNCTION) {
 				return replaceWithSimilars(getParallelParts());
 			}
 			return replaceWithSimilars(getSequentialPart()); //SEQUENTIAL FOR EVERYTHING ELSE
@@ -72,7 +72,7 @@ function SimilarityNavigator(dymoUri) {
 	}
 
 	function getSequentialPart() {
-		var partUri = DYMO_STORE.findPartAtIndex(dymoUri, partsNavigated);
+		var partUri = DYMO_STORE.findPartAt(dymoUri, partsNavigated);
 		if (partUri) {
 			if (DYMO_STORE.findParts(partUri).length == 0) {
 				partsNavigated++;

@@ -65,7 +65,7 @@ Mapping.prototype.disconnect = function() {
 		if (this.domainDims[i].removeMapping) {
 			this.domainDims[i].removeMapping(this);
 		} else if (typeof this.domainDims[i] === 'string' || this.domainDims[i] instanceof String) {
-			var domainDimType = DYMO_STORE.findObjectUri(this.domainDims[i], TYPE);
+			var domainDimType = DYMO_STORE.findObject(this.domainDims[i], TYPE);
 			console.log(domainDimType);
 			if (DYMO_STORE.isSubclassOf(domainDimType, PARAMETER_TYPE)) {
 				DYMO_STORE.removeValueObserver(this.domainDims[i], VALUE, this);

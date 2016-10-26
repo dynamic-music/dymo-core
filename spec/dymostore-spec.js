@@ -27,7 +27,7 @@ describe("a dymostore", function() {
 		dymoStore.addNavigator("r0", REPEATED_NAVIGATOR, ["d"], "return d.getLevel()==1");
 		expect(dymoStore.find("r0").length).toBe(6);
 		expect(dymoStore.findMappings("r0").length).toBe(2);
-		var functionUri = dymoStore.findObjectUri(mapping2Uri, HAS_FUNCTION);
+		var functionUri = dymoStore.findObject(mapping2Uri, HAS_FUNCTION);
 		expect(dymoStore.findFunction(functionUri)(3.6,7.4)).toEqual(function(a,b){return a/b;}(3.6,7.4));
 		expect(dymoStore.findNavigators("r0").length).toBe(2);
 	});
@@ -160,13 +160,13 @@ describe("a dymostore", function() {
 		expect(dymoStore.findPartIndex("f0")).toBeUndefined();
 		expect(dymoStore.findFeatureValue("d2", LEVEL_FEATURE)).toBe(1);
 
-		expect(dymoStore.findPartAtIndex("d0", 2)).toBe("d3");
-		expect(dymoStore.findPartAtIndex("e1", 1)).toBe("d3");
-		expect(dymoStore.findPartAtIndex("f0", 0)).toBeUndefined();
+		expect(dymoStore.findPartAt("d0", 2)).toBe("d3");
+		expect(dymoStore.findPartAt("e1", 1)).toBe("d3");
+		expect(dymoStore.findPartAt("f0", 0)).toBeUndefined();
 	});
 
 	it("can replace dymos in a hierarchy", function() {
-		dymoStore.replacePartAtIndex("e0", "d0", 0);
+		dymoStore.replacePartAt("e0", "d0", 0);
 		expect(dymoStore.findParts("d0")).toEqual(["d1", "d2", "d3"]);
 		expect(dymoStore.findParts("e0")).toEqual(["d0"]);
 		expect(dymoStore.findParents("d0")).toEqual(["e0"]);

@@ -84,7 +84,7 @@ function DymoStore(callback) {
 
 	this.getParameterObservers = function(dymoUri, parameterType) {
 		if (dymoUri && parameterType) {
-			var parameterUri = this.findObjectUriOfType(dymoUri, HAS_PARAMETER, parameterType);
+			var parameterUri = this.findObjectOfType(dymoUri, HAS_PARAMETER, parameterType);
 			if (parameterUri) {
 				return this.getValueObservers(parameterUri, VALUE);
 			}
@@ -93,7 +93,7 @@ function DymoStore(callback) {
 
 	this.removeParameterObserver = function(dymoUri, parameterType, observer) {
 		if (dymoUri && parameterType) {
-			var parameterUri = this.findObjectUriOfType(dymoUri, HAS_PARAMETER, parameterType);
+			var parameterUri = this.findObjectOfType(dymoUri, HAS_PARAMETER, parameterType);
 			if (parameterUri) {
 				this.removeValueObserver(parameterUri, VALUE, observer);
 			}
@@ -114,7 +114,7 @@ function DymoStore(callback) {
 			this.addTriple(dymoUri, HAS_SOURCE, N3.Util.createLiteral(sourcePath));
 		}
 		if (type) {
-			DYMO_STORE.setObject(dymoUri, CDT, type);
+			DYMO_STORE.setTriple(dymoUri, CDT, type);
 		}
 	}
 
@@ -122,7 +122,12 @@ function DymoStore(callback) {
 		self.addObjectToList(dymoUri, HAS_PART, partUri);
 	}
 
-	this.replacePartAtIndex = function(dymoUri, partUri, index) {
+	this.setParts = function(dymoUri, partUris) {
+		this.deleteList(dymoUri, HAS_PART);
+		this.addObjectsToList(dymoUri, HAS_PART, partUris);
+	}
+
+	this.replacePartAt = function(dymoUri, partUri, index) {
 		if (dymoUri != partUri) {//avoid circular dymos
 			return this.replaceObjectInList(dymoUri, HAS_PART, partUri, index);
 		}
@@ -161,10 +166,6 @@ function DymoStore(callback) {
 		}
 		//set the new value
 		return this.setObjectValue(ownerUri, HAS_PARAMETER, parameterType, VALUE, value);
-	}
-
-	this.setAttributeValue = function(attributeUri, value) {
-		this.setValue(attributeUri, VALUE, value)
 	}
 
 	this.addControl = function(uri, type) {
@@ -224,16 +225,14 @@ function DymoStore(callback) {
 		return funcUri;
 	}
 
-	this.updatePartOrder = function(dymoUri, featureOrParameterName) {
-		/* if (parts && parts[0] && !isNaN(DYMO_STORE.findFeatureValue(parts[0].getUri(), featureOrParameterName))) {
+	this.updatePartOrder = function(dymoUri, attributeName) {
+		var parts = this.findParts(dymoUri);
+		if (parts.length > 0) {
 			parts.sort(function(p,q) {
-				return p.getFeature(featureOrParameterName) - q.getFeature(featureOrParameterName);
+				return self.findAttributeValue(p, attributeName) - self.findAttributeValue(q, attributeName);
 			});
-		} else if (parts && parts[0] && DYMO_STORE.findParameterValue(parts[0].getUri(), featureOrParameterName)) {
-			parts.sort(function(p,q) {
-				return p.getParameter(featureOrParameterName).getValue() - q.getParameter(featureOrParameterName).getValue();
-			});
-		}*/
+			this.setParts(dymoUri, parts);
+		}
 	}
 
 
@@ -250,23 +249,23 @@ function DymoStore(callback) {
 	//returns an array with the uris of all parts of the object with the given uri
 	this.findParts = function(dymoUri) {
 		//TODO DOESNT WORK WITH LISTS!!!!!
-		return this.findAllObjectUris(dymoUri, HAS_PART);
+		return this.findAllObjects(dymoUri, HAS_PART);
 	}
 
-	this.findPartAtIndex = function(dymoUri, index) {
-		return this.findObjectInListAtIndex(dymoUri, HAS_PART, index);
+	this.findPartAt = function(dymoUri, index) {
+		return this.findObjectInListAt(dymoUri, HAS_PART, index);
 	}
 
 	//returns an array with the uris of all similars of the object with the given uri
 	this.findSimilars = function(dymoUri) {
 		//TODO DOESNT WORK WITH LISTS!!!!!
-		return this.findAllObjectUris(dymoUri, HAS_SIMILAR);
+		return this.findAllObjects(dymoUri, HAS_SIMILAR);
 	}
 
 	//returns an array with the uris of all successors of the object with the given uri
 	this.findSuccessors = function(dymoUri) {
 		//TODO DOESNT WORK WITH LISTS!!!!!
-		return this.findAllObjectUris(dymoUri, HAS_SUCCESSOR);
+		return this.findAllObjects(dymoUri, HAS_SUCCESSOR);
 	}
 
 	this.findParents = function(dymoUri) {
@@ -292,11 +291,11 @@ function DymoStore(callback) {
 	}
 
 	this.findMappings = function(renderingUri) {
-		return this.findAllObjectUris(renderingUri, HAS_MAPPING);
+		return this.findAllObjects(renderingUri, HAS_MAPPING);
 	}
 
 	this.findNavigators = function(renderingUri) {
-		return this.findAllObjectUris(renderingUri, HAS_NAVIGATOR);
+		return this.findAllObjects(renderingUri, HAS_NAVIGATOR);
 	}
 
 	this.findFunction = function(uri) {
@@ -342,14 +341,14 @@ function DymoStore(callback) {
 		if (dymoUri) {
 			return this.findObjectValuesOfType(dymoUri, HAS_PARAMETER, parameterType, VALUE);
 		}
-		return this.getFirstValueOfType(parameterType, VALUE);
+		return this.findValueOfType(parameterType, VALUE);
 	}
 
 	this.findParameterUri = function(ownerUri, parameterType) {
 		if (ownerUri) {
-			return this.findObjectUriOfType(ownerUri, HAS_PARAMETER, parameterType);
+			return this.findObjectOfType(ownerUri, HAS_PARAMETER, parameterType);
 		}
-		return this.findSubjectUri(null, parameterType);
+		return this.findSubject(null, parameterType);
 	}
 
 	//TODO FOR NOW ONLY WORKS WITH SINGLE HIERARCHY..
@@ -418,7 +417,7 @@ function DymoStore(callback) {
 
 	//returns a jsonld representation of an object removed from any hierarchy of objects of the same type
 	function toFlatJsonld(uri, callback) {
-		var type = self.findObjectUri(uri, TYPE, null);
+		var type = self.findObject(uri, TYPE, null);
 		var triples = self.recursiveFindAllTriplesExcept(uri, type);
 		triplesToJsonld(triples, uri, function(result) {
 			callback(null, JSON.parse(result));
@@ -457,13 +456,13 @@ function DymoStore(callback) {
 		var nodeMap = {};
 		var nodeUris = [];
 		var edges = [];
-		var mappingUris = store.findAllObjectUris(renderingUri, HAS_MAPPING);
+		var mappingUris = store.findAllObjects(renderingUri, HAS_MAPPING);
 		for (var i = 0; i < mappingUris.length; i++) {
-			var domainDimUris = store.findAllObjectUris(mappingUris[i], HAS_DOMAIN_DIMENSION);
+			var domainDimUris = store.findAllObjects(mappingUris[i], HAS_DOMAIN_DIMENSION);
 			for (var j = 0; j < domainDimUris.length; j++) {
 				edges.push(domainDimUris, mappingUris[i])
 			}
-			var rangeUri = store.findObjectUri(mappingUri, HAS_RANGE);
+			var rangeUri = store.findObject(mappingUri, HAS_RANGE);
 		}
 
 

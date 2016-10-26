@@ -56,7 +56,7 @@ function GraphNavigator(dymoUri) {
 	}
 
 	function getSequentialPart() {
-		var part = DYMO_STORE.findPartAtIndex(dymoUri, nextPosition);
+		var part = DYMO_STORE.findPartAt(dymoUri, nextPosition);
 		if (part) {
 			/*if (!part.hasParts()) {
 				partsNavigated++;

@@ -99,8 +99,8 @@ describe("a navigator", function() {
 
 	it("can handle conjunctions", function() {
 		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
-		DYMO_STORE.setObject("dymo2", CDT, CONJUNCTION);
-		DYMO_STORE.setObject("dymo8", CDT, CONJUNCTION);
+		DYMO_STORE.setTriple("dymo2", CDT, CONJUNCTION);
+		DYMO_STORE.setTriple("dymo8", CDT, CONJUNCTION);
 		var nextParts = navigator.getNextParts();
 		expect(nextParts[0]).toBe("dymo5");
 		expect(nextParts[1]).toBe("dymo6");

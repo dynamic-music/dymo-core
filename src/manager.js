@@ -64,7 +64,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 	}
 
 	this.replacePartOfTopDymo = function(index, dymoUri) {
-		var oldDymo = DYMO_STORE.replacePartAtIndex(topDymos[0], dymoUri, index);
+		var oldDymo = DYMO_STORE.replacePartAt(topDymos[0], dymoUri, index);
 		scheduler.stop(oldDymo);
 	}
 

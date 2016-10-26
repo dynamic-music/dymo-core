@@ -70,7 +70,7 @@ describe("a manager", function() {
 	});
 
 	function replace(nextSongDymo, callback) {
-		var currentSongDymo = DYMO_STORE.findPartAtIndex(manager.getTopDymo(), fadePosition);
+		var currentSongDymo = DYMO_STORE.findPartAt(manager.getTopDymo(), fadePosition);
 		fadePosition = 1-fadePosition;
 		manager.replacePartOfTopDymo(fadePosition, nextSongDymo);
 		//sync the loaded dymos to be in the same metrical position
