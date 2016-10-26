@@ -1,5 +1,5 @@
 describe("a control", function() {
-	
+
 	/*it("can change its value on request", function() {
 		var value = 0;
 		var valueFunction = function() { return ++value; };
@@ -11,7 +11,7 @@ describe("a control", function() {
 		expect(control.getValue()).toBe(2);
 		expect(control.requestValue()).toBe(3);
 	});*/
-	
+
 	/* TODO MOVE TO SENSOR CONTROL SPEC
 		it("can create a reference value from the average input", function() {
 		var control = new Control("control2", COMPASS_HEADING);
@@ -43,16 +43,22 @@ describe("a control", function() {
 		expect(control.getReferenceValue()).toBe(5);
 		expect(control.getValue()).toBe(-1);
 	});*/
-	
+
+	beforeAll(function(done) {
+		DYMO_STORE = new DymoStore(function(){
+			done();
+		});
+	});
+
 	it("can be a random control", function(done) {
-		var randomControl = new RandomControl();
+		var randomControl = new RandomControl("rando");
 		//check if inheritance works
-		expect(randomControl.getParameter(AUTO_CONTROL_FREQUENCY)).not.toBeUndefined();
-		expect(randomControl.getParameter(AUTO_CONTROL_TRIGGER)).not.toBeUndefined();
-		expect(randomControl.observedParameterChanged).not.toBeUndefined();
+		//expect(randomControl.getParameter(AUTO_CONTROL_FREQUENCY)).not.toBeUndefined();
+		//expect(randomControl.getParameter(AUTO_CONTROL_TRIGGER)).not.toBeUndefined();
+		//expect(randomControl.observedParameterChanged).not.toBeUndefined();
 		expect(randomControl.reset).not.toBeUndefined();
 		//test updating
-		randomControl.getParameter(AUTO_CONTROL_FREQUENCY).update(50);
+		DYMO_STORE.setParameter("rando", AUTO_CONTROL_FREQUENCY, 50);
 		setTimeout(function() {
 			var firstValue = randomControl.getValue();
 			expect(firstValue).toBeGreaterThan(0);
@@ -66,10 +72,10 @@ describe("a control", function() {
 			}, 60);
 		}, 60);
 	});
-	
+
 	it("can be a brownian control", function(done) {
-		var brownianControl = new BrownianControl();
-		brownianControl.getParameter(AUTO_CONTROL_FREQUENCY).update(50);
+		var brownianControl = new BrownianControl("brownie");
+		DYMO_STORE.setParameter("rando", AUTO_CONTROL_FREQUENCY, 50);
 		var currentValue = brownianControl.getValue();
 		expect(currentValue).toBe(0.5);
 		var previousValue = currentValue;
@@ -96,13 +102,13 @@ describe("a control", function() {
 			}, 60);
 		}, 60);
 	});
-	
+
 	it("can be a ramp control", function(done) {
-		var rampControl = new RampControl(200);
-		rampControl.getParameter(AUTO_CONTROL_FREQUENCY).update(20);
+		var rampControl = new RampControl("rampa", 200);
+		DYMO_STORE.setParameter("rampa", AUTO_CONTROL_FREQUENCY, 20);
 		expect(rampControl.getValue()).toBe(0);
 		//turn on
-		rampControl.getParameter(AUTO_CONTROL_TRIGGER).update(1);
+		DYMO_STORE.setParameter("rampa", AUTO_CONTROL_TRIGGER, 1);
 		setTimeout(function() {
 			var firstValue = rampControl.getValue();
 			expect(firstValue).toBeGreaterThan(0);
@@ -113,13 +119,13 @@ describe("a control", function() {
 				expect(secondValue).toBeLessThan(1);
 				expect(secondValue).not.toEqual(firstValue);
 				//stop and switch directions
-				rampControl.getParameter(AUTO_CONTROL_TRIGGER).update(0);
+				DYMO_STORE.setParameter("rampa", AUTO_CONTROL_TRIGGER, 0);
 				setTimeout(function() {
 					var thirdValue = rampControl.getValue();
 					expect(thirdValue).toBeCloseTo(0.6, 8);
 					expect(thirdValue).toEqual(secondValue);
 					//turn on again
-					rampControl.getParameter(AUTO_CONTROL_TRIGGER).update(1);
+					DYMO_STORE.setParameter("rampa", AUTO_CONTROL_TRIGGER, 1);
 					setTimeout(function() {
 						var fourthValue = rampControl.getValue();
 						expect(fourthValue).toBeCloseTo(0.3, 8);
@@ -129,5 +135,5 @@ describe("a control", function() {
 			}, 60);
 		}, 60);
 	});
-	
+
 });

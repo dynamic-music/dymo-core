@@ -3,8 +3,8 @@
  * @constructor
  * @extends {AutoControl}
  */
-function RampControl(duration, initialValue) {
-	
+function RampControl(uri, duration, initialValue) {
+
 	var self = this;
 	if (!duration) {
 		duration = 10000;
@@ -14,9 +14,9 @@ function RampControl(duration, initialValue) {
 		currentValue = initialValue;
 	}
 	var isIncreasing = currentValue != 1;
-	
-	AutoControl.call(this, RAMP, function() {
-		var delta = 1/duration*self.getParameter(AUTO_CONTROL_FREQUENCY).getValue();
+
+	AutoControl.call(this, uri, RAMP, function() {
+		var delta = 1/duration*DYMO_STORE.findParameterValue(uri, AUTO_CONTROL_FREQUENCY);
 		if (!isIncreasing) {
 			delta *= -1;
 		}
@@ -34,6 +34,6 @@ function RampControl(duration, initialValue) {
 		isIncreasing = !isIncreasing;
 	});
 	this.update(currentValue);
-	
+
 }
 inheritPrototype(RampControl, AutoControl);

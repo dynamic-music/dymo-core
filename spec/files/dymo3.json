@@ -1,1 +1,40 @@
-{"@context":"http://tiny.cc/dymo-context","@id":"dymo","@type":"Dymo","ct":"Conjunction","onset":{"value":0,"@type":"Feature","adt":"Onset"},"pitch":{"value":0,"@type":"Feature","adt":"Pitch"},"mappings":[{"domainDims":[{"name":"fade","@type":"CustomParameter"}],"function":{"args":["a"],"body":"return a;"},"targets":["dymo1"],"range":"Amplitude"},{"domainDims":[{"name":"fade","@type":"ParameterType"}],"function":{"args":["a"],"body":"return 1-a;"},"targets":["dymo2"],"range":"Amplitude"}],"parts":["dymo2.json"]}
+{
+    "@context": "http://tiny.cc/dymo-context",
+    "@id": "dymo",
+    "@type": "Dymo",
+    "ct": "Conjunction",
+    "onset": {
+        "value": 0,
+        "@type": "Feature",
+        "adt": "Onset"
+    },
+    "pitch": {
+        "value": 0,
+        "@type": "Feature",
+        "adt": "Pitch"
+    },
+    "mappings": [{
+        "domainDims": [{
+            "name": "fade",
+            "@type": "CustomParameter"
+        }],
+        "function": {
+            "args": ["a"],
+            "body": "return a;"
+        },
+        "targets": ["dymo1"],
+        "range": "Amplitude"
+    }, {
+        "domainDims": [{
+            "name": "fade",
+            "@type": "ParameterType"
+        }],
+        "function": {
+            "args": ["a"],
+            "body": "return 1-a;"
+        },
+        "targets": ["dymo2"],
+        "range": "Amplitude"
+    }],
+    "parts": ["dymo2.json"]
+}

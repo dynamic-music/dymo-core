@@ -2,15 +2,15 @@
  * Represents a non-leaf dymo (no source) and manages all Web Audio nodes necessary to suit the dymo's parameters.
  * @constructor
  */
-function DymoNode(dymo, audioContext, reverbSend, delaySend) {
-	
+function DymoNode(dymoUri, audioContext, reverbSend, delaySend) {
+
 	this.POSITION_PARAMS = [PAN, HEIGHT, DISTANCE];
-	
-	this.dymo = dymo;
+
+	this.dymoUri = dymoUri;
 	this.parameters = {};
-	
+
 	this.init(audioContext, reverbSend, delaySend);
-	
+
 }
 
 /** @private */
@@ -30,7 +30,9 @@ DymoNode.prototype.init = function(audioContext, reverbSend, delaySend) {
 		this.addParameter(DELAY, this.delayGain.gain);
 	}
 	//create panner module
-	if (this.dymo.getParameter(PAN) || this.dymo.getParameter(HEIGHT) || this.dymo.getParameter(DISTANCE)) {
+	if (DYMO_STORE.findParameterUri(this.dymoUri, PAN)
+			|| DYMO_STORE.findParameterUri(this.dymoUri, HEIGHT)
+			|| DYMO_STORE.findParameterUri(this.dymoUri, DISTANCE)) {
 		this.panner = audioContext.createPanner();
 		this.panner.connect(this.dryGain);
 		this.addParameter(PAN, {value:0}); //mock parameters since panner non-readable
@@ -38,7 +40,7 @@ DymoNode.prototype.init = function(audioContext, reverbSend, delaySend) {
 		this.addParameter(DISTANCE, {value:0});
 	}
 	//create filter module
-	if (this.dymo.getParameter(FILTER)) {
+	if (DYMO_STORE.findParameterUri(this.dymoUri, FILTER)) {
 		this.filter = audioContext.createBiquadFilter();
 		this.filter.type = "lowpass";
 		this.filter.frequency.value = 20000;
@@ -61,26 +63,26 @@ DymoNode.prototype.createGain = function(audioContext, source, sink) {
 }
 
 /** should only be used by this and subclasses */
-DymoNode.prototype.addParameter = function(name, webAudioParam) {
-	this.parameters[name] = webAudioParam;
-	if (this.dymo.hasParameter(name)) {
-		var dymoParam = this.dymo.getParameter(name);
-		this.setParameter(name, dymoParam.getValue());
-		dymoParam.addObserver(this);
+DymoNode.prototype.addParameter = function(paramType, webAudioParam) {
+	DYMO_STORE.addParameterObserver(this.dymoUri, paramType, this);
+	this.parameters[paramType] = webAudioParam;
+	var paramValue = DYMO_STORE.findParameterValue(this.dymoUri, paramType);
+	if (paramValue != null) {
+		this.setParameter(paramType, paramValue);
 	}
 }
 
 /** @private */
-DymoNode.prototype.setParameter = function(name, value) {
+DymoNode.prototype.setParameter = function(paramType, value) {
 	if (!isNaN(value)) {
-		if (this.parameters[name]) {
-			if (this.parameters[name].value || this.parameters[name].value == 0) {
-				this.parameters[name].value = value;
+		if (this.parameters[paramType]) {
+			if (this.parameters[paramType].value || this.parameters[paramType].value == 0) {
+				this.parameters[paramType].value = value;
 			} else {
-				this.parameters[name].setValue(value);
+				this.parameters[paramType].setValue(value);
 			}
 		}
-		if (this.POSITION_PARAMS.indexOf(name) >= 0 && this.parameters[PAN] && this.parameters[HEIGHT] && this.parameters[DISTANCE]) {
+		if (this.POSITION_PARAMS.indexOf(paramType) >= 0 && this.parameters[PAN] && this.parameters[HEIGHT] && this.parameters[DISTANCE]) {
 			if (this.parameters[DISTANCE].value == 0) {
 				this.parameters[DISTANCE].value = -0.01; //for chrome :( source not audible at z = 0
 			}
@@ -89,14 +91,14 @@ DymoNode.prototype.setParameter = function(name, value) {
 	}
 }
 
-DymoNode.prototype.getDymo = function() {
-	return this.dymo;
+DymoNode.prototype.getDymoUri = function() {
+	return this.dymoUri;
 }
-	
-DymoNode.prototype.observedParameterChanged = function(param) {
-	this.setParameter(param.getName(), param.getValue());
+
+DymoNode.prototype.observedValueChanged = function(paramUri, paramType, value) {
+	this.setParameter(paramType, value);
 }
-	
+
 DymoNode.prototype.getParameterValue = function(name) {
 	if (this.parameters[name]) {
 		if (this.parameters[name].value || this.parameters[name].value == 0) {
@@ -119,14 +121,11 @@ DymoNode.prototype.getInput = function() {
 DymoNode.prototype.connect = function(sink) {
 	this.dryGain.connect(sink);
 }
-	
+
 DymoNode.prototype.removeAndDisconnect = function() {
 	//remove from observed parameters
 	for (var p in this.parameters) {
-		var dymoParam = this.dymo.getParameter(p);
-		if (dymoParam) {
-			dymoParam.removeObserver(this);
-		}
+		DYMO_STORE.removeParameterObserver(this.dymoUri, p, this);
 	}
 	//disconnect audio nodes
 	this.dryGain.disconnect();

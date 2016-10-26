@@ -3,10 +3,10 @@
 <head>
 	<meta charset="utf-8">
 	<title>Jasmine Spec Runner v2.3.4</title>
-	
+
 	<link rel="shortcut icon" type="image/png" href="../node_modules/jasmine-core/images/jasmine_favicon.png">
 	<link rel="stylesheet" href="../node_modules/jasmine-core/lib/jasmine-core/jasmine.css">
-	
+
 	<script src="../node_modules/jasmine-core/lib/jasmine-core/jasmine.js"></script>
 	<script src="../node_modules/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
 	<script src="../node_modules/jasmine-core/lib/jasmine-core/boot.js"></script>
@@ -14,7 +14,7 @@
 	<script src="../bower_components/mathjs/dist/math.js"></script>
 	<script src="../bower_components/n3/n3-browser.min.js"></script>
 	<script src="../bower_components/jsonld/js/jsonld.js"></script>
-	
+
 	<!-- include source files here... -->
 	<!--script src="../dist/dymo-core.min.js"></script-->
 	<script src="../lib/soundtouch-js/soundtouch-min.js"></script>
@@ -22,13 +22,13 @@
 	<script src="../src/util/files.js"></script>
 	<script src="../src/math/polygontools.js"></script>
 	<script src="../src/manager.js"></script>
-	<script src="../src/globals.js"></script>
-	<script src="../src/globals2.js"></script>
-	<script src="../src/logic/dymo.js"></script>
-	<script src="../src/logic/parameter.js"></script>
-	<script src="../src/logic/rendering.js"></script>
-	<script src="../src/logic/mapping.js"></script>
-	<script src="../src/logic/control.js"></script>
+	<script src="../src/globals/contexts.js"></script>
+	<script src="../src/globals/globals.js"></script>
+	<script src="../src/globals/uris.js"></script>
+	<script src="../src/model/dymo.js"></script>
+	<script src="../src/model/rendering.js"></script>
+	<script src="../src/model/mapping.js"></script>
+	<script src="../src/model/control.js"></script>
 	<script src="../src/audio/scheduler.js"></script>
 	<script src="../src/audio/thread.js"></script>
 	<script src="../src/audio/node.js"></script>
@@ -49,23 +49,20 @@
 	<script src="../src/navigators/graph.js"></script>
 	<script src="../src/navigators/oneshot.js"></script>
 	<script src="../src/navigators/repeated.js"></script>
-	
+</head>
+<body>
 	<!-- include spec files here... -->
 	<script src="./math-spec.js"></script>
 	<script src="./dymo-spec.js"></script>
 	<script src="./control-spec.js"></script>
 	<script src="./navigator-spec.js"></script>
 	<script src="./mapping-spec.js"></script>
-	<script src="./parameter-spec.js"></script>
 	<script src="./scheduler-spec.js"></script>
 	<script src="./processor-spec.js"></script>
 	<script src="./dymoloader-spec.js"></script>
+	<script src="./easystore-spec.js"></script>
 	<script src="./dymostore-spec.js"></script>
 	<script src="./manager-spec.js"></script>
 	<!--script src="./graph-spec.js"></script-->
-	
-</head>
-
-<body>
 </body>
 </html>

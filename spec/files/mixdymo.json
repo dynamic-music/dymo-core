@@ -18,6 +18,6 @@
 			"range":"TimeStretchRatio"
 		}
 	],
-	"parts":["dymo2.json","dymo4.json"],
+	"parts":{"@list":["dymo2.json","dymo4.json"]},
 	"similars":[]
 }

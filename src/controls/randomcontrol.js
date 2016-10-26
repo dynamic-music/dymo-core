@@ -3,14 +3,14 @@
  * @constructor
  * @extends {AutoControl}
  */
-function RandomControl() {
-	
+function RandomControl(uri) {
+
 	var self = this;
-	
-	AutoControl.call(this, RANDOM, function() {
+
+	AutoControl.call(this, uri, RANDOM, function() {
 		self.update(Math.random());
 	});
 	this.startUpdate();
-	
+
 }
 inheritPrototype(RandomControl, AutoControl);

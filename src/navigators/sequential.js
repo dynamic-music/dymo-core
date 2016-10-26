@@ -3,62 +3,62 @@
  * @constructor
  * @param {boolean=} backwards (optional)
  */
-function SequentialNavigator(dymo, backwards) {
-	
+function SequentialNavigator(dymoUri, backwards) {
+
 	var partsNavigated = 0;
-	
+
 	this.resetPartsNavigated = function() {
 		partsNavigated = 0;
 	}
-	
+
 	this.setPartsNavigated = function(played) {
 		partsNavigated = played;
 	}
-	
+
 	this.getPartsNavigated = function() {
 		return partsNavigated;
 	}
-	
+
 	this.getType = function() {
 		return SEQUENTIAL_NAVIGATOR;
 	}
-	
-	this.getCopy = function(dymo) {
-		return new SequentialNavigator(dymo, backwards);
+
+	this.getCopy = function(dymoUri) {
+		return new SequentialNavigator(dymoUri, backwards);
 	}
-	
+
 	this.getDymo = function() {
-		return dymo;
+		return dymoUri;
 	}
-	
+
 	this.getCurrentParts = function() {
-		var parts = dymo.getParts();
+		var parts = DYMO_STORE.findParts(dymoUri);
 		if (parts.length > 0) {
-			if (dymo.getType() == CONJUNCTION) {
+			if (DYMO_STORE.findObjectUri(dymoUri, CDT) == CONJUNCTION) {
 				return getParallelParts();
 			}
 			return getSequentialPart(); //SEQUENTIAL FOR EVERYTHING ELSE
 		}
 	}
-	
+
 	this.getNextParts = function() {
 		partsNavigated++;
 		return this.getCurrentParts();
 	}
-	
+
 	function getParallelParts() {
 		if (partsNavigated <= 0) {
-			return dymo.getParts();
+			return DYMO_STORE.findParts(dymoUri);
 		}
 	}
-	
+
 	function getSequentialPart() {
 		var part;
+		var parts = DYMO_STORE.findParts(dymoUri);
 		if (backwards) {
-			var partCount = dymo.getParts().length;
-			part = dymo.getPart(partCount-partsNavigated);
+			part = parts[parts.length-partsNavigated];
 		} else {
-			part = dymo.getPart(partsNavigated);
+			part = parts[partsNavigated];
 		}
 		if (part) {
 			/*if (!part.hasParts()) {
@@ -67,5 +67,5 @@ function SequentialNavigator(dymo, backwards) {
 			return [part];
 		}
 	}
-	
+
 }

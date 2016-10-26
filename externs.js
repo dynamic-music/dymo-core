@@ -6,11 +6,16 @@ math.expression.node;
 math.expression.node.OperatorNode = function(p1,p2,p3){};
 /** @constructor */
 math.expression.node.SymbolNode = function(p1){};
+math.dot = function(p1,p2){};
+math.mean = function(p1){};
+math.norm = function(p1){};
+math.var = function(p1){};
 
 var async;
 
-var $scope;
+var $scope, $http;
 $scope.prototype.$apply;
+$http.get.success = function(p1){};
 var N3;
 N3.Parser = function(){};
 N3.Store = function(){};
@@ -25,6 +30,8 @@ N3.predicate; //otherwise compiler complains when used on result quads
 var jsonld;
 jsonld.toRDF = function(p1,p2,p3){};
 jsonld.fromRDF = function(p1,p2,p3){};
+var Benchmarker;
+Benchmarker.startTask = function(p1){};
 
 /** @constructor */
 function AccelerometerControl(type){};

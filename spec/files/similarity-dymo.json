@@ -3,7 +3,7 @@
 	"@id": "similarityDymo",
 	"@type": "Dymo",
 	"cdt": "Sequence",
-	"parts": [
+	"parts":{"@list":[
 		{
 			"@id": "dymo1",
 			"@type": "Dymo",
@@ -33,5 +33,5 @@
 			"@type": "Dymo",
 			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p055_ne0001_s000827.wav"
 		}
-	]
+	]}
 }

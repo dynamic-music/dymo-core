@@ -2,45 +2,45 @@
  * A rendering defines how a given dymo is played back.
  * @constructor
  */
-function Rendering(dymo) {
-	
+function Rendering(dymoUri) {
+
 	var self = this;
-	
+
 	var mappings = [];
 	var navigator;
-	
+
 	this.play = function() {
-		if (dymo) {
-			dymo.getParameter(PLAY).update(1);
+		if (dymoUri) {
+			DYMO_STORE.setParameter(dymoUri, PLAY, 1);
 		}
 	}
-	
+
 	this.stop = function() {
-		if (dymo) {
-			dymo.getParameter(PLAY).update(0);
+		if (dymoUri) {
+			DYMO_STORE.setParameter(dymoUri, PLAY, 0);
 		}
 	}
-	
+
 	this.addMapping = function(mapping) {
 		mappings.push(mapping);
 		mapping.updateParameter();
 	}
-	
+
 	this.getMappings = function() {
 		return mappings;
 	}
-	
+
 	this.addSubsetNavigator = function(dymoFunction, nav) {
 		if (!navigator) {
-			navigator = new DymoNavigator(dymo);//, new SequentialNavigator(dymo));
+			navigator = new DymoNavigator(dymoUri);//, new SequentialNavigator(dymo));
 		}
 		navigator.addSubsetNavigator(dymoFunction, nav);
 	}
-	
+
 	this.getNavigator = function() {
 		return navigator;
 	}
-	
+
 	/*this.toJson = function() {
 		var json = {"mappings":[],"navigators":[]};
 		if (dymo) {
@@ -57,9 +57,9 @@ function Rendering(dymo) {
 		}
 		return json;
 	}*/
-	
+
 	function navigatorToJson() {
-		
+
 	}
 
 }

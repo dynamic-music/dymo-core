@@ -4,22 +4,21 @@
  * @param {Function=} onPlaybackChange (optional)
  */
 function Scheduler(audioContext, onPlaybackChange) {
-	
+
 	var self = this;
-	
+
 	var buffers = {};
 	var threads = [];
 	var urisOfPlayingDymos = [];
-	
-	//horizontal listener orientation in degrees
-	this.listenerOrientation = new Parameter(LISTENER_ORIENTATION, 0);
-	this.listenerOrientation.addObserver(this);
-	
+
 	var convolverSend, delaySend;
 	var numCurrentlyLoading = 0;
-	
-	this.initEffectSends = function(store, reverbFile) {
-		if (store.find(null, null, REVERB).length > 0) {
+
+	this.init = function(reverbFile) {
+		//init horizontal listener orientation in degrees
+		DYMO_STORE.addParameter(null, LISTENER_ORIENTATION, 0, self);
+		//init reverb if needed
+		if (DYMO_STORE.find(null, null, REVERB).length > 0) {
 			convolverSend = audioContext.createConvolver();
 			convolverSend.connect(audioContext.destination);
 			loadAudio(reverbFile, function(buffer) {
@@ -27,7 +26,8 @@ function Scheduler(audioContext, onPlaybackChange) {
 				bufferLoaded();
 			});
 		}
-		if (store.find(null, null, DELAY).length > 0) {
+		//init delay if needed
+		if (DYMO_STORE.find(null, null, DELAY).length > 0) {
 			var delaySend = audioContext.createDelay();
 			delaySend.delayTime.value = 0.5;
 			delaySend.connect(audioContext.destination);
@@ -37,15 +37,18 @@ function Scheduler(audioContext, onPlaybackChange) {
 			delayFeedback.connect(delaySend);
 		}
 	}
-	
-	this.loadBuffers = function(dymos, callback) {
+
+	/** @param {Array<string>} dymoUris */
+	this.loadBuffers = function(dymoUris, callback) {
 		var allPaths = [];
-		for (var i = 0, ii = dymos.length; i < ii; i++) {
-			allPaths = allPaths.concat(dymos[i].getAllSourcePaths());
+		//console.log(DYMO_STORE.find(null, HAS_PART).map(function(r){return r.subject + " " + r.object;}));
+		for (var i = 0, ii = dymoUris.length; i < ii; i++) {
+			var allSubDymos = DYMO_STORE.findAllObjectsInHierarchy(dymoUris[i]);
+			allPaths = allPaths.concat(allSubDymos.map(function(d){return DYMO_STORE.getSourcePath(d)}));
 		}
 		for (var i = 0, ii = allPaths.length; i < ii; i++) {
 			//only add if not there yet..
-			if (!buffers[allPaths[i]]) {
+			if (allPaths[i] && !buffers[allPaths[i]]) {
 				loadAudio(allPaths[i], function(buffer, path) {
 					buffers[path] = buffer;
 					bufferLoaded(callback);
@@ -56,11 +59,11 @@ function Scheduler(audioContext, onPlaybackChange) {
 			callback();
 		}
 	}
-	
-	this.getBuffer = function(dymo) {
-		return buffers[dymo.getSourcePath()];
+
+	this.getBuffer = function(dymoUri) {
+		return buffers[DYMO_STORE.getSourcePath(dymoUri)];
 	}
-	
+
 	/** @param {Function=} callback (optional) */
 	function bufferLoaded(callback) {
 		if (numCurrentlyLoading > 0) {
@@ -70,29 +73,23 @@ function Scheduler(audioContext, onPlaybackChange) {
 			callback();
 		}
 	}
-	
-	this.getParameter = function(parameterName) {
-		if (parameterName == LISTENER_ORIENTATION) {
-			return this.listenerOrientation;
-		}
-	}
-	
-	this.updateNavigatorPosition = function(dymo, level, position) {
+
+	this.updateNavigatorPosition = function(dymoUri, level, position) {
 		for (var i = 0, ii = threads.length; i < ii; i++) {
-			if (threads[i].hasDymo(dymo)) {
-				threads[i].getNavigator().setPosition(position, level, dymo);
+			if (threads[i].hasDymo(dymoUri)) {
+				threads[i].getNavigator().setPosition(position, level, dymoUri);
 			}
 		}
 	}
-	
-	this.getNavigatorPosition = function(dymo, level) {
+
+	this.getNavigatorPosition = function(dymoUri, level) {
 		for (var i = 0, ii = threads.length; i < ii; i++) {
-			if (threads[i].hasDymo(dymo)) {
-				return threads[i].getNavigator().getPosition(level, dymo);
+			if (threads[i].hasDymo(dymoUri)) {
+				return threads[i].getNavigator().getPosition(level, dymoUri);
 			}
 		}
 	}
-	
+
 	//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
 	this.syncNavigators = function(syncDymo, goalDymo, level) {
 		var syncNav, goalNav;
@@ -110,37 +107,37 @@ function Scheduler(audioContext, onPlaybackChange) {
 			syncNav.setPosition(position, level, syncDymo);
 		}
 	}
-	
-	this.play = function(dymo, navigator) {
-		var thread = new SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, delaySend, updatePlayingDymos, threadEnded);
+
+	this.play = function(dymoUri, navigator) {
+		var thread = new SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSend, delaySend, updatePlayingDymos, threadEnded);
 		threads.push(thread);
 	}
-	
-	this.pause = function(dymo) {
-		if (dymo) {
+
+	this.pause = function(dymoUri) {
+		if (dymoUri) {
 			for (var i = 0; i < threads.length; i++) {
-				threads[i].pause(dymo);
+				threads[i].pause(dymoUri);
 			}
 		} else {
-			
+
 		}
 	}
-	
-	this.stop = function(dymo) {
-		if (dymo) {
+
+	this.stop = function(dymoUri) {
+		if (dymoUri) {
 			for (var i = 0; i < threads.length; i++) {
-				threads[i].stop(dymo);
+				threads[i].stop(dymoUri);
 			}
 		} else {
-			
+
 		}
 	}
-	
+
 	/** @private returns all sources correponding to the given dymo */
-	this.getSources = function(dymo) {
+	this.getSources = function(dymoUri) {
 		var sources = [];
 		for (var i = 0; i < threads.length; i++) {
-			var currentSources = threads[i].getSources(dymo);
+			var currentSources = threads[i].getSources(dymoUri);
 			if (currentSources) {
 				for (var j = 0; j < currentSources.length; j++) {
 					sources = sources.concat(currentSources);
@@ -149,20 +146,20 @@ function Scheduler(audioContext, onPlaybackChange) {
 		}
 		return sources;
 	}
-	
+
 	function threadEnded(thread) {
 		threads.splice(threads.indexOf(thread), 1);
 	}
-	
+
 	function updatePlayingDymos() {
 		var uris = [];
 		for (var i = 0; i < threads.length; i++) {
-			for (var currentDymo of threads[i].getAllSources().keys()) {
-				while (currentDymo != null) {
-					if (uris.indexOf(currentDymo.getUri()) < 0) {
-						uris.push(currentDymo.getUri());
+			for (var currentDymoUri of threads[i].getAllSources().keys()) {
+				while (currentDymoUri != null) {
+					if (uris.indexOf(currentDymoUri) < 0) {
+						uris.push(currentDymoUri);
 					}
-					currentDymo = currentDymo.getParent();
+					currentDymoUri = DYMO_STORE.findParents(currentDymoUri)[0];
 				}
 			}
 		}
@@ -172,16 +169,18 @@ function Scheduler(audioContext, onPlaybackChange) {
 			onPlaybackChange(urisOfPlayingDymos);
 		}
 	}
-	
+
 	this.getUrisOfPlayingDymos = function() {
 		return urisOfPlayingDymos;
 	}
-	
-	this.observedParameterChanged = function(param) {
-		var angleInRadians = this.listenerOrientation.getValue() / 180 * Math.PI;
-		audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
+
+	this.observedValueChanged = function(paramUri, paramType, value) {
+		if (paramType == LISTENER_ORIENTATION) {
+			var angleInRadians = value / 180 * Math.PI;
+			audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
+		}
 	}
-	
+
 	function loadAudio(path, callback) {
 		//console.log(path)
 		numCurrentlyLoading++;
@@ -196,5 +195,5 @@ function Scheduler(audioContext, onPlaybackChange) {
 		request.error = function(){};
 		request.send();
 	}
-	
+
 }

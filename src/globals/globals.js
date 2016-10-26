@@ -4,6 +4,9 @@ var SCHEDULE_AHEAD_TIME = 0.1; //seconds
 var FADE_LENGTH = 0.02; //seconds
 var DYMO_ONTOLOGY_URI = "http://tiny.cc/dymo-ontology#";
 
+/** @type {DymoStore} */
+var DYMO_STORE;
+
 /*// ontology prefixes
 
 var RDF_URI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";

@@ -1,24 +1,16 @@
 /**
- * A DymoLoader loads dymos from rdf, jams, or json-ld.
+ * A DymoLoader loads dymos from rdf, jams, or json-ld into the given DymoStore
+ * and creates the necessary controls, mappings, and renderings
  * @constructor
- * @param {Function=} callback (optional)
+ * @param {DymoStore} dymoStore
  */
-function DymoLoader(scheduler, callback) {
-	
+function DymoLoader(dymoStore) {
+
 	var self = this;
-	
-	var store = new DymoStore(callback);
 	var dymoBasePath = '';
-	var controls = {}, dymos = {}; //dicts with all the objects created
-	
-	this.setStore = function(newStore) {
-		store = newStore;
-	}
-	
-	this.getStore = function() {
-		return store;
-	}
-	
+	var controls = {}; //dict with all the controls created
+	var mappings = {};
+
 	this.loadDymoFromJson = function(jsonUri, callback) {
 		var fileIndex = jsonUri.lastIndexOf('/')+1;
 		dymoBasePath = jsonUri.substring(0, fileIndex);
@@ -26,32 +18,32 @@ function DymoLoader(scheduler, callback) {
 			callback(self.createDymoFromStore());
 		});
 	}
-	
+
 	this.parseDymoFromJson = function(json, callback) {
-		store.loadData(json, true, function() {
+		dymoStore.loadData(json, true, function() {
 			callback(self.createDymoFromStore());
 		});
 	}
-	
+
 	this.loadRenderingFromJson = function(jsonUri, callback) {
 		loadJsonld(jsonUri, function() {
 			callback(self.createRenderingFromStore());
 		});
 	}
-	
-	this.loadGraphFromJson = function(jsonUri, callback) {
+
+	/*this.loadGraphFromJson = function(jsonUri, callback) {
 		recursiveLoadJson(jsonUri, "", function(json) {
 			callback(createGraphFromJson(json));
 		});
-	}
-	
+	}*/
+
 	//load jsonld into triple store
 	function loadJsonld(jsonUri, callback) {
 		recursiveLoadJson(jsonUri, "", function(loaded) {
-			store.loadData(loaded, true, callback);
+			dymoStore.loadData(loaded, true, callback);
 		});
 	}
-	
+
 	function recursiveLoadJson(jsonUri, jsonString, callback) {
 		loadFile(jsonUri, function(responseText) {
 			if (responseText.indexOf("Cannot GET") < 0) {
@@ -78,7 +70,7 @@ function DymoLoader(scheduler, callback) {
 			}
 		});
 	}
-	
+
 	function isJsonString(str) {
 		try {
 			JSON.parse(str);
@@ -87,7 +79,7 @@ function DymoLoader(scheduler, callback) {
 		}
 		return true;
 	}
-	
+
 	function findNextJsonUri(jsonString) {
 		var index = jsonString.indexOf(".json");
 		if (index >= 0) {
@@ -100,95 +92,106 @@ function DymoLoader(scheduler, callback) {
 			}
 		}
 	}
-	
-	
+
+
 	this.createDymoFromStore = function() {
 		var topDymos = [];
 		//first create all dymos and save references in map
-		var topDymoUris = store.findTopDymos();
+		var topDymoUris = dymoStore.findTopDymos();
 		for (var i = 0; i < topDymoUris.length; i++) {
-			topDymos.push(recursiveCreateDymoAndParts(topDymoUris[i]));
-			//then add similarity relations
-			recursiveAddMappingsAndSimilars(topDymoUris[i]);
+			dymoStore.addBasePath(topDymoUris[i], dymoBasePath)
+			//create all dymo mappings
+			var dymoUris = dymoStore.findAllObjectsInHierarchy(topDymoUris[i]);
+			var mappingResults = dymoStore.find(null, HAS_MAPPING);
+			for (var i = 0; i < mappingResults.length; i++) {
+				var dymoUri = mappingResults[i].subject;
+				if (dymoUris.indexOf(dymoUri) >= 0) {
+					var mappingUri = mappingResults[i].object
+					createControls(mappingUri);
+					mappings[mappingUri] = createMapping(mappingUri, dymoUri);
+				}
+			}
 		}
-		return [topDymos, dymos]; //for now topDymo is just the last one loaded ~
+		return topDymoUris;
 	}
-	
-	function recursiveCreateDymoAndParts(currentDymoUri) {
-		var cdt = store.findFirstObjectUri(currentDymoUri, CDT);
+
+	/*function recursiveCreateDymoAndParts(currentDymoUri) {
+		var cdt = dymoStore.findObjectUri(currentDymoUri, CDT);
 		var dymo = new DynamicMusicObject(currentDymoUri, cdt, scheduler);
-		dymo.setBasePath(dymoBasePath);
+		dymoStore.addBasePath(currentDymoUri, dymoBasePath)
+		console.log()
+		//dymo.setBasePath(dymoBasePath);
 		dymos[currentDymoUri] = dymo;
-		dymo.setSourcePath(store.findFirstObjectValue(currentDymoUri, HAS_SOURCE));
-		var featureUris = store.findAllObjectUris(currentDymoUri, HAS_FEATURE);
+		//dymo.setSourcePath(dymoStore.findObjectValue(currentDymoUri, HAS_SOURCE));
+		/*var featureUris = store.findAllObjectUris(currentDymoUri, HAS_FEATURE);
 		for (var i = 0; i < featureUris.length; i++) {
-			var type = store.findFirstObjectUri(featureUris[i], TYPE);
-			dymo.setFeature(store.findFirstObjectUri(featureUris[i], TYPE), store.findFeatureValue(featureUris[i]));
-		}
-		var parameters = store.findAllObjectUris(currentDymoUri, HAS_PARAMETER);
+			var type = store.findObjectUri(featureUris[i], TYPE);
+			dymo.setFeature(store.findObjectUri(featureUris[i], TYPE), store.findObjectValue(featureUris[i], VALUE));
+		}*/
+		/*var parameters = dymoStore.findAllObjectUris(currentDymoUri, HAS_PARAMETER);
 		for (var i = 0; i < parameters.length; i++) {
-			addOrUpdateDymoParameter(dymo, store.findFirstObjectUri(parameters[i], TYPE), store.findFirstObjectValue(parameters[i], VALUE));
-		}
-		var parts = store.findParts(currentDymoUri);
+			addDymoParameter(dymo, dymoStore.findObjectUri(parameters[i], TYPE), dymoStore.findObjectValue(parameters[i], VALUE));
+		}*/
+		/*var parts = dymoStore.findParts(currentDymoUri);
 		for (var i = 0; i < parts.length; i++) {
 			dymo.addPart(recursiveCreateDymoAndParts(parts[i]));
 		}
 		return dymo;
-	}
-	
-	function recursiveAddMappingsAndSimilars(currentDymoUri) {
+	}*/
+
+	/*function recursiveAddMappingsAndSimilars(currentDymoUri) {
 		var dymo = dymos[currentDymoUri];
 		//first add similars
-		var similars = store.findAllObjectUris(currentDymoUri, HAS_SIMILAR);
+		var similars = dymoStore.findAllObjectUris(currentDymoUri, HAS_SIMILAR);
 		for (var i = 0; i < similars.length; i++) {
 			dymo.addSimilar(dymos[similars[i]]);
 		}
 		//then successors
-		var successors = store.findAllObjectUris(currentDymoUri, HAS_SUCCESSOR);
+		var successors = dymoStore.findAllObjectUris(currentDymoUri, HAS_SUCCESSOR);
 		for (var i = 0; i < successors.length; i++) {
 			dymo.addSuccessor(dymos[successors[i]]);
 		}
 		//then add mappings
-		var mappingUris = store.findAllObjectUris(currentDymoUri, HAS_MAPPING);
+		var mappingUris = dymoStore.findAllObjectUris(currentDymoUri, HAS_MAPPING);
 		createControls(mappingUris);
 		for (var i = 0; i < mappingUris.length; i++) {
 			dymo.addMapping(createMapping(mappingUris[i], dymo));
 		}
 		//iterate through parts
-		var parts = store.findParts(currentDymoUri);
+		var parts = dymoStore.findParts(currentDymoUri);
 		for (var i = 0; i < parts.length; i++) {
 			recursiveAddMappingsAndSimilars(parts[i]);
 		}
-	}
-	
+	}*/
+
 	this.createRenderingFromStore = function() {
-		var renderingUri = store.findFirstSubjectUri(TYPE, RENDERING);
-		var rendering = new Rendering(dymos[store.findFirstObjectUri(renderingUri, HAS_DYMO)]);
-		var mappingUris = store.findAllObjectUris(renderingUri, HAS_MAPPING);
+		var renderingUri = dymoStore.findSubjectUri(TYPE, RENDERING);
+		var rendering = new Rendering(dymoStore.findObjectUri(renderingUri, HAS_DYMO));
+		var mappingUris = dymoStore.findAllObjectUris(renderingUri, HAS_MAPPING);
 		createControls(mappingUris);
-		
+
 		for (var i = 0; i < mappingUris.length; i++) {
 			rendering.addMapping(createMapping(mappingUris[i]));
 		}
-		var navigators = store.findAllObjectUris(renderingUri, HAS_NAVIGATOR);
+		var navigators = dymoStore.findAllObjectUris(renderingUri, HAS_NAVIGATOR);
 		for (var i = 0; i < navigators.length; i++) {
-			var dymosFunction = store.findFirstObjectUri(navigators[i], NAV_DYMOS);
-			dymosFunction = store.findFunction(dymosFunction);
-			rendering.addSubsetNavigator(dymosFunction, getNavigator(store.findFirstObjectUri(navigators[i], TYPE)));
+			var dymosFunction = dymoStore.findObjectUri(navigators[i], NAV_DYMOS);
+			dymosFunction = dymoStore.findFunction(dymosFunction);
+			rendering.addSubsetNavigator(dymosFunction, getNavigator(dymoStore.findObjectUri(navigators[i], TYPE)));
 		}
 		return [rendering, controls];
 	}
-	
+
 	function createControls(mappingUris) {
 		for (var i = 0; i < mappingUris.length; i++) {
-			var domainDimUris = store.findAllObjectUris(mappingUris[i], HAS_DOMAIN_DIMENSION);
+			var domainDimUris = dymoStore.findAllObjectUris(mappingUris[i], HAS_DOMAIN_DIMENSION);
 			for (var j = 0; j < domainDimUris.length; j++) {
-				var currentType = store.findFirstObjectUri(domainDimUris[j], TYPE);
-				var currentName = store.findFirstObjectValue(domainDimUris[j], NAME);
+				var currentType = dymoStore.findObjectUri(domainDimUris[j], TYPE);
+				var currentName = dymoStore.findObjectValue(domainDimUris[j], NAME);
 				if (!currentName) {
 					currentName = domainDimUris[j];
 				}
-				if (store.isSubclassOf(currentType, MOBILE_CONTROL)) {
+				if (dymoStore.isSubclassOf(currentType, MOBILE_CONTROL)) {
 					if (!controls[domainDimUris[j]]) {
 						var control = getControl(domainDimUris[j], currentName, currentType);
 						controls[domainDimUris[j]] = control;
@@ -197,49 +200,57 @@ function DymoLoader(scheduler, callback) {
 			}
 		}
 	}
-	
-	/** @param {Object=} dymo (optional) */
-	function createMapping(mappingUri, dymo) {
-		var targetUris = store.findAllObjectUris(mappingUri, TO_TARGET);
+
+	/** @param {string=} dymoUri (optional) */
+	function createMapping(mappingUri, dymoUri) {
+		var targetUris = dymoStore.findAllObjectUris(mappingUri, TO_TARGET);
 		if (targetUris.length > 0) {
 			var targets = [];
-			var constraintFunction = store.findFunction(targetUris[0]);
+			var constraintFunction = dymoStore.findFunction(targetUris[0]);
 			if (constraintFunction) {
-				var allDymos = Object.keys(dymos).map(function(key) { return dymos[key]; });
-				Array.prototype.push.apply(targets, allDymos.filter(constraintFunction));
+				//TODO: REWRITE!!!!!
+				var allDymos = dymoStore.findAllSubjectUris(TYPE, DYMO);//Object.keys(dymos)//.map(function(key) { return dymos[key]; });
+				Array.prototype.push.apply(targets, allDymos);//.filter(constraintFunction));
 			} else {
 				for (var j = 0; j < targetUris.length; j++) {
-					var targetType = store.findFirstObjectUri(targetUris[j], TYPE);
+					targets.push(targetUris[j]);
+					/*var targetType = dymoStore.findObjectUri(targetUris[j], TYPE);
 					if (targetType == DYMO) {
 						targets.push(dymos[targetUris[j]]);
 					} else {
 						//it's a control
 						targets.push(controls[targetUris[j]]);
-					}
+					}*/
 				}
 			}
 			//console.log(mappingUri, dymo, targets, controls, constraintFunction)
-			return createMappingToObjects(mappingUri, dymo, targets, constraintFunction);
+			return createMappingToObjects(mappingUri, dymoUri, targets, constraintFunction);
 		} else {
-			return createMappingToObjects(mappingUri, dymo, [scheduler]);
+			return createMappingToObjects(mappingUri, dymoUri, []);
 		}
 	}
-	
+
 	/** @param {Function=} dymoConstraint (optional) */
-	function createMappingToObjects(mappingUri, dymo, targets, dymoConstraint) {
-		var isRelative = store.findFirstObjectUri(mappingUri, IS_RELATIVE);
+	function createMappingToObjects(mappingUri, dymoUri, targets, dymoConstraint) {
+		var isRelative = dymoStore.findObjectUri(mappingUri, IS_RELATIVE);
 		var domainDims = [];
-		var domainDimUris = store.findAllObjectUris(mappingUri, HAS_DOMAIN_DIMENSION);
+		var domainDimUris = dymoStore.findAllObjectUris(mappingUri, HAS_DOMAIN_DIMENSION);
 		for (var j = 0; j < domainDimUris.length; j++) {
-			var currentType = store.findFirstObjectUri(domainDimUris[j], TYPE);
-			if (currentType == FEATURE_TYPE || store.isSubtypeOf(currentType, FEATURE_TYPE)) {
+			var currentType = dymoStore.findObjectUri(domainDimUris[j], TYPE);
+			if (currentType == FEATURE_TYPE || dymoStore.isSubtypeOf(currentType, FEATURE_TYPE)) {
+				if (currentType == FEATURE_TYPE) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM FEATURES
+					currentType = domainDimUris[j];
+				}
 				domainDims.push(currentType);
-			} else if (currentType == PARAMETER_TYPE || store.isSubtypeOf(currentType, PARAMETER_TYPE)) {
+			} else if (currentType == PARAMETER_TYPE || dymoStore.isSubclassOf(currentType, PARAMETER_TYPE)) {
 				var currentParameter;
-				if (dymo) {
-					currentParameter = addOrUpdateDymoParameter(dymo, currentType);
+				if (currentType == CUSTOM_PARAMETER) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM PARAMETERS
+					currentType = domainDimUris[j];
+				}
+				if (dymoUri) {
+					currentParameter = dymoStore.setParameter(dymoUri, currentType);
 				} else {
-					currentParameter = new Parameter(currentType, 0);
+					currentParameter = dymoStore.setParameter(null, currentType);
 				}
 				domainDims.push(currentParameter);
 			} else {
@@ -247,37 +258,19 @@ function DymoLoader(scheduler, callback) {
 				domainDims.push(controls[domainDimUris[j]]);
 			}
 		}
-		var [args, body] = store.findArgsAndBody(store.findFirstObjectUri(mappingUri, HAS_FUNCTION));
-		var range = store.findFirstObjectUri(mappingUri, HAS_RANGE);
-		//add necessary parameters to targets if they are dymos
+		var [args, body] = dymoStore.findArgsAndBody(dymoStore.findObjectUri(mappingUri, HAS_FUNCTION));
+		var range = dymoStore.findObjectUri(mappingUri, HAS_RANGE);
+		/*//add necessary parameters to targets if they are dymos
 		for (var i = 0; i < targets.length; i++) {
 			if (targets[i] instanceof DynamicMusicObject && !targets[i].getParameter(range)) {
-				addOrUpdateDymoParameter(targets[i], range);
+				addDymoParameter(targets[i], range);
 			}
-		}
+		}*/
+		//console.log(domainDims, isRelative, {"args":args,"body":body}, targets, range, dymoConstraint)
 		return new Mapping(domainDims, isRelative, {"args":args,"body":body}, targets, range, dymoConstraint);
 	}
-	
-	/** @param {number=} value (optional) */
-	function addOrUpdateDymoParameter(dymo, name, value) {
-		var currentParameter = dymo.getParameter(name);
-		if (!currentParameter) {
-			if (isNaN(value)) {
-				value = store.findFirstObjectValue(name, HAS_STANDARD_VALUE, null);
-				if (isNaN(value)) {
-					value = 0;
-				}
-			}
-			var isInteger = store.findFirstObjectValue(name, IS_INTEGER, null);
-			currentParameter = new Parameter(name, value, isInteger);
-			dymo.addParameter(currentParameter);
-		} else {
-			currentParameter.update(value);
-		}
-		return currentParameter;
-	}
-	
-	//currently only works for generically named dymos
+
+	/*//currently only works for generically named dymos
 	function createGraphFromJson(json) {
 		for (var i = 0; i < json.length; i++) {
 			if (json[i]) {
@@ -290,8 +283,8 @@ function DymoLoader(scheduler, callback) {
 				}
 			}
 		}
-	}
-	
+	}*/
+
 	function getNavigator(type) {
 		if (type == SIMILARITY_NAVIGATOR) {
 			return new SimilarityNavigator(undefined);
@@ -304,8 +297,8 @@ function DymoLoader(scheduler, callback) {
 		}
 		return new SequentialNavigator(undefined);
 	}
-	
-	function getControl(id, name, type) {
+
+	function getControl(uri, name, type) {
 		var control;
 		if (type == ACCELEROMETER_X || type == ACCELEROMETER_Y || type == ACCELEROMETER_Z) {
 			control = new AccelerometerControl(type);
@@ -318,29 +311,29 @@ function DymoLoader(scheduler, callback) {
 		}	else if (type == COMPASS_HEADING) {
 			control = new CompassControl();
 		}	else if (type == BEACON) {
-			var uuid = store.findFirstObjectValue(id, HAS_UUID);
-			var major = store.findFirstObjectValue(id, HAS_MAJOR);
-			var minor = store.findFirstObjectValue(id, HAS_MINOR);
+			var uuid = dymoStore.findObjectValue(uri, HAS_UUID);
+			var major = dymoStore.findObjectValue(uri, HAS_MAJOR);
+			var minor = dymoStore.findObjectValue(uri, HAS_MINOR);
 			control = new BeaconControl(uuid, major, minor);
 		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM_CONTROL) {
-			control = new Control(name, type);
-			var init = store.findFirstObjectValue(id, HAS_INITIAL_VALUE);
+			control = new Control(uri, name, type);
+			var init = dymoStore.findObjectValue(uri, HAS_INITIAL_VALUE);
 			control.update(init);
 		} else if (type == RANDOM) {
-			control = new RandomControl();
+			control = new RandomControl(uri);
 		} else if (type == BROWNIAN) {
-			var init = store.findFirstObjectValue(id, HAS_INITIAL_VALUE);
-			control = new BrownianControl(init);
+			var init = dymoStore.findObjectValue(uri, HAS_INITIAL_VALUE);
+			control = new BrownianControl(uri, init);
 		} else if (type == RAMP) {
-			var milisDuration = Math.round(store.findFirstObjectUri(id, HAS_DURATION)*1000);
-			var init = store.findFirstObjectValue(id, HAS_INITIAL_VALUE);
-			control = new RampControl(milisDuration, init);
+			var milisDuration = Math.round(dymoStore.findObjectUri(uri, HAS_DURATION)*1000);
+			var init = dymoStore.findObjectValue(uri, HAS_INITIAL_VALUE);
+			control = new RampControl(uri, milisDuration, init);
 		}
 		//TODO implement in better way (only works for sensor controls)
-		if (store.findFirstObjectValue(id, IS_SMOOTH) && control.setSmooth) {
+		if (dymoStore.findObjectValue(uri, IS_SMOOTH) && control.setSmooth) {
 			control.setSmooth(true);
 		}
-		var average = store.findFirstObjectValue(id, IS_AVERAGE_OF);
+		var average = dymoStore.findObjectValue(uri, IS_AVERAGE_OF);
 		if (!isNaN(average) && control.setAverageOf) {
 			control.setAverageOf(average);
 		}

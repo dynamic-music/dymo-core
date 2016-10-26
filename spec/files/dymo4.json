@@ -7,7 +7,7 @@
 		{"@id":"onset","value":0,"adt":"Onset"},
 		{"@id":"pitch","value":0,"adt":"Pitch"}
 	],
-	"parts": [
+	"parts":{"@list":[
 		{
 			"@id": "dymo01",
 			"@type": "Dymo",
@@ -34,5 +34,5 @@
 				{"@id":"onset","value":0.607,"adt":"Onset"}
 			]
 		}
-	]
+	]}
 }

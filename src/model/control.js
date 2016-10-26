@@ -1,33 +1,30 @@
 /**
  * A control actively changes its value.
- * @param {Object=} parameters (optional)
  * @constructor
  */
-function Control(name, type, parameters) {
-	
+function Control(uri, name, type) {
+
+	/** @private */
+	this.uri = uri;
 	/** @private */
 	this.name = name;
 	/** @private */
 	this.type = type;
-	/** @private */
-	this.parameters = parameters;
 	/** @private */
 	this.value;
 	/** @private */
 	this.mappings = [];
 	/** @private */
 	this.updateFunction;
-	
+
 }
 
 Control.prototype.getName = function() {
 	return this.name;
 }
 
-Control.prototype.getParameter = function(name) {
-	if (this.parameters) {
-		return this.parameters[name];
-	}
+Control.prototype.getUri = function() {
+	return this.uri;
 }
 
 Control.prototype.getValue = function() {

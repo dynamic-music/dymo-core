@@ -6,11 +6,11 @@
 	"navigators":[
 		{
 			"@type":"SimilarityNavigator",
-			"dymos":{"args":["d"],"body":"return d.getLevel() == 0;"}
+			"dymos":{"args":["d"],"body":"return DYMO_STORE.findLevel(d) == 0;"}
 		},
 		{
 			"@type":"RepeatedNavigator",
-			"dymos":{"args":["d"],"body":"return d.getLevel() == 1;"}
+			"dymos":{"args":["d"],"body":"return DYMO_STORE.findLevel(d) == 1;"}
 		}
 	]
 }

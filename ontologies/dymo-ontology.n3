@@ -31,6 +31,7 @@ dy:ParameterType a owl:Class;
 dy:LevelFeature a dy:FeatureType.
 dy:IndexFeature a dy:FeatureType.
 dy:OnsetFeature a dy:FeatureType.
+dy:PitchFeature a dy:FeatureType.
 dy:DurationFeature a dy:FeatureType.
 dy:TimeFeature a dy:FeatureType.
 dy:SegmentLabelFeature a dy:FeatureType.
@@ -70,7 +71,7 @@ dy:Reverb a dy:AudioParameter;
 dy:Delay a dy:AudioParameter;
     dy:hasStandardValue "0"^^xsd:integer.
 dy:Filter a dy:AudioParameter;
-    dy:hasStandardValue "0"^^xsd:integer.
+    dy:hasStandardValue "20000"^^xsd:integer.
 dy:StructuralParameter a owl:Class;
     rdfs:subClassOf dy:ParameterType.
 dy:PartCount a dy:StructuralParameter.

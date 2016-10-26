@@ -24,6 +24,7 @@ var PARAMETER_TYPE = "http://tiny.cc/dymo-ontology#ParameterType";
 var LEVEL_FEATURE = "http://tiny.cc/dymo-ontology#LevelFeature";
 var INDEX_FEATURE = "http://tiny.cc/dymo-ontology#IndexFeature";
 var ONSET_FEATURE = "http://tiny.cc/dymo-ontology#OnsetFeature";
+var PITCH_FEATURE = "http://tiny.cc/dymo-ontology#PitchFeature";
 var DURATION_FEATURE = "http://tiny.cc/dymo-ontology#DurationFeature";
 var TIME_FEATURE = "http://tiny.cc/dymo-ontology#TimeFeature";
 var SEGMENT_LABEL_FEATURE = "http://tiny.cc/dymo-ontology#SegmentLabelFeature";

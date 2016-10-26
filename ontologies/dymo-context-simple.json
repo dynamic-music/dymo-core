@@ -27,6 +27,7 @@
 		"level": "dy:LevelFeature",
 		"index": "dy:IndexFeature",
 		"onset": "dy:OnsetFeature",
+		"pitch": "dy:PitchFeature",
 		"duration": "dy:DurationFeature",
 		"time": "dy:TimeFeature",
 		"segmentLabel": "dy:SegmentLabelFeature",

@@ -33,8 +33,9 @@ createDymoOntology("ontologies/dymo-ontology.n3");
 createMobileAudioOntology("ontologies/mobile-audio-ontology.n3");
 writeContextToFile("ontologies/dymo-context.json", context, contextBase);
 writeContextToFile("ontologies/dymo-context-simple.json", simpleContext, contextBase);
-writeTermDictToFile("src/terms.js")
-writeGlobalsToFile("src/globals2.js");
+writeTermDictToFile("src/globals/terms.js")
+writeGlobalsToFile("src/globals/globals2.js");
+writeContextsToFile("src/globals/contexts.js");
 
 function initWriter(base) {
 	writer = N3.Writer({ prefixes:prefixes });
@@ -89,6 +90,7 @@ function createDymoOntology(path) {
 	addIndividual({term:"level", iri:"LevelFeature"}, "FeatureType");
 	addIndividual({term:"index", iri:"IndexFeature"}, "FeatureType");
 	addIndividual({term:"onset", iri:"OnsetFeature"}, "FeatureType");
+	addIndividual({term:"pitch", iri:"PitchFeature"}, "FeatureType");
 	addIndividual({term:"duration", iri:"DurationFeature"}, "FeatureType");
 	addIndividual({term:"time", iri:"TimeFeature"}, "FeatureType");
 	addIndividual({term:"segmentLabel", iri:"SegmentLabelFeature"}, "FeatureType");
@@ -109,7 +111,7 @@ function createDymoOntology(path) {
 	addIndividual("Height", "AudioParameter", {"hasStandardValue": 0});
 	addIndividual("Reverb", "AudioParameter", {"hasStandardValue": 0});
 	addIndividual("Delay", "AudioParameter", {"hasStandardValue": 0});
-	addIndividual("Filter", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Filter", "AudioParameter", {"hasStandardValue": 20000});
 	//structural parameters
 	addClass("StructuralParameter", "ParameterType");
 	addIndividual("PartCount", "StructuralParameter");
@@ -124,7 +126,7 @@ function createDymoOntology(path) {
 	addProperty({term:"featureType", iri:"hasFeatureType", type:"@vocab"}, "Feature", "FeatureType", true);
 	addProperty({term:"similars", iri:"hasSimilar"}, "Dymo", "Dymo", true);
 	addProperty({term:"successors", iri:"hasSuccessor"}, "Dymo", "Dymo", true);
-	
+
 	writeN3ToFile(path);
 }
 
@@ -326,6 +328,12 @@ function writeN3ToFile(path) {
 }
 
 function writeContextToFile(path, context, contextBase) {
+	fs.writeFile(path, getContextString(context, contextBase), function(err) {
+		console.log("Saved "+ path);
+	});
+}
+
+function getContextString(context, contextBase) {
 	contextString = '{';
 	contextString += '\n\t"@context": {';
 	contextString += '\n\t\t"@base": "' + contextBase + '"';
@@ -337,9 +345,7 @@ function writeContextToFile(path, context, contextBase) {
 	}
 	contextString += '\n\t}';
 	contextString += '\n}';
-	fs.writeFile(path, contextString, function(err) {
-		console.log("Saved "+ path);
-	});
+	return contextString;
 }
 
 function writeTermDictToFile(path) {
@@ -359,6 +365,14 @@ function writeGlobalsToFile(path) {
 		globalsString += 'var ' + key + ' = ' + value + ';\n';
 	}
 	fs.writeFile(path, globalsString, function(err) {
+		console.log("Saved "+ path);
+	});
+}
+
+function writeContextsToFile(path) {
+	contextsString = 'var DYMO_CONTEXT = ' + getContextString(context, contextBase) + '\n\n';
+	contextsString += 'var DYMO_SIMPLE_CONTEXT = ' + getContextString(simpleContext, contextBase);
+	fs.writeFile(path, contextsString, function(err) {
 		console.log("Saved "+ path);
 	});
 }

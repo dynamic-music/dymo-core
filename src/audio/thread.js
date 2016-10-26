@@ -2,10 +2,10 @@
  * Plays back a dymo using a navigator.
  * @constructor
  */
-function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, delaySend, onChanged, onEnded) {
-	
+function SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSend, delaySend, onChanged, onEnded) {
+
 	var self = this;
-	
+
 	var sources = new Map(); //dymo->list<source>
 	var nodes = new Map(); //dymo->list<nodes>
 	var nextSources;
@@ -13,25 +13,25 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 	var currentSources = [];
 	var currentEndTime;
 	var previousOnset;
-	
+
 	if (!navigator) {
-		navigator = new DymoNavigator(dymo, new SequentialNavigator(dymo));
+		navigator = new DymoNavigator(dymoUri, new SequentialNavigator(dymoUri));
 	}
-	
+
 	//starts automatically
 	recursivePlay();
-	
-	this.hasDymo = function(adymo) {
-		var dymos = dymo.getAllDymosInHierarchy();
-		if (dymos.indexOf(adymo)) {
+
+	this.hasDymo = function(uri) {
+		var dymos = DYMO_STORE.findAllObjectsInHierarchy(dymoUri);
+		if (dymos.indexOf(uri)) {
 			return true;
 		}
 	}
-	
+
 	this.getNavigator = function() {
 		return navigator;
 	}
-	
+
 	/*this.pause = function(dymo) {
 		var dymos = dymo.getAllDymosInHierarchy();
 		for (var i = 0, ii = dymos.length; i < ii; i++) {
@@ -43,44 +43,42 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			}
 		}
 	}*/
-	
-	this.stop = function(dymo) {
-		var dymos = dymo.getAllDymosInHierarchy();
-		for (var i = 0, ii = dymos.length; i < ii; i++) {
-			var currentSources = sources.get(dymos[i]);
+
+	this.stop = function(dymoUri) {
+		var subDymoUris = DYMO_STORE.findAllObjectsInHierarchy(dymoUri);
+		for (var i = 0, ii = subDymoUris.length; i < ii; i++) {
+			var currentSources = sources.get(subDymoUris[i]);
 			if (currentSources) {
 				for (var j = 0; j < currentSources.length; j++) {
 					currentSources[j].stop();
 				}
 			}
 			if (nextSources) {
-				nextSources.delete(dymos[i]);
+				nextSources.delete(subDymoUris[i]);
 				if (nextSources.size <= 0) {
 					nextSources = undefined;
 				}
 			}
 		}
 	}
-	
+
 	this.getAllSources = function() {
 		return sources;
 	}
-	
+
 	/** @private returns the sources correponding to the given dymo */
 	this.getSources = function(dymo) {
 		return sources.get(dymo);
 	}
-	
+
 	function recursivePlay() {
 		//create sources and init
 		currentSources = getNextSources();
 		registerSources(currentSources);
 		if (!previousOnset) {
-			var previousSource = currentSources.keys().next().value;
+			var previousSourceDymoUri = currentSources.keys().next().value;
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
-			if (previousSource.hasParameter(ONSET)) {
-				previousOnset = previousSource.getParameter(ONSET).getValue();
-			}
+			previousOnset = DYMO_STORE.findParameterValue(previousSourceDymoUri, ONSET);
 		}
 		//calculate delay and schedule
 		var delay = getCurrentDelay();
@@ -96,7 +94,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			var longestSource = currentEndTime[1];
 			currentEndTime = currentEndTime[0];
 			//smooth transition in case of a loop
-			if (longestSource.getDymo().hasParameter(LOOP) && longestSource.getDymo().getParameter(LOOP).getValue()) {
+			if (DYMO_STORE.findParameterValue(longestSource.getDymoUri(), LOOP)) {
 				currentEndTime -= FADE_LENGTH;
 			}
 			var wakeupTime = (currentEndTime-audioContext.currentTime-SCHEDULE_AHEAD_TIME)*1000;
@@ -109,7 +107,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			}, wakeupTime+100);
 		}
 	}
-	
+
 	function getNextSources() {
 		if (!nextSources) {
 			//create first sources
@@ -119,7 +117,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			return nextSources;
 		}
 	}
-	
+
 	function registerSources(newSources) {
 		for (var dymoKey of newSources.keys()) {
 			if (!sources.get(dymoKey)) {
@@ -128,25 +126,25 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			sources.get(dymoKey).push(newSources.get(dymoKey));
 		}
 	}
-	
+
 	function sourceEnded(source) {
-		var sourceList = sources.get(source.getDymo());
+		var sourceList = sources.get(source.getDymoUri());
 		sourceList.splice(sourceList.indexOf(source), 1);
 		if (sourceList.length <= 0) {
-			sources.delete(source.getDymo());
+			sources.delete(source.getDymoUri());
 		}
 		onChanged();
 		endThreadIfNoMoreSources();
 	}
-	
+
 	function endThreadIfNoMoreSources() {
 		if (sources.size == 0 && (!nextSources || nextSources.size == 0)) {
 			window.clearTimeout(timeoutID);
 			navigator.reset();
 			//remove all nodes (TODO works well but COULD BE DONE SOMEWHERE ELSE FOR EVERY NODE THAT HAS NO LONGER ANYTHING ATTACHED TO INPUT..)
-			var dymos = dymo.getAllDymosInHierarchy();
-			for (var i = 0, ii = dymos.length; i < ii; i++) {
-				var currentNode = nodes.get(dymos[i]);
+			var subDymoUris = DYMO_STORE.findAllObjectsInHierarchy(dymoUri);
+			for (var i = 0, ii = subDymoUris.length; i < ii; i++) {
+				var currentNode = nodes.get(subDymoUris[i]);
 				if (currentNode) {
 					currentNode.removeAndDisconnect();
 				}
@@ -156,7 +154,7 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			}
 		}
 	}
-	
+
 	function getCurrentDelay() {
 		if (!currentEndTime) {
 			return SCHEDULE_AHEAD_TIME;
@@ -164,15 +162,12 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			return currentEndTime-audioContext.currentTime;
 		}
 	}
-	
+
 	function getCurrentEndTime(startTime) {
 		if (nextSources) {
-			var nextSource = nextSources.keys().next().value;
+			var nextSourceDymoUri = nextSources.keys().next().value;
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
-			var nextOnset;
-			if (nextSource.hasParameter(ONSET)) {
-				nextOnset = nextSource.getParameter(ONSET).getValue();
-			}
+			var nextOnset = DYMO_STORE.findParameterValue(nextSourceDymoUri, ONSET);
 			var timeToNextOnset = nextOnset-previousOnset;
 			previousOnset = nextOnset;
 			if (!isNaN(nextOnset)) {
@@ -190,20 +185,21 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 		}
 		return [startTime+maxDuration, longestSource];
 	}
-	
+
 	function getSourceDuration(source) {
 		//var playbackRate = source.getDymo().getParameter(PLAYBACK_RATE).getValue();
 		return source.getDuration();// /playbackRate;
 	}
-	
+
 	function createNextSources() {
 		var nextParts = navigator.getNextParts();
 		if (nextParts) {
-			console.log(nextParts.map(function(s){if (!isNaN(s.getIndex())) {return s.getIndex();} return "top"}))
+			logNextIndices(nextParts);
 			var nextSources = new Map();
 			for (var i = 0; i < nextParts.length; i++) {
-				if (nextParts[i].getSourcePath()) {
-					var buffer = buffers[nextParts[i].getSourcePath()];
+				var sourcePath = DYMO_STORE.getSourcePath(nextParts[i]);
+				if (sourcePath) {
+					var buffer = buffers[sourcePath];
 					var newSource = new DymoSource(nextParts[i], audioContext, buffer, convolverSend, delaySend, sourceEnded);
 					createAndConnectToNodes(newSource);
 					nextSources.set(nextParts[i], newSource);
@@ -212,10 +208,21 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			return nextSources;
 		}
 	}
-	
+
+	function logNextIndices(nextParts) {
+		console.log(nextParts.map(function(s){
+			var index = DYMO_STORE.findPartIndex(s);
+			if (!isNaN(index)) {
+				return index;
+			} else {
+				return "top";
+			}
+		}));
+	}
+
 	function createAndConnectToNodes(source) {
 		var currentNode = source;
-		var currentParentDymo = source.getDymo().getParent();
+		var currentParentDymo = DYMO_STORE.findParents(source.getDymoUri())[0];
 		while (currentParentDymo) {
 			//parent node already defined, so just connect and exit
 			if (nodes.has(currentParentDymo)) {
@@ -226,11 +233,11 @@ function SchedulerThread(dymo, navigator, audioContext, buffers, convolverSend, 
 			var parentNode = new DymoNode(currentParentDymo, audioContext, convolverSend, delaySend);
 			currentNode.connect(parentNode.getInput());
 			nodes.set(currentParentDymo, parentNode);
-			currentParentDymo = currentParentDymo.getParent();
+			currentParentDymo = DYMO_STORE.findParents(currentParentDymo)[0];
 			currentNode = parentNode;
 		}
 		//no more parent, top dymo reached, connect to main output
 		currentNode.connect(audioContext.destination);
 	}
-	
+
 }
