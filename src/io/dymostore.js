@@ -240,8 +240,8 @@ function DymoStore(callback) {
 
 	//returns an array with all uris of dymos that do not have parents
 	this.findTopDymos = function() {
-		var allDymos = this.findAllSubjectUris(TYPE, DYMO);
-		var allParents = this.findAllSubjectUris(HAS_PART);
+		var allDymos = this.findAllSubjects(TYPE, DYMO);
+		var allParents = this.findAllSubjects(HAS_PART);
 		var allParts = [].concat.apply([], allParents.map(function(p){return self.findParts(p);}));
 		return allDymos.filter(function(p) { return allParts.indexOf(p) < 0 });
 	}
@@ -284,8 +284,8 @@ function DymoStore(callback) {
 	}
 
 	this.findDymoRelations = function() {
-		var domainUris = this.findAllSubjectUris(DOMAIN, DYMO);
-		var rangeUris = this.findAllSubjectUris(RANGE, DYMO);
+		var domainUris = this.findAllSubjects(DOMAIN, DYMO);
+		var rangeUris = this.findAllSubjects(RANGE, DYMO);
 		//TODO FIND HAS_PART AUTOMATICALLY..
 		return [HAS_PART].concat(intersectArrays(domainUris, rangeUris));
 	}
@@ -325,7 +325,7 @@ function DymoStore(callback) {
 		} else if (featureType === INDEX_FEATURE) {
 			return this.findPartIndex(dymoUri);
 		} else {
-			return this.findObjectValuesOfType(dymoUri, HAS_FEATURE, featureType, VALUE);
+			return this.findObjectValueOfType(dymoUri, HAS_FEATURE, featureType, VALUE);
 		}
 	}
 
@@ -338,10 +338,7 @@ function DymoStore(callback) {
 	}
 
 	this.findParameterValue = function(dymoUri, parameterType) {
-		if (dymoUri) {
-			return this.findObjectValuesOfType(dymoUri, HAS_PARAMETER, parameterType, VALUE);
-		}
-		return this.findValueOfType(parameterType, VALUE);
+		return this.findObjectValueOfType(dymoUri, HAS_PARAMETER, parameterType, VALUE);
 	}
 
 	this.findParameterUri = function(ownerUri, parameterType) {
@@ -370,7 +367,7 @@ function DymoStore(callback) {
 
 	//TODO optimize
 	this.findMaxLevel = function() {
-		var allDymos = this.findAllSubjectUris(TYPE, DYMO);
+		var allDymos = this.findAllSubjects(TYPE, DYMO);
 		var maxLevel = 0;
 		for (var i = 0; i < allDymos.length; i++) {
 			maxLevel = Math.max(maxLevel, this.findLevel(allDymos[i]));
@@ -427,7 +424,7 @@ function DymoStore(callback) {
 	this.toJsonGraph = function(nodeClass, edgeProperty, callback) {
 		var graph = {"nodes":[], "edges":[]};
 		var nodeMap = {};
-		var nodeUris = this.findAllSubjectUris(TYPE, nodeClass);
+		var nodeUris = this.findAllSubjects(TYPE, nodeClass);
 		var edgeTriples = this.find(null, edgeProperty, null);
 		async.map(nodeUris, toFlatJsonld, function(err, result){
 			graph["nodes"] = result;
@@ -439,7 +436,7 @@ function DymoStore(callback) {
 				if (self.find(edgeTriples[i].object, TYPE, nodeClass).length == 0) {
 					if (self.find(edgeTriples[i].object, FIRST).length > 0) {
 						//it's a list!!
-						var objects = self.findObjectListUris(edgeTriples[i].subject, edgeProperty);
+						var objects = self.findObjectOrList(edgeTriples[i].subject, edgeProperty);
 						objects = objects.map(function(t){return createLink(nodeMap[edgeTriples[i].subject], nodeMap[t]);});
 						graph["edges"] = graph["edges"].concat(objects);
 					}
@@ -467,7 +464,7 @@ function DymoStore(callback) {
 
 
 
-		for (var i = 0; i < this.findAllSubjectUris(TYPE, nodeClass);
+		for (var i = 0; i < this.findAllSubjects(TYPE, nodeClass);
 		var edgeTriples = this.find(null, edgeProperty, null);
 		async.map(nodeUris, toFlatJsonld, function(err, result){
 			graph["nodes"] = result;
@@ -479,7 +476,7 @@ function DymoStore(callback) {
 				if (self.find(edgeTriples[i].object, TYPE, nodeClass).length == 0) {
 					if (self.find(edgeTriples[i].object, FIRST).length > 0) {
 						//it's a list!!
-						var objects = self.findObjectListUris(edgeTriples[i].subject, edgeProperty);
+						var objects = self.findObjectOrList(edgeTriples[i].subject, edgeProperty);
 						objects = objects.map(function(t){return createLink(nodeMap[edgeTriples[i].subject], nodeMap[t]);});
 						graph["edges"] = graph["edges"].concat(objects);
 					}

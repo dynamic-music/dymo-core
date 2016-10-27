@@ -209,7 +209,7 @@ function DymoLoader(dymoStore) {
 			var constraintFunction = dymoStore.findFunction(targetUris[0]);
 			if (constraintFunction) {
 				//TODO: REWRITE!!!!!
-				var allDymos = dymoStore.findAllSubjectUris(TYPE, DYMO);//Object.keys(dymos)//.map(function(key) { return dymos[key]; });
+				var allDymos = dymoStore.findAllSubjects(TYPE, DYMO);//Object.keys(dymos)//.map(function(key) { return dymos[key]; });
 				Array.prototype.push.apply(targets, allDymos);//.filter(constraintFunction));
 			} else {
 				for (var j = 0; j < targetUris.length; j++) {

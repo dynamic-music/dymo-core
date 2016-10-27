@@ -22,6 +22,7 @@ N3.Store = function(){};
 N3.Writer = function(p1){};
 N3.Writer.addTriple = function(p1,p2,p3){};
 N3.Util;
+N3.Util.isLiteral = function(p1){};
 N3.Util.getLiteralValue = function(p1){};
 N3.Util.getLiteralType = function(p1){};
 N3.Util.createLiteral = function(p1){};

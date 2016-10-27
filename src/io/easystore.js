@@ -197,46 +197,22 @@ function EasyStore() {
 
 	//returns the object of the first result found in the store
 	this.findObject = function(subject, predicate) {
-		var results = store.find(subject, predicate);
-		if (results.length > 0) {
-			return results[0].object;
-		}
-	}
-
-	this.findObjectOrList = function(subject, predicate) {
-		return getListElementsIfList(this.findObject(subject, predicate));
-	}
-
-	this.findObjectOfType = function(subject, predicate, type) {
-		var objects = store.find(subject, predicate).map(function(t){return t.object;});
-		objects = objects.filter(function(o){return store.find(o, TYPE, type).length > 0;});
-		if (objects.length > 0) {
-			return objects[0];
-		}
-	}
-
-	//returns the uri of the subject of the first result found in the store, object doesn't have to be a uri
-	this.findSubject = function(predicate, object) {
-		if (typeof object != 'string') {
-			object = N3.Util.createLiteral(object);
-		}
-		var results = store.find(null, predicate, object);
-		if (results.length > 0) {
-			return results[0].subject;
-		} else {
-			//try again for string literals
-			object = N3.Util.createLiteral(object);
-			results = store.find(null, predicate, object);
+		if (subject && predicate) {
+			var results = store.find(subject, predicate);
 			if (results.length > 0) {
-				return results[0].subject;
+				return results[0].object;
 			}
 		}
 	}
 
-	//returns the value of the first result found in the store
+	//returns the object of the first result found in the store, or all elements if it is a list
+	this.findObjectOrList = function(subject, predicate) {
+		return getListElementsIfList(this.findObject(subject, predicate));
+	}
+
+	//returns the value of the first object found in the store, or all element values if it is a list
 	this.findObjectValue = function(subject, predicate) {
 		var object = this.findObjectOrList(subject, predicate);
-		//console.log(subject, predicate, object)
 		if (object) {
 			if (Array.isArray(object)) {
 				return object.map(getLiteralValue);
@@ -245,64 +221,76 @@ function EasyStore() {
 		}
 	}
 
-	this.findObjectValuesOfType = function(subject, predicate, objectType, valuePredicate) {
-		var objectUri = this.findObjectOfType(subject, predicate, objectType);
-		return findValues(objectUri, valuePredicate);
-	}
-
-	this.findValueOfType = function(objectType, valuePredicate) {
-		var objectUri = this.findSubject(TYPE, objectType);
-		return findValues(objectUri, valuePredicate);
-	}
-
-	function findValues(uri, valuePredicate) {
-		if (uri) {
-			var objectValues = self.findAllObjectValues(uri, valuePredicate);
-			if (objectValues.length > 0) {
-				if (objectValues.length == 1) {
-					objectValues = objectValues[0];
-				}
-				return objectValues;
+	/** returns the first object of the given type it can find under the given subject and predicate
+	 * if subject is omitted, just returns the first object of the given type */
+	this.findObjectOfType = function(subject, predicate, type) {
+		var objectUri;
+		if (!subject) {
+			objectUri = this.findSubject(TYPE, type);
+		} else {
+			var objects = store.find(subject, predicate).map(function(t){return t.object;});
+			objects = objects.filter(function(o){return store.find(o, TYPE, type).length > 0;});
+			if (objects.length > 0) {
+				objectUri = objects[0];
 			}
 		}
+		return objectUri;
 	}
 
-	//returns the subjects of all results found in the store
-	this.findAllSubjectUris = function(predicate, object) {
-		return store.find(null, predicate, object).map(function(t){return t.subject;});
+	this.findObjectValueOfType = function(subject, predicate, type, valuePredicate) {
+		var objectUri = this.findObjectOfType(subject, predicate, type);
+		return this.findObjectValue(objectUri, valuePredicate);
 	}
 
 	//returns the object uris of all results found in the store, including the list elements if they are lists
 	this.findAllObjects = function(subject, predicate) {
 		var allObjects = store.find(subject, predicate).map(function(t){return t.object;});
-		for (var i = 0; i < allObjects.length; i++) {
-			var listElements = getListElementsIfList(allObjects[i]);
-			if (listElements) {
-				allObjects[i] = listElements;
-			}
-		}
+		allObjects = allObjects.map(getListElementsIfList);
 		return flattenArray(allObjects);
 	}
 
 	//returns the object values of all results found in the store, including the list elements if they are lists
 	this.findAllObjectValues = function(subject, predicate) {
-		return this.findAllObjects(subject, predicate).map(getLiteralValue);
+		var values = this.findAllObjects(subject, predicate).filter(N3.Util.isLiteral);
+		return values.map(getLiteralValue);
 	}
 
 	this.findAllObjectValuesOfType = function(subject, predicate, valuePredicate) {
 		var objectValues = [];
 		var objectUris = this.findAllObjects(subject, predicate);
-		for (var i = 0; i < objectUris.length; i++) {
-			objectValues.push(this.findObjectValue(objectUris[i], valuePredicate));
+		for (var i = 0, j = objectUris.length; i < j; i++) {
+			var value = self.findObjectValue(objectUris[i], valuePredicate);
+			if (value != null) {
+				objectValues.push(value);
+			}
 		}
 		return objectValues;
 	}
 
-	this.findObjectListUris = function(subject, predicate) {
-		if (subject && predicate) {
-			var currentElement = this.findObject(subject, predicate);
-			return getListElementsIfList(currentElement);
+	//returns the uri of the subject of the first result found in the store, object doesn't have to be a uri
+	this.findSubject = function(predicate, object) {
+		var subject = getSubject(predicate, object);
+		if (!subject) {
+			//try again with literal
+			subject = getSubject(predicate, N3.Util.createLiteral(object));
 		}
+		return subject;
+	}
+
+	function getSubject(predicate, object) {
+		var results = store.find(null, predicate, object);
+		if (results.length > 0) {
+			return results[0].subject;
+		}
+	}
+
+	//returns the subjects of all results found in the store
+	this.findAllSubjects = function(predicate, object) {
+		var results = store.find(null, predicate, object);
+		if (results.length == 0) {
+			results = store.find(null, predicate, N3.Util.createLiteral(object));
+		}
+		return Array.from(new Set(results.map(function(t){return t.subject;})));
 	}
 
 	this.findObjectIndexInList = function(subject, predicate, object) {
@@ -323,7 +311,7 @@ function EasyStore() {
 	this.findContainingLists = function(object) {
 		var subjectUris = [];
 		var predicateUris = [];
-		var listElements = this.findAllSubjectUris(FIRST, object);
+		var listElements = this.findAllSubjects(FIRST, object);
 		for (var i = 0; i < listElements.length; i++) {
 			var currentElement = listElements[i];
 			var currentPredecessor = this.findSubject(REST, currentElement);
@@ -338,7 +326,7 @@ function EasyStore() {
 		return [subjectUris, predicateUris];
 	}
 
-	//return all triples about the given uri and the respective
+	//return all triples about the given uri and its affiliated objects, stops at objects of the given type
 	this.recursiveFindAllTriplesExcept = function(uri, type) {
 		//find all triples for given uri
 		var triples = store.find(uri, null, null);
@@ -354,8 +342,12 @@ function EasyStore() {
 		return triples.concat(subTriples);
 	}
 
+	this.recursiveDeleteAllTriples = function(uri) {
+		//TODO MAKE FUNCTION
+	}
+
 	this.findAllSubClasses = function(superclassUri) {
-		return this.findAllSubjectUris(RDFS_URI+"subClassOf", superclassUri);
+		return this.findAllSubjects(RDFS_URI+"subClassOf", superclassUri);
 	}
 
 	this.isSubclassOf = function(class1, class2) {
@@ -385,7 +377,6 @@ function EasyStore() {
 		if (listUri) {
 			var first = self.findObject(listUri, FIRST);
 			if (first) {
-				//console.log(listUri,first)
 				var objectUris = [];
 				objectUris.push(first);
 				var currentRest = self.findObject(listUri, REST);
