@@ -9,52 +9,93 @@ function EasyStore() {
 
 	var store = N3.Store();
 
-	var observers = {};
+	var valueObservers = {};
+	var typeObservers = {};
 
 
 	///////// OBSERVING FUNCTIONS //////////
 
 	this.addValueObserver = function(subject, predicate, observer) {
-		if (!observers[subject]) {
-			observers[subject] = {};
+		if (!valueObservers[subject]) {
+			valueObservers[subject] = {};
 		}
-		if (!observers[subject][predicate]) {
-			observers[subject][predicate] = [];
+		if (!valueObservers[subject][predicate]) {
+			valueObservers[subject][predicate] = [];
 		}
-		observers[subject][predicate].push(observer);
+		valueObservers[subject][predicate].push(observer);
+		//notifyObservers(subject, predicate, this.findObjectValue(subject, predicate));
+	}
+
+	this.addTypeObserver = function(type, predicate, observer) {
+		if (!typeObservers[type]) {
+			typeObservers[type] = [];
+		}
+		typeObservers[type].push(observer);
 	}
 
 	this.removeValueObserver = function(subject, predicate, observer) {
-		if (observers[subject] && observers[subject][predicate]) {
-			var index = observers[subject][predicate].indexOf(observer);
+		if (valueObservers[subject] && valueObservers[subject][predicate]) {
+			var index = valueObservers[subject][predicate].indexOf(observer);
 			if (index > -1) {
-				observers[subject][predicate].splice(index, 1);
-				cleanUpObservers(subject, predicate);
+				valueObservers[subject][predicate].splice(index, 1);
+				cleanUpValueObservers(valueObservers, subject, predicate);
+			}
+		}
+	}
+
+	function cleanUpValueObservers(subject, predicate) {
+		if (valueObservers[subject] && valueObservers[subject][predicate].length == 0) {
+			delete valueObservers[subject][predicate];
+			if (Object.keys(valueObservers[subject]).length === 0) {
+				delete valueObservers[subject];
+			}
+		}
+	}
+
+	this.removeTypeObserver = function(type, predicate, observer) {
+		if (typeObservers[type]) {
+			var index = typeObservers[type].indexOf(observer);
+			if (index > -1) {
+				typeObservers[type].splice(index, 1);
+				if (typeObservers[type].length == 0) {
+					delete typeObservers[type];
+				}
 			}
 		}
 	}
 
 	this.getValueObservers = function(subject, predicate) {
-		if (observers[subject] && observers[subject][predicate]) {
-			return observers[subject][predicate];
+		if (valueObservers[subject]) {
+			if (valueObservers[subject][predicate]) {
+				return valueObservers[subject][predicate];
+			}
+			return flattenArray(Object.values(valueObservers[subject]));
+		} else if (subject == null && predicate == null) {
+			return flattenArray(Object.keys(valueObservers).map(function(s){return flattenArray(Object.values(valueObservers[s]))}));
 		}
 		return [];
 	}
 
-	function cleanUpObservers(subject, predicate) {
-		if (observers[subject][predicate].length == 0) {
-			delete observers[subject][predicate];
-			if (Object.keys(observers[subject]).length === 0) {
-				delete observers[subject];
-			}
+	this.getTypeObservers = function(type) {
+		if (typeObservers[type]) {
+			return typeObservers[type];
+		} else if (type == null) {
+			return flattenArray(Object.keys(typeObservers).map(function(t){return typeObservers[t]}));
 		}
+		return [];
 	}
 
 	function notifyObservers(subject, predicate, value) {
-		if (observers[subject] && observers[subject][predicate]) {
-			var observerList = observers[subject][predicate];
-			var subjectType = self.findObject(subject, TYPE);
-			for (var i in observerList) {
+		var observerList = [];
+		if (valueObservers[subject] && valueObservers[subject][predicate]) {
+			observerList = observerList.concat(valueObservers[subject][predicate]);
+		}
+		var subjectType = self.findObject(subject, TYPE);
+		if (typeObservers[subjectType]) {
+			observerList = observerList.concat(typeObservers[subjectType]);
+		}
+		for (var i in observerList) {
+			if (observerList[i].observedValueChanged) {
 				observerList[i].observedValueChanged(subject, subjectType, value);
 			}
 		}
@@ -495,5 +536,38 @@ function EasyStore() {
 			console.log(rows[i]);
 		}
 	}
+
+	/*function addToMultiDict(dict, keys, value) {
+		for (var i = 0; i < keys.length; i++) {
+			if (i < keys.length-1 && !dict[keys[i]]) {
+				dict[keys[i]] = {};
+			} else if (!dict[keys[i]]) {
+				dict[keys[i]] = [];
+			}
+			dict = dict[keys[i]];
+		}
+		dict.push(value);
+	}
+
+	function removeFromMultiDict(dict, keys, value) {
+		for (var i = 0; i < keys.length; i++) {
+			if (dict[keys[i]]) {
+				dict = dict[keys[i]];
+			} else return;
+		}
+		var index = dict.indexOf(value);
+		if (index > -1) {
+			dict.splice(index, 1);
+			cleanUpObservers()
+		}
+
+		if (dict[subject] && dict[subject][predicate]) {
+			var index = valueObservers[subject][predicate].indexOf(observer);
+			if (index > -1) {
+				valueObservers[subject][predicate].splice(index, 1);
+				cleanUpObservers(subject, predicate);
+			}
+		}
+	}*/
 
 }

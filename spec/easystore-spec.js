@@ -58,7 +58,68 @@ describe("an easystore", function() {
 
 	it("lets you observe values", function() {
 		easyStore = new EasyStore();
-
+		var observer = new (function(){
+			this.subject, this.type, this.value;
+			this.observedValueChanged = function(subject, type, value) {
+				this.subject = subject;
+				this.type = type;
+				this.value = value;
+			}
+		});
+		expect(observer.subject).toBeUndefined();
+		expect(observer.predicate).toBeUndefined();
+		expect(observer.value).toBeUndefined();
+		easyStore.setValue("musik", "ist", "scheisse");
+		easyStore.setValue("note", "pitch", 61);
+		easyStore.addTriple("note", TYPE, "event");
+		easyStore.addValueObserver("note", "pitch", observer);
+		easyStore.addValueObserver("musik", "ist", observer);
+		expect(easyStore.getValueObservers().length).toBe(2);
+		expect(easyStore.getValueObservers()).toEqual([observer, observer]);
+		expect(easyStore.getValueObservers("musik").length).toBe(1);
+		expect(easyStore.getValueObservers("musik")).toEqual([observer]);
+		expect(observer.subject).toBeUndefined();
+		expect(observer.type).toBeUndefined();
+		expect(observer.value).toBeUndefined();
+		easyStore.setValue("musik", "ist", "laut");
+		expect(observer.subject).toBe("musik");
+		expect(observer.type).toBeUndefined();
+		expect(observer.value).toBe("laut");
+		easyStore.setValue("note", "pitch", 63);
+		easyStore.setValue("note", "loudness", 127);
+		expect(observer.subject).toBe("note");
+		expect(observer.type).toEqual("event");
+		expect(observer.value).toBe(63);
+		easyStore.removeValueObserver("note", "pitch", observer);
+		easyStore.setValue("note", "pitch", 58);
+		expect(observer.subject).toBe("note");
+		expect(observer.type).toEqual("event");
+		expect(observer.value).toBe(63);
+		expect(easyStore.getValueObservers().length).toBe(1);
+		expect(easyStore.getValueObservers()).toEqual([observer]);
+		expect(easyStore.getValueObservers("note").length).toBe(0);
+		expect(easyStore.getValueObservers("note")).toEqual([]);
+		//test adding type observers
+		easyStore.setValue("note2", "pitch", 61);
+		easyStore.addTriple("note2", TYPE, "event");
+		easyStore.setValue("note3", "pitch", 65);
+		easyStore.addTriple("note3", TYPE, "event");
+		easyStore.addTypeObserver("event", "pitch", observer);
+		expect(easyStore.getTypeObservers().length).toBe(1);
+		expect(easyStore.getTypeObservers()).toEqual([observer]);
+		easyStore.setValue("note3", "pitch", 66);
+		expect(observer.subject).toBe("note3");
+		expect(observer.type).toEqual("event");
+		expect(observer.value).toBe(66);
+		easyStore.addTriple("note4", TYPE, "event");
+		easyStore.setValue("note4", "pitch", 62);
+		expect(observer.subject).toBe("note4");
+		expect(observer.type).toEqual("event");
+		expect(observer.value).toBe(62);
+		easyStore.removeTypeObserver("event", "pitch");
+		expect(easyStore.getTypeObservers().length).toBe(1);
+		easyStore.removeTypeObserver("event", "pitch", observer);
+		expect(easyStore.getTypeObservers().length).toBe(0);
 	});
 
 	it("can do lots of things with lists", function() {
