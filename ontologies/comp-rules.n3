@@ -1,0 +1,56 @@
+@prefix ch: <http://tiny.cc/charm-ontology#>.
+@prefix dy: <http://tiny.cc/dymo-ontology#>.
+@prefix mb: <http://tiny.cc/mobile-audio-ontology#>.
+@prefix : <comp.n3#>.
+
+#add top dymos for scenes
+{
+    ?comp a :DynamicComposition.
+    ?comp :scene ?scene.
+}
+=>
+{
+    ?scene :dymo [a dy:Dymo].
+}.
+
+#add parts for scene sources
+{
+    ?scene a :Scene.
+    ?scene :dymo ?dymo.
+    ?scene :source ?source.
+}
+=>
+{
+    ?dymo ch:hasPart [a dy:Dymo;
+        dy:hasSource ?source].
+}.
+
+#add mappings for transitions
+{
+    ?comp a :DynamicComposition.
+    ?comp :transition ?transition.
+}
+=>
+{
+    ?transition :mapping [a mb:Mapping;
+        mb:hasDomainDim [a mb:CustomParameter];
+        mb:hasDomainDim mb:IndexFeature;
+        mb:hasFunction [a mb:Function;
+            mb:hasArgument "a";
+            mb:hasArgument "b";
+            mb:hasBody "return (1-b)*(1-a)+b*a;"];
+        mb:hasRange mb:Amplitude].
+}.
+
+#add mappings for transitions
+{
+    ?transition a :Transition.
+    ?transition :mapping ?mapping.
+    ?transition :scene ?scene.
+    ?scene :dymo ?dymo.
+    ?dymo ch:hasPart ?part.
+}
+=>
+{
+    ?mapping mb:hasTarget ?part.
+}.

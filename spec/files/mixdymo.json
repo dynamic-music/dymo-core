@@ -6,12 +6,14 @@
 	"features":["index","duration"],
 	"mappings":[
 		{
+			"@type":"Mapping",
 			"domainDims":[{"@id":"Fade","@type":"CustomParameter"},"index"],
 			"function":{"args":["a", "b"],"body":"return (1-b)*(1-a)+b*a;"},
 			"targets":{"args":["d"],"body":"return d.getLevel() == 1;"},
 			"range":"Amplitude"
 		},
 		{
+			"@type":"Mapping",
 			"domainDims":[{"@id":"Tempo","@type":"CustomParameter"},"duration"],
 			"function":{"args":["a", "b"],"body":"return a/60*b;"},
 			"targets":{"args":["d"],"body":"return d.getLevel() == 3;"},

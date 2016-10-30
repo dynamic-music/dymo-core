@@ -11,6 +11,10 @@ function DymoLoader(dymoStore) {
 	var controls = {}; //dict with all the controls created
 	var mappings = {};
 
+	this.getMappings = function() {
+		return mappings;
+	}
+
 	this.loadDymoFromJson = function(jsonUri, callback) {
 		var fileIndex = jsonUri.lastIndexOf('/')+1;
 		dymoBasePath = jsonUri.substring(0, fileIndex);
@@ -28,6 +32,12 @@ function DymoLoader(dymoStore) {
 	this.loadRenderingFromJson = function(jsonUri, callback) {
 		loadJsonld(jsonUri, function() {
 			callback(self.createRenderingFromStore());
+		});
+	}
+
+	this.parseDymoFromTurtle = function(turtle, callback) {
+		dymoStore.loadData(turtle, false, function() {
+			callback(self.createDymoFromStore());
 		});
 	}
 
@@ -102,14 +112,12 @@ function DymoLoader(dymoStore) {
 			dymoStore.addBasePath(topDymoUris[i], dymoBasePath)
 			//create all dymo mappings
 			var dymoUris = dymoStore.findAllObjectsInHierarchy(topDymoUris[i]);
-			var mappingResults = dymoStore.find(null, HAS_MAPPING);
-			for (var i = 0; i < mappingResults.length; i++) {
-				var dymoUri = mappingResults[i].subject;
-				if (dymoUris.indexOf(dymoUri) >= 0) {
-					var mappingUri = mappingResults[i].object
-					createControls(mappingUri);
-					mappings[mappingUri] = createMapping(mappingUri, dymoUri);
-				}
+			var mappingUris = dymoStore.findAllSubjects(TYPE, MAPPING);
+			for (var j = 0; j < mappingUris.length; j++) {
+				var mappingUri = mappingUris[j];
+				var dymoUri = DYMO_STORE.findSubject(HAS_MAPPING, mappingUri);
+				createControls(mappingUri);
+				mappings[mappingUri] = createMapping(mappingUri, dymoUri);
 			}
 		}
 		return topDymoUris;

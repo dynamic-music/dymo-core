@@ -1,0 +1,13 @@
+@prefix : <comp.n3#>.
+
+:scene1 a :Scene;
+    :source "sark1.m4a";
+    :source "sark2.m4a".
+:scene2 a :Scene;
+    :source "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav";
+    :source "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p055_ne0001_s000827.wav".
+:comp a :DynamicComposition;
+    :scene :scene1, :scene2;
+    :transition [a :Transition;
+        :scene :scene1;
+        :scene :scene2].

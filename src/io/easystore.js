@@ -38,7 +38,7 @@ function EasyStore() {
 			var index = valueObservers[subject][predicate].indexOf(observer);
 			if (index > -1) {
 				valueObservers[subject][predicate].splice(index, 1);
-				cleanUpValueObservers(valueObservers, subject, predicate);
+				cleanUpValueObservers(subject, predicate);
 			}
 		}
 	}
@@ -94,7 +94,7 @@ function EasyStore() {
 		if (typeObservers[subjectType]) {
 			observerList = observerList.concat(typeObservers[subjectType]);
 		}
-		for (var i in observerList) {
+		for (var i = 0; i < observerList.length; i++) {
 			if (observerList[i].observedValueChanged) {
 				observerList[i].observedValueChanged(subject, subjectType, value);
 			}

@@ -18,7 +18,7 @@ FunctionTools.createFunction = function(args, body) {
 	return FunctionTools.created[body];
 }
 
-//currently inverts functions that are linear binary trees with 
+//currently inverts functions that are linear binary trees with
 //arithmetic operations, constant leaves, and one variable leaf
 FunctionTools.invertFunction = function(body) {
 	var returnValue = FunctionTools.toReturnValueString(body);
@@ -28,7 +28,7 @@ FunctionTools.invertFunction = function(body) {
 	return FunctionTools.inverted[body];
 }
 
-//currently inverts functions that are linear binary trees with 
+//currently inverts functions that are linear binary trees with
 //arithmetic operations, constant leaves, and one variable leaf
 /** @private */
 FunctionTools.invertReturnValue = function(returnValue) {
@@ -126,4 +126,3 @@ FunctionTools.getOperatorName = function(operator) {
 		return "divide";
 	}
 }
-
