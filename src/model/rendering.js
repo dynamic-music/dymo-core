@@ -6,7 +6,7 @@ function Rendering(dymoUri) {
 
 	var self = this;
 
-	var mappings = [];
+	//var mappings = [];
 	var navigator;
 
 	this.play = function() {
@@ -21,14 +21,14 @@ function Rendering(dymoUri) {
 		}
 	}
 
-	this.addMapping = function(mapping) {
+	/*this.addMapping = function(mapping) {
 		mappings.push(mapping);
 		mapping.updateParameter();
 	}
 
 	this.getMappings = function() {
 		return mappings;
-	}
+	}*/
 
 	this.addSubsetNavigator = function(dymoFunction, nav) {
 		if (!navigator) {

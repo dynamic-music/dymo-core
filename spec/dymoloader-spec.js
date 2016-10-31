@@ -61,7 +61,7 @@ describe("a dymoloader", function() {
 		loader.loadRenderingFromJson(controlRenderingPath, function(loadedRendering) {
 			rendering = loadedRendering[0];
 			controls = loadedRendering[1];
-			expect(rendering.getMappings().length).toEqual(3);
+			expect(Object.keys(loader.getMappings()).length).toEqual(3);
 			expect(Object.keys(controls).length).toEqual(3);
 			expect(DYMO_STORE.findParameterValue(null, LISTENER_ORIENTATION)).toBeUndefined();
 			controls[CONTEXT_URI+"orientation"].update(0.5);

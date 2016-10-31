@@ -9,8 +9,8 @@ function DymoStore(callback) {
 
 	EasyStore.call(this);
 
-	var dymoOntologyPath = "../ontologies/dymo-ontology.n3";//"http://tiny.cc/dymo-ontology";
-	var mobileOntologyPath = "../ontologies/mobile-audio-ontology.n3";//"http://tiny.cc/mobile-audio-ontology";
+	var dymoOntologyPath = "http://tiny.cc/dymo-ontology"//"../ontologies/dymo-ontology.n3";//"http://tiny.cc/dymo-ontology";
+	var mobileOntologyPath = "http://tiny.cc/mobile-audio-ontology"//"../ontologies/mobile-audio-ontology.n3";//"http://tiny.cc/mobile-audio-ontology";
 	var dymoContextPath = "http://tiny.cc/dymo-context";
 	var dymoSimpleContextPath = "http://tiny.cc/dymo-context-simple";
 	var dymoBasePaths = {};
@@ -306,9 +306,11 @@ function DymoStore(callback) {
 	}
 
 	this.findArgsAndBody = function(uri) {
-		var args = self.findAllObjectValues(uri, HAS_ARGUMENT);
-		var body = self.findObjectValue(uri, HAS_BODY);
-		return [args, body];
+		if (uri) {
+			var args = self.findAllObjectValues(uri, HAS_ARGUMENT);
+			var body = self.findObjectValue(uri, HAS_BODY);
+			return [args, body];
+		}
 	}
 
 	this.findAttributeValue = function(dymoUri, attributeType) {

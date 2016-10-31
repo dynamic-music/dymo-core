@@ -2,6 +2,7 @@
  * Autocontrols that use statistics to set their values.
  * @constructor
  * @extends {Control}
+ * @param {Function=} updateFunction (optional)
  * @param {Function=} resetFunction (optional)
  */
 function AutoControl(uri, name, updateFunction, resetFunction) {
@@ -23,7 +24,9 @@ function AutoControl(uri, name, updateFunction, resetFunction) {
 		if (!frequency) {
 			frequency = DYMO_STORE.findParameterValue(uri, AUTO_CONTROL_FREQUENCY);
 		}
-		intervalID = setInterval(updateFunction, frequency);
+		if (updateFunction) {
+			intervalID = setInterval(updateFunction, frequency);
+		}
 	}
 
 	this.reset = function() {

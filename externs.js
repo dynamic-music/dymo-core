@@ -15,6 +15,7 @@ var async;
 
 var $scope, $http;
 $scope.prototype.$apply;
+$scope.prototype.$on;
 $http.get.success = function(p1){};
 var N3;
 N3.Parser = function(){};
@@ -34,15 +35,9 @@ jsonld.fromRDF = function(p1,p2,p3){};
 var Benchmarker;
 Benchmarker.startTask = function(p1){};
 
-/** @constructor */
-function AccelerometerControl(type){};
-/** @constructor */
-function TiltControl(type){};
-/** @constructor */
-function CompassControl(){};
-/** @constructor */
-function GeolocationControl(type){};
-/** @constructor */
-function DistanceControl(){};
-/** @constructor */
-function BeaconControl(uuid, major, minor){};
+var $cordovaBeacon;
+$cordovaBeacon.beacons;
+$cordovaBeacon.createBeaconRegion = function(p1,p2){};
+$cordovaBeacon.startRangingBeaconsInRegion = function(p1,p2){};
+var $cordovaDeviceOrientation;
+$cordovaDeviceOrientation.trueHeading;
