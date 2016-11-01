@@ -80,7 +80,7 @@ mb:SimilarityNavigator a owl:Class;
     rdfs:subClassOf mb:Navigator.
 mb:GraphNavigator a owl:Class;
     rdfs:subClassOf mb:Navigator.
-mb:DomainDimension a owl:Class;
+mb:ArgumentValue a owl:Class;
     owl:unionOf (mb:MobileControl dy:ParameterType dy:FeatureType).
 mb:MappingTarget a owl:Class;
     owl:unionOf (mb:MobileControl dy:Dymo mb:Function).
@@ -94,15 +94,18 @@ mb:hasDymo a owl:ObjectProperty, owl:FunctionalProperty;
 mb:hasMapping a owl:ObjectProperty;
     rdfs:domain mb:MappingOwners;
     rdfs:range mb:Mapping.
-mb:hasDomainDimension a owl:ObjectProperty;
-    rdfs:domain mb:Mapping;
-    rdfs:range mb:DomainDimension.
 mb:hasFunction a owl:ObjectProperty;
     rdfs:domain mb:Mapping;
     rdfs:range mb:Function.
-mb:hasArgument a owl:DatatypeProperty;
+mb:hasArgument a owl:ObjectProperty;
     rdfs:domain mb:Function;
+    rdfs:range <Argument>.
+mb:hasVariable a owl:DatatypeProperty;
+    rdfs:domain <Argument>;
     rdfs:range "http://www.w3.org/2001/XMLSchema#string".
+mb:hasValue a owl:ObjectProperty;
+    rdfs:domain <Argument>;
+    rdfs:range mb:ArgumentValue.
 mb:hasBody a owl:DatatypeProperty;
     rdfs:domain mb:Function;
     rdfs:range "http://www.w3.org/2001/XMLSchema#string".

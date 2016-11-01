@@ -181,20 +181,20 @@ function createMobileAudioOntology(path) {
 	addClass("SimilarityNavigator", "Navigator");
 	addClass("GraphNavigator", "Navigator");
 	//domain dimension and mapping target
-	addUnionClass("DomainDimension", ["MobileControl", "ParameterType", "FeatureType"]);
+	addUnionClass("ArgumentValue", ["MobileControl", "ParameterType", "FeatureType"]);
 	addUnionClass("MappingTarget", ["MobileControl", "Dymo", "Function"]);
 	addUnionClass("MappingRange", ["ParameterType", "MobileParameter"]);
 	addUnionClass("MappingOwners", ["Dymo", "Rendering"]);
 	//mapping properties
 	addProperty({term:"dymo", iri:"hasDymo", type: "@id"}, "Rendering", "Dymo", true, true);
 	addProperty({term:"mappings", iri:"hasMapping"}, "MappingOwners", "Mapping", true);
-	addProperty({term:"domainDims", iri:"hasDomainDimension", type: "@vocab"}, "Mapping", "DomainDimension", true);
 	addProperty({term:"function", iri:"hasFunction"}, "Mapping", "Function", true);
-	addProperty({term:"args", iri:"hasArgument"}, "Function", prefixes["xsd"]+"string", false);
+	addProperty({term:"args", iri:"hasArgument"}, "Function", "Argument", true);
+	addProperty({term:"var", iri:"hasVariable"}, "Argument", prefixes["xsd"]+"string", false);
+	addProperty({term:"val", iri:"hasValue", type: "@vocab"}, "Argument", "ArgumentValue", true);
 	addProperty({term:"body", iri:"hasBody"}, "Function", prefixes["xsd"]+"string", false);
 	addProperty({term:"targets", iri:"toTarget", type: "@id"}, "Mapping", "MappingTarget", true);
 	addProperty({term:"range", iri:"hasRange", type: "@vocab"}, "Mapping", "MappingRange", true);
-	addProperty({term:"relative", iri:"isRelative", type: "xsd:boolean"}, "Mapping", prefixes["xsd"]+"boolean", false);
 	//control properties
 	addProperty({term:"init", iri:"hasInitialValue", type: "xsd:float"}, "MobileControl", prefixes["xsd"]+"float", false);
 	addProperty({term:"smooth", iri:"isSmooth", type: "xsd:boolean"}, "SensorControl", prefixes["xsd"]+"boolean", false);
