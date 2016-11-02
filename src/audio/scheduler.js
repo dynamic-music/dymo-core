@@ -36,6 +36,8 @@ function Scheduler(audioContext, onPlaybackChange) {
 			delaySend.connect(delayFeedback);
 			delayFeedback.connect(delaySend);
 		}
+		//start observing play parameters
+		DYMO_STORE.addTypeObserver(PLAY, VALUE, self);
 	}
 
 	/** @param {Array<string>} dymoUris */
@@ -108,6 +110,7 @@ function Scheduler(audioContext, onPlaybackChange) {
 		}
 	}
 
+	/** @param {Navigator=} navigator (optional) */
 	this.play = function(dymoUri, navigator) {
 		var thread = new SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSend, delaySend, updatePlayingDymos, threadEnded);
 		threads.push(thread);
@@ -178,6 +181,13 @@ function Scheduler(audioContext, onPlaybackChange) {
 		if (paramType == LISTENER_ORIENTATION) {
 			var angleInRadians = value / 180 * Math.PI;
 			audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
+		} else if (paramType == PLAY) {
+			var dymoUri = DYMO_STORE.findSubject(HAS_PARAMETER, paramUri);
+			if (value > 0) {
+				this.play(dymoUri);
+			} else {
+				this.stop(dymoUri);
+			}
 		}
 	}
 

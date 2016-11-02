@@ -115,7 +115,7 @@ describe("a navigator", function() {
 
 	it("can have various subset navigators", function() {
 		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
-		navigator.addSubsetNavigator(function(d){return DYMO_STORE.findLevel(d) == 1;}, new SequentialNavigator("dymo1", true));
+		navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],"return d == 1;"), new SequentialNavigator("dymo1", true));
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
 		expect(navigator.getNextParts()[0]).toBe("dymo9");
@@ -128,7 +128,7 @@ describe("a navigator", function() {
 
 	it("can have missing subset navigators", function() {
 		var navigator = new DymoNavigator("dymo1");
-		navigator.addSubsetNavigator(function(d){return DYMO_STORE.findLevel(d) <= 1;}, new SequentialNavigator("dymo1"));
+		navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],"return d <= 1;"), new SequentialNavigator("dymo1"));
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
 		expect(navigator.getNextParts()[0]).toBe("dymo7");
@@ -137,7 +137,7 @@ describe("a navigator", function() {
 		expect(navigator.getNextParts()[0]).toBe("dymo10");
 		expect(navigator.getNextParts()).toBeUndefined();
 		var navigator = new DymoNavigator("dymo1");
-		navigator.addSubsetNavigator(function(d){return DYMO_STORE.findLevel(d) == 0;}, new SequentialNavigator("dymo1"));
+		navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],"return d == 0;"), new SequentialNavigator("dymo1"));
 		expect(navigator.getNextParts()[0]).toBe("dymo2");
 		expect(navigator.getNextParts()[0]).toBe("dymo3");
 		expect(navigator.getNextParts()[0]).toBe("dymo4");
@@ -160,7 +160,7 @@ describe("a navigator", function() {
 			//test without replacing of objects (probability 0)
 			var navigator = new DymoNavigator("dymo1", new SequentialNavigator(), new RepeatedNavigator());
 			var simNav = new SimilarityNavigator("dymo1")
-			navigator.addSubsetNavigator(function(d){return DYMO_STORE.findLevel(d) == 0;}, simNav);
+			navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],"return d == 0;"), simNav);
 			DYMO_STORE.setParameter(null, LEAPING_PROBABILITY, 0);
 			DYMO_STORE.setParameter(null, CONTINUE_AFTER_LEAPING, 0);
 			expect(["dymo2"]).toContain(navigator.getNextParts()[0]);
@@ -226,7 +226,7 @@ describe("a navigator", function() {
 			//test without replacing of objects (probability 0)
 			var navigator = new DymoNavigator("dymo1", new SequentialNavigator(), new RepeatedNavigator());
 			var graphNav = new GraphNavigator("dymo1")
-			navigator.addSubsetNavigator(function(d){return DYMO_STORE.findLevel(d) == 0;}, graphNav);
+			navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],"return d == 0;"), graphNav);
 			expect(["dymo2"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo3"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo2","dymo4"]).toContain(navigator.getNextParts()[0]);

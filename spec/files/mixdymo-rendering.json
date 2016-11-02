@@ -5,32 +5,40 @@
 	"dymo":"demoBeat",
 	"mappings":[
 		{
-			"domainDims":[{"@id":"fadeRamp","@type":"Random","value":0,"duration":1}],
-			"function":{"args":["a"],"body":"return a;"},
+			"function":{"args":[
+				{"var":"a", "val":{"@id":"fadeRamp","@type":"Random","value":0,"duration":1}}
+			],"body": "return a;"},
 			"targets":["mixdymo"],
 			"range":"Fade"
 		},
 		{
-			"domainDims":[{"@id":"fade","name":"fade","@type":"Slider"}],
-			"function":{"args":["a"],"body":"return a;"},
+			"function":{"args":[
+				{"var":"a", "val":{"@id":"fade","name":"fade","@type":"Slider"}}
+			],"body": "return a;"},
 			"targets":["mixdymo"],
 			"range":"Fade"
 		},
 		{
-			"domainDims":[{"name":"beats per bar","@type":"Slider"}],
-			"function":{"args":["a"],"body":"return 4*a;"},
-			"targets":{"args":["d"],"body":"return d.getLevel() == 2;"},
+			"function":{"args":[
+				{"var":"a", "val":{"name":"beats per bar","@type":"Slider"}}
+			],"body": "return 4*a;"},
+			"targets":{"args":[{"var":"d", "val":"level"}], "body": "return d == 2;"},
 			"range":"PartCount"
 		},
 		{
-			"domainDims":[{"name":"offbeat duration","@type":"Slider"}],
-			"function":{"args":["a"],"body":"return a;"},
-			"targets":{"args":["d"],"body":"return d.getLevel() == 3 && d.getIndex()%2 == 1;"},
+			"function":{"args":[
+				{"var":"a", "val":{"name":"offbeat duration","@type":"Slider"}}
+			],"body": "return a;"},
+			"targets":{
+				"args":[{"var":"l", "val":"level"},{"var":"i", "val":"index"}],
+				"body": "return l == 3 && i%2 == 1;"
+			},
 			"range":"DurationRatio"
 		},
 		{
-			"domainDims":[{"@id":"transition","name":"transition","@type":"Button"}],
-			"function":{"args":["a"],"body":"return a;"},
+			"function":{"args":[
+				{"var":"a", "val":{"@id":"transition","name":"transition","@type":"Button"}}
+			],"body": "return a;"},
 			"targets":["fadeRamp"],
 			"range":"AutoControlTrigger"
 		}

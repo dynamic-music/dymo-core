@@ -16,18 +16,16 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 	var uiControls = {};
 	var sensorControls = {};
 
-	this.loadDymoAndRenderingFromStore = function(newStore, callback) {
+	this.loadDymoAndRenderingFromStore = function(newStore, buffersCallback) {
 		var loader = new DymoLoader(newStore);
-		processLoadedDymoAndRendering(loader.createDymoFromStore(), loader.createRenderingFromStore());
-		scheduler.loadBuffers(rendering.getDymoUri(), callback);
+		processLoadedDymoAndRendering(loader.createDymoFromStore(), loader.createRenderingFromStore(), buffersCallback);
 	}
 
 	this.loadDymoAndRendering = function(dymoUri, renderingUri, dymoCallback, buffersCallback) {
 		var loader = new DymoLoader(DYMO_STORE);
 		loader.loadDymoFromJson(dymoUri, function(loadedDymos) {
 			loader.loadRenderingFromJson(renderingUri, function(loadedRendering) {
-				processLoadedDymoAndRendering(loadedDymos, loadedRendering);
-				scheduler.loadBuffers(loadedDymos, buffersCallback);
+				processLoadedDymoAndRendering(loadedDymos, loadedRendering, buffersCallback);
 				if (dymoCallback) {
 					dymoCallback();
 				}
@@ -35,7 +33,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 		});
 	}
 
-	function processLoadedDymoAndRendering(loadedDymos, loadedRendering) {
+	function processLoadedDymoAndRendering(loadedDymos, loadedRendering, buffersCallback) {
 		topDymos = loadedDymos;
 		rendering = loadedRendering[0];
 		for (var key in loadedRendering[1]) {
@@ -51,6 +49,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 			reverbFile = 'bower_components/dymo-core/audio/impulse_rev.wav';
 		}
 		scheduler.init(reverbFile);
+		scheduler.loadBuffers(loadedDymos, buffersCallback);
 	}
 
 	this.loadDymoFromJson = function(jsonDymo, callback) {

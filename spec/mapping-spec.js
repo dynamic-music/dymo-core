@@ -12,7 +12,8 @@ describe("a mapping", function() {
 			DYMO_STORE.addDymo("dymo2");
 			DYMO_STORE.setFeature("dymo2", ONSET_FEATURE, 3);
 			DYMO_STORE.setParameter("dymo2", AMPLITUDE, 1);
-			mapping = new Mapping([control, ONSET_FEATURE], undefined, {args:["a", "b"], body:"return a * b;"}, ["dymo1", "dymo2"], AMPLITUDE);
+			var mappingFunction = new DymoFunction(["a","b"], [control, ONSET_FEATURE], "return a * b;");
+			mapping = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE);
 			done();
 		});
 	});
@@ -29,7 +30,8 @@ describe("a mapping", function() {
 
 	it("can map from parameters to other parameters", function() {
 		var highLevelParamUri = DYMO_STORE.setParameter("dymo1", "high-level", 1);
-		var mapping2 = new Mapping([highLevelParamUri, ONSET_FEATURE], undefined, {args:["a", "b"], body:"return a * b;"}, ["dymo1", "dymo2"], AMPLITUDE);
+		var mappingFunction = new DymoFunction(["a","b"], [highLevelParamUri, ONSET_FEATURE], "return a * b;");
+		var mapping2 = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE);
 		expect(DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(0.5);
 		DYMO_STORE.setParameter("dymo1", "high-level", 0.3);
 		expect(DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(1.5);
@@ -43,7 +45,8 @@ describe("a mapping", function() {
 		DYMO_STORE.addControl("control2", SLIDER);
 		var control2 = new Control("control2", SLIDER);
 		var rampUri = DYMO_STORE.addControl(undefined, RAMP);
-		var mapping2 = new Mapping([control2], undefined, {args:["a"], body:"return a;"}, [rampUri], AUTO_CONTROL_TRIGGER);
+		var mappingFunction = new DymoFunction(["a"], [control2], "return a;");
+		var mapping2 = new Mapping(mappingFunction, [rampUri], AUTO_CONTROL_TRIGGER);
 		control2.update(1);
 		expect(DYMO_STORE.findParameterValue(rampUri, AUTO_CONTROL_TRIGGER)).toBe(1);
 		control2.update(0);
@@ -59,7 +62,8 @@ describe("a mapping", function() {
 		//currently invertible function
 		DYMO_STORE.addDymo("dymo3");
 		DYMO_STORE.setParameter("dymo3", AMPLITUDE, 1);
-		var mapping3 = new Mapping([control, ONSET_FEATURE], undefined, {args:["a", "b"], body:"return 5*a-1;"}, ["dymo3"], AMPLITUDE);
+		var mappingFunction = new DymoFunction(["a","b"], [control, ONSET_FEATURE], "return 5*a-1;");
+		var mapping3 = new Mapping(mappingFunction, ["dymo3"], AMPLITUDE);
 		expect(DYMO_STORE.findParameterValue("dymo3", AMPLITUDE)).toBe(-0.5);
 		control.update(0.3);
 		expect(DYMO_STORE.findParameterValue("dymo3", AMPLITUDE)).toBe(0.5);

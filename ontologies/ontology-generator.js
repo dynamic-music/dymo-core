@@ -22,19 +22,19 @@ var contextBase = "http://tiny.cc/dymo-context/";
 var writer = N3.Writer({ prefixes:prefixes });
 var context = [];
 var simpleContext = [];
-var globals = [];
+var uris = [];
 var currentBase = "";
 var nameToUri = {};
 var uriToTerm = {};
 
 initContext();
-initGlobals();
+initUris();
 createDymoOntology("ontologies/dymo-ontology.n3");
 createMobileAudioOntology("ontologies/mobile-audio-ontology.n3");
 writeContextToFile("ontologies/dymo-context.json", context, contextBase);
 writeContextToFile("ontologies/dymo-context-simple.json", simpleContext, contextBase);
 writeTermDictToFile("src/globals/terms.js")
-writeGlobalsToFile("src/globals/globals2.js");
+writeUrisToFile("src/globals/uris.js");
 writeContextsToFile("src/globals/contexts.js");
 
 function initWriter(base) {
@@ -53,23 +53,23 @@ function initContext() {
 	addToContext("parts", "hasPart");
 }
 
-function initGlobals() {
-	addGlobal("RDFS_URI", prefixes["rdfs"]);
-	addGlobal("CONTEXT_URI", contextBase);
+function initUris() {
+	addUri("RDFS_URI", prefixes["rdfs"]);
+	addUri("CONTEXT_URI", contextBase);
 	//SOME PROPERTIES
-	addGlobal("TYPE", rdfType);
-	addGlobal("FIRST", rdfPrefix+"first");
-	addGlobal("REST", rdfPrefix+"rest");
-	addGlobal("NIL", rdfPrefix+"nil");
-	addGlobal("DOMAIN", prefixes["rdfs"]+"domain");
-	addGlobal("RANGE", prefixes["rdfs"]+"range");
-	addGlobal("LABEL", prefixes["rdfs"]+"label");
-	addGlobal("NAME", prefixes["sch"]+"name");
+	addUri("TYPE", rdfType);
+	addUri("FIRST", rdfPrefix+"first");
+	addUri("REST", rdfPrefix+"rest");
+	addUri("NIL", rdfPrefix+"nil");
+	addUri("DOMAIN", prefixes["rdfs"]+"domain");
+	addUri("RANGE", prefixes["rdfs"]+"range");
+	addUri("LABEL", prefixes["rdfs"]+"label");
+	addUri("NAME", prefixes["sch"]+"name");
 	//mock charm stuff
-	addGlobal("CDT", prefixes["ch"]+"cdt");
-	addGlobal("ADT", prefixes["ch"]+"adt");
-	addGlobal("VALUE", prefixes["ch"]+"value");
-	addGlobal("HAS_PART", prefixes["ch"]+"hasPart");
+	addUri("CDT", prefixes["ch"]+"cdt");
+	addUri("ADT", prefixes["ch"]+"adt");
+	addUri("VALUE", prefixes["ch"]+"value");
+	addUri("HAS_PART", prefixes["ch"]+"hasPart");
 }
 
 function createDymoOntology(path) {
@@ -216,7 +216,7 @@ function addOntology(comment) {
 }
 
 function addClass(name, subClassOf, comment) {
-	var fullName = addToTermsContextAndGlobals(name);
+	var fullName = addToTermsContextAndUris(name);
 	subClassOf = getFromTerms(subClassOf);
 	addTriple(fullName, rdfType, prefixes["owl"]+"Class");
 	if (subClassOf) {
@@ -226,7 +226,7 @@ function addClass(name, subClassOf, comment) {
 }
 
 function addUnionClass(name, classes, comment) {
-	var fullName = addToTermsContextAndGlobals(name);
+	var fullName = addToTermsContextAndUris(name);
 	addTriple(fullName, rdfType, prefixes["owl"]+"Class");
 	classes = classes.map(function(c){ return getFromTerms(c); });
 	addTriple(fullName, prefixes["owl"]+"unionOf", writer.list(classes));
@@ -234,7 +234,7 @@ function addUnionClass(name, classes, comment) {
 }
 
 function addProperty(definition, domain, range, isObjectProperty, isFunctional, comment) {
-	var fullName = addToTermsContextAndGlobals(definition);
+	var fullName = addToTermsContextAndUris(definition);
 	domain = getFromTerms(domain);
 	range = getFromTerms(range);
 	var propertyType = isObjectProperty? "ObjectProperty": "DatatypeProperty";
@@ -251,7 +251,7 @@ function addProperty(definition, domain, range, isObjectProperty, isFunctional, 
 }
 
 function addIndividual(name, type, properties, comment) {
-	var fullName = addToTermsContextAndGlobals(name);
+	var fullName = addToTermsContextAndUris(name);
 	type = getFromTerms(type);
 	addTriple(fullName, rdfType, type);
 	for (var p in properties) {
@@ -274,7 +274,7 @@ function addTriple(subject, predicate, object) {
 	writer.addTriple({ subject:subject, predicate:predicate, object:object });
 }
 
-function addToTermsContextAndGlobals(definition) {
+function addToTermsContextAndUris(definition) {
 	var name;
 	if (typeof definition == "string") {
 		name = definition;
@@ -286,7 +286,7 @@ function addToTermsContextAndGlobals(definition) {
 	var fullName = prefixes[currentBase]+name;
 	nameToUri[name] = fullName;
 	uriToTerm[fullName] = definition.term;
-	addGlobal(toUpperCaseWithUnderscores(name), fullName);
+	addUri(toUpperCaseWithUnderscores(name), fullName);
 	return fullName;
 }
 
@@ -310,8 +310,8 @@ function addToContext(term, value, type) {
 	context.push([term, value]);
 }
 
-function addGlobal(name, value) {
-	globals.push([name, value]);
+function addUri(name, value) {
+	uris.push([name, value]);
 }
 
 function toUpperCaseWithUnderscores(string) {
@@ -355,17 +355,17 @@ function writeTermDictToFile(path) {
 	});
 }
 
-function writeGlobalsToFile(path) {
-	globalsString = "";
-	for (var i = 0; i < globals.length; i++) {
-		var key = globals[i][0];
-		var value = globals[i][1];
+function writeUrisToFile(path) {
+	urisString = "";
+	for (var i = 0; i < uris.length; i++) {
+		var key = uris[i][0];
+		var value = uris[i][1];
 		if (value[0] != '[') {
 			value = '"' + value + '"';
 		}
-		globalsString += 'var ' + key + ' = ' + value + ';\n';
+		urisString += 'var ' + key + ' = ' + value + ';\n';
 	}
-	fs.writeFile(path, globalsString, function(err) {
+	fs.writeFile(path, urisString, function(err) {
 		console.log("Saved "+ path);
 	});
 }

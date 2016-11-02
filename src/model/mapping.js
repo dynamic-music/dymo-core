@@ -1,36 +1,29 @@
 /**
  * A mapping from features/controls/parameters to parameters.
- * relative means that the function both
- * -takes the change parameters from its domainDims where possible, and
- * -updates its goal parameter relatively
- * @param {Function=} dymoConstraint a function that defines which dymos to map to (optional)
  * @constructor
  */
-function Mapping(domainDims, relative, functionJson, targetUris, parameterName, dymoConstraint) {
+function Mapping(mappingFunction, targets, parameterName) {
 
 	/** @private */
-	this.relative = relative;
+	this.domainDims = mappingFunction.getArgs();
 	/** @private */
-	this.functionJson = functionJson;
-	/** @private */
-	this.parameterName = parameterName;
+	this.mappingFunction = mappingFunction;
 	/** @private */
 	this.targetUris;
-	this.setTargets(targetUris);
 	/** @private */
-	this.domainDims = domainDims;
+	this.targetFunction;
+	if (targets && targets.length) { //it's an array of uris
+		this.setTargetUris(targets);
+	} else { //it's a constraint function
+		this.targetFunction = targets;
+	}
 	/** @private */
-	this.dymoConstraint = dymoConstraint;
+	this.parameterName = parameterName;
 	this.init();
 }
 
 /** @private */
 Mapping.prototype.init = function() {
-	if (!this.functionJson) {
-		this.functionJson = FunctionTools.IDENTITY_JSON; //make identity in standard case
-	}
-	this.mappingFunction = FunctionTools.createFunction(this.functionJson["args"], this.functionJson["body"]);
-	this.inverseFunction = FunctionTools.invertFunction(this.functionJson["body"]);
 	for (var i = 0; i < this.domainDims.length; i++) {
 		if (this.domainDims[i].addMapping) {
 			this.domainDims[i].addMapping(this);
@@ -40,24 +33,26 @@ Mapping.prototype.init = function() {
 	}
 }
 
-Mapping.prototype.setTargets = function(newTargets) {
+Mapping.prototype.setTargetUris = function(targetUris) {
 	if (this.targetUris) {
 		for (var i = 0, ii = this.targetUris.length; i < ii; i++) {
 			DYMO_STORE.removeParameterObserver(this.targetUris[i], this.parameterName, this);
 		}
 	}
-	this.targetUris = newTargets;
+	this.targetUris = targetUris;
 	for (var i = 0, ii = this.targetUris.length; i < ii; i++) {
 		DYMO_STORE.addParameterObserver(this.targetUris[i], this.parameterName, this);
 	}
 }
 
 Mapping.prototype.getTargets = function() {
-	return this.targetUris;
-}
-
-Mapping.prototype.getDymoConstraint = function() {
-	return this.dymoConstraint;
+	if (this.targetUris && this.targetUris.length > 0) {
+		return this.targetUris;
+	} else if (this.targetFunction) {
+		var allDymos = DYMO_STORE.findAllSubjects(TYPE, DYMO);
+		var tgFunc = this.targetFunction;
+		return allDymos.filter(function(d){return tgFunc.applyDirect(d);});
+	}
 }
 
 Mapping.prototype.disconnect = function() {
@@ -77,13 +72,14 @@ Mapping.prototype.disconnect = function() {
 }
 
 Mapping.prototype.updateParameter = function() {
-	if (this.targetUris.length > 0) {
-		for (var i = 0, ii = this.targetUris.length; i < ii; i++) {
-			DYMO_STORE.setParameter(this.targetUris[i], this.parameterName, this.calculateParameter(this.targetUris[i]));
+	var currentTargets = this.getTargets();
+	if (currentTargets) {
+		for (var i = 0, ii = currentTargets.length; i < ii; i++) {
+			DYMO_STORE.setParameter(currentTargets[i], this.parameterName, this.mappingFunction.applyDirect(currentTargets[i]));
 		}
 	} else {
 		//no targets, so global parameter
-		DYMO_STORE.setParameter(null, this.parameterName, this.calculateParameter(this.targetUris[i]));
+		DYMO_STORE.setParameter(null, this.parameterName, this.mappingFunction.applyDirect());
 	}
 }
 
@@ -93,44 +89,16 @@ Mapping.prototype.observedValueChanged = function(paramUri, paramType, value) {
 	//CURRENTLY ONLY UPDATES IF NO RELATIVE DEF (E.G. NO SUBDYMO-PARAMS)
 	if (this.domainDims.indexOf(paramUri) > -1) {
 		this.updateParameter();
-	} else if (this.domainDims && this.domainDims[0].backpropagate && !this.relative) {
-		if (this.inverseFunction) {
-			value = this.inverseFunction(value);
+	} else if (this.domainDims && this.domainDims[0].backpropagate) {
+		if (this.mappingFunction.hasInverse()) {
+			value = this.mappingFunction.applyInverse(value);
+			if (value != null) {
+				this.domainDims[0].backpropagate(value, this);
+			}
 		}
-		this.domainDims[0].backpropagate(value, this);
 	}
-}
-
-Mapping.prototype.observedParameterChanged = function(param) {
-	this.updateParameter();
 }
 
 Mapping.prototype.requestValue = function(dymoUri) {
-	for (var i = 0; i < this.domainDims.length; i++) {
-		if (this.domainDims[i].requestValue) {
-			this.domainDims[i].requestValue();
-		}
-	}
-	return this.calculateParameter(dymoUri);
-}
-
-/** @private */
-Mapping.prototype.calculateParameter = function(dymo) {
-	var currentDomainValues = [];
-	for (var i = 0; i < this.domainDims.length; i++) {
-		var currentValue;
-		//console.log(this.domainDims[i], typeof this.domainDims[i] === 'string', this.domainDims[i] instanceof String)
-		if (typeof this.domainDims[i] === 'string' || this.domainDims[i] instanceof String) {
-			currentValue = DYMO_STORE.findAttributeValue(dymo, this.domainDims[i]);
-			if (currentValue == null) {
-				//DYMO_STORE.findObjectValue(highLevelParamUri, VALUE)
-				currentValue = DYMO_STORE.findObjectValue(this.domainDims[i], VALUE);
-			}
-		} else {
-			currentValue = this.domainDims[i].getValue();
-		}
-		currentDomainValues[i] = currentValue;
-	}
-	//console.log(this.domainDims, currentDomainValues, this.mappingFunction.apply(this, currentDomainValues))
-	return this.mappingFunction.apply(this, currentDomainValues);
+	return this.mappingFunction.requestValue(dymoUri);
 }

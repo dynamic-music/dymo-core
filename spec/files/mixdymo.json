@@ -1,5 +1,5 @@
 {
-	"@context":"http://tiny.cc/dymo-context",
+	"@context":"http://tiny.cc/dymo-context/",
 	"@id":"mixdymo",
 	"@type":"Dymo",
 	"cdt":"Conjunction",
@@ -7,16 +7,20 @@
 	"mappings":[
 		{
 			"@type":"Mapping",
-			"domainDims":[{"@id":"Fade","@type":"CustomParameter"},"index"],
-			"function":{"args":["a", "b"],"body":"return (1-b)*(1-a)+b*a;"},
-			"targets":{"args":["d"],"body":"return d.getLevel() == 1;"},
+			"function":{"args":[
+				{"var":"a", "val":{"@id":"Fade","@type":"CustomParameter"}},
+				{"var":"b", "val":"index"}
+			],"body": "return (1-b)*(1-a)+b*a;"},
+			"targets": {"args":[{"var":"a", "val":"level"}], "body":"return a == 1;"},
 			"range":"Amplitude"
 		},
 		{
 			"@type":"Mapping",
-			"domainDims":[{"@id":"Tempo","@type":"CustomParameter"},"duration"],
-			"function":{"args":["a", "b"],"body":"return a/60*b;"},
-			"targets":{"args":["d"],"body":"return d.getLevel() == 3;"},
+			"function":{"args":[
+				{"var":"a", "val":{"@id":"Tempo","@type":"CustomParameter"}},
+				{"var":"b", "val":"duration"}
+			], "body": "return a/60*b;"},
+			"targets": {"args":[{"var":"a", "val":"level"}], "body": "return a == 3;"},
 			"range":"TimeStretchRatio"
 		}
 	],

@@ -23,7 +23,10 @@ FunctionTools.createFunction = function(args, body) {
 FunctionTools.invertFunction = function(body) {
 	var returnValue = FunctionTools.toReturnValueString(body);
 	if (!FunctionTools.inverted[body]) {
-		FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(FunctionTools.invertReturnValue(returnValue));
+		var invertedBody = FunctionTools.invertReturnValue(returnValue);
+		if (invertedBody != null) {
+			FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(invertedBody);
+		}
 	}
 	return FunctionTools.inverted[body];
 }
@@ -71,6 +74,9 @@ FunctionTools.invertReturnValue = function(returnValue) {
 				} else {
 					return;
 				}
+			} else {
+				//TODO DEAL WITH == etc!!!
+				return;
 			}
 		} else {
 			return;

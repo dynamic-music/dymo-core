@@ -27,6 +27,7 @@ describe("a scheduler", function() {
 			DYMO_STORE.setParameter("dymo0", LOOP, 0);
 			DYMO_STORE.addBasePath("dymo0", basePath);
 
+			scheduler.init();
 			scheduler.loadBuffers(["dymo0", "dymo1"], function() {
 				done();
 			});
@@ -125,6 +126,25 @@ describe("a scheduler", function() {
 					expect(scheduler.getUrisOfPlayingDymos()).toEqual([]);
 					done();
 				}, 100);
+			}, 100);
+		}, 100);
+	});
+
+	it("observes and reacts to the play parameter of all dymos", function(done) {
+		DYMO_STORE.setTriple("dymo1", CDT, CONJUNCTION);
+		expect(scheduler.getUrisOfPlayingDymos()).toEqual([]);
+		DYMO_STORE.setParameter("dymo1", PLAY, 1);
+		setTimeout(function() {
+			expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1", "dymo2", "dymo3"]);
+			DYMO_STORE.setParameter("dymo3", PLAY, 0);
+			setTimeout(function() {
+				expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1", "dymo2"]);
+				DYMO_STORE.setParameter("dymo1", PLAY, 0);
+				setTimeout(function() {
+					expect(scheduler.getUrisOfPlayingDymos()).toEqual([]);
+					done();
+				}, 100);
+				done();
 			}, 100);
 		}, 100);
 	});

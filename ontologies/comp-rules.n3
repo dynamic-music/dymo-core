@@ -36,10 +36,10 @@
         mb:hasFunction [a mb:Function;
             mb:hasArgument [a mb:Argument;
                 mb:hasVariable "a";
-                mb:hasValue [a mb:CustomParameter]];
+                mb:hasValue [a dy:CustomParameter]];
             mb:hasArgument [a mb:Argument;
                 mb:hasVariable "b";
-                mb:hasValue mb:IndexFeature];
+                mb:hasValue dy:IndexFeature];
             mb:hasBody "return (1-b)*(1-a)+b*a;"];
         mb:hasRange mb:Amplitude].
 }.

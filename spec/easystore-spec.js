@@ -201,6 +201,7 @@ describe("an easystore", function() {
 			expect(easyStore.isSubclassOf(AMPLITUDE, AUDIO_PARAMETER)).toBe(false);
 			expect(easyStore.isSubclassOf(AUDIO_PARAMETER, PARAMETER_TYPE)).toBe(true);
 			expect(easyStore.isSubclassOf(AMPLITUDE, PARAMETER_TYPE)).toBe(false);
+			expect(easyStore.recursiveFindAllSubClasses(MOBILE_CONTROL).length).toBe(21);
 			done();
 		});
 	});
@@ -213,6 +214,32 @@ describe("an easystore", function() {
 			expect(easyStore.isSubtypeOf(AMPLITUDE, PARAMETER_TYPE)).toBe(false);
 			done();
 		});
+	});
+
+	it("can delete structures", function(done) {
+		easyStore = new EasyStore();
+		easyStore.setValue("musik", "ist", "scheisse");
+		easyStore.setValue("note", "pitch", 61);
+		easyStore.addTriple("note", TYPE, "event");
+		easyStore.setValue("note2", "pitch", 62);
+		easyStore.addTriple("note2", TYPE, "event");
+		easyStore.setValue("note3", "pitch", 65);
+		easyStore.addTriple("note3", TYPE, "event");
+		easyStore.setValue("note4", "pitch", 67);
+		easyStore.addTriple("note4", TYPE, "event");
+		expect(easyStore.find().length).toBe(9);
+		easyStore.recursiveDeleteAllTriples("note3");
+		expect(easyStore.find().length).toBe(7);
+		easyStore.addTriple("set", "element", "note");
+		easyStore.addTriple("set", "element", "note2");
+		easyStore.addTriple("set", "element", "note4");
+		expect(easyStore.find().length).toBe(10);
+		easyStore.recursiveDeleteAllTriples("note2");
+		expect(easyStore.find().length).toBe(7);//deletes note2 and ref to note2
+		expect(easyStore.findAllObjects("set", "element")).toEqual(["note4", "note"]);
+		easyStore.recursiveDeleteAllTriples("set");
+		expect(easyStore.find().length).toBe(1);
+		done();
 	});
 
 });

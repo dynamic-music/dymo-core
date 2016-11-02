@@ -19,16 +19,24 @@ describe("a dymostore", function() {
 		});
 	});
 
-	it("can add renderings, mappings, and navigators", function() {
+	it("can add renderings, controls, functions, mappings, and navigators", function() {
 		dymoStore.addRendering("r0", "d0");
-		dymoStore.addMapping("r0",[{"name":"c0","@type":SLIDER},{"@type":ONSET_FEATURE}],[["a"],"return 2*a"],null,[["d"],"return d.getLevel()==1"],AMPLITUDE);
-		var mapping2Uri = dymoStore.addMapping("r0",[{"name":"c1","@type":TOGGLE},{"@type":DURATION_FEATURE}],[["a","b"],"return a/b"],["e0","d3","f0"],null,DURATION_RATIO);
-		dymoStore.addNavigator("r0", GRAPH_NAVIGATOR, ["d"], "return d.getLevel()==0");
-		dymoStore.addNavigator("r0", REPEATED_NAVIGATOR, ["d"], "return d.getLevel()==1");
+		var slider = dymoStore.addControl("c0", SLIDER);
+		var mappingFunction = dymoStore.addFunction({"a":slider}, "return 2*a");
+		var level1Func = dymoStore.addFunction({"d":LEVEL_FEATURE}, "return d == 1");
+		dymoStore.addMapping("r0", mappingFunction, null, level1Func, AMPLITUDE);
+		var toggle = dymoStore.addControl("c1", TOGGLE);
+		var mappingFunction2 = dymoStore.addFunction({"a":toggle,"b":DURATION_FEATURE}, "return a/b");
+		var mapping2Uri = dymoStore.addMapping("r0", mappingFunction2, ["e0","d3","f0"], null, DURATION_RATIO);
+		var level0Func = dymoStore.addFunction({"d":LEVEL_FEATURE},"return d == 0");
+		dymoStore.addNavigator("r0", GRAPH_NAVIGATOR, level0Func);
+		dymoStore.addNavigator("r0", REPEATED_NAVIGATOR, level1Func);
 		expect(dymoStore.find("r0").length).toBe(6);
 		expect(dymoStore.findMappings("r0").length).toBe(2);
 		var functionUri = dymoStore.findObject(mapping2Uri, HAS_FUNCTION);
-		expect(dymoStore.findFunction(functionUri)(3.6,7.4)).toEqual(function(a,b){return a/b;}(3.6,7.4));
+		//var foundFunction = dymoStore.findFunction(functionUri);
+		//foundFunction = new DymoFunction(foundFunction[0], foundFunction[1], foundFunction[2]);
+		//expect(foundFunction.applyDirect(3.6,7.4)).toEqual(function(a,b){return a/b;}(3.6,7.4));
 		expect(dymoStore.findNavigators("r0").length).toBe(2);
 	});
 
@@ -64,10 +72,6 @@ describe("a dymostore", function() {
 		expect(dymoStore.findParameterValue(null, LISTENER_ORIENTATION)).toBeUndefined();
 		dymoStore.setParameter(null, LISTENER_ORIENTATION, 0.2);
 		expect(dymoStore.findParameterValue(null, LISTENER_ORIENTATION)).toEqual(0.2);
-	});
-
-	it("can add controls", function() {
-
 	});
 
 	it("can add and remove parameter observers", function() {

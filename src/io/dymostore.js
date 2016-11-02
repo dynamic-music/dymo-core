@@ -9,8 +9,8 @@ function DymoStore(callback) {
 
 	EasyStore.call(this);
 
-	var dymoOntologyPath = "http://tiny.cc/dymo-ontology"//"../ontologies/dymo-ontology.n3";//"http://tiny.cc/dymo-ontology";
-	var mobileOntologyPath = "http://tiny.cc/mobile-audio-ontology"//"../ontologies/mobile-audio-ontology.n3";//"http://tiny.cc/mobile-audio-ontology";
+	var dymoOntologyPath = "../ontologies/dymo-ontology.n3";//"http://tiny.cc/dymo-ontology";
+	var mobileOntologyPath = "../ontologies/mobile-audio-ontology.n3";//"http://tiny.cc/mobile-audio-ontology";
 	var dymoContextPath = "http://tiny.cc/dymo-context";
 	var dymoSimpleContextPath = "http://tiny.cc/dymo-context-simple";
 	var dymoBasePaths = {};
@@ -164,14 +164,19 @@ function DymoStore(callback) {
 		if (!this.findParameterUri(ownerUri, parameterType) && (value == null || isNaN(value))) {
 			value = this.findObjectValue(parameterType, HAS_STANDARD_VALUE, null);
 		}
+		//round if integer parameter
+		if (this.findObject(parameterType, IS_INTEGER)) {
+			value = Math.round(value);
+		}
 		//set the new value
 		return this.setObjectValue(ownerUri, HAS_PARAMETER, parameterType, VALUE, value);
 	}
 
-	this.addControl = function(uri, type) {
+	this.addControl = function(name, type, uri) {
 		if (!uri) {
 			uri = this.createBlankNode();
 		}
+		this.addTriple(uri, NAME, N3.Util.createLiteral(name));
 		this.addTriple(uri, TYPE, type);
 		return uri;
 	}
@@ -181,29 +186,16 @@ function DymoStore(callback) {
 		this.addTriple(renderingUri, HAS_DYMO, dymoUri);
 	}
 
-	this.addMapping = function(renderingUri, domainDims, mappingFunction, targetList, targetFunction, rangeUri) {
+	this.addMapping = function(renderingUri, mappingFunction, targetList, targetFunction, rangeUri) {
 		var mappingUri = this.createBlankNode();
 		this.addTriple(renderingUri, HAS_MAPPING, mappingUri);
-		for (var i = 0; i < domainDims.length; i++) {
-			var currentDomDimUri = this.createBlankNode();
-			this.addTriple(mappingUri, HAS_DOMAIN_DIMENSION, currentDomDimUri);
-			if (domainDims[i]["name"]) {
-				this.addTriple(currentDomDimUri, NAME, N3.Util.createLiteral(domainDims[i]["name"]));
-			}
-			if (domainDims[i]["type"]) {
-				this.addTriple(currentDomDimUri, TYPE, domainDims[i]["type"]);
-			}
-		}
-		var funcUri = this.addFunction(mappingFunction[0], mappingFunction[1]);
-		this.addTriple(mappingUri, HAS_FUNCTION, funcUri);
+		this.addTriple(mappingUri, HAS_FUNCTION, mappingFunction);
 		if (targetList) {
 			for (var i = 0; i < targetList.length; i++) {
 				this.addTriple(mappingUri, TO_TARGET, targetList[i]);
 			}
-		}
-		if (targetFunction) {
-			funcUri = this.addFunction(targetFunction[0], targetFunction[1]);
-			this.addTriple(mappingUri, TO_TARGET, funcUri);
+		} else if (targetFunction) {
+			this.addTriple(mappingUri, TO_TARGET, targetFunction);
 		}
 		this.addTriple(mappingUri, HAS_RANGE, rangeUri);
 		return mappingUri;
@@ -220,7 +212,13 @@ function DymoStore(callback) {
 
 	this.addFunction = function(args, body) {
 		var funcUri = this.createBlankNode();
-		this.addTriple(funcUri, HAS_ARGUMENT, N3.Util.createLiteral(args));
+		var vars = Object.keys(args);
+		for (var i = 0; i < vars.length; i++) {
+			var argUri = this.createBlankNode();
+			this.addTriple(funcUri, HAS_ARGUMENT, argUri);
+			this.addTriple(argUri, HAS_VARIABLE, N3.Util.createLiteral(vars[i]));
+			this.addTriple(argUri, HAS_VALUE, args[vars[i]]);
+		}
 		this.addTriple(funcUri, HAS_BODY, N3.Util.createLiteral(body));
 		return funcUri;
 	}
@@ -299,17 +297,12 @@ function DymoStore(callback) {
 	}
 
 	this.findFunction = function(uri) {
-		var [args, body] = this.findArgsAndBody(uri);
-		if (args && body) {
-			return Function.apply(null, args.concat(body));
-		}
-	}
-
-	this.findArgsAndBody = function(uri) {
 		if (uri) {
-			var args = self.findAllObjectValues(uri, HAS_ARGUMENT);
+			var args = self.findAllObjects(uri, HAS_ARGUMENT);
+			var argVars = args.map(function(a){return self.findObjectValue(a, HAS_VARIABLE)});
+			var argVals = args.map(function(a){return self.findObject(a, HAS_VALUE)});
 			var body = self.findObjectValue(uri, HAS_BODY);
-			return [args, body];
+			return [argVars, argVals, body];
 		}
 	}
 
@@ -417,7 +410,7 @@ function DymoStore(callback) {
 	//returns a jsonld representation of an object removed from any hierarchy of objects of the same type
 	function toFlatJsonld(uri, callback) {
 		var type = self.findObject(uri, TYPE, null);
-		var triples = self.recursiveFindAllTriplesExcept(uri, type);
+		var triples = self.recursiveFindAllTriples(uri, type);
 		triplesToJsonld(triples, uri, function(result) {
 			callback(null, JSON.parse(result));
 		});

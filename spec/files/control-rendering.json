@@ -1,52 +1,46 @@
 {
-	"@context": "http://tiny.cc/dymo-context",
+	"@context":"http://tiny.cc/dymo-context/",
 	"@id": "controlRendering",
 	"@type": "Rendering",
 	"dymo": "dymo0",
 	"mappings": [{
-		"domainDims": [{
-			"name": "slidero",
-			"@type": "Slider"
-		}],
 		"function": {
-			"args": ["a"],
+			"args": [{"var":"a", "val":{"name":"slidero","@type":"Slider"}}],
 			"body": "return a;"
 		},
 		"targets": {
-			"args": ["d"],
-			"body": "return d.getLevel() == 1;"
+			"args": [{"var":"a", "val":"level"}],
+			"body": "return a == 1;"
 		},
 		"range": "Amplitude"
 	}, {
-		"domainDims": [{
-			"name": "slidero",
-			"@type": "Slider"
-		}],
 		"function": {
-			"args": ["a"],
+			"args": [{"var":"a", "val":{"name":"slidero","@type":"Slider"}}],
 			"body": "return a;"
 		},
 		"targets": {
-			"args": ["d"],
-			"body": "return d.getLevel() == 2;"
+			"args": [{"var":"a", "val":"onset"}],
+			"body": "return a > 0.7;"
 		},
 		"range": "PlaybackRate"
 	}, {
-		"domainDims": [{
-			"@id":"orientation",
-			"name": "orientation",
-			"@type": "Slider"
-		}],
 		"function": {
-			"args": ["a"],
+			"args": [{
+				"var":"a",
+				"val":{
+					"@id":"orientation",
+					"name": "orientation",
+					"@type": "Slider"
+				}
+			}],
 			"body": "return 360*a;"
 		},
 		"range": "ListenerOrientation"
 	}],
 	"navigator": {
 		"targets": {
-			"args": ["d"],
-			"body": "return d.getLevel() == 2;"
+			"args": [{"var":"a", "val":"level"}],
+			"body": "return a == 2;"
 		},
 		"@type": "SimilarityNavigator"
 	}

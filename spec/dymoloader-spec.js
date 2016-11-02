@@ -58,15 +58,24 @@ describe("a dymoloader", function() {
 	});
 
 	it("loads a control rendering from json", function(done) {
-		loader.loadRenderingFromJson(controlRenderingPath, function(loadedRendering) {
-			rendering = loadedRendering[0];
-			controls = loadedRendering[1];
-			expect(Object.keys(loader.getMappings()).length).toEqual(3);
-			expect(Object.keys(controls).length).toEqual(3);
-			expect(DYMO_STORE.findParameterValue(null, LISTENER_ORIENTATION)).toBeUndefined();
-			controls[CONTEXT_URI+"orientation"].update(0.5);
-			expect(DYMO_STORE.findParameterValue(null, LISTENER_ORIENTATION)).toBe(180);
-			done();
+		loader.loadDymoFromJson(dymo2Path, function(loadedDymo) {
+			loader.loadRenderingFromJson(controlRenderingPath, function(loadedRendering) {
+				rendering = loadedRendering[0];
+				var controls = loadedRendering[1];
+				var mappings = Object.values(loader.getMappings());
+				expect(mappings.length).toEqual(3);
+				expect(mappings[0].getTargets().length).toEqual(1);
+				expect(mappings[1].getTargets()).toBeUndefined();
+				expect(mappings[2].getTargets().length).toEqual(3);
+				//change feature and see if selection of dymos adjusts!
+				DYMO_STORE.setParameter(CONTEXT_URI+"dymo1", ONSET_FEATURE, 0.9);
+				expect(mappings[0].getTargets().length).toEqual(2);
+				expect(Object.keys(controls).length).toEqual(3);
+				expect(DYMO_STORE.findParameterValue(null, LISTENER_ORIENTATION)).toBeUndefined();
+				controls[CONTEXT_URI+"orientation"].update(0.5);
+				expect(DYMO_STORE.findParameterValue(null, LISTENER_ORIENTATION)).toBe(180);
+				done();
+			});
 		});
 	});
 

@@ -324,8 +324,9 @@ function EasyStore() {
 			return results[0].subject;
 		}
 	}
-
-	//returns the subjects of all results found in the store
+	/** returns the subjects of all results found in the store
+	 * @param {number|string|boolean=} object (optional)
+	 * @suppress {checkTypes} because of Array.from :( */
 	this.findAllSubjects = function(predicate, object) {
 		var results = store.find(null, predicate, object);
 		if (results.length == 0) {
@@ -367,28 +368,46 @@ function EasyStore() {
 		return [subjectUris, predicateUris];
 	}
 
-	//return all triples about the given uri and its affiliated objects, stops at objects of the given type
-	this.recursiveFindAllTriplesExcept = function(uri, type) {
+	/** return all triples about the given uri and its affiliated objects, stops at objects of the given type
+	 *  @param {string=} type (optional) */
+	this.recursiveFindAllTriples = function(uri, type) {
 		//find all triples for given uri
 		var triples = store.find(uri, null, null);
 		var subTriples = [];
 		for (var i = triples.length-1; i >= 0; i--) {
 			//remove all triples whose object is of the given type
-			if (store.find(triples[i].object, TYPE, type).length > 0) {
+			if (type && store.find(triples[i].object, TYPE, type).length > 0) {
 				triples.splice(i, 1);
 			} else {
-				subTriples = subTriples.concat(this.recursiveFindAllTriplesExcept(triples[i].object, type));
+				subTriples = subTriples.concat(this.recursiveFindAllTriples(triples[i].object, type));
 			}
 		}
 		return triples.concat(subTriples);
 	}
 
-	this.recursiveDeleteAllTriples = function(uri) {
-		//TODO MAKE FUNCTION
+	/** removes all triples about the given uri and its affiliated objects, stops at objects of the given type
+	 *  @param {string=} type (optional) */
+	this.recursiveDeleteAllTriples = function(uri, type) {
+		var allTriples = this.recursiveFindAllTriples(uri, type);
+		for (var i = 0; i < allTriples.length; i++) {
+			var currenSubject = allTriples[i].subject;
+			this.removeTriple(currenSubject, allTriples[i].predicate, allTriples[i].object);
+			var allRefsToSubject = this.find(null, null, currenSubject);
+			for (var j = 0; j < allRefsToSubject.length; j++) {
+				this.removeTriple(allRefsToSubject[j].subject, allRefsToSubject[j].predicate, allRefsToSubject[j].object);
+			}
+		}
 	}
 
-	this.findAllSubClasses = function(superclassUri) {
-		return this.findAllSubjects(RDFS_URI+"subClassOf", superclassUri);
+	this.recursiveFindAllSubClasses = function(superclassUri) {
+		var subClasses = this.findAllSubjects(RDFS_URI+"subClassOf", superclassUri);
+		for (var i = 0; i < subClasses.length; i++) {
+			var subsubClasses = this.recursiveFindAllSubClasses(subClasses[i]);
+			if (subsubClasses) {
+				subClasses = subClasses.concat(subsubClasses);
+			}
+		}
+		return subClasses;
 	}
 
 	this.isSubclassOf = function(class1, class2) {
@@ -536,38 +555,5 @@ function EasyStore() {
 			console.log(rows[i]);
 		}
 	}
-
-	/*function addToMultiDict(dict, keys, value) {
-		for (var i = 0; i < keys.length; i++) {
-			if (i < keys.length-1 && !dict[keys[i]]) {
-				dict[keys[i]] = {};
-			} else if (!dict[keys[i]]) {
-				dict[keys[i]] = [];
-			}
-			dict = dict[keys[i]];
-		}
-		dict.push(value);
-	}
-
-	function removeFromMultiDict(dict, keys, value) {
-		for (var i = 0; i < keys.length; i++) {
-			if (dict[keys[i]]) {
-				dict = dict[keys[i]];
-			} else return;
-		}
-		var index = dict.indexOf(value);
-		if (index > -1) {
-			dict.splice(index, 1);
-			cleanUpObservers()
-		}
-
-		if (dict[subject] && dict[subject][predicate]) {
-			var index = valueObservers[subject][predicate].indexOf(observer);
-			if (index > -1) {
-				valueObservers[subject][predicate].splice(index, 1);
-				cleanUpObservers(subject, predicate);
-			}
-		}
-	}*/
 
 }

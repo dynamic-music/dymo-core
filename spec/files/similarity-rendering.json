@@ -1,16 +1,16 @@
 {
-	"@context":"http://tiny.cc/dymo-context",
+	"@context":"http://tiny.cc/dymo-context/",
 	"@id":"similarityRendering",
 	"@type":"Rendering",
 	"dymo":"similarityDymo",
 	"navigators":[
 		{
 			"@type":"SimilarityNavigator",
-			"dymos":{"args":["d"],"body":"return DYMO_STORE.findLevel(d) == 0;"}
+			"dymos": {"args":[{"var":"a", "val":"level"}], "body":"return a == 0;"}
 		},
 		{
 			"@type":"RepeatedNavigator",
-			"dymos":{"args":["d"],"body":"return DYMO_STORE.findLevel(d) == 1;"}
+			"dymos": {"args":[{"var":"a", "val":"level"}], "body":"return a == 1;"}
 		}
 	]
 }
