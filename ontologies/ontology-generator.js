@@ -137,6 +137,7 @@ function createMobileAudioOntology(path) {
 	addClass("Rendering", prefixes["mt"]+"MultitrackProject");
 	addClass("Mapping");
 	addClass("Function");
+	addClass("Argument");
 	//control taxonomy
 	addClass("MobileControl");
 	addClass("SensorControl", "MobileControl");

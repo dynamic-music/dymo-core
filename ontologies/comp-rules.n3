@@ -33,11 +33,13 @@
 =>
 {
     ?transition :mapping [a mb:Mapping;
-        mb:hasDomainDim [a mb:CustomParameter];
-        mb:hasDomainDim mb:IndexFeature;
         mb:hasFunction [a mb:Function;
-            mb:hasArgument "a";
-            mb:hasArgument "b";
+            mb:hasArgument [a mb:Argument;
+                mb:hasVariable "a";
+                mb:hasValue [a mb:CustomParameter]];
+            mb:hasArgument [a mb:Argument;
+                mb:hasVariable "b";
+                mb:hasValue mb:IndexFeature];
             mb:hasBody "return (1-b)*(1-a)+b*a;"];
         mb:hasRange mb:Amplitude].
 }.
@@ -52,5 +54,5 @@
 }
 =>
 {
-    ?mapping mb:hasTarget ?part.
+    ?mapping mb:toTarget ?part.
 }.

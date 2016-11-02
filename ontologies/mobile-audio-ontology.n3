@@ -14,6 +14,7 @@ mb:Rendering a owl:Class;
     rdfs:subClassOf mt:MultitrackProject.
 mb:Mapping a owl:Class.
 mb:Function a owl:Class.
+mb:Argument a owl:Class.
 mb:MobileControl a owl:Class.
 mb:SensorControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
@@ -99,12 +100,12 @@ mb:hasFunction a owl:ObjectProperty;
     rdfs:range mb:Function.
 mb:hasArgument a owl:ObjectProperty;
     rdfs:domain mb:Function;
-    rdfs:range <Argument>.
+    rdfs:range mb:Argument.
 mb:hasVariable a owl:DatatypeProperty;
-    rdfs:domain <Argument>;
+    rdfs:domain mb:Argument;
     rdfs:range "http://www.w3.org/2001/XMLSchema#string".
 mb:hasValue a owl:ObjectProperty;
-    rdfs:domain <Argument>;
+    rdfs:domain mb:Argument;
     rdfs:range mb:ArgumentValue.
 mb:hasBody a owl:DatatypeProperty;
     rdfs:domain mb:Function;
@@ -115,9 +116,6 @@ mb:toTarget a owl:ObjectProperty;
 mb:hasRange a owl:ObjectProperty;
     rdfs:domain mb:Mapping;
     rdfs:range mb:MappingRange.
-mb:isRelative a owl:DatatypeProperty;
-    rdfs:domain mb:Mapping;
-    rdfs:range "http://www.w3.org/2001/XMLSchema#boolean".
 mb:hasInitialValue a owl:DatatypeProperty;
     rdfs:domain mb:MobileControl;
     rdfs:range "http://www.w3.org/2001/XMLSchema#float".
