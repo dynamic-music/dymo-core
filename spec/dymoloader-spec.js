@@ -27,7 +27,7 @@ describe("a dymoloader", function() {
 	it("loads a dymo from json", function(done) {
 		loader.loadDymoFromJson(dymoPath, function(loadedDymo) {
 			topDymoUri = loadedDymo[0];
-			scheduler.loadBuffers(topDymoUri);
+			scheduler.init(null, topDymoUri);
 			//dymoMap = loadedDymo[1];
 			expect(topDymoUri).toEqual(CONTEXT_URI+"dymo0");
 			//test if initial parameter value loaded correctly

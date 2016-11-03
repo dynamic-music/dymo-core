@@ -13,7 +13,7 @@ describe("a processor", function() {
 			DYMO_STORE.addDymo("dymo1", null, null, sourcePath1);
 			DYMO_STORE.addBasePath("dymo1", basePath);
 			DYMO_STORE.setParameter("dymo1", TIME_STRETCH_RATIO, 1);
-			scheduler.loadBuffers(["dymo1"], function() {
+			scheduler.init(null, ["dymo1"], function() {
 				done();
 			});
 		});

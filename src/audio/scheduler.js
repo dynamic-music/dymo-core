@@ -14,16 +14,17 @@ function Scheduler(audioContext, onPlaybackChange) {
 	var convolverSend, delaySend;
 	var numCurrentlyLoading = 0;
 
-	this.init = function(reverbFile) {
+	this.init = function(reverbFile, dymoUris, callback) {
 		//init horizontal listener orientation in degrees
 		DYMO_STORE.addParameter(null, LISTENER_ORIENTATION, 0, self);
+		loadBuffers(dymoUris, callback);
 		//init reverb if needed
-		if (DYMO_STORE.find(null, null, REVERB).length > 0) {
+		if (reverbFile && DYMO_STORE.find(null, null, REVERB).length > 0) {
 			convolverSend = audioContext.createConvolver();
 			convolverSend.connect(audioContext.destination);
 			loadAudio(reverbFile, function(buffer) {
 				convolverSend.buffer = buffer;
-				bufferLoaded();
+				bufferLoaded(callback);
 			});
 		}
 		//init delay if needed
@@ -41,7 +42,7 @@ function Scheduler(audioContext, onPlaybackChange) {
 	}
 
 	/** @param {Array<string>} dymoUris */
-	this.loadBuffers = function(dymoUris, callback) {
+	function loadBuffers(dymoUris, callback) {
 		var allPaths = [];
 		//console.log(DYMO_STORE.find(null, HAS_PART).map(function(r){return r.subject + " " + r.object;}));
 		for (var i = 0, ii = dymoUris.length; i < ii; i++) {

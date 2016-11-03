@@ -27,8 +27,7 @@ describe("a scheduler", function() {
 			DYMO_STORE.setParameter("dymo0", LOOP, 0);
 			DYMO_STORE.addBasePath("dymo0", basePath);
 
-			scheduler.init();
-			scheduler.loadBuffers(["dymo0", "dymo1"], function() {
+			scheduler.init(null, ["dymo0", "dymo1"], function() {
 				done();
 			});
 		});

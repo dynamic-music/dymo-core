@@ -48,8 +48,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 		if (!reverbFile) {
 			reverbFile = 'bower_components/dymo-core/audio/impulse_rev.wav';
 		}
-		scheduler.init(reverbFile);
-		scheduler.loadBuffers(loadedDymos, buffersCallback);
+		scheduler.init(reverbFile, loadedDymos, buffersCallback);
 	}
 
 	this.loadDymoFromJson = function(jsonDymo, callback) {
