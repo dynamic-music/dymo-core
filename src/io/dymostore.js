@@ -9,8 +9,8 @@ function DymoStore(callback) {
 
 	EasyStore.call(this);
 
-	var dymoOntologyPath = "../ontologies/dymo-ontology.n3";//"http://tiny.cc/dymo-ontology";
-	var mobileOntologyPath = "../ontologies/mobile-audio-ontology.n3";//"http://tiny.cc/mobile-audio-ontology";
+	var dymoOntologyPath = "http://tiny.cc/dymo-ontology"//"../ontologies/dymo-ontology.n3";//"http://tiny.cc/dymo-ontology";
+	var mobileOntologyPath = "http://tiny.cc/mobile-audio-ontology"//"../ontologies/mobile-audio-ontology.n3";//"http://tiny.cc/mobile-audio-ontology";
 	var dymoContextPath = "http://tiny.cc/dymo-context";
 	var dymoSimpleContextPath = "http://tiny.cc/dymo-context-simple";
 	var dymoBasePaths = {};
@@ -75,11 +75,13 @@ function DymoStore(callback) {
 	}
 
 	this.addParameterObserver = function(dymoUri, parameterType, observer) {
-		//add parameter if there is none so far and get uri
-		var parameterUri = this.setParameter(dymoUri, parameterType);
-		//add observer
-		this.addValueObserver(parameterUri, VALUE, observer);
-		return parameterUri;
+		if (dymoUri && parameterType) {
+			//add parameter if there is none so far and get uri
+			var parameterUri = this.setParameter(dymoUri, parameterType);
+			//add observer
+			this.addValueObserver(parameterUri, VALUE, observer);
+			return parameterUri;
+		}
 	}
 
 	this.getParameterObservers = function(dymoUri, parameterType) {

@@ -9,6 +9,8 @@ function Mapping(mappingFunction, targets, parameterName) {
 	/** @private */
 	this.mappingFunction = mappingFunction;
 	/** @private */
+	this.parameterName = parameterName;
+	/** @private */
 	this.targetUris;
 	/** @private */
 	this.targetFunction;
@@ -17,8 +19,6 @@ function Mapping(mappingFunction, targets, parameterName) {
 	} else { //it's a constraint function
 		this.targetFunction = targets;
 	}
-	/** @private */
-	this.parameterName = parameterName;
 	this.init();
 }
 
@@ -89,7 +89,7 @@ Mapping.prototype.observedValueChanged = function(paramUri, paramType, value) {
 	//CURRENTLY ONLY UPDATES IF NO RELATIVE DEF (E.G. NO SUBDYMO-PARAMS)
 	if (this.domainDims.indexOf(paramUri) > -1) {
 		this.updateParameter();
-	} else if (this.domainDims && this.domainDims[0].backpropagate) {
+	} else if (this.domainDims && this.domainDims.length == 1 && this.domainDims[0].backpropagate) {
 		if (this.mappingFunction.hasInverse()) {
 			value = this.mappingFunction.applyInverse(value);
 			if (value != null) {

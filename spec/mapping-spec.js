@@ -4,7 +4,7 @@ describe("a mapping", function() {
 	var control = new Control("control1", SLIDER);
 	var dymo1, dymo2, mapping;
 
-	beforeAll(function(done) {
+	beforeEach(function(done) {
 		DYMO_STORE = new DymoStore(function(){
 			DYMO_STORE.addDymo("dymo1");
 			DYMO_STORE.setFeature("dymo1", ONSET_FEATURE, 5);
@@ -62,7 +62,7 @@ describe("a mapping", function() {
 		//currently invertible function
 		DYMO_STORE.addDymo("dymo3");
 		DYMO_STORE.setParameter("dymo3", AMPLITUDE, 1);
-		var mappingFunction = new DymoFunction(["a","b"], [control, ONSET_FEATURE], "return 5*a-1;");
+		var mappingFunction = new DymoFunction(["a"], [control], "return 5*a-1;");
 		var mapping3 = new Mapping(mappingFunction, ["dymo3"], AMPLITUDE);
 		expect(DYMO_STORE.findParameterValue("dymo3", AMPLITUDE)).toBe(-0.5);
 		control.update(0.3);

@@ -10,7 +10,7 @@ function SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSen
 	var nodes = new Map(); //dymo->list<nodes>
 	var nextSources;
 	var timeoutID;
-	var currentSources = [];
+	var currentSources = new Map();
 	var currentEndTime;
 	var previousOnset;
 
@@ -72,6 +72,7 @@ function SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSen
 	}
 
 	function recursivePlay() {
+		var previousSources = currentSources;
 		//create sources and init
 		currentSources = getNextSources();
 		registerSources(currentSources);
@@ -85,6 +86,12 @@ function SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSen
 		var startTime = audioContext.currentTime+delay;
 		for (var source of currentSources.values()) {
 			source.play(startTime);
+		}
+		//stop automatically looping sources
+		for (var source of previousSources.values()) {
+			if (DYMO_STORE.findParameterValue(source.getDymoUri(), LOOP)) {
+				source.stop();
+			}
 		}
 		setTimeout(function() { onChanged(); }, delay);
 		//create next sources and wait or end and reset

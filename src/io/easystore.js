@@ -133,7 +133,8 @@ function EasyStore() {
 
 	//sets or replaces a literal value of the given subject and predicate, value can be a list
 	this.setValue = function(subject, predicate, value) {
-		if (subject && predicate && value != null && !Number.isNaN(value)) {
+		var currentValue = this.findObjectValue(subject, predicate);
+		if (subject && predicate && value != null && value != currentValue && !Number.isNaN(value)) {
 			if (Array.isArray(value)) {
 				value = value.map(function(v){return N3.Util.createLiteral(v)});
 				this.removeTriple(subject, predicate);
