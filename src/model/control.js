@@ -41,7 +41,7 @@ Control.prototype.setUpdateFunction = function(func) {
 
 Control.prototype.addMapping = function(mapping) {
 	this.mappings.push(mapping);
-	mapping.updateParameter(this.value, this);
+	mapping.updateFromControl(this.value, this);
 }
 
 Control.prototype.removeMapping = function(mapping) {
@@ -78,7 +78,7 @@ Control.prototype.setValue = function(newValue, mapping) {
 Control.prototype.updateMappings = function(mapping) {
 	for (var i = 0; i < this.mappings.length; i++) {
 		if (this.mappings[i] != mapping) {
-			this.mappings[i].updateParameter(this.value, this);
+			this.mappings[i].updateFromControl(this.value, this);
 		}
 	}
 }

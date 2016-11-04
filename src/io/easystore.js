@@ -270,10 +270,11 @@ function EasyStore() {
 		if (!subject) {
 			objectUri = this.findSubject(TYPE, type);
 		} else {
-			var objects = store.find(subject, predicate).map(function(t){return t.object;});
-			objects = objects.filter(function(o){return store.find(o, TYPE, type).length > 0;});
-			if (objects.length > 0) {
-				objectUri = objects[0];
+			var allObjects = this.findAllObjects(subject, predicate);
+			var objectsOfType = this.findAllSubjects(TYPE, type);
+			var results = intersectArrays(allObjects, objectsOfType);
+			if (results.length > 0) {
+				objectUri = results[0];
 			}
 		}
 		return objectUri;

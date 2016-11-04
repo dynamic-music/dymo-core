@@ -116,7 +116,7 @@ function DymoStore(callback) {
 			this.addTriple(dymoUri, HAS_SOURCE, N3.Util.createLiteral(sourcePath));
 		}
 		if (type) {
-			DYMO_STORE.setTriple(dymoUri, CDT, type);
+			DYMO_STORE.addTriple(dymoUri, CDT, type);
 		}
 	}
 

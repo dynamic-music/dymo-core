@@ -5,6 +5,7 @@ describe("a mapping", function() {
 	var dymo1, dymo2, mapping;
 
 	beforeEach(function(done) {
+		DYMO_STORE = null;
 		DYMO_STORE = new DymoStore(function(){
 			DYMO_STORE.addDymo("dymo1");
 			DYMO_STORE.setFeature("dymo1", ONSET_FEATURE, 5);

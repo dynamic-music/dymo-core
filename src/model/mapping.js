@@ -51,7 +51,7 @@ Mapping.prototype.getTargets = function() {
 	} else if (this.targetFunction) {
 		var allDymos = DYMO_STORE.findAllSubjects(TYPE, DYMO);
 		var tgFunc = this.targetFunction;
-		return allDymos.filter(function(d){return tgFunc.applyDirect(d);});
+		return allDymos.filter(function(d){return tgFunc.applyDirect(null, null, d);});
 	}
 }
 
@@ -71,24 +71,36 @@ Mapping.prototype.disconnect = function() {
 	}
 }
 
-Mapping.prototype.updateParameter = function() {
+Mapping.prototype.updateFromControl = function(value, control) {
+	var index = this.domainDims.indexOf(control);
+	this.updateAll(index, value);
+}
+
+/** @private */
+Mapping.prototype.updateAll = function(changedArgIndex, value) {
 	var currentTargets = this.getTargets();
 	if (currentTargets) {
 		for (var i = 0, ii = currentTargets.length; i < ii; i++) {
-			DYMO_STORE.setParameter(currentTargets[i], this.parameterName, this.mappingFunction.applyDirect(currentTargets[i]));
+			this.update(changedArgIndex, value, currentTargets[i]);
 		}
 	} else {
 		//no targets, so global parameter
-		DYMO_STORE.setParameter(null, this.parameterName, this.mappingFunction.applyDirect());
+		this.update(changedArgIndex, value);
 	}
 }
 
+/** @private
+ * @param {string=} target (optional) */
+Mapping.prototype.update = function(changedArgIndex, value, target) {
+	var newValue = this.mappingFunction.applyDirect(changedArgIndex, value, target);
+	DYMO_STORE.setParameter(target, this.parameterName, newValue);
+}
+
 Mapping.prototype.observedValueChanged = function(paramUri, paramType, value) {
-	//TODO MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
-	//TODO DEAL WITH DIFFERENT TARGETS!!!
-	//CURRENTLY ONLY UPDATES IF NO RELATIVE DEF (E.G. NO SUBDYMO-PARAMS)
-	if (this.domainDims.indexOf(paramUri) > -1) {
-		this.updateParameter();
+	var index = this.domainDims.indexOf(paramUri);
+	if (index > -1) {
+		this.updateAll(index, value);
+	//TODO INVERSE MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
 	} else if (this.domainDims && this.domainDims.length == 1 && this.domainDims[0].backpropagate) {
 		if (this.mappingFunction.hasInverse()) {
 			value = this.mappingFunction.applyInverse(value);

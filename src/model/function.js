@@ -13,6 +13,8 @@ function DymoFunction(vars, args, body) {
 	this.args = args;
 	/** @private */
 	this.body = body;
+	/** @private */
+	this.argCache = {};
 	this.init();
 }
 
@@ -31,8 +33,9 @@ DymoFunction.prototype.getArgs = function() {
 	return this.args;
 }
 
-DymoFunction.prototype.applyDirect = function(dymoUri) {
-	return this.directFunction.apply(this, this.calculateArgValues(dymoUri));
+DymoFunction.prototype.applyDirect = function(changedArgIndex, value, dymoUri) {
+	//console.log(this.directFunction.apply(this, this.getArgValues(changedArgIndex, value, dymoUri)), changedArgIndex, value)
+	return this.directFunction.apply(this, this.getArgValues(changedArgIndex, value, dymoUri));
 }
 
 DymoFunction.prototype.applyInverse = function(value) {
@@ -44,24 +47,36 @@ DymoFunction.prototype.hasInverse = function(dymoUri) {
 }
 
 /** @private */
-DymoFunction.prototype.calculateArgValues = function(dymoUri) {
-	var currentArgValues = [];
-	for (var i = 0; i < this.args.length; i++) {
-		var currentValue;
-		//console.log(this.args[i], typeof this.args[i] === 'string', this.args[i] instanceof String)
-		if (typeof this.args[i] === 'string' || this.args[i] instanceof String) {
-			currentValue = DYMO_STORE.findAttributeValue(dymoUri, this.args[i]);
-			if (currentValue == null) {
-				//DYMO_STORE.findObjectValue(highLevelParamUri, VALUE)
-				currentValue = DYMO_STORE.findObjectValue(this.args[i], VALUE);
-			}
-		} else {
-			currentValue = this.args[i].getValue();
-		}
-		currentArgValues[i] = currentValue;
+DymoFunction.prototype.getArgValues = function(changedArgIndex, value, dymoUri) {
+	var cacheKey = dymoUri ? dymoUri : '';
+	if (!this.argCache[cacheKey]) {
+		this.argCache[cacheKey] = [];
 	}
-	//console.log(this.args, currentArgValues, this.mappingFunction.apply(this, currentArgValues))
-	return currentArgValues;
+
+	if (changedArgIndex != null) {
+		this.argCache[cacheKey][changedArgIndex] = value;
+	}
+
+	for (var i = 0; i < this.args.length; i++) {
+		if (this.argCache[cacheKey][i] == null) {
+			this.argCache[cacheKey][i] = this.getArgValue(i, dymoUri);
+		}
+	}
+	return this.argCache[cacheKey];
+}
+
+/** @private */
+DymoFunction.prototype.getArgValue = function(index, dymoUri) {
+	if (typeof this.args[index] === 'string' || this.args[index] instanceof String) {
+		var value = DYMO_STORE.findObjectValue(this.args[index], VALUE);
+		if (value == null) {
+			return DYMO_STORE.findAttributeValue(dymoUri, this.args[index]);
+		}
+		return value;
+	} else {
+		//it's a control
+		return this.args[index].getValue();
+	}
 }
 
 DymoFunction.prototype.requestValue = function(dymoUri) {
@@ -70,5 +85,5 @@ DymoFunction.prototype.requestValue = function(dymoUri) {
 			this.args[i].requestValue();
 		}
 	}
-	return this.applyDirect(dymoUri);
+	return this.applyDirect(null, null, dymoUri);
 }

@@ -75,7 +75,7 @@ describe("a control", function() {
 
 	it("can be a brownian control", function(done) {
 		var brownianControl = new BrownianControl("brownie");
-		DYMO_STORE.setParameter("rando", AUTO_CONTROL_FREQUENCY, 50);
+		DYMO_STORE.setParameter("brownie", AUTO_CONTROL_FREQUENCY, 50);
 		var currentValue = brownianControl.getValue();
 		expect(currentValue).toBe(0.5);
 		var previousValue = currentValue;
