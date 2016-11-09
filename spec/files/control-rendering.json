@@ -19,7 +19,7 @@
 			"body": "return a;"
 		},
 		"targets": {
-			"args": [{"var":"a", "val":"onset"}],
+			"args": [{"var":"a", "val":"DurationRatio"}],
 			"body": "return a > 0.7;"
 		},
 		"range": "PlaybackRate"

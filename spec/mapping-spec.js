@@ -21,6 +21,7 @@ describe("a mapping", function() {
 
 	it("updates a dymo parameter", function() {
 		expect(DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(1);
+		expect(DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBe(1);
 		control.update(0.3);
 		expect(DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(1.5);
 		expect(DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBeCloseTo(0.9, 10);
@@ -33,7 +34,8 @@ describe("a mapping", function() {
 		var highLevelParamUri = DYMO_STORE.setParameter("dymo1", "high-level", 1);
 		var mappingFunction = new DymoFunction(["a","b"], [highLevelParamUri, ONSET_FEATURE], "return a * b;");
 		var mapping2 = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE);
-		expect(DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(0.5);
+		expect(DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(5);
+		expect(DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBe(3);
 		DYMO_STORE.setParameter("dymo1", "high-level", 0.3);
 		expect(DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(1.5);
 		expect(DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBeCloseTo(0.9, 10);

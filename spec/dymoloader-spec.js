@@ -68,7 +68,7 @@ describe("a dymoloader", function() {
 				expect(mappings[1].getTargets()).toBeUndefined();
 				expect(mappings[2].getTargets().length).toEqual(3);
 				//change feature and see if selection of dymos adjusts!
-				DYMO_STORE.setParameter(CONTEXT_URI+"dymo1", ONSET_FEATURE, 0.9);
+				DYMO_STORE.setParameter(CONTEXT_URI+"dymo1", DURATION_RATIO, 0.9);
 				expect(mappings[0].getTargets().length).toEqual(2);
 				expect(Object.keys(controls).length).toEqual(3);
 				expect(DYMO_STORE.findParameterValue(null, LISTENER_ORIENTATION)).toBeUndefined();

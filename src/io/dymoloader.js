@@ -203,11 +203,7 @@ function DymoLoader(dymoStore) {
 				if (currentType == CUSTOM_PARAMETER) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM PARAMETERS
 					currentType = domainDimUris[j];
 				}
-				if (dymoUri) {
-					currentParameter = dymoStore.setParameter(dymoUri, currentType);
-				} else {
-					currentParameter = dymoStore.setParameter(null, currentType);
-				}
+				currentParameter = dymoUri ? dymoStore.setParameter(dymoUri, currentType) : domainDimUris[j];
 				domainDims.push(currentParameter);
 			} else {
 				//it's a control

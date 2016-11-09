@@ -5,32 +5,23 @@
 function Mapping(mappingFunction, targets, parameterName) {
 
 	/** @private */
-	this.domainDims = mappingFunction.getArgs();
-	/** @private */
 	this.mappingFunction = mappingFunction;
+	this.mappingFunction.addObserver(this);
 	/** @private */
 	this.parameterName = parameterName;
 	/** @private */
 	this.targetUris;
 	/** @private */
 	this.targetFunction;
-	if (targets && targets.length) { //it's an array of uris
-		this.setTargetUris(targets);
-	} else { //it's a constraint function
-		this.targetFunction = targets;
-	}
-	this.init();
-}
-
-/** @private */
-Mapping.prototype.init = function() {
-	for (var i = 0; i < this.domainDims.length; i++) {
-		if (this.domainDims[i].addMapping) {
-			this.domainDims[i].addMapping(this);
-		} else if (typeof this.domainDims[i] === 'string' || this.domainDims[i] instanceof String) {
-			DYMO_STORE.addSpecificParameterObserver(this.domainDims[i], this);
+	if (targets) {
+		if (targets.length) { //it's an array of uris
+			this.setTargetUris(targets);
+		} else if (targets) { //it's a constraint function
+			this.targetFunction = targets;
+			this.targetFunction.addObserver(this);
 		}
 	}
+	this.updateAll();
 }
 
 Mapping.prototype.setTargetUris = function(targetUris) {
@@ -56,27 +47,16 @@ Mapping.prototype.getTargets = function() {
 }
 
 Mapping.prototype.disconnect = function() {
-	for (var i = 0; i < this.domainDims.length; i++) {
-		if (this.domainDims[i].removeMapping) {
-			this.domainDims[i].removeMapping(this);
-		} else if (typeof this.domainDims[i] === 'string' || this.domainDims[i] instanceof String) {
-			var domainDimType = DYMO_STORE.findObject(this.domainDims[i], TYPE);
-			if (DYMO_STORE.isSubclassOf(domainDimType, PARAMETER_TYPE)) {
-				DYMO_STORE.removeValueObserver(this.domainDims[i], VALUE, this);
-			}
-		}
-	}
+	this.mappingFunction.disconnect();
+	this.targetFunction.disconnect();
 	for (var i = 0, ii = this.targetUris.length; i < ii; i++) {
 		DYMO_STORE.removeParameterObserver(this.targetUris[i], this.parameterName, this);
 	}
 }
 
-Mapping.prototype.updateFromControl = function(value, control) {
-	var index = this.domainDims.indexOf(control);
-	this.updateAll(index, value);
-}
-
-/** @private */
+/** @private
+ * @param {number=} changedArgIndex (optional)
+ * @param {number=} value (optional) */
 Mapping.prototype.updateAll = function(changedArgIndex, value) {
 	var currentTargets = this.getTargets();
 	if (currentTargets) {
@@ -97,18 +77,14 @@ Mapping.prototype.update = function(changedArgIndex, value, target) {
 }
 
 Mapping.prototype.observedValueChanged = function(paramUri, paramType, value) {
-	var index = this.domainDims.indexOf(paramUri);
-	if (index > -1) {
-		this.updateAll(index, value);
-	//TODO INVERSE MAPPING NOT POSSIBLE IF SEVERAL DIMENSIONS
-	} else if (this.domainDims && this.domainDims.length == 1 && this.domainDims[0].backpropagate) {
-		if (this.mappingFunction.hasInverse()) {
-			value = this.mappingFunction.applyInverse(value);
-			if (value != null) {
-				this.domainDims[0].backpropagate(value, this);
-			}
-		}
+	if (paramType == this.parameterName) {
+		var dymoUri = DYMO_STORE.findSubject(HAS_PARAMETER, paramUri);
+		this.mappingFunction.applyInverse(value, dymoUri);
 	}
+}
+
+Mapping.prototype.observedFunctionChanged = function(func) {
+	this.updateAll();
 }
 
 Mapping.prototype.requestValue = function(dymoUri) {

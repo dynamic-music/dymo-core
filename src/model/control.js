@@ -13,7 +13,7 @@ function Control(uri, name, type) {
 	/** @private */
 	this.value;
 	/** @private */
-	this.mappings = [];
+	this.observers = [];
 	/** @private */
 	this.updateFunction;
 
@@ -39,21 +39,21 @@ Control.prototype.setUpdateFunction = function(func) {
 	this.updateFunction = func;
 }
 
-Control.prototype.addMapping = function(mapping) {
-	this.mappings.push(mapping);
-	mapping.updateFromControl(this.value, this);
+Control.prototype.addObserver = function(observer) {
+	this.observers.push(observer);
+	//observer.observedControlChanged(this.value, this);
 }
 
-Control.prototype.removeMapping = function(mapping) {
-	var i = this.mappings.indexOf(mapping);
+Control.prototype.removeObserver = function(observer) {
+	var i = this.observers.indexOf(observer);
 	if (i > -1) {
-		this.mappings.splice(i, 1);
+		this.observers.splice(i, 1);
 	}
 }
 
-Control.prototype.backpropagate = function(newValue, mapping) {
+Control.prototype.backpropagate = function(newValue, observer) {
 	if (isFinite(newValue)) {
-		this.setValue(newValue, mapping);
+		this.setValue(newValue, observer);
 		if (this.updateFunction) {
 			this.updateFunction(this.value);
 		}
@@ -66,19 +66,19 @@ Control.prototype.update = function(newValue) {
 	}
 }
 
-/** @private @param {Object=} mapping (optional) */
-Control.prototype.setValue = function(newValue, mapping) {
+/** @private @param {Object=} observer (optional) */
+Control.prototype.setValue = function(newValue, observer) {
 	if (this.value == undefined || Math.abs(newValue - this.value) > 0.000001) { //deal with floating point errors
 		this.value = newValue;
-		this.updateMappings(mapping);
+		this.updateMappings(observer);
 	}
 }
 
-/** @private updates all mappings different from the one given as an argument */
-Control.prototype.updateMappings = function(mapping) {
-	for (var i = 0; i < this.mappings.length; i++) {
-		if (this.mappings[i] != mapping) {
-			this.mappings[i].updateFromControl(this.value, this);
+/** @private updates all observers different from the one given as an argument */
+Control.prototype.updateMappings = function(observer) {
+	for (var i = 0; i < this.observers.length; i++) {
+		if (this.observers[i] != observer) {
+			this.observers[i].observedControlChanged(this.value, this);
 		}
 	}
 }

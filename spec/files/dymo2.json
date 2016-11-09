@@ -15,6 +15,9 @@
 			"features":[
 				{"@type":"onset","value":0.607},
 				{"@type":"pitch","value":36}
+			],
+			"parameters":[
+				{"@type":"DurationRatio","value":0.607}
 			]
 		},
 		{
@@ -24,6 +27,9 @@
 			"features":[
 				{"@type":"onset","value":0.827},
 				{"@type":"pitch","value":55}
+			],
+			"parameters":[
+				{"@type":"DurationRatio","value":0.827}
 			]
 		},
 		{
@@ -32,6 +38,9 @@
 			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav",
 			"features":[
 				{"@type":"onset","value":0.607}
+			],
+			"parameters":[
+				{"@type":"DurationRatio","value":0.607}
 			]
 		}
 	]}
