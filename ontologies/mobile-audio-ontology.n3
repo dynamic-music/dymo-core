@@ -20,6 +20,8 @@ mb:SensorControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
 mb:UiControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
+mb:DataControl a owl:Class;
+    rdfs:subClassOf mb:MobileControl.
 mb:AutoControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
 mb:AccelerometerX a owl:Class;
@@ -119,6 +121,12 @@ mb:hasRange a owl:ObjectProperty;
 mb:hasInitialValue a owl:DatatypeProperty;
     rdfs:domain mb:MobileControl;
     rdfs:range "http://www.w3.org/2001/XMLSchema#float".
+mb:hasUrl a owl:DatatypeProperty;
+    rdfs:domain mb:DataControl;
+    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
+mb:hasJsonMap a owl:DatatypeProperty;
+    rdfs:domain mb:DataControl;
+    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
 mb:isSmooth a owl:DatatypeProperty;
     rdfs:domain mb:SensorControl;
     rdfs:range "http://www.w3.org/2001/XMLSchema#boolean".

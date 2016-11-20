@@ -142,6 +142,7 @@ function createMobileAudioOntology(path) {
 	addClass("MobileControl");
 	addClass("SensorControl", "MobileControl");
 	addClass("UiControl", "MobileControl");
+	addClass("DataControl", "MobileControl");
 	addClass("AutoControl", "MobileControl");
 	//sensor controls
 	addClass("AccelerometerX", "SensorControl");
@@ -198,6 +199,8 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"range", iri:"hasRange", type: "@vocab"}, "Mapping", "MappingRange", true);
 	//control properties
 	addProperty({term:"init", iri:"hasInitialValue", type: "xsd:float"}, "MobileControl", prefixes["xsd"]+"float", false);
+	addProperty({term:"url", iri:"hasUrl", type: "xsd:string"}, "DataControl", prefixes["xsd"]+"string", false);
+	addProperty({term:"map", iri:"hasJsonMap", type: "xsd:string"}, "DataControl", prefixes["xsd"]+"string", false);
 	addProperty({term:"smooth", iri:"isSmooth", type: "xsd:boolean"}, "SensorControl", prefixes["xsd"]+"boolean", false);
 	addProperty({term:"average", iri:"isAverageOf", type: "xsd:integer"}, "SensorControl", prefixes["xsd"]+"integer", false);
 	addProperty({term:"uuid", iri:"hasUuid", type: "xsd:string"}, "Beacon", prefixes["xsd"]+"string", false);
