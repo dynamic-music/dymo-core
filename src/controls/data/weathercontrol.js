@@ -6,7 +6,7 @@ class WeatherControl extends DataControl {
 	constructor(uri) {
 		var WEATHER_KEY = "3d77879a046ee9e970e66bb2f5c5200d";
 		var API_URL = `http://api.openweathermap.org/data/2.5/weather?appid=${WEATHER_KEY}`;
-		super(uri, "WeatherControl", API_URL+"&q=london", j => j["main"]["temp"]);
+		super(uri, API_URL+"&q=london", j => j["main"]["temp"]);
 	}
 
 	/*constructor(uri) {

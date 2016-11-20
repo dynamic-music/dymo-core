@@ -201,7 +201,7 @@ describe("an easystore", function() {
 			expect(easyStore.isSubclassOf(AMPLITUDE, AUDIO_PARAMETER)).toBe(false);
 			expect(easyStore.isSubclassOf(AUDIO_PARAMETER, PARAMETER_TYPE)).toBe(true);
 			expect(easyStore.isSubclassOf(AMPLITUDE, PARAMETER_TYPE)).toBe(false);
-			expect(easyStore.recursiveFindAllSubClasses(MOBILE_CONTROL).length).toBe(21);
+			expect(easyStore.recursiveFindAllSubClasses(MOBILE_CONTROL).length).toBe(22);
 			done();
 		});
 	});

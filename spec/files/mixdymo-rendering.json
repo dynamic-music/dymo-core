@@ -6,8 +6,12 @@
 	"mappings":[
 		{
 			"function":{"args":[
-				{"var":"a", "val":{"@id":"fadeRamp","@type":"Random","value":0,"duration":1}}
-			],"body": "return a;"},
+				{"var":"a", "val":{
+					"@type":"DataControl",
+					"url":"http://api.openweathermap.org/data/2.5/weather?appid=3d77879a046ee9e970e66bb2f5c5200d&q=london",
+					"map":"return json['main']['temp']"}
+				}
+			],"body": "return (a-273.16)/40;"},
 			"targets":["mixdymo"],
 			"range":"Fade"
 		},

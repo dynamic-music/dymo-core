@@ -261,6 +261,12 @@ function DymoLoader(dymoStore) {
 			var milisDuration = Math.round(dymoStore.findObject(uri, HAS_DURATION)*1000);
 			var init = dymoStore.findObjectValue(uri, HAS_INITIAL_VALUE);
 			control = new RampControl(uri, milisDuration, init);
+		} else if (type == DATA_CONTROL) {
+			var url = dymoStore.findObjectValue(uri, HAS_URL);
+			var jsonMap = dymoStore.findObjectValue(uri, HAS_JSON_MAP);
+			jsonMap = new Function("json", jsonMap);
+			control = new DataControl(uri, url, jsonMap);
+			control.update();
 		}
 		//TODO implement in better way (only works for sensor controls)
 		if (dymoStore.findObjectValue(uri, IS_SMOOTH) && control.setSmooth) {
