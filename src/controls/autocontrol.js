@@ -1,56 +1,47 @@
 /**
  * Autocontrols that use statistics to set their values.
- * @constructor
- * @extends {Control}
- * @param {Function=} updateFunction (optional)
- * @param {Function=} resetFunction (optional)
+ * @abstract
  */
-function AutoControl(uri, name, updateFunction, resetFunction) {
+class AutoControl extends Control {
 
-	var self = this;
-
-	DYMO_STORE.addParameter(uri, AUTO_CONTROL_FREQUENCY, 100, self);
-	DYMO_STORE.addParameter(uri, AUTO_CONTROL_TRIGGER, 0, self);
-	Control.call(this, uri, name, AUTO_CONTROL);
-
-	var intervalID;
-
-	/*this.getParameter = function(paramName) {
-		return parameters[paramName];
-	}*/
+	/** @param {number=} frequency */
+	constructor(uri, name, frequency) {
+		super(uri, name, AUTO_CONTROL);
+		if (!frequency) frequency = 100;
+		DYMO_STORE.addParameter(uri, AUTO_CONTROL_FREQUENCY, frequency, this);
+		DYMO_STORE.addParameter(uri, AUTO_CONTROL_TRIGGER, 0, this);
+		this.intervalID = null;
+	}
 
 	/** @param {number=} frequency (optional) */
-	this.startUpdate = function(frequency) {
+	startUpdate(frequency) {
 		if (!frequency) {
-			frequency = DYMO_STORE.findParameterValue(uri, AUTO_CONTROL_FREQUENCY);
+			frequency = DYMO_STORE.findParameterValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		}
-		if (updateFunction) {
-			intervalID = setInterval(updateFunction, frequency);
-		}
+		this.intervalID = setInterval(() => this.update(), frequency);
 	}
 
-	this.reset = function() {
-		clearInterval(intervalID);
-		intervalID = null;
-		if (resetFunction) {
-			resetFunction();
-		}
+	/** @abstract */
+	update() {}
+
+	reset() {
+		clearInterval(this.intervalID);
+		this.intervalID = null;
 	}
 
-	this.observedValueChanged = function(paramUri, paramType, value) {
+	observedValueChanged(paramUri, paramType, value) {
 		if (paramType == AUTO_CONTROL_FREQUENCY) {
-			if (intervalID) {
+			if (this.intervalID) {
 				this.reset();
 				this.startUpdate(value);
 			}
 		} else if (paramType == AUTO_CONTROL_TRIGGER) {
-			if (!intervalID) {
+			if (!this.intervalID && value > 0) {
 				this.startUpdate();
-			} else {
+			} else if (this.intervalID && value == 0) {
 				this.reset();
 			}
 		}
 	}
 
 }
-inheritPrototype(AutoControl, Control);

@@ -5,16 +5,20 @@
  * @param {Array} body the body of the function
  * @constructor
  */
-function DymoFunction(vars, args, body) {
+function DymoFunction(vars, args, argTypes, body) {
 
 	/** @private the variables used for the args in the body */
 	this.vars = vars;
 	/** @private the parameters/features/controls taken as arguments */
 	this.args = args;
 	/** @private */
+	this.argTypes = argTypes;
+	/** @private */
 	this.body = body;
 	/** @private */
 	this.argCache = {};
+	/** @private */
+	this.resultCache = {};
 	/** @private */
 	this.isDymoSpecificParam = [];
 	/** @private */
@@ -29,8 +33,15 @@ DymoFunction.prototype.init = function() {
 		this.vars = FunctionTools.IDENTITY_JSON["args"];
 		this.body = FunctionTools.IDENTITY_JSON["body"];
 	}
-	this.directFunction = FunctionTools.createFunction(this.vars, this.body);
-	this.inverseFunction = FunctionTools.invertFunction(this.body);
+	if (this.vars.length <= 1) {
+		this.directFunction = FunctionTools.createFunction(this.vars, this.body);
+		this.inverseFunction = FunctionTools.invertFunction(this.body);
+	} else {
+		this.constraintFunction = LogicTools.createConstraint(this.body);
+		if (!this.constraintFunction) {
+			this.directFunction = FunctionTools.createFunction(this.vars, this.body);
+		}
+	}
 	for (var i = 0; i < this.args.length; i++) {
 		//observe controls
 		if (this.args[i].addObserver) {
@@ -77,15 +88,46 @@ DymoFunction.prototype.notifyObservers = function() {
 }
 
 DymoFunction.prototype.applyDirect = function(changedArgIndex, value, dymoUri) {
-	return this.directFunction.apply(this, this.getArgValues(changedArgIndex, value, dymoUri));
+	var argValues = this.getArgValues(changedArgIndex, value, dymoUri);
+	if (this.constraintFunction) {
+		var returnVar = logic.lvar();
+		this.resultCache[dymoUri] = this.applyConstraint([returnVar].concat(argValues), returnVar);
+	} else {
+		this.resultCache[dymoUri] = this.directFunction.apply(this, argValues);
+	}
+	return this.resultCache[dymoUri];
 }
 
 DymoFunction.prototype.applyInverse = function(value, dymoUri) {
-	if (this.inverseFunction && this.args && this.args.length == 1 && this.args[0].backpropagate) {
-		value = this.inverseFunction(value);
-		if (value != null) {
-			this.args[0].backpropagate(value, this);
+	if (!this.resultCache[dymoUri] || this.resultCache[dymoUri] != value) {
+		if (this.constraintFunction) {
+			var updatableArgs = this.args.filter((a,i) => a.backpropagate || this.argTypes[i] == PARAMETER_TYPE);
+			var randomUpdatableArg = updatableArgs[Math.floor(Math.random()*updatableArgs.length)];
+			var randomArgIndex = this.args.indexOf(randomUpdatableArg);
+			var argValues = this.getArgValues(null, null, dymoUri);
+			var randomArgVar = logic.lvar();
+			argValues.splice(randomArgIndex, 1, randomArgVar);
+			var newArgValue = this.applyConstraint([value].concat(argValues), randomArgVar);
+			if (this.args[randomArgIndex].backpropagate) {
+				this.args[randomArgIndex].backpropagate(newArgValue, this);
+			} else {
+				DYMO_STORE.setValue(this.args[randomArgIndex], VALUE, newArgValue);
+			}
+		} else if (this.inverseFunction && this.args && this.args.length == 1 && this.args[0].backpropagate) {
+			value = this.inverseFunction(value);
+			if (value != null) {
+				this.args[0].backpropagate(value, this);
+			}
 		}
+	}
+}
+
+/** @private */
+DymoFunction.prototype.applyConstraint = function(args, lvar) {
+	var result = logic.run(this.constraintFunction.apply(null, args), lvar, 1);
+	//console.log(args, result, this.constraintFunction)
+	if (result.length > 0 && !isNaN(result[0])) {
+		return result[0];
 	}
 }
 
@@ -128,7 +170,7 @@ DymoFunction.prototype.getArgValues = function(changedArgIndex, value, dymoUri) 
 			this.argCache[cacheKey][i] = this.getArgValue(i, dymoUri);
 		}
 	}
-	return this.argCache[cacheKey];
+	return this.argCache[cacheKey].slice(0);
 }
 
 /** @private */

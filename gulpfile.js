@@ -3,7 +3,7 @@ var closureCompiler = require('google-closure-compiler').gulp();
 
 gulp.task('default', function () {
 	//return gulp.src(['./node_modules/google-closure-library/closure/goog/base.js', './src/**/*.js', './lib/soundtouch-js/soundtouch-min.js'], {base: './'})
-	return gulp.src(['./src/**/*.js', './lib/soundtouch-js/soundtouch-min.js'], {base: './'})
+	return gulp.src(['./src/**/*.js', './lib/soundtouch-js/soundtouch-min.js', './lib/LogicJS/logic.js'], {base: './'})
 	.pipe(closureCompiler({
 		compilation_level: 'SIMPLE',
 		//processCommonJsModules: true,

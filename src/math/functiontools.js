@@ -93,6 +93,11 @@ FunctionTools.toJavaScriptFunction = function(returnString) {
 	}
 }
 
+/*FunctionTools.fromArgsAndBody = function(args, body) {
+	var argsAndBody = args.concat(body);
+	return new (Function.prototype.bind.apply(Function, [null].concat(argsAndBody)));
+}*/
+
 FunctionTools.toReturnValueString = function(functionString) {
 	return functionString.substring(functionString.indexOf("return ")+7, functionString.indexOf(";"));
 }

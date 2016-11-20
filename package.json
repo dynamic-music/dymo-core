@@ -26,9 +26,9 @@
   "homepage": "https://github.com/florianthalmann/dymo-core#readme",
   "devDependencies": {
     "express": "^4.13.4",
-    "google-closure-compiler": "^20160208.7.0",
-    "google-closure-compiler-js": "^20161024.0.0",
-    "google-closure-library": "^20160315.0.0",
+    "google-closure-compiler": "*",
+    "google-closure-compiler-js": "*",
+    "google-closure-library": "*",
     "gulp": "github:gulpjs/gulp#4.0",
     "jasmine-core": "^2.4.1",
     "n3": "^0.5.0"

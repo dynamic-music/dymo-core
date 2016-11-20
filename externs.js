@@ -10,8 +10,13 @@ math.dot = function(p1,p2){};
 math.mean = function(p1){};
 math.norm = function(p1){};
 math.var = function(p1){};
+var OperatorNode;
+OperatorNode.op;
 
 var async;
+
+var exports;
+var module;
 
 var $scope, $http;
 $scope.prototype.$apply;

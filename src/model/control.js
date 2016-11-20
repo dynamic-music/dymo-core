@@ -4,7 +4,7 @@
  */
 function Control(uri, name, type) {
 
-	/** @private */
+	/** @protected */
 	this.uri = uri;
 	/** @private */
 	this.name = name;
@@ -60,7 +60,7 @@ Control.prototype.backpropagate = function(newValue, observer) {
 	}
 }
 
-Control.prototype.update = function(newValue) {
+Control.prototype.updateValue = function(newValue) {
 	if (!isNaN(newValue)) {
 		this.setValue(newValue);
 	}

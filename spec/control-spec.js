@@ -1,49 +1,5 @@
 describe("a control", function() {
 
-	/*it("can change its value on request", function() {
-		var value = 0;
-		var valueFunction = function() { return ++value; };
-		var control = new Control("control1", SLIDER, valueFunction);
-		expect(control.getValue()).toBeUndefined();
-		expect(control.requestValue()).toBe(1);
-		expect(control.getValue()).toBe(1);
-		expect(control.requestValue()).toBe(2);
-		expect(control.getValue()).toBe(2);
-		expect(control.requestValue()).toBe(3);
-	});*/
-
-	/* TODO MOVE TO SENSOR CONTROL SPEC
-		it("can create a reference value from the average input", function() {
-		var control = new Control("control2", COMPASS_HEADING);
-		control.setReferenceAverageCount(3);
-		expect(control.getReferenceValue()).toBeUndefined();
-		expect(control.getValue()).toBeUndefined();
-		control.update(2);
-		expect(control.getReferenceValue()).toBeUndefined();
-		expect(control.getValue()).toBeUndefined();
-		control.update(4);
-		expect(control.getReferenceValue()).toBeUndefined();
-		expect(control.getValue()).toBeUndefined();
-		control.update(6);
-		expect(control.getReferenceValue()).toBe(4);
-		expect(control.getValue()).toBeUndefined();
-		control.update(5);
-		expect(control.getReferenceValue()).toBe(4);
-		expect(control.getValue()).toBe(1);
-		control.update(2);
-		expect(control.getReferenceValue()).toBe(4);
-		expect(control.getValue()).toBe(-2);
-		control.resetReferenceValue();
-		expect(control.getReferenceValue()).toBeUndefined();
-		expect(control.getValue()).toBeUndefined();
-		control.update(1);
-		control.update(6);
-		control.update(8);
-		control.update(4);
-		expect(control.getReferenceValue()).toBe(5);
-		expect(control.getValue()).toBe(-1);
-	});*/
-
 	beforeAll(function(done) {
 		DYMO_STORE = new DymoStore(function(){
 			done();
@@ -68,6 +24,7 @@ describe("a control", function() {
 				expect(secondValue).toBeGreaterThan(0);
 				expect(secondValue).toBeLessThan(1);
 				expect(secondValue).not.toEqual(firstValue);
+				DYMO_STORE.setParameter("rando", AUTO_CONTROL_TRIGGER, 0);
 				done();
 			}, 60);
 		}, 60);
@@ -135,5 +92,63 @@ describe("a control", function() {
 			}, 60);
 		}, 60);
 	});
+
+	it("can get data from the internet", function(done) {
+		var weatherControl = new WeatherControl("weather");
+		DYMO_STORE.setParameter("weather", AUTO_CONTROL_FREQUENCY, 100);
+		expect(weatherControl.getValue()).toBeUndefined();
+		//turn on
+		DYMO_STORE.setParameter("weather", AUTO_CONTROL_TRIGGER, 1);
+		setTimeout(function() {
+			var firstValue = weatherControl.getValue();
+			expect(firstValue).toBeGreaterThan(200);
+			DYMO_STORE.setParameter("weather", AUTO_CONTROL_TRIGGER, 0);
+			done();
+		}, 200);
+	});
+
+	/*it("can change its value on request", function() {
+		var value = 0;
+		var valueFunction = function() { return ++value; };
+		var control = new Control("control1", SLIDER, valueFunction);
+		expect(control.getValue()).toBeUndefined();
+		expect(control.requestValue()).toBe(1);
+		expect(control.getValue()).toBe(1);
+		expect(control.requestValue()).toBe(2);
+		expect(control.getValue()).toBe(2);
+		expect(control.requestValue()).toBe(3);
+	});*/
+
+	/* TODO MOVE TO SENSOR CONTROL SPEC
+		it("can create a reference value from the average input", function() {
+		var control = new Control("control2", COMPASS_HEADING);
+		control.setReferenceAverageCount(3);
+		expect(control.getReferenceValue()).toBeUndefined();
+		expect(control.getValue()).toBeUndefined();
+		control.update(2);
+		expect(control.getReferenceValue()).toBeUndefined();
+		expect(control.getValue()).toBeUndefined();
+		control.update(4);
+		expect(control.getReferenceValue()).toBeUndefined();
+		expect(control.getValue()).toBeUndefined();
+		control.update(6);
+		expect(control.getReferenceValue()).toBe(4);
+		expect(control.getValue()).toBeUndefined();
+		control.update(5);
+		expect(control.getReferenceValue()).toBe(4);
+		expect(control.getValue()).toBe(1);
+		control.update(2);
+		expect(control.getReferenceValue()).toBe(4);
+		expect(control.getValue()).toBe(-2);
+		control.resetReferenceValue();
+		expect(control.getReferenceValue()).toBeUndefined();
+		expect(control.getValue()).toBeUndefined();
+		control.update(1);
+		control.update(6);
+		control.update(8);
+		control.update(4);
+		expect(control.getReferenceValue()).toBe(5);
+		expect(control.getValue()).toBe(-1);
+	});*/
 
 });

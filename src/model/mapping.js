@@ -47,8 +47,9 @@ Mapping.prototype.getTargets = function() {
 }
 
 Mapping.prototype.disconnect = function() {
-	this.mappingFunction.disconnect();
-	this.targetFunction.disconnect();
+	if (this.mappingFunction) this.mappingFunction.disconnect();
+	if (this.targetFunction) this.targetFunction.disconnect();
+	if (this.constraintFunction) this.constraintFunction.disconnect();
 	for (var i = 0, ii = this.targetUris.length; i < ii; i++) {
 		DYMO_STORE.removeParameterObserver(this.targetUris[i], this.parameterName, this);
 	}

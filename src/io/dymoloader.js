@@ -183,14 +183,15 @@ function DymoLoader(dymoStore) {
 	function createFunction(functionUri, dymoUri) {
 		var [vars, args, body] = dymoStore.findFunction(functionUri);
 		if (vars && args && body) {
-			args = createFunctionDomain(args, dymoUri);
-			//console.log(vars, args, body)
-			return new DymoFunction(vars, args, body);
+			var argTypes;
+			[args, argTypes] = createFunctionDomain(args, dymoUri);
+			return new DymoFunction(vars, args, argTypes, body);
 		}
 	}
 
 	function createFunctionDomain(domainDimUris, dymoUri) {
 		var domainDims = [];
+		var domainDimTypes = [];
 		for (var j = 0; j < domainDimUris.length; j++) {
 			var currentType = dymoStore.findObject(domainDimUris[j], TYPE);
 			if (currentType == FEATURE_TYPE || dymoStore.isSubtypeOf(currentType, FEATURE_TYPE)) {
@@ -198,6 +199,7 @@ function DymoLoader(dymoStore) {
 					currentType = domainDimUris[j];
 				}
 				domainDims.push(currentType);
+				domainDimTypes.push(FEATURE_TYPE);
 			} else if (currentType == PARAMETER_TYPE || dymoStore.isSubclassOf(currentType, PARAMETER_TYPE)) {
 				var currentParameter;
 				if (currentType == CUSTOM_PARAMETER) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM PARAMETERS
@@ -205,12 +207,14 @@ function DymoLoader(dymoStore) {
 				}
 				currentParameter = dymoUri ? dymoStore.setParameter(dymoUri, currentType) : domainDimUris[j];
 				domainDims.push(currentParameter);
+				domainDimTypes.push(PARAMETER_TYPE);
 			} else {
 				//it's a control
 				domainDims.push(controls[domainDimUris[j]]);
+				domainDimTypes.push(MOBILE_CONTROL);
 			}
 		}
-		return domainDims;
+		return [domainDims, domainDimTypes];
 	}
 
 
@@ -247,7 +251,7 @@ function DymoLoader(dymoStore) {
 		}	else if (type == SLIDER || type == TOGGLE || type == BUTTON || type == CUSTOM_CONTROL) {
 			control = new Control(uri, name, type);
 			var init = dymoStore.findObjectValue(uri, HAS_INITIAL_VALUE);
-			control.update(init);
+			control.updateValue(init);
 		} else if (type == RANDOM) {
 			control = new RandomControl(uri);
 		} else if (type == BROWNIAN) {

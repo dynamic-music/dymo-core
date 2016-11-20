@@ -1,16 +1,15 @@
 /**
- * Autocontrols that use statistics to set their values.
- * @constructor
- * @extends {AutoControl}
+ * Random control outputs random values between 0 and 1.
  */
-function RandomControl(uri) {
+class RandomControl extends AutoControl {
 
-	var self = this;
+	constructor(uri) {
+		super(uri, RANDOM);
+		DYMO_STORE.setParameter(uri, AUTO_CONTROL_TRIGGER, 1);
+	}
 
-	AutoControl.call(this, uri, RANDOM, function() {
-		self.update(Math.random());
-	});
-	this.startUpdate();
+	update() {
+		this.updateValue(Math.random());
+	}
 
 }
-inheritPrototype(RandomControl, AutoControl);

@@ -1,39 +1,37 @@
 /**
  * Ramp controls that gradually interpolate between given values.
- * @constructor
- * @extends {AutoControl}
  */
-function RampControl(uri, duration, initialValue) {
+class RampControl extends AutoControl {
 
-	var self = this;
-	if (!duration) {
-		duration = 10000;
+	constructor(uri, duration, initialValue) {
+		super(uri, RAMP);
+		this.duration = duration ? duration : 10000;
+		this.currentValue = initialValue ? initialValue : 0;
+		this.isIncreasing = this.currentValue != 1;
+		this.updateValue(this.currentValue);
 	}
-	var currentValue = 0;
-	if (initialValue) {
-		currentValue = initialValue;
-	}
-	var isIncreasing = currentValue != 1;
 
-	AutoControl.call(this, uri, RAMP, function() {
-		var delta = 1/duration*DYMO_STORE.findParameterValue(uri, AUTO_CONTROL_FREQUENCY);
-		if (!isIncreasing) {
+	update() {
+		//TODO IMPROVE, ONLY CALCULATE WHEN FREQUENCY CHANGES!!!
+		var delta = 1/this.duration*DYMO_STORE.findParameterValue(this.uri, AUTO_CONTROL_FREQUENCY);
+		if (!this.isIncreasing) {
 			delta *= -1;
 		}
-		currentValue += delta;
-		if (0 < currentValue && currentValue < 1) {
-			self.update(currentValue);
-		} else if (currentValue >= 1) {
-			self.update(1);
-			self.reset();
-		} else if (currentValue <= 0) {
-			self.update(0);
-			self.reset();
+		this.currentValue += delta;
+		if (0 < this.currentValue && this.currentValue < 1) {
+			this.updateValue(this.currentValue);
+		} else if (this.currentValue >= 1) {
+			this.updateValue(1);
+			this.reset();
+		} else if (this.currentValue <= 0) {
+			this.updateValue(0);
+			this.reset();
 		}
-	}, function() {
-		isIncreasing = !isIncreasing;
-	});
-	this.update(currentValue);
+	}
+
+	reset() {
+		super.reset();
+		this.isIncreasing = !this.isIncreasing;
+	}
 
 }
-inheritPrototype(RampControl, AutoControl);

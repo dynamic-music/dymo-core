@@ -72,7 +72,7 @@ describe("a dymoloader", function() {
 				expect(mappings[0].getTargets().length).toEqual(2);
 				expect(Object.keys(controls).length).toEqual(3);
 				expect(DYMO_STORE.findParameterValue(null, LISTENER_ORIENTATION)).toBeUndefined();
-				controls[CONTEXT_URI+"orientation"].update(0.5);
+				controls[CONTEXT_URI+"orientation"].updateValue(0.5);
 				expect(DYMO_STORE.findParameterValue(null, LISTENER_ORIENTATION)).toBe(180);
 				done();
 			});
