@@ -89,15 +89,15 @@ function DymoGenerator(store, onFeatureAdded) {
 		}
 	}
 
-	this.addDymo = function(parentUri, sourcePath) {
-		var dymoUri = internalAddDymo(parentUri, sourcePath);
-		return dymoUri;
+	this.addDymo = function(parentUri, sourcePath, dymoType) {
+		return internalAddDymo(parentUri, sourcePath, dymoType);
 	}
 
-	/** @param {string=} sourcePath (optional) */
-	function internalAddDymo(parentUri, sourcePath) {
+	/** @param {string=} sourcePath (optional)
+	 *  @param {string=} dymoType (optional) */
+	function internalAddDymo(parentUri, sourcePath, dymoType) {
 		var dymoUri = getUniqueDymoUri();
-		store.addDymo(dymoUri, parentUri, null, sourcePath);
+		store.addDymo(dymoUri, parentUri, null, sourcePath, dymoType);
 		if (!parentUri) {
 			currentTopDymo = dymoUri;
 		}
@@ -116,12 +116,15 @@ function DymoGenerator(store, onFeatureAdded) {
 		return renderingUri;
 	}
 
-	this.addFeature = function(name, data) {
+	this.addFeature = function(name, data, dymoUri) {
+		if (!dymoUri) {
+			dymoUri = currentTopDymo;
+		}
 		Benchmarker.startTask("addFeature")
 		initTopDymoIfNecessary();
 		var feature = getFeature(name);
 		//iterate through all levels and add averages
-		var dymos = store.findAllObjectsInHierarchy(currentTopDymo);
+		var dymos = store.findAllObjectsInHierarchy(dymoUri);
 		for (var i = 0; i < dymos.length; i++) {
 			var currentTime = store.findFeatureValue(dymos[i], TIME_FEATURE);
 			var currentDuration = store.findFeatureValue(dymos[i], DURATION_FEATURE);
@@ -189,11 +192,11 @@ function DymoGenerator(store, onFeatureAdded) {
 		return 0;
 	}
 
-	this.addSegmentation = function(segments) {
+	this.addSegmentation = function(segments, dymoUri) {
 		initTopDymoIfNecessary();
 		var maxLevel = store.findMaxLevel();
 		for (var i = 0; i < segments.length; i++) {
-			var parentUri = getSuitableParent(segments[i].time, maxLevel);
+			var parentUri = getSuitableParent(segments[i].time, maxLevel, dymoUri);
 			var startTime = segments[i].time;
 			var duration;
 			if (segments[i].duration) {
@@ -229,9 +232,10 @@ function DymoGenerator(store, onFeatureAdded) {
 		}
 	}
 
-	function getSuitableParent(time, maxLevel) {
-		var nextCandidate = currentTopDymo;
-		var currentLevel = store.findLevel(currentTopDymo);
+	function getSuitableParent(time, maxLevel, dymoUri) {
+		if (!dymoUri) dymoUri = currentTopDymo;
+		var nextCandidate = dymoUri;
+		var currentLevel = store.findLevel(dymoUri);
 		while (currentLevel < maxLevel) {
 			var parts = store.findParts(nextCandidate);
 			if (parts.length > 0) {

@@ -57,7 +57,8 @@ function DymoStore(callback) {
 	this.getSourcePath = function(dymoUri) {
 		var sourcePath = this.findObjectValue(dymoUri, HAS_SOURCE);
 		if (sourcePath) {
-			return this.getBasePath(dymoUri)+sourcePath;
+			var basePath = this.getBasePath(dymoUri);
+			return basePath? basePath+sourcePath: sourcePath;
 		}
 		var parentUris = this.findParents(dymoUri);
 		if (parentUris.length > 0) {
@@ -116,8 +117,9 @@ function DymoStore(callback) {
 			this.addTriple(dymoUri, HAS_SOURCE, N3.Util.createLiteral(sourcePath));
 		}
 		if (type) {
-			DYMO_STORE.addTriple(dymoUri, CDT, type);
+			this.addTriple(dymoUri, CDT, type);
 		}
+
 	}
 
 	function addPart(dymoUri, partUri) {

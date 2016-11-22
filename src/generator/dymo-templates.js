@@ -1,16 +1,23 @@
 function DymoTemplates() { }
 
-DymoTemplates.createSingleSourceDymoFromFeatures = function(generator, source, uris, conditions, onLoad) {
-	generator.addDymo(undefined, source);
-	DymoTemplates.loadMultipleFeatures(generator, uris, conditions, 0, function() {
-		//generator.updateGraphs();
-		onLoad();
-	});
+DymoTemplates.createSingleSourceDymoFromFeatures = function(generator, source, featureUris, conditions, onLoad) {
+	var dymoUri = generator.addDymo(undefined, source);
+	DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, onLoad);
 }
 
-DymoTemplates.createSimilarityDymoFromFeatures = function(generator, source, uris, conditions, similarityThreshold, onLoad) {
-	generator.addDymo(undefined, source);
-	DymoTemplates.loadMultipleFeatures(generator, uris, conditions, 0, function() {
+DymoTemplates.createConjunctionDymo = function(generator, sources, featureUris, onLoad) {
+	var topDymo = generator.addDymo(null, null, CONJUNCTION);
+	var loadSources = sources.map((s,i) => new Promise(resolve => {
+		var dymoUri = generator.addDymo(topDymo, s);
+		DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris[i], null, resolve);
+	}));
+	Promise.all(loadSources)
+		.then(r => onLoad());
+}
+
+DymoTemplates.createSimilarityDymoFromFeatures = function(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
+	var dymoUri = generator.addDymo(undefined, source);
+	DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
 		Similarity.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 		generator.addRendering();
 		generator.addNavigator(SIMILARITY_NAVIGATOR, "d", "return d.getLevel() == 0");
@@ -20,9 +27,9 @@ DymoTemplates.createSimilarityDymoFromFeatures = function(generator, source, uri
 	});
 }
 
-DymoTemplates.createSimilaritySuccessorDymoFromFeatures = function(generator, source, uris, conditions, similarityThreshold, onLoad) {
-	generator.addDymo(undefined, source);
-	DymoTemplates.loadMultipleFeatures(generator, uris, conditions, 0, function() {
+DymoTemplates.createSimilaritySuccessorDymoFromFeatures = function(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
+	var dymoUri = generator.addDymo(undefined, source);
+	DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
 		Similarity.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 		Similarity.addSuccessionGraphTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 		generator.addRendering();
@@ -41,7 +48,7 @@ DymoTemplates.createAnnotatedBarAndBeatDymo = function(generator, featureUris, o
 		uris[i+1] = featureUris[i];
 		conditions[i+1] = '';
 	}
-	DymoTemplates.loadMultipleFeatures(generator, uris, conditions, 0, onLoad);
+	DymoTemplates.loadMultipleFeatures(generator, null, uris, conditions, onLoad);
 }
 
 /*DymoTemplates.createPitchHelixDmo = function() {
@@ -142,18 +149,14 @@ function getUris(dir, files, names, conditions) {
 	return [uris, conds];
 }
 
-DymoTemplates.loadMultipleFeatures = function(generator, uris, conditions, i, onLoad) {
+DymoTemplates.loadMultipleFeatures = function(generator, dymoUri, featureUris, conditions, onLoad) {
 	Benchmarker.startTask("loadFeatures")
-	var loader = new FeatureLoader();
-	if (i < uris.length && uris[i]) {
-		loader.loadFeature(uris[i], conditions[i], generator, function() {
-			DymoTemplates.loadMultipleFeatures(generator, uris, conditions, i+1, onLoad);
-		});
-	} else if (i < uris.length-1) {
-		DymoTemplates.loadMultipleFeatures(generator, uris, conditions, i+1, onLoad);
-	} else if (onLoad) {
-		onLoad();
-	}
+	var loader = new FeatureLoader(generator, dymoUri);
+	var loadFeatures = featureUris.map((f,i) => new Promise(resolve =>
+		loader.loadFeature(f, conditions?conditions[i]:null, resolve)
+	));
+	Promise.all(loadFeatures)
+		.then(r => onLoad());
 }
 
 DymoTemplates.createSebastianDymo = function(generator, scheduler, $http) {

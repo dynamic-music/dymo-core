@@ -1,46 +1,46 @@
 /**
  * @constructor
  */
-function FeatureLoader() {
-	
+function FeatureLoader(generator, dymoUri) {
+
 	var mobileRdfUri = "rdf/mobile.n3";
 	var multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
 	var rdfsUri = "http://www.w3.org/2000/01/rdf-schema#";
-	
+
 	var eventOntology = "http://purl.org/NET/c4dm/event.owl#";
 	var timelineOntology = "http://purl.org/NET/c4dm/timeline.owl#";
 	var featureOntology = "http://purl.org/ontology/af/";
 	var vampOntology = "http://purl.org/ontology/vamp/";
 	var dublincoreOntology = "http://purl.org/dc/elements/1.1/";
-	
+
 	var features = {}
-	
-	this.loadFeature = function(uriOrJson, labelCondition, generator, callback) {
+
+	this.loadFeature = function(uriOrJson, labelCondition, callback) {
 		if (uriOrJson.constructor == Object) {
 			//it's a json!
-			loadFeatureFromJson(uriOrJson, labelCondition, generator, callback);
+			loadFeatureFromJson(uriOrJson, labelCondition, callback);
 		} else {
 			//just a uri..
 			var fileExtension = uriOrJson.split('.');
 			fileExtension = fileExtension[fileExtension.length-1];
 			if (fileExtension == 'n3') {
-				loadFeatureFromRdf(uriOrJson, labelCondition, generator, callback);
+				loadFeatureFromRdf(uriOrJson, labelCondition, callback);
 			} else if (fileExtension == 'json') {
-				loadFeatureFromJsonUri(uriOrJson, labelCondition, generator, callback);
+				loadFeatureFromJsonUri(uriOrJson, labelCondition, callback);
 			}
 		}
 	}
-	
-	
-	
+
+
+
 	//////////// RDF //////////////
-	
-	function loadFeatureFromRdf(rdfUri, labelCondition, generator, callback) {
+
+	function loadFeatureFromRdf(rdfUri, labelCondition, callback) {
 		httpGet(rdfUri, function(data) {
 			parseN3(data, function (store) {
 				loadSegmentationFeatureFromRdf(store, function(results) {
 					if (results.length > 0) {
-						addSegmentationFromRdf(rdfUri, labelCondition, generator, results);
+						addSegmentationFromRdf(rdfUri, labelCondition, results);
 						if (callback) {
 							callback();
 						}
@@ -51,7 +51,7 @@ function FeatureLoader() {
 								var split = rdfUri.split('_');
 								name = split[split.length-1].split('.')[0];
 							}
-							generator.addFeature(name, results.values);
+							generator.addFeature(name, results.values, dymoUri);
 							if (callback) {
 								callback();
 							}
@@ -61,7 +61,7 @@ function FeatureLoader() {
 			});
 		});
 	}
-	
+
 	function parseN3(data, callback) {
 		var store = N3.Store();
 		N3.Parser().parse(data, function(error, triple, prefixes) {
@@ -72,7 +72,7 @@ function FeatureLoader() {
 			}
 		});
 	}
-	
+
 	function loadSegmentationFeatureFromRdf(store, callback) {
 		//for now looks at anything containing event times
 		var times = [];
@@ -94,7 +94,7 @@ function FeatureLoader() {
 		}
 		callback(times);
 	}
-	
+
 	function loadSignalFeatureFromRdf(store, callback) {
 		var name = parseXsdString(findObjectInStore(store, null, dublincoreOntology+'title'));
 		var signal = parseXsdString(findObjectInStore(store, null, featureOntology+'value'));
@@ -104,7 +104,7 @@ function FeatureLoader() {
 		var transform = findObjectInStore(store, null, vampOntology+'computed_by');
 		var stepSize = parseXsdNumber(findObjectInStore(store, transform, vampOntology+'step_size'));
 		var sampleRate = parseXsdNumber(findObjectInStore(store, transform, vampOntology+'sample_rate'));
-		
+
 		var values = [];
 		var i = 0;
 		while (i < signal.length) {
@@ -121,20 +121,20 @@ function FeatureLoader() {
 		}
 		callback({name:name, values:values});
 	}
-	
+
 	function findObjectInStore(store, subject, predicate) {
 		var result = store.find(subject, predicate, null);
 		if (result.length > 0) {
 			return result[0].object;
 		}
 	}
-	
+
 	function parseXsdString(string) {
 		if (string) {
 			return N3.Util.getLiteralValue(string);
 		}
 	}
-	
+
 	function parseXsdNumber(string) {
 		var value = N3.Util.getLiteralValue(string);
 		if (value.charAt(0) == 'P') {
@@ -143,36 +143,36 @@ function FeatureLoader() {
 		}
 		return Number(value);
 	}
-	
-	function addSegmentationFromRdf(rdfUri, labelCondition, generator, times) {
+
+	function addSegmentationFromRdf(rdfUri, labelCondition, times) {
 		//save so that file does not have to be read twice
 		features[rdfUri] = times.sort(function(a,b){return a.time.value - b.time.value});
 		var subset = features[rdfUri];
 		if (labelCondition && features[rdfUri][0].label) {
 			subset = subset.filter(function(x) { return x.label.value == labelCondition; });
 		}
-		generator.addSegmentation(subset);
+		generator.addSegmentation(subset, dymoUri);
 	}
-	
-	
-	
+
+
+
 	//////////// JSON //////////////
-	
-	function loadFeatureFromJsonUri(jsonUri, labelCondition, generator, callback) {
+
+	function loadFeatureFromJsonUri(jsonUri, labelCondition, callback) {
 		httpGet(jsonUri, function(json) {
-			loadFeatureFromJson(JSON.parse(json), labelCondition, generator, callback);
+			loadFeatureFromJson(JSON.parse(json), labelCondition, callback);
 		});
 	}
-	
-	function loadFeatureFromJson(json, labelCondition, generator, callback) {
+
+	function loadFeatureFromJson(json, labelCondition, callback) {
 		if (Object.keys(json)[0] == "file_metadata") {
-			loadFeatureFromJams(json, labelCondition, generator, callback);
+			loadFeatureFromJams(json, labelCondition, callback);
 		} else {
-			loadFeatureFromJsonLd(json, labelCondition, generator, callback);
+			loadFeatureFromJsonLd(json, labelCondition, callback);
 		}
 	}
-	
-	function loadFeatureFromJams(json, labelCondition, generator, callback) {
+
+	function loadFeatureFromJams(json, labelCondition, callback) {
 		var results = json[Object.keys(json)[1]][0];
 		var outputId = results["annotation_metadata"]["annotator"]["output_id"];
 		if (outputId == "beats" || outputId == "onsets" || outputId == "segmentation") {
@@ -180,19 +180,19 @@ function FeatureLoader() {
 			if (labelCondition && results[0].value) {
 				results = results.filter(function(x) { return x.value == labelCondition; });
 			}
-			generator.addSegmentation(results);
+			generator.addSegmentation(results, dymoUri);
 			if (callback) {
 				callback();
 			}
 		} else {
-			generator.addFeature(outputId, results.data);
+			generator.addFeature(outputId, results.data, dymoUri);
 			if (callback) {
 				callback();
 			}
 		}
 	}
-	
-	function loadFeatureFromJsonLd(json, labelCondition, generator, callback) {
+
+	function loadFeatureFromJsonLd(json, labelCondition, callback) {
 		var type = json["@type"];
 		if (type == "afv:BarandBeatTracker" || type == "afv:Onsets") {
 			var values = json["afo:values"];
@@ -200,19 +200,19 @@ function FeatureLoader() {
 				values = values.filter(function(x) { return x["afo:value"] == labelCondition; });
 			}
 			values = convertJsonLdLabelEventsToJson(values);
-			generator.addSegmentation(values);
+			generator.addSegmentation(values, dymoUri);
 			if (callback) {
 				callback();
 			}
 		} else {
 			var values = convertJsonLdValueEventsToJson(json["afo:values"]);
-			generator.addFeature(type, values);
+			generator.addFeature(type, values, dymoUri);
 			if (callback) {
 				callback();
 			}
 		}
 	}
-	
+
 	function convertJsonLdLabelEventsToJson(events) {
 		var times = [];
 		for (var i = 0; i < events.length; i++) {
@@ -224,7 +224,7 @@ function FeatureLoader() {
 		}
 		return times;
 	}
-	
+
 	function convertJsonLdValueEventsToJson(events) {
 		var times = [];
 		for (var i = 0; i < events.length; i++) {
@@ -236,7 +236,7 @@ function FeatureLoader() {
 		}
 		return times;
 	}
-	
+
 	function httpGet(uri, onLoad) {
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener("load", function() {
@@ -250,5 +250,5 @@ function FeatureLoader() {
 		xhr.open("GET", uri);
 		xhr.send();
 	}
-	
+
 }

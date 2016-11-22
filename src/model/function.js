@@ -37,7 +37,7 @@ DymoFunction.prototype.init = function() {
 		this.directFunction = FunctionTools.createFunction(this.vars, this.body);
 		this.inverseFunction = FunctionTools.invertFunction(this.body);
 	} else {
-		this.constraintFunction = LogicTools.createConstraint(this.body);
+		this.constraintFunction = null;// = LogicTools.createConstraint(this.body);
 		if (!this.constraintFunction) {
 			this.directFunction = FunctionTools.createFunction(this.vars, this.body);
 		}

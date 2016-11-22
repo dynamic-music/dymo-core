@@ -6,7 +6,7 @@ class DataStreamControl extends DataControl {
 //Rx.Node.fromReadableStream(fetch('https://stream.meetup.com/2/rsvps').then(r=>{console.log(r.body);return r.body}))
 
 	constructor(uri) {
-		super(uri, "DataStreamControl", "", "");
+		super(uri, "", "");
 
 		/*var requestStream = Rx.Observable.just('https://stream.meetup.com/2/open_events');
 

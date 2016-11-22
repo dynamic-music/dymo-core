@@ -2,7 +2,7 @@
     "@context": "http://tiny.cc/dymo-context",
     "@id": "dymo",
     "@type": "Dymo",
-    "ct": "Conjunction",
+    "cdt": "Conjunction",
     "onset": {
         "value": 0,
         "@type": "Feature",

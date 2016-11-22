@@ -15,17 +15,19 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 	var rendering;
 	var uiControls = {};
 	var sensorControls = {};
+	var mappings = {};
 
 	this.loadDymoAndRenderingFromStore = function(newStore, buffersCallback) {
-		var loader = new DymoLoader(newStore);
-		processLoadedDymoAndRendering(loader.createDymoFromStore(), loader.createRenderingFromStore(), buffersCallback);
+		DYMO_STORE = newStore;
+		var loader = new DymoLoader(DYMO_STORE);
+		processLoadedDymoAndRendering(loader, loader.createDymoFromStore(), loader.createRenderingFromStore(), buffersCallback);
 	}
 
 	this.loadDymoAndRendering = function(dymoUri, renderingUri, dymoCallback, buffersCallback) {
 		var loader = new DymoLoader(DYMO_STORE);
 		loader.loadDymoFromJson(dymoUri, function(loadedDymos) {
 			loader.loadRenderingFromJson(renderingUri, function(loadedRendering) {
-				processLoadedDymoAndRendering(loadedDymos, loadedRendering, buffersCallback);
+				processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering, buffersCallback);
 				if (dymoCallback) {
 					dymoCallback();
 				}
@@ -33,9 +35,10 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 		});
 	}
 
-	function processLoadedDymoAndRendering(loadedDymos, loadedRendering, buffersCallback) {
+	function processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering, buffersCallback) {
 		topDymos = loadedDymos;
 		rendering = loadedRendering[0];
+		mappings = loader.getMappings();
 		for (var key in loadedRendering[1]) {
 			var currentControl = loadedRendering[1][key];
 			if (DYMO_STORE.isSubclassOf(currentControl.getType(), UI_CONTROL)) {
@@ -107,6 +110,10 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 
 	this.getRendering = function() {
 		return rendering;
+	}
+
+	this.getMappings = function() {
+		return mappings;
 	}
 
 	this.getUIControls = function() {
