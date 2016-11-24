@@ -92,8 +92,7 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 
 	this.startPlaying = function() {
 		for (var i = 0; i < topDymos.length; i++) {
-			DYMO_STORE.updatePartOrder(topDymos[i], ONSET);
-			//topDymos[i].updatePartOrder(ONSET); //TODO WHERE TO PUT THIS??
+			DYMO_STORE.updatePartOrder(topDymos[i], ONSET); //TODO WHERE TO PUT THIS??
 			scheduler.play(topDymos[i], rendering.getNavigator());
 		}
 	}
@@ -102,6 +101,10 @@ function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $sco
 		for (var i = 0; i < topDymos.length; i++) {
 			scheduler.stop(topDymos[i]);
 		}
+	}
+
+	this.getStore = function() {
+		return DYMO_STORE;
 	}
 
 	this.getTopDymo = function() {

@@ -162,7 +162,7 @@ function DymoGenerator(store, onFeatureAdded) {
 		var vector = [];
 		if (vectors && vectors.length > 0) {
 			for (var i = 0; i < vectors.length; i++) {
-				if (vectors[i].value.constructor !== Array) {
+				if (vectors[i].value && vectors[i].value.constructor !== Array) {
 					//console.log(vectors[i].value)
 					vectors[i].value = [vectors[i].value];
 				}
@@ -334,6 +334,9 @@ function DymoGenerator(store, onFeatureAdded) {
 			features.push(feature);
 		} else {
 			features.splice(features.length-2, 0, feature);
+		}
+		if (!store.findObject(uri, TYPE)) {
+			store.addTriple(uri, TYPE, FEATURE_TYPE);
 		}
 		onFeatureAdded(feature);
 		return feature;

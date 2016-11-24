@@ -2,8 +2,8 @@
  * A DymoWriter will write dymos to json or rdf.
  * @constructor
  */
-function DymoWriter(store, $http) {
-	
+function DymoWriter(store) {
+
 	this.writeToJsonld = function(path, name) {
 		if (!name) {
 			name = 'dymo.json'
@@ -12,10 +12,16 @@ function DymoWriter(store, $http) {
 			httpPost(path+name, json);
 		});
 	}
-	
+
 	function httpPost(uri, content) {
+		fetch(uri, {
+			method: 'post',
+			body: content
+		});
+	}
+
+	/*function httpPost(uri, content) {
 		var xhr = new XMLHttpRequest();
-		xhr.send(content);
 		xhr.addEventListener("save", function() {
 			console.log("saved " + uri);
 		});
@@ -23,7 +29,7 @@ function DymoWriter(store, $http) {
 			console.log("saving " + uri + " failed");
 		});
 		xhr.open("POST", uri);
-		xhr.send();
-	}
-	
+		xhr.send(content);
+	}*/
+
 }

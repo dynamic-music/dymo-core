@@ -119,7 +119,6 @@ function DymoStore(callback) {
 		if (type) {
 			this.addTriple(dymoUri, CDT, type);
 		}
-
 	}
 
 	function addPart(dymoUri, partUri) {
@@ -190,9 +189,12 @@ function DymoStore(callback) {
 		this.addTriple(renderingUri, HAS_DYMO, dymoUri);
 	}
 
-	this.addMapping = function(renderingUri, mappingFunction, targetList, targetFunction, rangeUri) {
+	this.addMapping = function(ownerUri, mappingFunction, targetList, targetFunction, rangeUri) {
 		var mappingUri = this.createBlankNode();
-		this.addTriple(renderingUri, HAS_MAPPING, mappingUri);
+		this.addTriple(mappingUri, TYPE, MAPPING);
+		if (ownerUri) {
+			this.addTriple(ownerUri, HAS_MAPPING, mappingUri);
+		}
 		this.addTriple(mappingUri, HAS_FUNCTION, mappingFunction);
 		if (targetList) {
 			for (var i = 0; i < targetList.length; i++) {
@@ -202,6 +204,9 @@ function DymoStore(callback) {
 			this.addTriple(mappingUri, TO_TARGET, targetFunction);
 		}
 		this.addTriple(mappingUri, HAS_RANGE, rangeUri);
+		if (!this.findObject(rangeUri, TYPE)) {
+			this.addTriple(rangeUri, TYPE, CUSTOM_PARAMETER);
+		}
 		return mappingUri;
 	}
 
@@ -399,11 +404,11 @@ function DymoStore(callback) {
 					jsonld.compact(compacted, DYMO_SIMPLE_CONTEXT, function(err, compacted) {
 						//make it even nicer by removing blank nodes
 						removeBlankNodeIds(compacted);
-						compacted = JSON.stringify(compacted, null, 2);
-						//compact local uris
-						compacted = compacted.replace(new RegExp(dymoContextPath+'/', 'g'), "");
 						//put the right context back
-						compacted = compacted.replace(dymoSimpleContextPath, dymoContextPath);
+						compacted["@context"] = dymoContextPath;
+						//compact local uris
+						compacted = JSON.stringify(compacted);
+						compacted = compacted.replace(new RegExp(dymoContextPath+'/', 'g'), "");
 						callback(compacted);
 					});
 				});

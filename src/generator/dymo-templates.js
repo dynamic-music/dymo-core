@@ -5,14 +5,14 @@ DymoTemplates.createSingleSourceDymoFromFeatures = function(generator, source, f
 	DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, onLoad);
 }
 
-DymoTemplates.createConjunctionDymo = function(generator, sources, featureUris, onLoad) {
-	var topDymo = generator.addDymo(null, null, CONJUNCTION);
+DymoTemplates.createConjunctionDymo = function(generator, parentDymo, sources, featureUris, onLoad) {
+	var conjunctionDymo = generator.addDymo(parentDymo, null, CONJUNCTION);
 	var loadSources = sources.map((s,i) => new Promise(resolve => {
-		var dymoUri = generator.addDymo(topDymo, s);
+		var dymoUri = generator.addDymo(conjunctionDymo, s);
 		DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris[i], null, resolve);
 	}));
 	Promise.all(loadSources)
-		.then(r => onLoad());
+		.then(r => onLoad(conjunctionDymo));
 }
 
 DymoTemplates.createSimilarityDymoFromFeatures = function(generator, source, featureUris, conditions, similarityThreshold, onLoad) {

@@ -106,10 +106,7 @@ function EasyStore() {
 
 	this.addTriple = function(subject, predicate, object) {
 		if (subject != null && predicate != null && object != null) {
-			//console.log(subject, predicate, object)
-			var r = store.addTriple(subject, predicate, object);
-			if (predicate == CDT) console.log(subject, predicate, this.findObject(subject, predicate));
-			return r;
+			return store.addTriple(subject, predicate, object);
 		}
 	}
 
