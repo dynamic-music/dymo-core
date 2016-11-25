@@ -4,10 +4,13 @@
  * @param {Object=} $scope angular scope (optional, uicontrols will call $scope.$apply())
  * @param {Function=} onPlaybackChange (optional)
  */
-function DymoManager(audioContext, scheduleAheadTime, reverbFile, callback, $scope, onPlaybackChange) {
+function DymoManager(audioContext, scheduleAheadTime, optimizedMode, reverbFile, callback, $scope, onPlaybackChange) {
 
 	DYMO_STORE = new DymoStore(callback);
 	var scheduler = new Scheduler(audioContext, onPlaybackChange);
+	if (optimizedMode) {
+		OPTIMIZED_MODE = true;
+	}
 	if (!isNaN(scheduleAheadTime)) {
 		SCHEDULE_AHEAD_TIME = scheduleAheadTime;
 	}

@@ -38,6 +38,7 @@ describe("an easystore", function() {
 		easyStore.setObjectValue("thun", "hat", "fluss");
 		easyStore.setObjectValue(null, null, "garden", "nummer", 1);
 		expect(easyStore.findObjectValueOfType("thun", "hat", "bar", "nummer")).toEqual(1);
+		expect(easyStore.findObjectOfType("thun", "hat", "bar")).not.toBeUndefined();
 		expect(easyStore.findObjectValue(easyStore.findObjectOfType("thun", "hat", "bar"), "nummer")).toEqual(1);
 		expect(easyStore.findSubject("ist", "scheisse")).toEqual("musik");
 		expect(easyStore.findSubject("number", 1)).toEqual("mokka");

@@ -93,7 +93,7 @@ function SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSen
 				source.stop();
 			}
 		}
-		setTimeout(function() { onChanged(); }, delay);
+		setTimeout(function() { onChanged(self); }, delay);
 		//create next sources and wait or end and reset
 		nextSources = createNextSources();
 		if (nextSources && nextSources.size > 0) {
@@ -140,7 +140,7 @@ function SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSen
 		if (sourceList.length <= 0) {
 			sources.delete(source.getDymoUri());
 		}
-		onChanged();
+		onChanged(self);
 		endThreadIfNoMoreSources();
 	}
 

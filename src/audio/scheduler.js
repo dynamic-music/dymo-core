@@ -155,22 +155,16 @@ function Scheduler(audioContext, onPlaybackChange) {
 		threads.splice(threads.indexOf(thread), 1);
 	}
 
-	function updatePlayingDymos() {
-		var uris = [];
-		for (var i = 0; i < threads.length; i++) {
-			for (var currentDymoUri of threads[i].getAllSources().keys()) {
-				while (currentDymoUri != null) {
-					if (uris.indexOf(currentDymoUri) < 0) {
-						uris.push(currentDymoUri);
-					}
-					currentDymoUri = DYMO_STORE.findParents(currentDymoUri)[0];
-				}
+	function updatePlayingDymos(changedThread) {
+		if (!OPTIMIZED_MODE) {
+			var uris = Array.from(changedThread.getAllSources().keys());
+			uris = flattenArray(uris.map(d => DYMO_STORE.findAllParents(d)));
+			uris = removeDuplicates(uris);
+			uris.sort();
+			urisOfPlayingDymos = uris;
+			if (onPlaybackChange) {
+				onPlaybackChange(urisOfPlayingDymos);
 			}
-		}
-		uris.sort();
-		urisOfPlayingDymos = uris;
-		if (onPlaybackChange) {
-			onPlaybackChange(urisOfPlayingDymos);
 		}
 	}
 

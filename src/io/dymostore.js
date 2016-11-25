@@ -275,6 +275,16 @@ function DymoStore(callback) {
 		return this.findAllObjects(dymoUri, HAS_SUCCESSOR);
 	}
 
+	//TODO currently only works for single hierarchy (implement and test)
+	this.findAllParents = function(dymoUri) {
+		var parents = [];
+		while (dymoUri != null) {
+			parents.push(dymoUri);
+			dymoUri = DYMO_STORE.findParents(dymoUri)[0];
+		}
+		return parents;
+	}
+
 	this.findParents = function(dymoUri) {
 		var containingLists = this.findContainingLists(dymoUri);
 		return containingLists[0].filter(function(e,i){return containingLists[1][i] == HAS_PART;});

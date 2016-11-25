@@ -266,18 +266,18 @@ function EasyStore() {
 	/** returns the first object of the given type it can find under the given subject and predicate
 	 * if subject is omitted, just returns the first object of the given type */
 	this.findObjectOfType = function(subject, predicate, type) {
-		var objectUri;
-		if (!subject) {
-			objectUri = this.findSubject(TYPE, type);
-		} else {
-			var allObjects = this.findAllObjects(subject, predicate);
-			var objectsOfType = this.findAllSubjects(TYPE, type);
-			var results = intersectArrays(allObjects, objectsOfType);
-			if (results.length > 0) {
-				objectUri = results[0];
+		if (predicate && type) {
+			if (!subject) {
+				return this.findSubject(TYPE, type);
+			} else {
+				var allObjects = this.findAllObjects(subject, predicate);
+				for (var i = 0, ii = allObjects.length; i < ii; i++) {
+					if (this.find(allObjects[i], TYPE, type).length > 0) {
+						return allObjects[i];
+					}
+				}
 			}
 		}
-		return objectUri;
 	}
 
 	this.findObjectValueOfType = function(subject, predicate, type, valuePredicate) {
@@ -327,14 +327,13 @@ function EasyStore() {
 		}
 	}
 	/** returns the subjects of all results found in the store
-	 * @param {number|string|boolean=} object (optional)
-	 * @suppress {checkTypes} because of Array.from :( */
+	 * @param {number|string|boolean=} object (optional) */
 	this.findAllSubjects = function(predicate, object) {
 		var results = store.find(null, predicate, object);
 		if (results.length == 0) {
 			results = store.find(null, predicate, N3.Util.createLiteral(object));
 		}
-		return Array.from(new Set(results.map(function(t){return t.subject;})));
+		return removeDuplicates(results.map(function(t){return t.subject;}));
 	}
 
 	this.findObjectIndexInList = function(subject, predicate, object) {
