@@ -115,6 +115,7 @@
 		"body": "mb:hasBody",
 		"targets": "mb:toTarget",
 		"range": "mb:hasRange",
+		"unidirectional": "mb:isUnidirectional",
 		"init": "mb:hasInitialValue",
 		"url": "mb:hasUrl",
 		"map": "mb:hasJsonMap",

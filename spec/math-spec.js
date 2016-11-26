@@ -1,8 +1,10 @@
 describe("the math tools", function() {
-	
+
 	it("can invert a function", function() {
 		var inversion = FunctionTools.invertReturnValue("z");
 		expect(inversion).toEqual("z");
+		var inversion = FunctionTools.invertReturnValue("-z");
+		expect(inversion).toEqual("-z");
 		inversion = FunctionTools.invertReturnValue("3 * a + 2");
 		expect(inversion).toEqual("(a - 2) / 3");
 		inversion = FunctionTools.invertReturnValue(inversion);
@@ -25,7 +27,7 @@ describe("the math tools", function() {
 		inversion = FunctionTools.invertReturnValue("(3*x)+b");
 		expect(inversion).toBeUndefined();
 	});
-	
+
 	it("can determine whether a point is in a polygon", function() {
 		var polygon = [{0:0,1:0}, {0:5,1:1}, {0:3,1:3}];
 		var point1 = {0:3,1:2}; //inside
@@ -35,12 +37,12 @@ describe("the math tools", function() {
 		expect(PolygonTools.isPointInPolygon(polygon, point2)).toBeFalsy();
 		expect(PolygonTools.isPointInPolygon(polygon, point3)).toBeFalsy();
 	});
-	
+
 	it("can find the centroid of a polygon", function() {
 		var polygon = [{0:0,1:0}, {0:5,1:2}, {0:4,1:4}];
 		expect(PolygonTools.getCentroid(polygon)).toEqual({0:3,1:2});
 	});
-	
+
 	it("can find the minimum distance from an edge of a polygon", function() {
 		var polygon = [{0:0,1:0}, {0:5,1:1}, {0:3,1:3}];
 		var point1 = {0:3,1:2}; //inside
@@ -52,7 +54,7 @@ describe("the math tools", function() {
 		expect(PolygonTools.getMinDistanceFromEdge(polygon, point2)).toBe(0.588348405414552, 15);
 		expect(PolygonTools.getMinDistanceFromEdge(polygon, point3)).toBe(0);
 	});
-	
+
 	it("can determine how far a point is in a polygon", function() {
 		var polygon = [{0:0,1:0}, {0:5,1:1}, {0:3,1:3}];
 		var point1 = {0:3,1:2}; //inside
@@ -64,7 +66,7 @@ describe("the math tools", function() {
 		expect(PolygonTools.howFarIsPointInPolygon(polygon, centroid, point2)).toBe(0);
 		expect(PolygonTools.howFarIsPointInPolygon(polygon, centroid, point3)).toBe(0);
 	});
-	
+
 	it("can return a polygon testing function string", function() {
 		var polygon = [{0:0,1:0}, {0:5,1:1}, {0:3,1:3}];
 		var point1 = {0:3,1:2}; //inside
@@ -81,5 +83,5 @@ describe("the math tools", function() {
 		expect(func(point2[0], point2[1])).toBe(0);
 		expect(func(point3[0], point3[1])).toBe(0);
 	});
-	
+
 });

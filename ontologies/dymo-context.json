@@ -115,6 +115,7 @@
 		"body": "mb:hasBody",
 		"targets": { "@id": "mb:toTarget", "@type": "@id" },
 		"range": { "@id": "mb:hasRange", "@type": "@vocab" },
+		"unidirectional": { "@id": "mb:isUnidirectional", "@type": "xsd:boolean" },
 		"init": { "@id": "mb:hasInitialValue", "@type": "xsd:float" },
 		"url": { "@id": "mb:hasUrl", "@type": "xsd:string" },
 		"map": { "@id": "mb:hasJsonMap", "@type": "xsd:string" },

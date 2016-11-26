@@ -197,6 +197,7 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"body", iri:"hasBody"}, "Function", prefixes["xsd"]+"string", false);
 	addProperty({term:"targets", iri:"toTarget", type: "@id"}, "Mapping", "MappingTarget", true);
 	addProperty({term:"range", iri:"hasRange", type: "@vocab"}, "Mapping", "MappingRange", true);
+	addProperty({term:"unidirectional", iri:"isUnidirectional", type: "xsd:boolean"}, "Mapping", prefixes["xsd"]+"boolean", false);
 	//control properties
 	addProperty({term:"init", iri:"hasInitialValue", type: "xsd:float"}, "MobileControl", prefixes["xsd"]+"float", false);
 	addProperty({term:"url", iri:"hasUrl", type: "xsd:string"}, "DataControl", prefixes["xsd"]+"string", false);

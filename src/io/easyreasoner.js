@@ -15,7 +15,6 @@ function EasyReasoner() {
 			data += encodeURIComponent('data=' + files[i]) + '&';
 		}
 		data += encodeURIComponent('query=' + queryAll);
-		console.log(files, data);
 		postRequest(eyePath, data, function(results) {
 			callback(results);
 		});

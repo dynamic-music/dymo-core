@@ -23,9 +23,9 @@ FunctionTools.createFunction = function(args, body) {
 FunctionTools.invertFunction = function(body) {
 	var returnValue = FunctionTools.toReturnValueString(body);
 	if (!FunctionTools.inverted[body]) {
-		var invertedBody = FunctionTools.invertReturnValue(returnValue);
+		var [argName, invertedBody] = FunctionTools.invertReturnValue(returnValue);
 		if (invertedBody != null) {
-			FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(invertedBody);
+			FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(argName, invertedBody);
 		}
 	}
 	return FunctionTools.inverted[body];
@@ -53,23 +53,26 @@ FunctionTools.invertReturnValue = function(returnValue) {
 		} else if (currentNode.isParenthesisNode) {
 			currentNode = currentNode.content;
 		} else if (currentNode.isOperatorNode) {
-			var invertedOperator = FunctionTools.getInvertedOperator(currentNode.op);
-			if (currentNode.op == '+' || currentNode.op == '*') {
+			var invertedOperator = FunctionTools.getInvertedOperator(currentNode.fn);
+			if (currentNode.fn == 'unaryMinus') {
+				invertedTree = new math.expression.node.OperatorNode('-', 'unaryMinus', [invertedTree]);
+				currentNode = FunctionTools.ifNextNode(currentNode.args[0]);
+			} else if (currentNode.fn == 'add' || currentNode.fn == 'multiply') {
 				if (currentNode.args[0].isConstantNode) {
-					invertedTree = new math.expression.node.OperatorNode(invertedOperator, FunctionTools.getOperatorName(invertedOperator), [invertedTree, currentNode.args[0]]);
+					invertedTree = new math.expression.node.OperatorNode(FunctionTools.getOp(invertedOperator), invertedOperator, [invertedTree, currentNode.args[0]]);
 					currentNode = FunctionTools.ifNextNode(currentNode.args[1]);
 				} else if (currentNode.args[1].isConstantNode) {
-					invertedTree = new math.expression.node.OperatorNode(invertedOperator, FunctionTools.getOperatorName(invertedOperator), [invertedTree, currentNode.args[1]]);
+					invertedTree = new math.expression.node.OperatorNode(FunctionTools.getOp(invertedOperator), invertedOperator, [invertedTree, currentNode.args[1]]);
 					currentNode = FunctionTools.ifNextNode(currentNode.args[0]);
 				} else {
 					return;
 				}
-			} else if (currentNode.op == '-' || currentNode.op == '/') {
+			} else if (currentNode.fn == 'subtract' || currentNode.fn == 'divide') {
 				if (currentNode.args[0].isConstantNode) {
-					invertedTree = new math.expression.node.OperatorNode(currentNode.op, FunctionTools.getOperatorName(currentNode.op), [currentNode.args[0], invertedTree]);
+					invertedTree = new math.expression.node.OperatorNode(FunctionTools.getOp(currentNode.fn), currentNode.fn, [currentNode.args[0], invertedTree]);
 					currentNode = FunctionTools.ifNextNode(currentNode.args[1]);
 				} else if (currentNode.args[1].isConstantNode) {
-					invertedTree = new math.expression.node.OperatorNode(invertedOperator, FunctionTools.getOperatorName(invertedOperator), [invertedTree, currentNode.args[1]]);
+					invertedTree = new math.expression.node.OperatorNode(FunctionTools.getOp(invertedOperator), invertedOperator, [invertedTree, currentNode.args[1]]);
 					currentNode = FunctionTools.ifNextNode(currentNode.args[0]);
 				} else {
 					return;
@@ -82,12 +85,12 @@ FunctionTools.invertReturnValue = function(returnValue) {
 			return;
 		}
 	}
-	return invertedTree.toString();
+	return [symbolNode.name, invertedTree.toString()];
 }
 
-FunctionTools.toJavaScriptFunction = function(returnString) {
+FunctionTools.toJavaScriptFunction = function(argName, returnString) {
 	try {
-		return new Function("a", "return " + returnString + ";");
+		return new Function(argName, "return " + returnString + ";");
 	} catch (e) {
 		return;
 	}
@@ -114,26 +117,28 @@ FunctionTools.ifNextNode = function(node) {
 
 /** @private */
 FunctionTools.getInvertedOperator = function(operator) {
-	if (operator == "+") {
-		return "-";
-	} else if (operator == "-") {
-		return "+";
-	} else if (operator == "*") {
-		return "/";
-	} else if (operator == "/") {
-		return "*";
+	if (operator == "add") {
+		return "subtract";
+	} else if (operator == "subtract") {
+		return "add";
+	} else if (operator == "multiply") {
+		return "divide";
+	} else if (operator == "divide") {
+		return "multiply";
+	} else if (operator == "unaryMinus") {
+		return "unaryMinus";
 	}
 }
 
 /** @private weirdly mathjs doesn't seem to offer this */
-FunctionTools.getOperatorName = function(operator) {
-	if (operator == "+") {
-		return "add";
-	} else if (operator == "-") {
-		return "subtract";
-	} else if (operator == "*") {
-		return "multiply";
-	} else if (operator == "/") {
-		return "divide";
+FunctionTools.getOp = function(fn) {
+	if (fn == "add") {
+		return "+";
+	} else if (fn == "subtract" || fn == "unaryMinus") {
+		return "-";
+	} else if (fn == "multiply") {
+		return "*";
+	} else if (fn == "divide") {
+		return "/";
 	}
 }

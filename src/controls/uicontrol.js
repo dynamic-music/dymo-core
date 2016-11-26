@@ -35,7 +35,15 @@ function UIControl(control, $scope) {
 	}
 
 	function updateFunction(newValue) {
-		self.value = newValue;
+		if (control.getType() == TOGGLE) {
+			if (newValue == 1) {
+				self.value = true;
+			} else {
+				self.value = false;
+			}
+		} else {
+			self.value = newValue;
+		}
 		if ($scope) {
 			setTimeout(function() {
 				$scope.$apply();

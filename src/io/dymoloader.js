@@ -164,7 +164,8 @@ function DymoLoader(dymoStore) {
 		var mappingFunction = createFunction(mappingFunctionUri, dymoUri);
 		var targets = getTargets(mappingUri);
 		var range = dymoStore.findObject(mappingUri, HAS_RANGE);
-		return new Mapping(mappingFunction, targets, range);
+		var isUnidirectional = dymoStore.findObject(mappingUri, IS_UNIDIRECTIONAL);
+		return new Mapping(mappingFunction, targets, range, isUnidirectional);
 	}
 
 	function getTargets(mappingUri) {

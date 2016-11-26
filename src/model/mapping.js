@@ -2,7 +2,7 @@
  * A mapping from features/controls/parameters to parameters.
  * @constructor
  */
-function Mapping(mappingFunction, targets, parameterName) {
+function Mapping(mappingFunction, targets, parameterName, isUnidirectional) {
 
 	/** @private */
 	this.mappingFunction = mappingFunction;
@@ -21,6 +21,8 @@ function Mapping(mappingFunction, targets, parameterName) {
 			this.targetFunction.addObserver(this);
 		}
 	}
+	/** @private */
+	this.isUnidirectional = isUnidirectional;
 	this.updateAll();
 }
 
@@ -78,7 +80,7 @@ Mapping.prototype.update = function(changedArgIndex, value, target) {
 }
 
 Mapping.prototype.observedValueChanged = function(paramUri, paramType, value) {
-	if (paramType == this.parameterName) {
+	if (!this.isUnidirectional && paramType == this.parameterName) {
 		var dymoUri = DYMO_STORE.findSubject(HAS_PARAMETER, paramUri);
 		this.mappingFunction.applyInverse(value, dymoUri);
 	}

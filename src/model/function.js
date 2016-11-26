@@ -37,7 +37,7 @@ DymoFunction.prototype.init = function() {
 		this.directFunction = FunctionTools.createFunction(this.vars, this.body);
 		this.inverseFunction = FunctionTools.invertFunction(this.body);
 	} else {
-		this.constraintFunction = null;// = LogicTools.createConstraint(this.body);
+		this.constraintFunction = LogicTools.createConstraint(this.body);
 		if (!this.constraintFunction) {
 			this.directFunction = FunctionTools.createFunction(this.vars, this.body);
 		}
@@ -92,6 +92,7 @@ DymoFunction.prototype.applyDirect = function(changedArgIndex, value, dymoUri) {
 	if (this.constraintFunction) {
 		var returnVar = logic.lvar();
 		this.resultCache[dymoUri] = this.applyConstraint([returnVar].concat(argValues), returnVar);
+		//console.log("DIR", dymoUri, argValues, this.resultCache[dymoUri])
 	} else {
 		this.resultCache[dymoUri] = this.directFunction.apply(this, argValues);
 	}
@@ -101,6 +102,7 @@ DymoFunction.prototype.applyDirect = function(changedArgIndex, value, dymoUri) {
 DymoFunction.prototype.applyInverse = function(value, dymoUri) {
 	if (!this.resultCache[dymoUri] || this.resultCache[dymoUri] != value) {
 		if (this.constraintFunction) {
+			//console.log("INV", value, dymoUri)
 			var updatableArgs = this.args.filter((a,i) => a.backpropagate || this.argTypes[i] == PARAMETER_TYPE);
 			var randomUpdatableArg = updatableArgs[Math.floor(Math.random()*updatableArgs.length)];
 			var randomArgIndex = this.args.indexOf(randomUpdatableArg);
@@ -108,17 +110,21 @@ DymoFunction.prototype.applyInverse = function(value, dymoUri) {
 			var randomArgVar = logic.lvar();
 			argValues.splice(randomArgIndex, 1, randomArgVar);
 			var newArgValue = this.applyConstraint([value].concat(argValues), randomArgVar);
-			if (this.args[randomArgIndex].backpropagate) {
-				this.args[randomArgIndex].backpropagate(newArgValue, this);
-			} else {
-				DYMO_STORE.setValue(this.args[randomArgIndex], VALUE, newArgValue);
-			}
-		} else if (this.inverseFunction && this.args && this.args.length == 1 && this.args[0].backpropagate) {
+			//console.log(randomArgIndex, newArgValue)
+			this.updateArg(randomArgIndex, newArgValue);
+		} else if (this.inverseFunction && this.args && this.args.length == 1) {
 			value = this.inverseFunction(value);
-			if (value != null) {
-				this.args[0].backpropagate(value, this);
-			}
+			this.updateArg(0, value);
 		}
+	}
+}
+
+/** @private */
+DymoFunction.prototype.updateArg = function(index, value) {
+	if (this.args[index].backpropagate) {
+		this.args[index].backpropagate(value, this);
+	} else {
+		DYMO_STORE.setValue(this.args[index], VALUE, value);
 	}
 }
 

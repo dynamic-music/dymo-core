@@ -47,6 +47,7 @@ LogicTools.createGoalFunction = function(currentNode) {
 			varString += "var " + localVars[i] + " = logic.lvar('" + localVars[i] + "');\n";
 		}
 		//create and return function
+		console.log(vars, varString+returnString)
 		return FunctionTools.createFunction(vars, varString+returnString);
 	}
 }
@@ -115,7 +116,12 @@ LogicTools.toLogicJsOperatorString = function(operatorNode) {
 /** @private */
 LogicTools.toEquation = function(functionString) {
 	//remove return string
-	functionString = functionString.substring(functionString.indexOf("return ")+7, functionString.indexOf(";"));
+	var scIndex = functionString.indexOf(";");
+	if (scIndex >= 0) {
+		functionString = functionString.substring(functionString.indexOf("return ")+7, functionString.indexOf(";"));
+	} else {
+		functionString = functionString.substring(functionString.indexOf("return ")+7);
+	}
 	//add return symbol
 	return "ret == "+functionString;
 }

@@ -112,6 +112,7 @@ var HAS_VALUE = "http://tiny.cc/mobile-audio-ontology#hasValue";
 var HAS_BODY = "http://tiny.cc/mobile-audio-ontology#hasBody";
 var TO_TARGET = "http://tiny.cc/mobile-audio-ontology#toTarget";
 var HAS_RANGE = "http://tiny.cc/mobile-audio-ontology#hasRange";
+var IS_UNIDIRECTIONAL = "http://tiny.cc/mobile-audio-ontology#isUnidirectional";
 var HAS_INITIAL_VALUE = "http://tiny.cc/mobile-audio-ontology#hasInitialValue";
 var HAS_URL = "http://tiny.cc/mobile-audio-ontology#hasUrl";
 var HAS_JSON_MAP = "http://tiny.cc/mobile-audio-ontology#hasJsonMap";
