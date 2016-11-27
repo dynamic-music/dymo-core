@@ -237,7 +237,7 @@ describe("a navigator", function() {
 	});
 
 	it("can be loaded from a rendering", function(done) {
-		var manager = new DymoManager(audioContext, null, null, function() {
+		var manager = new DymoManager(audioContext, null, false, null, function() {
 			manager.loadDymoAndRendering('files/similarity-dymo.json', 'files/similarity-rendering.json', undefined, function() {
 				var dymoUri = manager.getTopDymo();
 				expect(DYMO_STORE.findParts(dymoUri).length).toBe(5);

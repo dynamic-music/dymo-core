@@ -7,7 +7,7 @@ describe("a manager", function() {
 	//jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
 	beforeEach(function(done) {
-		manager = new DymoManager(audioContext, 0.1, '../audio/impulse_rev.wav', function() {
+		manager = new DymoManager(audioContext, 0.1, false, '../audio/impulse_rev.wav', function() {
 			fadePosition = 0;
 			isPlaying = false;
 			done();

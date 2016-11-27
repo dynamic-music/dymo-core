@@ -23,9 +23,9 @@ FunctionTools.createFunction = function(args, body) {
 FunctionTools.invertFunction = function(body) {
 	var returnValue = FunctionTools.toReturnValueString(body);
 	if (!FunctionTools.inverted[body]) {
-		var [argName, invertedBody] = FunctionTools.invertReturnValue(returnValue);
-		if (invertedBody != null) {
-			FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(argName, invertedBody);
+		var inverted = FunctionTools.invertReturnValue(returnValue);
+		if (inverted != null) {
+			FunctionTools.inverted[body] = FunctionTools.toJavaScriptFunction(inverted[0], inverted[1]);
 		}
 	}
 	return FunctionTools.inverted[body];

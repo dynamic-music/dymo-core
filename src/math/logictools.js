@@ -47,7 +47,6 @@ LogicTools.createGoalFunction = function(currentNode) {
 			varString += "var " + localVars[i] + " = logic.lvar('" + localVars[i] + "');\n";
 		}
 		//create and return function
-		console.log(vars, varString+returnString)
 		return FunctionTools.createFunction(vars, varString+returnString);
 	}
 }

@@ -2,25 +2,25 @@ describe("the math tools", function() {
 
 	it("can invert a function", function() {
 		var inversion = FunctionTools.invertReturnValue("z");
-		expect(inversion).toEqual("z");
+		expect(inversion[1]).toEqual("z");
 		var inversion = FunctionTools.invertReturnValue("-z");
-		expect(inversion).toEqual("-z");
+		expect(inversion[1]).toEqual("-z");
 		inversion = FunctionTools.invertReturnValue("3 * a + 2");
-		expect(inversion).toEqual("(a - 2) / 3");
-		inversion = FunctionTools.invertReturnValue(inversion);
-		expect(inversion).toEqual("a * 3 + 2");
+		expect(inversion[1]).toEqual("(a - 2) / 3");
+		inversion = FunctionTools.invertReturnValue(inversion[1]);
+		expect(inversion[1]).toEqual("a * 3 + 2");
 		inversion = FunctionTools.invertReturnValue("3 / a");
-		expect(inversion).toEqual("3 / a");
+		expect(inversion[1]).toEqual("3 / a");
 		inversion = FunctionTools.invertReturnValue("3 - t");
-		expect(inversion).toEqual("3 - t");
+		expect(inversion[1]).toEqual("3 - t");
 		inversion = FunctionTools.invertReturnValue("a / 3");
-		expect(inversion).toEqual("a * 3");
-		inversion = FunctionTools.invertReturnValue(inversion);
-		expect(inversion).toEqual("a / 3");
+		expect(inversion[1]).toEqual("a * 3");
+		inversion = FunctionTools.invertReturnValue(inversion[1]);
+		expect(inversion[1]).toEqual("a / 3");
 		inversion = FunctionTools.invertReturnValue("x - 3");
-		expect(inversion).toEqual("x + 3");
-		inversion = FunctionTools.invertReturnValue(inversion);
-		expect(inversion).toEqual("x - 3");
+		expect(inversion[1]).toEqual("x + 3");
+		inversion = FunctionTools.invertReturnValue(inversion[1]);
+		expect(inversion[1]).toEqual("x - 3");
 		//not defined (yet)
 		inversion = FunctionTools.invertReturnValue("sqrt(x)");
 		expect(inversion).toBeUndefined();
