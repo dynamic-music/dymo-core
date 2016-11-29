@@ -20,8 +20,8 @@ DymoTemplates.createSimilarityDymoFromFeatures = function(generator, source, fea
 	DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
 		Similarity.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 		generator.addRendering();
-		generator.addNavigator(SIMILARITY_NAVIGATOR, "d", "return d.getLevel() == 0");
-		generator.addNavigator(REPEATED_NAVIGATOR, "d", "return d.getLevel() == 1");
+		generator.addNavigator(SIMILARITY_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 0");
+		generator.addNavigator(REPEATED_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 1");
 		//generator.updateGraphs();
 		onLoad();
 	});
@@ -33,8 +33,8 @@ DymoTemplates.createSimilaritySuccessorDymoFromFeatures = function(generator, so
 		Similarity.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 		Similarity.addSuccessionGraphTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 		generator.addRendering();
-		generator.addNavigator(GRAPH_NAVIGATOR, "d", "return d.getLevel() == 0");
-		generator.addNavigator(REPEATED_NAVIGATOR, "d", "return d.getLevel() == 1");
+		generator.addNavigator(GRAPH_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 0");
+		generator.addNavigator(REPEATED_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 1");
 		//generator.updateGraphs();
 		onLoad();
 	});

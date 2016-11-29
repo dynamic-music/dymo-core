@@ -493,7 +493,7 @@ function EasyStore() {
 	function getLiteralValue(uri) {
 		var value = N3.Util.getLiteralValue(uri);
 		var type = N3.Util.getLiteralType(uri);
-		if (type != "http://www.w3.org/2001/XMLSchema#string") {
+		if (type != "http://www.w3.org/2001/XMLSchema#string" && type != "http://www.w3.org/2001/XMLSchema#boolean") {
 			value = Number(value);
 		}
 		return value;

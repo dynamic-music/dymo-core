@@ -128,8 +128,11 @@ function DymoLoader(dymoStore) {
 		createControls();
 		for (var i = 0; i < mappingUris.length; i++) {
 			if (!mappings[mappingUris[i]]) {
-				ownerUri = DYMO_STORE.findSubject(HAS_MAPPING, mappingUris[i]);
-				mappings[mappingUris[i]] = createMapping(mappingUris[i], ownerUri);
+				var dymoUri = DYMO_STORE.findSubject(HAS_MAPPING, mappingUris[i]);
+				if (DYMO_STORE.findObject(dymoUri, TYPE) != DYMO) {
+					dymoUri = null;
+				}
+				mappings[mappingUris[i]] = createMapping(mappingUris[i], dymoUri);
 			}
 		}
 	}
@@ -137,7 +140,7 @@ function DymoLoader(dymoStore) {
 	function loadNavigators(renderingUri, rendering) {
 		var navigators = dymoStore.findAllObjects(renderingUri, HAS_NAVIGATOR);
 		for (var i = 0; i < navigators.length; i++) {
-			var dymosFunction = createFunction(dymoStore.findObject(navigators[i], NAV_DYMOS));
+			var dymosFunction = createFunction(dymoStore.findObject(navigators[i], NAV_DYMOS), true);
 			rendering.addSubsetNavigator(dymosFunction, getNavigator(dymoStore.findObject(navigators[i], TYPE)));
 		}
 	}
@@ -160,18 +163,18 @@ function DymoLoader(dymoStore) {
 
 	/** @param {string=} dymoUri (optional) */
 	function createMapping(mappingUri, dymoUri) {
+		var isUnidirectional = dymoStore.findObjectValue(mappingUri, IS_UNIDIRECTIONAL);
 		var mappingFunctionUri = dymoStore.findObject(mappingUri, HAS_FUNCTION);
-		var mappingFunction = createFunction(mappingFunctionUri, dymoUri);
+		var mappingFunction = createFunction(mappingFunctionUri, isUnidirectional, dymoUri);
 		var targets = getTargets(mappingUri);
 		var range = dymoStore.findObject(mappingUri, HAS_RANGE);
-		var isUnidirectional = dymoStore.findObject(mappingUri, IS_UNIDIRECTIONAL);
 		return new Mapping(mappingFunction, targets, range, isUnidirectional);
 	}
 
 	function getTargets(mappingUri) {
 		var targetUris = dymoStore.findAllObjects(mappingUri, TO_TARGET);
 		if (targetUris.length > 0) {
-			var targetFunction = createFunction(targetUris[0]);
+			var targetFunction = createFunction(targetUris[0], true);
 			if (targetFunction) {
 				return targetFunction;
 			} else {
@@ -181,12 +184,12 @@ function DymoLoader(dymoStore) {
 	}
 
 	/** @param {string=} dymoUri (optional) */
-	function createFunction(functionUri, dymoUri) {
+	function createFunction(functionUri, isUnidirectional, dymoUri) {
 		var [vars, args, body] = dymoStore.findFunction(functionUri);
 		if (vars && args && body) {
 			var argTypes;
 			[args, argTypes] = createFunctionDomain(args, dymoUri);
-			return new DymoFunction(vars, args, argTypes, body);
+			return new DymoFunction(vars, args, argTypes, body, isUnidirectional);
 		}
 	}
 
@@ -201,7 +204,8 @@ function DymoLoader(dymoStore) {
 				}
 				domainDims.push(currentType);
 				domainDimTypes.push(FEATURE_TYPE);
-			} else if (currentType == PARAMETER_TYPE || dymoStore.isSubclassOf(currentType, PARAMETER_TYPE)) {
+			} else if (currentType == PARAMETER_TYPE || dymoStore.isSubclassOf(currentType, PARAMETER_TYPE)
+						|| dymoStore.isSubclassOf(dymoStore.findObject(currentType, TYPE), PARAMETER_TYPE)) {
 				var currentParameter;
 				if (currentType == CUSTOM_PARAMETER) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM PARAMETERS
 					currentType = domainDimUris[j];

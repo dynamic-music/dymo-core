@@ -5,7 +5,7 @@
  * @param {Array} body the body of the function
  * @constructor
  */
-function DymoFunction(vars, args, argTypes, body) {
+function DymoFunction(vars, args, argTypes, body, isUnidirectional) {
 
 	/** @private the variables used for the args in the body */
 	this.vars = vars;
@@ -23,6 +23,8 @@ function DymoFunction(vars, args, argTypes, body) {
 	this.isDymoSpecificParam = [];
 	/** @private */
 	this.observers = [];
+	/** @private */
+	this.isUnidirectional = isUnidirectional;
 	this.init();
 }
 
@@ -33,7 +35,7 @@ DymoFunction.prototype.init = function() {
 		this.vars = FunctionTools.IDENTITY_JSON["args"];
 		this.body = FunctionTools.IDENTITY_JSON["body"];
 	}
-	if (this.vars.length <= 1) {
+	if (this.vars.length <= 1 || this.isUnidirectional) {
 		this.directFunction = FunctionTools.createFunction(this.vars, this.body);
 		this.inverseFunction = FunctionTools.invertFunction(this.body);
 	} else {
