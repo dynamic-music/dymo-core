@@ -35,7 +35,7 @@ function SequentialNavigator(dymoUri, backwards) {
 		var parts = DYMO_STORE.findParts(dymoUri);
 		if (parts.length > 0) {
 			if (DYMO_STORE.findObject(dymoUri, CDT) == CONJUNCTION) {
-				return getParallelParts();
+				return partsNavigated<=0? DYMO_STORE.findParts(dymoUri): null;
 			}
 			return getSequentialPart(); //SEQUENTIAL FOR EVERYTHING ELSE
 		}
@@ -44,12 +44,6 @@ function SequentialNavigator(dymoUri, backwards) {
 	this.getNextParts = function() {
 		partsNavigated++;
 		return this.getCurrentParts();
-	}
-
-	function getParallelParts() {
-		if (partsNavigated <= 0) {
-			return DYMO_STORE.findParts(dymoUri);
-		}
 	}
 
 	function getSequentialPart() {

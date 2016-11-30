@@ -255,7 +255,6 @@ function DymoStore(callback) {
 
 	//returns an array with the uris of all parts of the object with the given uri
 	this.findParts = function(dymoUri) {
-		//TODO DOESNT WORK WITH LISTS!!!!!
 		return this.findAllObjects(dymoUri, HAS_PART);
 	}
 
