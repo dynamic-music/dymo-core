@@ -60,7 +60,7 @@ function DymoGenerator(store, onFeatureAdded) {
 	}
 
 	/*function recursiveAddDymo(parent, currentDymo) {
-		var newDymo = internalAddDymo(parent);
+		var newDymo = this.addDymo(parent);
 		var features = currentDymo.getFeatures();
 		for (var name in features) {
 			self.setDymoFeature(newDymo, name, features[name]);
@@ -89,14 +89,13 @@ function DymoGenerator(store, onFeatureAdded) {
 		}
 	}
 
-	this.addDymo = function(parentUri, sourcePath, dymoType) {
-		return internalAddDymo(parentUri, sourcePath, dymoType);
-	}
-
 	/** @param {string=} sourcePath (optional)
-	 *  @param {string=} dymoType (optional) */
-	function internalAddDymo(parentUri, sourcePath, dymoType) {
-		var dymoUri = getUniqueDymoUri();
+	 *  @param {string=} dymoType (optional)
+	 *  @param {string=} dymoUri (optional) */
+	this.addDymo = function(parentUri, sourcePath, dymoType, dymoUri) {
+		if (!dymoUri) {
+			dymoUri = getUniqueDymoUri();
+		}
 		store.addDymo(dymoUri, parentUri, null, sourcePath, dymoType);
 		if (!parentUri) {
 			currentTopDymo = dymoUri;
@@ -112,7 +111,7 @@ function DymoGenerator(store, onFeatureAdded) {
 
 	function getUniqueRenderingUri() {
 		var renderingUri = CONTEXT_URI + "rendering" + renderingCount;
-		renderingUri++;
+		renderingCount++;
 		return renderingUri;
 	}
 
@@ -212,7 +211,7 @@ function DymoGenerator(store, onFeatureAdded) {
 			}
 			//don't want anything with duration 0 (what other feature values would it have?)
 			if (duration > 0) {
-				var newDymoUri = internalAddDymo(parentUri);
+				var newDymoUri = this.addDymo(parentUri);
 				this.setDymoFeature(newDymoUri, TIME_FEATURE, startTime);
 				this.setDymoFeature(newDymoUri, DURATION_FEATURE, duration);
 				/*if (segments[i].label && !isNaN(segments[i].label)) {
@@ -225,9 +224,9 @@ function DymoGenerator(store, onFeatureAdded) {
 
 	function initTopDymoIfNecessary() {
 		if (dymoCount == 0) {
-			currentTopDymo = internalAddDymo(undefined, currentSourcePath);
+			currentTopDymo = this.addDymo(null, currentSourcePath);
 		} else if (audioFileChanged) {
-			currentTopDymo = internalAddDymo(topDymo, currentSourcePath);
+			currentTopDymo = this.addDymo(topDymo, currentSourcePath);
 			audioFileChanged = false;
 		}
 	}

@@ -7,10 +7,6 @@
 		{
 			"@type":"SimilarityNavigator",
 			"dymos": {"args":[{"var":"a", "val":"level"}], "body":"return a == 0;"}
-		},
-		{
-			"@type":"RepeatedNavigator",
-			"dymos": {"args":[{"var":"a", "val":"level"}], "body":"return a == 1;"}
 		}
 	]
 }

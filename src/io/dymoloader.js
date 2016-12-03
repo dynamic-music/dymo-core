@@ -228,10 +228,6 @@ function DymoLoader(dymoStore) {
 			return new SimilarityNavigator(undefined);
 		} else if (type == GRAPH_NAVIGATOR) {
 			return new GraphNavigator(undefined);
-		} else if (type == ONE_SHOT_NAVIGATOR) {
-			return new OneShotNavigator(undefined);
-		} else if (type == REPEATED_NAVIGATOR) {
-			return new RepeatedNavigator(undefined);
 		}
 		return new SequentialNavigator(undefined);
 	}

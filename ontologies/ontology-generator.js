@@ -178,7 +178,6 @@ function createMobileAudioOntology(path) {
 	//navigators
 	addClass("Navigator");
 	addClass("OneShotNavigator", "Navigator");
-	addClass("RepeatedNavigator", "Navigator");
 	addClass("SequentialNavigator", "Navigator");
 	addClass("SimilarityNavigator", "Navigator");
 	addClass("GraphNavigator", "Navigator");

@@ -31,7 +31,7 @@ describe("a navigator", function() {
 		});
 	});
 
-	it("can be sequential", function() {
+	it("is normally sequential", function() {
 		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
@@ -40,8 +40,11 @@ describe("a navigator", function() {
 		expect(navigator.getNextParts()[0]).toBe("dymo12");
 		expect(navigator.getNextParts()[0]).toBe("dymo9");
 		expect(navigator.getNextParts()[0]).toBe("dymo10");
-		expect(navigator.getNextParts()).toBeUndefined();
+		//and keeps looping
+		expect(navigator.getNextParts()[0]).toBe("dymo5");
+		expect(navigator.getNextParts()[0]).toBe("dymo6");
 		navigator.reset();
+		//starts over
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
 		expect(navigator.getNextParts()[0]).toBe("dymo7");
@@ -101,20 +104,196 @@ describe("a navigator", function() {
 		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
 		DYMO_STORE.setTriple("dymo2", CDT, CONJUNCTION);
 		DYMO_STORE.setTriple("dymo8", CDT, CONJUNCTION);
-		var nextParts = navigator.getNextParts();
-		expect(nextParts[0]).toBe("dymo5");
-		expect(nextParts[1]).toBe("dymo6");
+		expect(navigator.getNextParts()).toEqual(["dymo5","dymo6"]);
 		expect(navigator.getNextParts()[0]).toBe("dymo7");
-		nextParts = navigator.getNextParts();
-		expect(nextParts[0]).toBe("dymo11");
-		expect(nextParts[1]).toBe("dymo12");
+		expect(navigator.getNextParts()).toEqual(["dymo11","dymo12"]);
 		expect(navigator.getNextParts()[0]).toBe("dymo9");
 		expect(navigator.getNextParts()[0]).toBe("dymo10");
-		expect(navigator.getNextParts()).toBeUndefined();
+		//starts over
+		expect(navigator.getNextParts()).toEqual(["dymo5","dymo6"]);
+	});
+
+	it("can handle disjunctions", function() {
+		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
+		DYMO_STORE.setTriple("dymo2", CDT, DISJUNCTION);
+		DYMO_STORE.setTriple("dymo8", CDT, DISJUNCTION);
+		var nextPart = navigator.getNextParts()[0];
+		expect(nextPart == "dymo5" || nextPart == "dymo6").toBe(true);
+		expect(navigator.getNextParts()[0]).toBe("dymo7");
+		nextPart = navigator.getNextParts()[0];
+		expect(nextPart == "dymo11" || nextPart == "dymo12").toBe(true);
+		expect(navigator.getNextParts()[0]).toBe("dymo9");
+		expect(navigator.getNextParts()[0]).toBe("dymo10");
+		//starts over
+		nextPart = navigator.getNextParts()[0];
+		expect(nextPart == "dymo5" || nextPart == "dymo6").toBe(true);
+		expect(navigator.getNextParts()[0]).toBe("dymo7");
+	});
+
+	it("can handle conjunctions of sequences", function(done) {
+		DYMO_STORE = new DymoStore(function(){
+			DYMO_STORE.addDymo("meal", null, null, null, CONJUNCTION);
+			DYMO_STORE.addDymo("dish", "meal", null, null, SEQUENCE);
+			DYMO_STORE.addDymo("noodles", "dish");
+			DYMO_STORE.addDymo("veggies", "dish");
+			DYMO_STORE.addDymo("pizza", "dish");
+			DYMO_STORE.addDymo("hotsauce", "meal");
+
+			var navigator = new DymoNavigator("meal", new SequentialNavigator());
+			expect(navigator.getNextParts()).toEqual(["noodles", "hotsauce"]);
+			expect(navigator.getNextParts()).toEqual(["veggies", "hotsauce"]);
+			expect(navigator.getNextParts()).toEqual(["pizza", "hotsauce"]);
+			//starts over
+			expect(navigator.getNextParts()).toEqual(["noodles", "hotsauce"]);
+			expect(navigator.getNextParts()).toEqual(["veggies", "hotsauce"]);
+
+			done();
+		});
+	});
+
+	it("can handle a sequence of a sequence", function(done) {
+		DYMO_STORE = new DymoStore(function(){
+			DYMO_STORE.addDymo("food");
+			DYMO_STORE.addDymo("meal", "food");
+			DYMO_STORE.addDymo("noodles", "meal");
+			DYMO_STORE.addDymo("veggies", "meal");
+			DYMO_STORE.addDymo("pizza", "meal");
+			DYMO_STORE.addPart("food", "meal");
+			DYMO_STORE.addPart("food", "meal");
+			DYMO_STORE.addDymo("canttakeitnomore", "food");
+
+			var navigator = new DymoNavigator("food", new SequentialNavigator());
+			expect(navigator.getNextParts()).toEqual(["noodles"]);
+			expect(navigator.getNextParts()).toEqual(["veggies"]);
+			expect(navigator.getNextParts()).toEqual(["pizza"]);
+			expect(navigator.getNextParts()).toEqual(["noodles"]);
+			expect(navigator.getNextParts()).toEqual(["veggies"]);
+			expect(navigator.getNextParts()).toEqual(["pizza"]);
+			expect(navigator.getNextParts()).toEqual(["noodles"]);
+			expect(navigator.getNextParts()).toEqual(["veggies"]);
+			expect(navigator.getNextParts()).toEqual(["pizza"]);
+			expect(navigator.getNextParts()).toEqual(["canttakeitnomore"]);
+			//starts over
+			expect(navigator.getNextParts()).toEqual(["noodles"]);
+			expect(navigator.getNextParts()).toEqual(["veggies"]);
+
+			done();
+		});
+	});
+
+	it("can navigate larger typed structures", function(done) {
+		DYMO_STORE = new DymoStore(function(){
+			DYMO_STORE.addDymo("dymo1");
+			DYMO_STORE.addDymo("dymo2", "dymo1");
+			DYMO_STORE.addDymo("dymo3", "dymo1");
+			DYMO_STORE.addDymo("dymo4", "dymo2");
+			DYMO_STORE.addDymo("dymo4", "dymo3");
+
+			var navigator = new DymoNavigator("dymo1", new SequentialNavigator());
+			expect(navigator.getNextParts()).toEqual(["dymo4"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4"]);
+			navigator.reset();
+			DYMO_STORE.addDymo("dymo5", "dymo2");
+			expect(navigator.getNextParts()).toEqual(["dymo4"]);
+			expect(navigator.getNextParts()).toEqual(["dymo5"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4"]);
+			expect(navigator.getNextParts()).toEqual(["dymo5"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4"]);
+
+			DYMO_STORE.setTriple("dymo2", CDT, CONJUNCTION);
+			DYMO_STORE.setTriple("dymo3", CDT, CONJUNCTION);
+			var navigator = new DymoNavigator("dymo1", new SequentialNavigator());
+			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4"]);
+
+			DYMO_STORE.addDymo("dymo0", null, ["dymo1", "dymo1"]);
+			DYMO_STORE.setTriple("dymo1", CDT, CONJUNCTION);
+			var navigator = new DymoNavigator("dymo0", new SequentialNavigator());
+			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5", "dymo4"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5", "dymo4"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5", "dymo4"]);
+			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5", "dymo4"]);
+
+			done();
+		});
+	});
+
+	it("can navigate more larger typed structures", function(done) {
+		DYMO_STORE = new DymoStore(function(){
+			DYMO_STORE.addDymo("song");
+			DYMO_STORE.addDymo("verse1", "song", null, null, CONJUNCTION);
+			DYMO_STORE.addDymo("verse2", "song", null, null, CONJUNCTION);
+			DYMO_STORE.addDymo("accomp", "verse1", null, null, CONJUNCTION);
+			DYMO_STORE.addDymo("solo1", "verse1", null, null, DISJUNCTION);
+			DYMO_STORE.addPart("verse2", "accomp");
+			DYMO_STORE.addDymo("solo2", "verse2", null, null, DISJUNCTION);
+			DYMO_STORE.addDymo("bass", "accomp");
+			DYMO_STORE.addDymo("piano", "accomp");
+			DYMO_STORE.addDymo("sax1", "solo1");
+			DYMO_STORE.addDymo("sax2", "solo1");
+			DYMO_STORE.addDymo("sax3", "solo2");
+			DYMO_STORE.addDymo("sax4", "solo2");
+			DYMO_STORE.addDymo("sax5", "solo2");
+
+			var navigator = new DymoNavigator("song", new SequentialNavigator());
+			var nextParts = navigator.getNextParts();
+			expect(nextParts.length).toBe(3);
+			expect(nextParts).toContain("bass");
+			expect(nextParts).toContain("piano");
+			expect(nextParts.indexOf("sax1")+nextParts.indexOf("sax2")).toBeGreaterThan(-2);
+			nextParts = navigator.getNextParts();
+			expect(nextParts.length).toBe(3);
+			expect(nextParts).toContain("bass");
+			expect(nextParts).toContain("piano");
+			expect(nextParts.indexOf("sax3")+nextParts.indexOf("sax4")+nextParts.indexOf("sax5")).toBeGreaterThan(-3);
+			//starts over
+			nextParts = navigator.getNextParts();
+			expect(nextParts.length).toBe(3);
+			expect(nextParts).toContain("bass");
+			expect(nextParts).toContain("piano");
+			expect(nextParts.indexOf("sax1")+nextParts.indexOf("sax2")).toBeGreaterThan(-2);
+
+			done();
+		});
+	});
+
+	it("can navigate even more larger typed structures", function(done) {
+		DYMO_STORE = new DymoStore(function(){
+			DYMO_STORE.addDymo("song");
+			DYMO_STORE.addDymo("verse1", "song", null, null, CONJUNCTION);
+			DYMO_STORE.addDymo("verse2", "song", null, null, CONJUNCTION);
+			DYMO_STORE.addDymo("accomp", "verse1");
+			DYMO_STORE.addDymo("solo1", "verse1");
+			DYMO_STORE.addPart("verse2", "accomp");
+			DYMO_STORE.addDymo("solo2", "verse2");
+			DYMO_STORE.addDymo("bass", "accomp");
+			DYMO_STORE.addDymo("piano", "accomp");
+			DYMO_STORE.addDymo("sax1", "solo1");
+			DYMO_STORE.addDymo("sax2", "solo1");
+			DYMO_STORE.addDymo("sax3", "solo2");
+			DYMO_STORE.addDymo("sax4", "solo2");
+			DYMO_STORE.addDymo("sax5", "solo2");
+
+			var navigator = new DymoNavigator("song", new SequentialNavigator());
+			expect(navigator.getNextParts()).toEqual(["bass","sax1"]);
+			expect(navigator.getNextParts()).toEqual(["piano","sax2"]);
+			expect(navigator.getNextParts()).toEqual(["bass","sax3"]);
+			expect(navigator.getNextParts()).toEqual(["piano","sax4"]);
+			expect(navigator.getNextParts()).toEqual(["bass","sax5"]);
+			//starts over
+			expect(navigator.getNextParts()).toEqual(["bass","sax1"]);
+			expect(navigator.getNextParts()).toEqual(["piano","sax2"]);
+
+			done();
+		});
 	});
 
 	it("can have various subset navigators", function() {
-		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
+		var navigator = new DymoNavigator("dymo1", new SequentialNavigator());
 		navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],[FEATURE_TYPE], "return d == 1;"), new SequentialNavigator("dymo1", true));
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
@@ -123,7 +302,9 @@ describe("a navigator", function() {
 		expect(navigator.getNextParts()[0]).toBe("dymo12");
 		expect(navigator.getNextParts()[0]).toBe("dymo7");
 		expect(navigator.getNextParts()[0]).toBe("dymo10");
-		expect(navigator.getNextParts()).toBeUndefined();
+		//starts over
+		expect(navigator.getNextParts()[0]).toBe("dymo6");
+		expect(navigator.getNextParts()[0]).toBe("dymo5");
 	});
 
 	it("can have missing subset navigators", function() {
@@ -135,7 +316,9 @@ describe("a navigator", function() {
 		expect(navigator.getNextParts()[0]).toBe("dymo8");
 		expect(navigator.getNextParts()[0]).toBe("dymo9");
 		expect(navigator.getNextParts()[0]).toBe("dymo10");
-		expect(navigator.getNextParts()).toBeUndefined();
+		//starts over
+		expect(navigator.getNextParts()[0]).toBe("dymo5");
+		expect(navigator.getNextParts()[0]).toBe("dymo6");
 		var navigator = new DymoNavigator("dymo1");
 		navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],[FEATURE_TYPE],"return d == 0;"), new SequentialNavigator("dymo1"));
 		expect(navigator.getNextParts()[0]).toBe("dymo2");
@@ -158,7 +341,7 @@ describe("a navigator", function() {
 			DYMO_STORE.addSimilar("dymo4", "dymo6");
 
 			//test without replacing of objects (probability 0)
-			var navigator = new DymoNavigator("dymo1", new SequentialNavigator(), new RepeatedNavigator());
+			var navigator = new DymoNavigator("dymo1", new SequentialNavigator());
 			var simNav = new SimilarityNavigator("dymo1")
 			navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],[FEATURE_TYPE],"return d == 0;"), simNav);
 			DYMO_STORE.setParameter(null, LEAPING_PROBABILITY, 0);
@@ -169,7 +352,9 @@ describe("a navigator", function() {
 			expect(["dymo5"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo6"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo7"]).toContain(navigator.getNextParts()[0]);
-			expect(navigator.getNextParts()).toBeUndefined();
+			//starts over
+			expect(["dymo2"]).toContain(navigator.getNextParts()[0]);
+			expect(["dymo3"]).toContain(navigator.getNextParts()[0]);
 
 
 			//test replacing of objects with similars (probability 1)
@@ -181,7 +366,9 @@ describe("a navigator", function() {
 			expect(["dymo5"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo6"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo7"]).toContain(navigator.getNextParts()[0]);
-			expect(navigator.getNextParts()).toBeUndefined();
+			//starts over
+			expect(["dymo3"]).toContain(navigator.getNextParts()[0]);
+			expect(["dymo2"]).toContain(navigator.getNextParts()[0]);
 
 
 			//test replacing of objects with similars (probability 0.5)
@@ -193,7 +380,9 @@ describe("a navigator", function() {
 			expect(["dymo5"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo6"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo7"]).toContain(navigator.getNextParts()[0]);
-			expect(navigator.getNextParts()).toBeUndefined();
+			//starts over
+			expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0]);
+			expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0]);
 
 
 			//test leaping and continuing
@@ -224,7 +413,7 @@ describe("a navigator", function() {
 			DYMO_STORE.addSuccessor("dymo4", "dymo6");
 
 			//test without replacing of objects (probability 0)
-			var navigator = new DymoNavigator("dymo1", new SequentialNavigator(), new RepeatedNavigator());
+			var navigator = new DymoNavigator("dymo1", new SequentialNavigator());
 			var graphNav = new GraphNavigator("dymo1")
 			navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],[FEATURE_TYPE],"return d == 0;"), graphNav);
 			expect(["dymo2"]).toContain(navigator.getNextParts()[0]);
@@ -243,10 +432,9 @@ describe("a navigator", function() {
 				expect(DYMO_STORE.findParts(dymoUri).length).toBe(5);
 				expect(DYMO_STORE.findSimilars(DYMO_STORE.findParts(dymoUri)[1]).length).toBe(1);
 				var navigators = manager.getRendering().getNavigator().getSubsetNavigators();
-				expect(navigators.length).toBe(2);
+				expect(navigators.length).toBe(1);
 				//expect(navigators[0][0]).toEqual(REPEATED_NAVIGATOR);
-				expect(navigators[0][1].getType()).toEqual(REPEATED_NAVIGATOR);
-				expect(navigators[1][1].getType()).toEqual(SIMILARITY_NAVIGATOR);
+				expect(navigators[0][1].getType()).toEqual(SIMILARITY_NAVIGATOR);
 				manager.startPlaying();
 				setTimeout(function() {
 					manager.stopPlaying();

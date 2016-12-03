@@ -95,7 +95,6 @@ var LEAPING_PROBABILITY = "http://tiny.cc/mobile-audio-ontology#LeapingProbabili
 var CONTINUE_AFTER_LEAPING = "http://tiny.cc/mobile-audio-ontology#ContinueAfterLeaping";
 var NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#Navigator";
 var ONE_SHOT_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#OneShotNavigator";
-var REPEATED_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#RepeatedNavigator";
 var SEQUENTIAL_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#SequentialNavigator";
 var SIMILARITY_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#SimilarityNavigator";
 var GRAPH_NAVIGATOR = "http://tiny.cc/mobile-audio-ontology#GraphNavigator";

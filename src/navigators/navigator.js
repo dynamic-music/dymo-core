@@ -7,24 +7,19 @@
 function DymoNavigator(dymoUri, defaultSubsetNavigator, defaultLeafNavigator) {
 
 	var subsetNavigators = [];
-	var navigators;
-	var currentNavigators;
+	var navigator;
 	init();
 
 	function init() {
-		navigators = new Map();
-		currentNavigators = [];
+		navigator = null;
 		/*if (!defaultSubsetNavigator) {
 			defaultSubsetNavigator = new SequentialNavigator(undefined);
 		}*/
-		if (!defaultLeafNavigator) {
-			defaultLeafNavigator = new OneShotNavigator(undefined);
-		}
 	}
 
 	//resets all subnavigators associated with the given dymo
 	this.reset = function(dymoUri) {
-		if (dymoUri) {
+		/*if (dymoUri) {
 			var dymos = DYMO_STORE.findAllObjectsInHierarchy(dymoUri);
 			dymos.splice(dymos.indexOf(dymoUri), 1); //only keep subdymos
 			for (var i = 0, ii = dymos.length; i < ii; i++) {
@@ -34,9 +29,9 @@ function DymoNavigator(dymoUri, defaultSubsetNavigator, defaultLeafNavigator) {
 					currentNavigators.splice(index, 1);
 				}
 			}
-		} else {
+		} else {*/
 			init();
-		}
+		//}
 	}
 
 	this.addSubsetNavigator = function(subsetFunction, navigator) {
@@ -53,7 +48,7 @@ function DymoNavigator(dymoUri, defaultSubsetNavigator, defaultLeafNavigator) {
 		}
 		var i = 0;
 		var position;
-		while (i < level) {
+		/*while (i < level) {
 			if (!navigators.has(currentDymoUri)) {
 				return;
 			}
@@ -63,7 +58,7 @@ function DymoNavigator(dymoUri, defaultSubsetNavigator, defaultLeafNavigator) {
 		var nav = navigators.get(currentDymoUri);
 		if (nav && nav.getPartsNavigated) {
 			return navigators.get(currentDymoUri).getPartsNavigated();
-		}
+		}*/
 	}
 
 	//resets all navigators except the current ones and sets the navigator on the given level to the given position
@@ -79,9 +74,9 @@ function DymoNavigator(dymoUri, defaultSubsetNavigator, defaultLeafNavigator) {
 			if (i == level && currentNav.setPartsNavigated) {
 				currentNav.setPartsNavigated(position);
 				this.reset(currentDymoUri);
-			} else if (currentNav.getCurrentParts()) {
+			}/* else if (currentNav.getCurrentParts()) {
 				currentDymoUri = currentNav.getCurrentParts()[0];
-			} else {
+			}*/ else {
 				//impossible to set position (navigator out of range)
 				currentDymoUri = undefined;
 			}
@@ -90,34 +85,38 @@ function DymoNavigator(dymoUri, defaultSubsetNavigator, defaultLeafNavigator) {
 	}
 
 	this.getNextParts = function() {
-		return recursiveGetNextParts(dymoUri);
+		if (!navigator) {
+			navigator = getNavigator(dymoUri);
+		}
+		return navigator.getNextParts()[0];
 	}
 
-	function recursiveGetNextParts(currentDymoUri) {
-		if (currentDymoUri) {
+	/*function recursiveGetNextParts(currentDymoUri) {
+		if (path.length > 0) {
 			var currentNavigator = getNavigator(currentDymoUri);
 			if (currentNavigator) {
 				currentNavigators[DYMO_STORE.findLevel(currentDymoUri)] = currentNavigator;
+				var nextParts;
 				if (currentNavigator.getType() == ONE_SHOT_NAVIGATOR || currentNavigator.getType() == REPEATED_NAVIGATOR) {
-					return currentNavigator.getCurrentParts();
-				}
-				var par = currentNavigator.getCurrentParts();
-				var nextParts = replaceAndConcat(par);
-				if (nextParts) {
-					return nextParts;
+					nextParts = currentNavigator.getCurrentParts(path);
 				} else {
-					return replaceAndConcat(currentNavigator.getNextParts());
+					nextParts = replaceAndConcat(path, currentNavigator.getCurrentParts(path));
+					if (!nextParts) {
+						nextParts = replaceAndConcat(path, currentNavigator.getNextParts(path));
+					}
+					console.log(currentDymoUri, nextParts)
 				}
+				return nextParts;
 			}
 			return [currentDymoUri];
 		}
 	}
 
-	function replaceAndConcat(dymoArray) {
+	function replaceAndConcat(path, dymoArray) {
 		if (dymoArray && dymoArray.length > 0) {
 			var nextLevelArray = [];
 			for (var i = 0, j = dymoArray.length; i < j; i++) {
-				var nextParts = recursiveGetNextParts(dymoArray[i]);
+				var nextParts = recursiveGetNextParts(path.concat(dymoArray[i]));
 				if (nextParts) {
 					if (nextParts.length) {
 						nextLevelArray = nextLevelArray.concat(nextParts);
@@ -130,26 +129,19 @@ function DymoNavigator(dymoUri, defaultSubsetNavigator, defaultLeafNavigator) {
 				return nextLevelArray;
 			}
 		}
-	}
+	}*/
 
 	function getNavigator(dymoUri) {
-		if (!navigators.has(dymoUri)) {
-			for (var i = 0, j = subsetNavigators.length; i < j; i++) {
-				if (subsetNavigators[i][0].applyDirect(null, null, dymoUri)) {
-					navigators.set(dymoUri, subsetNavigators[i][1].getCopy(dymoUri));
-				}
-			}
-			//none of the subsetNavs fit..
-			if (!navigators.has(dymoUri)) {
-				//console.log(dymoUri, defaultSubsetNavigator, DYMO_STORE.findParts(dymoUri))
-				if (defaultSubsetNavigator && DYMO_STORE.findParts(dymoUri).length > 0) {
-					navigators.set(dymoUri, defaultSubsetNavigator.getCopy(dymoUri));
-				} else {
-					navigators.set(dymoUri, defaultLeafNavigator.getCopy(dymoUri));
-				}
+		for (var i = 0, j = subsetNavigators.length; i < j; i++) {
+			if (subsetNavigators[i][0].applyDirect(null, null, dymoUri)) {
+				return subsetNavigators[i][1].getCopy(dymoUri, getNavigator);
 			}
 		}
-		return navigators.get(dymoUri);
+		if (dymoUri && defaultSubsetNavigator) { //&& DYMO_STORE.findParts(dymoUri).length > 0) {
+			return defaultSubsetNavigator.getCopy(dymoUri, getNavigator);
+		} else {
+			return new OneShotNavigator(dymoUri);
+		}
 	}
 
 }

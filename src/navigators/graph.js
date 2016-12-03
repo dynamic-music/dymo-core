@@ -1,44 +1,29 @@
 /**
  * A navigator that probabilistically jumps along directed edges, or moves sequentially if there are none.
  * @constructor
+ * @extends {SequentialNavigator}
+ * @param {Function=} getNavigator (optional)
  */
-function GraphNavigator(dymoUri) {
+function GraphNavigator(dymoUri, getNavigator) {
 
-	var self = this;
-
-	var isPlaying = false;
-	var nextPosition = 0;
-
-	this.resetPartsPlayed = function() {
-		nextPosition = 0;
-	}
+	SequentialNavigator.call(this, dymoUri, false, getNavigator);
 
 	this.getType = function() {
 		return GRAPH_NAVIGATOR;
 	}
 
-	this.getCopy = function(dymoUri) {
-		return new GraphNavigator(dymoUri);
-	}
-
-	this.getCurrentParts = function() {
-		var parts = DYMO_STORE.findParts(dymoUri);
-		if (parts.length > 0) {
-			/*if (dymo.getType() == CONJUNCTION) {
-				return replaceWithSimilars(getParallelParts());
-			}*/
-			var currentPart = getSequentialPart();
-			nextPosition = getNextPosition(currentPart);
-			return currentPart; //SEQUENTIAL FOR EVERYTHING ELSE
-		}
+	this.getCopy = function(dymoUri, getNavigator) {
+		return new GraphNavigator(dymoUri, getNavigator);
 	}
 
 	this.getNextParts = function() {
-		//partsNavigated++;
-		return this.getCurrentParts();
+		var nextParts = SequentialNavigator.prototype.getNextParts.call(this);
+		this.partsNavigated = this.getNextPosition(nextParts[0]);
+		return nextParts;
 	}
 
-	function getNextPosition(parts) {
+	/** @private */
+	this.getNextPosition = function(parts) {
 		if (parts && parts.length > 0) {
 			var options = DYMO_STORE.findSuccessors(parts[0]);
 			if (options.length > 0) {
@@ -48,21 +33,5 @@ function GraphNavigator(dymoUri) {
 		}
 	}
 
-	function getParallelParts() {
-		/*if (partsNavigated <= 0) {
-			partsNavigated++;
-			return dymo.getParts();
-		}*/
-	}
-
-	function getSequentialPart() {
-		var part = DYMO_STORE.findPartAt(dymoUri, nextPosition);
-		if (part) {
-			/*if (!part.hasParts()) {
-				partsNavigated++;
-			}*/
-			return [part];
-		}
-	}
-
 }
+inheritPrototype(GraphNavigator, SequentialNavigator);

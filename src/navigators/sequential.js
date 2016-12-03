@@ -2,64 +2,108 @@
  * A navigator that follows the order of parts.
  * @constructor
  * @param {boolean=} backwards (optional)
+ * @param {Function=} getNavigator (optional)
  */
-function SequentialNavigator(dymoUri, backwards) {
+function SequentialNavigator(dymoUri, backwards, getNavigator) {
+	this.dymoUri = dymoUri;
+	this.parts = DYMO_STORE.findParts(dymoUri);
+	this.dymoType = DYMO_STORE.findObject(this.dymoUri, CDT);
+	/** @private */
+	this.backwards = backwards;
+	this.getNavigator = getNavigator;
+	/** @protected */
+	this.partsNavigated = 0;
+	this.currentSubNavs = null;
+}
 
-	var partsNavigated = 0;
+SequentialNavigator.prototype.resetPartsNavigated = function() {
+	this.partsNavigated = 0;
+	this.currentSubNavs = null;
+}
 
-	this.resetPartsNavigated = function() {
-		partsNavigated = 0;
-	}
+SequentialNavigator.prototype.setPartsNavigated = function(partsNavigated) {
+	this.partsNavigated = partsNavigated;
+}
 
-	this.setPartsNavigated = function(played) {
-		partsNavigated = played;
-	}
+SequentialNavigator.prototype.getPartsNavigated = function() {
+	return this.partsNavigated;
+}
 
-	this.getPartsNavigated = function() {
-		return partsNavigated;
-	}
+SequentialNavigator.prototype.getType = function() {
+	return SEQUENTIAL_NAVIGATOR;
+}
 
-	this.getType = function() {
-		return SEQUENTIAL_NAVIGATOR;
-	}
+SequentialNavigator.prototype.getCopy = function(dymoUri, getNavigator) {
+	return new SequentialNavigator(dymoUri, this.backwards, getNavigator);
+}
 
-	this.getCopy = function(dymoUri) {
-		return new SequentialNavigator(dymoUri, backwards);
-	}
+SequentialNavigator.prototype.getDymo = function() {
+	return this.dymoUri;
+}
 
-	this.getDymo = function() {
-		return dymoUri;
-	}
-
-	this.getCurrentParts = function() {
-		var parts = DYMO_STORE.findParts(dymoUri);
-		if (parts.length > 0) {
-			if (DYMO_STORE.findObject(dymoUri, CDT) == CONJUNCTION) {
-				return partsNavigated<=0? DYMO_STORE.findParts(dymoUri): null;
+SequentialNavigator.prototype.getNextParts = function() {
+	if (this.dymoType == CONJUNCTION) {
+		if (!this.currentSubNavs) {
+			this.currentSubNavs = this.parts.map(p=>this.getNavigator(p));
+			this.doneSubNavs = new Set();
+		}
+		var nextParts = this.currentSubNavs.map(n=>n.getNextParts());
+		var statuses = nextParts.map(p=>p[1]);
+		//keep track of subnavs that have finished once
+		this.currentSubNavs.filter((n,i)=>statuses[i]!=MORE).forEach(n=>this.doneSubNavs.add(n));
+		nextParts = flattenArray(nextParts.map(p=>p[0]));
+		if (this.doneSubNavs.size < this.currentSubNavs.length) {
+			//say that there's still more
+			return [nextParts, MORE];
+		}
+		return [nextParts, DONE];
+	} else if (this.dymoType == DISJUNCTION) {
+		if (!this.currentSubNavs) {
+			this.currentSubNavs = this.getRandomSubNav();
+		}
+		var nextParts = this.currentSubNavs.getNextParts();
+		if (nextParts[1] != MORE) {
+			this.resetPartsNavigated();
+		}
+		return nextParts;
+	} else if (this.parts.length > 0) {
+		if (!this.currentSubNavs) {
+			this.currentSubNavs = this.getNextSubNav();
+		}
+		//console.log(this.dymoUri, this.parts, this.partsNavigated, this.currentSubNavs);
+		var nextParts = this.currentSubNavs.getNextParts();
+		if (nextParts[1] != MORE) {
+			this.partsNavigated++;
+			if (this.partsNavigated < this.parts.length) {
+				nextParts[1] = MORE;
+				this.currentSubNavs = this.getNextSubNav();
+			} else {
+				nextParts[1] = DONE;
+				this.resetPartsNavigated();
 			}
-			return getSequentialPart(); //SEQUENTIAL FOR EVERYTHING ELSE
 		}
+		//console.log(nextParts[0], nextParts[1]);
+		return nextParts;
+	} else {
+		return [[this.dymoUri], DONE];
 	}
+}
 
-	this.getNextParts = function() {
-		partsNavigated++;
-		return this.getCurrentParts();
+/** @private */
+SequentialNavigator.prototype.getRandomSubNav = function() {
+	var part = this.parts[Math.floor(Math.random()*this.parts.length)];
+	return this.getNavigator(part);
+}
+
+/** @private */
+SequentialNavigator.prototype.getNextSubNav = function() {
+	var part;
+	if (this.backwards) {
+		part = this.parts[this.parts.length-1-this.partsNavigated];
+	} else {
+		part = this.parts[this.partsNavigated];
 	}
-
-	function getSequentialPart() {
-		var part;
-		var parts = DYMO_STORE.findParts(dymoUri);
-		if (backwards) {
-			part = parts[parts.length-partsNavigated];
-		} else {
-			part = parts[partsNavigated];
-		}
-		if (part) {
-			/*if (!part.hasParts()) {
-				partsNavigated++;
-			}*/
-			return [part];
-		}
+	if (part) {
+		return this.getNavigator(part);
 	}
-
 }

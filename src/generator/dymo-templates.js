@@ -5,8 +5,8 @@ DymoTemplates.createSingleSourceDymoFromFeatures = function(generator, source, f
 	DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, onLoad);
 }
 
-DymoTemplates.createConjunctionDymo = function(generator, parentDymo, sources, featureUris, onLoad) {
-	var conjunctionDymo = generator.addDymo(parentDymo, null, CONJUNCTION);
+DymoTemplates.createMultiSourceDymo = function(generator, parentDymo, dymoType, sources, featureUris, onLoad) {
+	var conjunctionDymo = generator.addDymo(parentDymo, null, dymoType);
 	var loadSources = sources.map((s,i) => new Promise(resolve => {
 		var dymoUri = generator.addDymo(conjunctionDymo, s);
 		DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris[i], null, resolve);
@@ -21,7 +21,6 @@ DymoTemplates.createSimilarityDymoFromFeatures = function(generator, source, fea
 		Similarity.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 		generator.addRendering();
 		generator.addNavigator(SIMILARITY_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 0");
-		generator.addNavigator(REPEATED_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 1");
 		//generator.updateGraphs();
 		onLoad();
 	});
@@ -34,7 +33,6 @@ DymoTemplates.createSimilaritySuccessorDymoFromFeatures = function(generator, so
 		Similarity.addSuccessionGraphTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 		generator.addRendering();
 		generator.addNavigator(GRAPH_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 0");
-		generator.addNavigator(REPEATED_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 1");
 		//generator.updateGraphs();
 		onLoad();
 	});

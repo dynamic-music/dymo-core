@@ -108,10 +108,10 @@ function DymoStore(callback) {
 	this.addDymo = function(dymoUri, parentUri, partUri, sourcePath, type) {
 		this.addTriple(dymoUri, TYPE, DYMO);
 		if (parentUri) {
-			addPart(parentUri, dymoUri);
+			this.addPart(parentUri, dymoUri);
 		}
 		if (partUri) {
-			addPart(dymoUri, partUri);
+			this.addPart(dymoUri, partUri);
 		}
 		if (sourcePath) {
 			this.addTriple(dymoUri, HAS_SOURCE, N3.Util.createLiteral(sourcePath));
@@ -121,7 +121,7 @@ function DymoStore(callback) {
 		}
 	}
 
-	function addPart(dymoUri, partUri) {
+	this.addPart = function(dymoUri, partUri) {
 		self.addObjectToList(dymoUri, HAS_PART, partUri);
 	}
 
