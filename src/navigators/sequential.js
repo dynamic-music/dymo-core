@@ -52,6 +52,7 @@ SequentialNavigator.prototype.getNextParts = function() {
 		//keep track of subnavs that have finished once
 		this.currentSubNavs.filter((n,i)=>statuses[i]!=MORE).forEach(n=>this.doneSubNavs.add(n));
 		nextParts = flattenArray(nextParts.map(p=>p[0]));
+		//console.log(this.dymoUri);
 		if (this.doneSubNavs.size < this.currentSubNavs.length) {
 			//say that there's still more
 			return [nextParts, MORE];
@@ -65,6 +66,7 @@ SequentialNavigator.prototype.getNextParts = function() {
 		if (nextParts[1] != MORE) {
 			this.resetPartsNavigated();
 		}
+		//console.log(this.dymoUri);
 		return nextParts;
 	} else if (this.parts.length > 0) {
 		if (!this.currentSubNavs) {
@@ -82,7 +84,7 @@ SequentialNavigator.prototype.getNextParts = function() {
 				this.resetPartsNavigated();
 			}
 		}
-		//console.log(nextParts[0], nextParts[1]);
+		//console.log(this.dymoUri, nextParts[0]);
 		return nextParts;
 	} else {
 		return [[this.dymoUri], DONE];

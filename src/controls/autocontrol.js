@@ -18,6 +18,7 @@ class AutoControl extends Control {
 		if (!frequency) {
 			frequency = DYMO_STORE.findParameterValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		}
+		this.update();
 		this.intervalID = setInterval(() => this.update(), frequency);
 	}
 

@@ -72,6 +72,7 @@ function SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSen
 	}
 
 	function recursivePlay() {
+		//console.log("PLAY", audioContext.currentTime)
 		var previousSources = currentSources;
 		//create sources and init
 		currentSources = getNextSources();
@@ -82,15 +83,17 @@ function SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSen
 			previousOnset = DYMO_STORE.findParameterValue(previousSourceDymoUri, ONSET);
 		}
 		//calculate delay and schedule
-		var delay = getCurrentDelay();
+		var delay = currentEndTime ? currentEndTime-audioContext.currentTime : SCHEDULE_AHEAD_TIME;
 		var startTime = audioContext.currentTime+delay;
+		//console.log("START", startTime)
 		for (var source of currentSources.values()) {
+			//console.log(audioContext.currentTime, currentEndTime, startTime)
 			source.play(startTime);
 		}
 		//stop automatically looping sources
 		for (var source of previousSources.values()) {
 			if (DYMO_STORE.findParameterValue(source.getDymoUri(), LOOP)) {
-				source.stop();
+				source.stop(startTime);
 			}
 		}
 		setTimeout(function() { onChanged(self); }, delay);
@@ -159,14 +162,6 @@ function SchedulerThread(dymoUri, navigator, audioContext, buffers, convolverSen
 			if (onEnded) {
 				onEnded();
 			}
-		}
-	}
-
-	function getCurrentDelay() {
-		if (!currentEndTime) {
-			return SCHEDULE_AHEAD_TIME;
-		} else {
-			return currentEndTime-audioContext.currentTime;
 		}
 	}
 

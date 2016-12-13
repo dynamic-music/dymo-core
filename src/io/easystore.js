@@ -363,8 +363,10 @@ function EasyStore() {
 				currentPredecessor = this.findSubject(REST, currentElement);
 			}
 			var listOrigin = this.find(null, null, currentElement)[0];
-			subjectUris[i] = listOrigin.subject;
-			predicateUris[i] = listOrigin.predicate;
+			if (listOrigin) {
+				subjectUris[i] = listOrigin.subject;
+				predicateUris[i] = listOrigin.predicate;
+			}
 		}
 		return [subjectUris, predicateUris];
 	}

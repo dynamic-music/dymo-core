@@ -114,10 +114,11 @@ function DymoSource(dymoUri, audioContext, buffer, reverbSend, delaySend, onEnde
 		if (!startTime) {
 			startTime = 0;
 		}
+		source.start(startTime);
 		if (DYMO_STORE.findParameterValue(dymoUri, LOOP)) {
 			source.loop = true;
 		}
-		source.start(startTime);
+		//console.log(startTime, audioContext.currentTime, source.loop)
 		//source.start(startTime, currentPausePosition);
 		isPlaying = true;
 	}

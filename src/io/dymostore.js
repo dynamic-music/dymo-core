@@ -159,6 +159,12 @@ function DymoStore(callback) {
 		}
 	}
 
+	this.addCustomParameter = function(ownerUri, paramUri) {
+		this.addTriple(ownerUri, HAS_PARAMETER, paramUri);
+		this.addTriple(paramUri, TYPE, CUSTOM_PARAMETER);
+		return paramUri;
+	}
+
 	/**
 	 * @param {string|number=} value (optional)
 	 */
@@ -175,12 +181,22 @@ function DymoStore(callback) {
 		return this.setObjectValue(ownerUri, HAS_PARAMETER, parameterType, VALUE, value);
 	}
 
+	/** @param {string=} uri (optional) */
 	this.addControl = function(name, type, uri) {
 		if (!uri) {
 			uri = this.createBlankNode();
 		}
-		this.addTriple(uri, NAME, N3.Util.createLiteral(name));
+		if (name) {
+			this.addTriple(uri, NAME, N3.Util.createLiteral(name));
+		}
 		this.addTriple(uri, TYPE, type);
+		return uri;
+	}
+
+	this.addDataControl = function(url, map) {
+		var uri = this.addControl(null, DATA_CONTROL);
+		this.addTriple(uri, HAS_URL, N3.Util.createLiteral(url));
+		this.addTriple(uri, HAS_JSON_MAP, N3.Util.createLiteral(map));
 		return uri;
 	}
 
