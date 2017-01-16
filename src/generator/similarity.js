@@ -5,7 +5,7 @@ Similarity.addSimilaritiesTo = function(dymoUri, store, threshold) {
 	var currentLevel = [dymoUri];
 	while (currentLevel.length > 0) {
 		if (currentLevel.length > 1) {
-			var vectorMap = Similarity.toVectors(currentLevel, store);
+			var vectorMap = Similarity.toNormVectors(currentLevel, store);
 			var similarities = Similarity.getCosineSimilarities(vectorMap);
 			//Similarity.addHighestSimilarities(store, similarities, currentLevel.length/2);
 			Similarity.addSimilaritiesAbove(store, similarities, threshold);
@@ -24,7 +24,7 @@ Similarity.addSuccessionGraphTo = function(dymoUri, store, threshold) {
 				store.addSuccessor(currentLevel[i], currentLevel[i+1]);
 			}
 			//add successions based on similarity
-			var vectorMap = Similarity.toVectors(currentLevel, store);
+			var vectorMap = Similarity.toNormVectors(currentLevel, store);
 			var similarities = Similarity.getCosineSimilarities(vectorMap);
 			for (var uri1 in similarities) {
 				for (var uri2 in similarities[uri1]) {
@@ -88,6 +88,33 @@ Similarity.getAllParts = function(dymoUris, store) {
 }
 
 /**
+ * returns a map with a normalized vector for each given dymo. if reduce is true, multidimensional ones are reduced
+ * @param {Boolean=} reduce (optional) */
+Similarity.toNormVectors = function(dymoUris, store, reduce) {
+	var vectors = Similarity.toVectors(dymoUris, store, reduce);
+	//normalize the space
+	var means = [];
+	var vars = [];
+	for (var i = 0; i < vectors[0].length; i++) {
+		var currentDim = [];
+		for (var j = 0; j < dymoUris.length; j++) {
+			if (!isNaN(vectors[j][i])) {
+				currentDim.push(vectors[j][i]);
+			}
+		}
+		means[i] = math.mean(currentDim);
+		vars[i] = math.var(currentDim);
+	}
+	vectors = vectors.map(function(v){return v.map(function(e,i){return (e-means[i])/vars[i];})});
+	//pack vectors into map so they can be queried by uri
+	var vectorsByUri = {};
+	for (var i = 0; i < vectors.length; i++) {
+		vectorsByUri[dymoUris[i]] = vectors[i];
+	}
+	return vectorsByUri;
+}
+
+/**
  * returns a map with a vector for each given dymo. if reduce is true, multidimensional ones are reduced
  * @param {Boolean=} reduce (optional) */
 Similarity.toVectors = function(dymoUris, store, reduce) {
@@ -110,26 +137,7 @@ Similarity.toVectors = function(dymoUris, store, reduce) {
 		}
 		vectors[i] = currentVector;
 	}
-	//normalize the space
-	var means = [];
-	var vars = [];
-	for (var i = 0; i < vectors[0].length; i++) {
-		var currentDim = [];
-		for (var j = 0; j < dymoUris.length; j++) {
-			if (!isNaN(vectors[j][i])) {
-				currentDim.push(vectors[j][i]);
-			}
-		}
-		means[i] = math.mean(currentDim);
-		vars[i] = math.var(currentDim);
-	}
-	vectors = vectors.map(function(v){return v.map(function(e,i){return (e-means[i])/vars[i];})});
-	//pack vectors into map so they can be queried by uri
-	var vectorsByUri = {};
-	for (var i = 0; i < vectors.length; i++) {
-		vectorsByUri[dymoUris[i]] = vectors[i];
-	}
-	return vectorsByUri;
+	return vectors;
 }
 
 Similarity.reduce = function(vector) {

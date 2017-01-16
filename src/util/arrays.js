@@ -4,6 +4,10 @@ function flattenArray(array) {
 	}, []);
 }
 
+function flattenArrayOnce(array) {
+	return [].concat.apply([], array);
+}
+
 function intersectArrays(a, b) {
 	if (a && b) {
 		var t;

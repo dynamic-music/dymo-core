@@ -7,7 +7,10 @@ math.expression.node.OperatorNode = function(p1,p2,p3){};
 /** @constructor */
 math.expression.node.SymbolNode = function(p1){};
 math.dot = function(p1,p2){};
-math.mean = function(p1){};
+math.add = function(p1,p2){};
+math.subtract = function(p1,p2){};
+/** @param {number=} p2 (optional) */
+math.mean = function(p1,p2){};
 math.norm = function(p1){};
 math.var = function(p1){};
 var OperatorNode;

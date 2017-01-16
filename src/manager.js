@@ -20,10 +20,15 @@ function DymoManager(audioContext, scheduleAheadTime, optimizedMode, reverbFile,
 	var sensorControls = {};
 	var mappings = {};
 
-	this.loadDymoAndRenderingFromStore = function(newStore, buffersCallback) {
+	this.loadDymoAndRenderingFromStore = function(newStore, dymoCallback, buffersCallback) {
 		DYMO_STORE = newStore;
 		var loader = new DymoLoader(DYMO_STORE);
-		processLoadedDymoAndRendering(loader, loader.createDymoFromStore(), loader.createRenderingFromStore(), buffersCallback);
+		var dymo = loader.createDymoFromStore();
+		var rendering = loader.createRenderingFromStore();
+		if (dymoCallback) {
+			dymoCallback();
+		}
+		processLoadedDymoAndRendering(loader, dymo, rendering, buffersCallback);
 	}
 
 	this.loadDymoAndRendering = function(dymoUri, renderingUri, dymoCallback, buffersCallback) {

@@ -119,6 +119,7 @@ function DymoStore(callback) {
 		if (type) {
 			this.addTriple(dymoUri, CDT, type);
 		}
+		return dymoUri;
 	}
 
 	this.addPart = function(dymoUri, partUri) {
@@ -307,12 +308,15 @@ function DymoStore(callback) {
 
 	//returns an array with the uris of all parts, parts of parts, etc of the object with the given uri
 	this.findAllObjectsInHierarchy = function(dymoUri) {
-		var allObjects = [dymoUri];
-		var parts = this.findParts(dymoUri);
-		for (var i = 0; i < parts.length; i++) {
-			allObjects = allObjects.concat(this.findAllObjectsInHierarchy(parts[i]));
+		if (dymoUri) {
+			var allObjects = [dymoUri];
+			var parts = this.findParts(dymoUri);
+			//if (parts.length > 0) console.log(dymoUri, parts.map(p => p ? parseInt(p.match(/\d+/)[0]) : null));
+			for (var i = 0; i < parts.length; i++) {
+				allObjects = allObjects.concat(this.findAllObjectsInHierarchy(parts[i]));
+			}
+			return allObjects;
 		}
-		return allObjects;
 	}
 
 	this.findDymoRelations = function() {
@@ -446,7 +450,22 @@ function DymoStore(callback) {
 		var type = self.findObject(uri, TYPE, null);
 		var triples = self.recursiveFindAllTriples(uri, type);
 		triplesToJsonld(triples, uri, function(result) {
-			callback(null, JSON.parse(result));
+			var json = JSON.parse(result);
+			//TODO a hack to insert level feature, maybe put in a better place
+			if (type == DYMO) {
+				var level = self.findLevel(uri).toString();
+				if (!json["features"]) {
+					json["features"] = [];
+				}
+				json["features"].push({
+					"@type": "level",
+					"value": {
+						"@type": "xsd:integer",
+						"@value": level
+					}
+				});
+			}
+			callback(null, json);
 		});
 	}
 

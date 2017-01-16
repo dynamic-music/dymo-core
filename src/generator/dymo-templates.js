@@ -26,6 +26,16 @@ DymoTemplates.createSimilarityDymoFromFeatures = function(generator, source, fea
 	});
 }
 
+DymoTemplates.createStructuredDymoFromFeatures = function(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
+	var dymoUri = generator.addDymo(undefined, source);
+	DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
+		//Similarity.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
+		Cosiatec.buildHierarchy(generator.getCurrentTopDymo(), generator.getStore());
+		generator.addRendering();
+		onLoad();
+	});
+}
+
 DymoTemplates.createSimilaritySuccessorDymoFromFeatures = function(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
 	var dymoUri = generator.addDymo(undefined, source);
 	DymoTemplates.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {

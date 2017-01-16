@@ -21,7 +21,7 @@ function DymoGenerator(store, onFeatureAdded) {
 		currentTopDymo = undefined; //the top dymo for the current audio file
 		audioFileChanged = false;
 		features = [];
-		addFeature("level", LEVEL_FEATURE)
+		addFeature("level", LEVEL_FEATURE, 0, 2);
 		addFeature("random", null, 0, 1);
 	}
 
