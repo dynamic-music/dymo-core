@@ -1,3 +1,8 @@
+import { EasyStore } from '../src/io/easystore'
+import { DymoStore } from '../src/io/dymostore'
+import { TYPE, FIRST, REST, NIL, ONSET_FEATURE, FEATURE_TYPE, ACCELEROMETER_X, SENSOR_CONTROL, MOBILE_CONTROL, AMPLITUDE,
+	AUDIO_PARAMETER, PARAMETER_TYPE } from '../src/globals/uris'
+
 describe("an easystore", function() {
 
 	var easyStore;

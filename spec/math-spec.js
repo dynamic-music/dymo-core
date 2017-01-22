@@ -1,3 +1,6 @@
+import { FunctionTools } from '../build/math/functiontools'
+import { PolygonTools } from '../build/math/polygontools'
+
 describe("the math tools", function() {
 
 	it("can invert a function", function() {
@@ -72,14 +75,14 @@ describe("the math tools", function() {
 		var point1 = {0:3,1:2}; //inside
 		var point2 = {0:3,1:0}; //outside
 		var point3 = {0:4,1:2}; //on the line
-		var func = Function.apply(null, PolygonTools.getPolygonFunctionArgs(polygon));
+		var func = PolygonTools.getPolygonFunction(polygon);
 		expect(func(point1[0], point1[1])).toBeTruthy();
 		expect(func(point2[0], point2[1])).toBeFalsy();
 		expect(func(point3[0], point3[1])).toBeFalsy();
 		var centroid = PolygonTools.getCentroid(polygon);
-		func = Function.apply(null, PolygonTools.getInterpolatedPolygonFunctionArgs(polygon));
-		expect(func(point1[0], point1[1])).toBeCloseTo(0.352092461065317, 15);
-		expect(func(centroid[0], centroid[1])).toBe(1);
+		func = Function.apply(this, PolygonTools.getInterpolatedPolygonFunctionArgs(polygon));
+		expect(func.call(this, point1[0], point1[1])).toBeCloseTo(0.352092461065317, 15);
+		expect(func.call(this, centroid[0], centroid[1])).toBe(1);
 		expect(func(point2[0], point2[1])).toBe(0);
 		expect(func(point3[0], point3[1])).toBe(0);
 	});

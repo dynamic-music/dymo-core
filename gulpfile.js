@@ -1,19 +1,35 @@
 var gulp = require('gulp');
-var closureCompiler = require('google-closure-compiler').gulp();
+var karma = require('karma');
+var browserify = require('browserify');
+var tsify = require('tsify');
+var source = require('vinyl-source-stream');
+var buffer = require("vinyl-buffer");
+var uglify = require('gulp-uglify');
+var sourcemaps = require('gulp-sourcemaps');
 
 gulp.task('default', function () {
-	//return gulp.src(['./node_modules/google-closure-library/closure/goog/base.js', './src/**/*.js', './lib/soundtouch-js/soundtouch-min.js'], {base: './'})
-	return gulp.src(['./src/**/*.js', './lib/soundtouch-js/soundtouch-min.js', './lib/LogicJS/logic.js'], {base: './'})
-	.pipe(closureCompiler({
-		compilation_level: 'SIMPLE',
-		//processCommonJsModules: true,
-		//compilation_level: 'WHITESPACE_ONLY',
-		warning_level: 'VERBOSE',
-		externs: './externs.js',
-		//generate_exports: true,
-		language_in: 'ECMASCRIPT6',
-		language_out: 'ECMASCRIPT5',
-		js_output_file: 'dymo-core.min.js'
-	}))
-	.pipe(gulp.dest('./dist'));
+	//return gulp.src(['./build/**/*.js', './lib/soundtouch-js/soundtouch-min.js', './lib/LogicJS/logic.js'], {base: './'})
+		return browserify({
+			standalone: 'dymoCore'
+		})
+    .add('src/manager.ts')
+    .plugin(tsify)
+		.transform('babelify', {
+        presets: ['es2015'],
+        extensions: ['.ts']
+    })
+    .bundle()
+		.pipe(source('dymo-core.min.js'))
+		.pipe(buffer())
+		.pipe(uglify())
+		.pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('dist'));
+});
+
+gulp.task('test', function (done) {
+  new karma.Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true
+  }, done).start();
 });

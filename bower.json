@@ -3,7 +3,7 @@
   "version": "0.9.49",
   "homepage": "https://github.com/florianthalmann/dymo-core",
   "description": "package that manages and plays back dynamic music objects and their renderings",
-  "main": "dymo.js",
+  "main": "manager.js",
   "keywords": [
     "dymo",
     "web",
@@ -24,14 +24,5 @@
     "tests",
     "spec"
   ],
-  "moduleType": [],
-  "devDependencies": {
-    "jasmine-core": "jasmine#*"
-  },
-  "dependencies": {
-    "jsonld": "jsonld.js#*",
-    "mathjs": "*",
-    "n3": "https://github.com/florianthalmann/N3-Bower.git#a8740e439b3ecf59f8f7f7f505c1e11a2b4fbbb3",
-    "async": "^2.0.1"
-  }
+  "moduleType": []
 }
