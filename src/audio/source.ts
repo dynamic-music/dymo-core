@@ -74,9 +74,8 @@ export class DymoSource extends DymoNode {
 		}
 		if (!this.buffer && !isNaN(time+duration)) {
 			//buffer doesn't exist, try to get from server
-			this.requestBufferFromAudioServer(GlobalVars.DYMO_STORE.getSourcePath(this.dymoUri), time, time+duration, function(loadedBuffer) {
-				return this.getStretchedAndFadedBuffer(loadedBuffer, duration, stretchRatio);
-			});
+			this.requestBufferFromAudioServer(GlobalVars.DYMO_STORE.getSourcePath(this.dymoUri), time, time+duration,
+				loadedBuffer => this.getStretchedAndFadedBuffer(loadedBuffer, duration, stretchRatio));
 		} else {
 			//trim if buffer too long
 			if (time != 0 || duration < this.buffer.duration) {
@@ -113,7 +112,7 @@ export class DymoSource extends DymoNode {
 			this.source.disconnect();
 			this.removeAndDisconnect();
 			if (this.onEnded) {
-				this.onEnded(self);
+				this.onEnded(this);
 			}
 		};
 		if (!startTime) {
@@ -192,9 +191,7 @@ export class DymoSource extends DymoNode {
 			filename = filename.substring(index+1);
 		}
 		var query = "http://localhost:8060/getAudioChunk?filename=" + filename + "&fromSecond=" + from + "&toSecond=" + to;
-		this.loadAudio(query, function(buffer) {
-			callback(buffer);
-		});
+		this.loadAudio(query, buffer => callback(buffer));
 	}
 
 	//PUT IN AUDIO TOOLS OR SO!!! (duplicate in scheduler)
@@ -203,11 +200,8 @@ export class DymoSource extends DymoNode {
 		request.open('GET', path, true);
 		request.responseType = 'arraybuffer';
 		request.onload = () => {
-			this.audioContext.decodeAudioData(request.response, function(buffer) {
-				callback(buffer);
-			}, function(err) {
-				console.log('audio from server is faulty');
-			});
+			this.audioContext.decodeAudioData(request.response, buffer => callback(buffer),
+				err => console.log('audio from server is faulty'));
 		};
 		request.send();
 	}

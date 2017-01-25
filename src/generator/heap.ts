@@ -1,22 +1,25 @@
 /**
  * adopted from http://eloquentjavascript.net/1st_edition/appendix2.html
  * replaced the scoreFunction with a compareFunction
- * @constructor
  */
-function BinaryHeap(compareFunction){
-  this.content = [];
-  this.compareFunction = compareFunction;
-}
+export class BinaryHeap {
 
-BinaryHeap.prototype = {
-  push: function(element) {
+  private content;
+  private compareFunction;
+
+  constructor(compareFunction){
+    this.content = [];
+    this.compareFunction = compareFunction;
+  }
+
+  push(element) {
     // Add the new element to the end of the array.
     this.content.push(element);
     // Allow it to bubble up.
     this.bubbleUp(this.content.length - 1);
-  },
+  }
 
-  pop: function() {
+  pop() {
     // Store the first element so we can return it later.
     var result = this.content[0];
     // Get the element at the end of the array.
@@ -28,9 +31,9 @@ BinaryHeap.prototype = {
       this.sinkDown(0);
     }
     return result;
-  },
+  }
 
-  remove: function(node) {
+  remove(node) {
     var length = this.content.length;
     // To remove a value, we must search through the array to find
     // it.
@@ -49,13 +52,13 @@ BinaryHeap.prototype = {
       this.sinkDown(i);
       break;
     }
-  },
+  }
 
-  size: function() {
+  size() {
     return this.content.length;
-  },
+  }
 
-  bubbleUp: function(n) {
+  bubbleUp(n) {
     // Fetch the element that has to be moved.
     var element = this.content[n];
     // When at 0, an element can not go up any further.
@@ -74,9 +77,9 @@ BinaryHeap.prototype = {
       this.content[n] = parent;
       n = parentN;
     }
-  },
+  }
 
-  sinkDown: function(n) {
+  sinkDown(n) {
     // Look up the target element and its score.
     var length = this.content.length,
     element = this.content[n];
@@ -111,4 +114,5 @@ BinaryHeap.prototype = {
       n = swap;
     }
   }
+
 };

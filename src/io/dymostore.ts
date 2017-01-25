@@ -449,7 +449,7 @@ export class DymoStore extends EasyStore {
 					}
 				});
 			}
-			callback(null, json);
+			callback(json);
 		});
 	}
 

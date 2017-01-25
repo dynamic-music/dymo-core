@@ -144,11 +144,11 @@ export class DymoNavigator {
 	private getNavigator(dymoUri) {
 		for (var i = 0, j = this.subsetNavigators.length; i < j; i++) {
 			if (this.subsetNavigators[i][0].applyDirect(null, null, dymoUri)) {
-				return this.subsetNavigators[i][1].getCopy(dymoUri, this.getNavigator);
+				return this.subsetNavigators[i][1].getCopy(dymoUri, this.getNavigator.bind(this));
 			}
 		}
 		if (dymoUri && this.defaultSubsetNavigator) { //&& DYMO_STORE.findParts(dymoUri).length > 0) {
-			return this.defaultSubsetNavigator.getCopy(dymoUri, this.getNavigator);
+			return this.defaultSubsetNavigator.getCopy(dymoUri, this.getNavigator.bind(this));
 		} else {
 			return new OneShotNavigator(dymoUri);
 		}

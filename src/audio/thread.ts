@@ -119,7 +119,7 @@ export class SchedulerThread {
 				source.stop(startTime);
 			}
 		}
-		setTimeout(function() { this.onChanged(self); }, delay);
+		setTimeout(() => this.onChanged(this), delay);
 		//create next sources and wait or end and reset
 		this.nextSources = this.createNextSources();
 		if (this.nextSources && this.nextSources.size > 0) {
@@ -131,11 +131,11 @@ export class SchedulerThread {
 				this.currentEndTime -= GlobalVars.FADE_LENGTH;
 			}
 			var wakeupTime = (this.currentEndTime-this.audioContext.currentTime-GlobalVars.SCHEDULE_AHEAD_TIME)*1000;
-			this.timeoutID = setTimeout(function() { this.recursivePlay(); }, wakeupTime);
+			this.timeoutID = setTimeout(() => this.recursivePlay(), wakeupTime);
 		} else {
 			this.currentEndTime = this.getCurrentEndTime(startTime);
 			var wakeupTime = (this.currentEndTime-this.audioContext.currentTime)*1000;
-			setTimeout(function() {
+			setTimeout(() => {
 				this.endThreadIfNoMoreSources();
 			}, wakeupTime+100);
 		}
@@ -166,7 +166,7 @@ export class SchedulerThread {
 		if (sourceList.length <= 0) {
 			this.sources.delete(source.getDymoUri());
 		}
-		this.onChanged(self);
+		this.onChanged(this);
 		this.endThreadIfNoMoreSources();
 	}
 
@@ -225,7 +225,7 @@ export class SchedulerThread {
 				var sourcePath = GlobalVars.DYMO_STORE.getSourcePath(nextParts[i]);
 				if (sourcePath) {
 					var buffer = this.buffers[sourcePath];
-					var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded);
+					var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded.bind(this));
 					this.createAndConnectToNodes(newSource);
 					nextSources.set(nextParts[i], newSource);
 				}
@@ -235,7 +235,7 @@ export class SchedulerThread {
 	}
 
 	private logNextIndices(nextParts) {
-		console.log(nextParts.map(function(s){
+		console.log(nextParts.map(s => {
 			var index = GlobalVars.DYMO_STORE.findPartIndex(s);
 			if (!isNaN(index)) {
 				return index;

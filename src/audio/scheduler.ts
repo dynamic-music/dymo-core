@@ -31,7 +31,7 @@ export class Scheduler {
 		if (reverbFile && GlobalVars.DYMO_STORE.find(null, null, REVERB).length > 0) {
 			this.convolverSend = this.audioContext.createConvolver();
 			this.convolverSend.connect(this.audioContext.destination);
-			this.loadAudio(reverbFile, function(buffer) {
+			this.loadAudio(reverbFile, buffer => {
 				this.convolverSend.buffer = buffer;
 				this.bufferLoaded(callback);
 			});
@@ -51,21 +51,22 @@ export class Scheduler {
 	}
 
 	private loadBuffers(dymoUris: string[], callback) {
-		var allPaths = [];
-		//console.log(GlobalVars.DYMO_STORE.find(null, HAS_PART).map(function(r){return r.subject + " " + r.object;}));
-		for (var i = 0, ii = dymoUris.length; i < ii; i++) {
-			var allSubDymos = GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(dymoUris[i]);
-			allPaths = allPaths.concat(allSubDymos.map(function(d){return GlobalVars.DYMO_STORE.getSourcePath(d)}));
-		}
-		for (var i = 0, ii = allPaths.length; i < ii; i++) {
+		//let allPaths = [];
+		//console.log(GlobalVars.DYMO_STORE.find(null, HAS_PART).map(r => r.subject + " " + r.object));
+		let allPaths = flattenArray(dymoUris.map(uri =>
+			GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(uri).map(suburi => GlobalVars.DYMO_STORE.getSourcePath(suburi))
+		));
+		allPaths = allPaths.filter(p => typeof p === "string");
+		allPaths = removeDuplicates(allPaths);
+		allPaths.map(path => {
 			//only add if not there yet..
-			if (allPaths[i] && !this.buffers[allPaths[i]]) {
-				this.loadAudio(allPaths[i], function(buffer, path) {
+			if (!this.buffers[path]) {
+				this.loadAudio(path, buffer => {
 					this.buffers[path] = buffer;
 					this.bufferLoaded(callback);
 				});
 			}
-		}
+		});
 		if (this.numCurrentlyLoading == 0 && callback) {
 			callback();
 		}
@@ -119,7 +120,7 @@ export class Scheduler {
 	}
 
 	play(dymoUri, navigator?: Navigator) {
-		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.buffers, this.convolverSend, this.delaySend, this.updatePlayingDymos, this.threadEnded);
+		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.buffers, this.convolverSend, this.delaySend, this.updatePlayingDymos, this.threadEnded.bind(this));
 		this.threads.push(thread);
 	}
 
@@ -198,7 +199,7 @@ export class Scheduler {
 		var request = new XMLHttpRequest();
 		request.open('GET', path, true);
 		request.responseType = 'arraybuffer';
-		request.onload = () => this.audioContext.decodeAudioData(request.response, buffer => callback(buffer, path));
+		request.onload = () => this.audioContext.decodeAudioData(request.response, buffer => callback(buffer));
 		request.send();
 	}
 

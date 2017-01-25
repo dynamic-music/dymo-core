@@ -12,7 +12,7 @@ gulp.task('default', function () {
 		return browserify({
 			standalone: 'dymoCore'
 		})
-    .add('src/manager.ts')
+    .add('src/index.ts')
     .plugin(tsify)
 		.transform('babelify', {
         presets: ['es2015'],
@@ -21,7 +21,7 @@ gulp.task('default', function () {
     .bundle()
 		.pipe(source('dymo-core.min.js'))
 		.pipe(buffer())
-		.pipe(uglify())
+		//.pipe(uglify())
 		.pipe(sourcemaps.init({loadMaps: true}))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('dist'));
