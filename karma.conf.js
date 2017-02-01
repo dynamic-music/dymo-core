@@ -19,7 +19,8 @@ module.exports = function(config) {
       /*'spec/easystore-spec.js',
       'spec/dymostore-spec.js',
       'spec/dymo-spec.js',*/
-      'spec/mapping-spec.js'
+      'spec/structure-spec.js'
+      //'spec/mapping-spec.js'
       //'spec/control-spec.js',
     ],
 

@@ -33,11 +33,10 @@ export module DymoTemplates {
 		});
 	}
 
-	export function createStructuredDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
+	export function createStructuredDymoFromFeatures(generator, source, featureUris, conditions, patternIndices, onLoad) {
 		var dymoUri = generator.addDymo(undefined, source);
 		this.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
-			//Similarity.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
-			Cosiatec.buildHierarchy(generator.getCurrentTopDymo(), generator.getStore());
+			Cosiatec.buildHierarchy(generator.getCurrentTopDymo(), generator.getStore(), patternIndices);
 			generator.addRendering();
 			onLoad();
 		});

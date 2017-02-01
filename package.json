@@ -1,11 +1,13 @@
 {
   "name": "dymo-core",
-  "version": "0.9.39",
+  "version": "0.9.50",
   "description": "package that manages and plays back dynamic music objects and their renderings",
-  "main": "manager.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "build/index.js",
+  "typings": "build/index",
+  "files": [
+    "audio/",
+    "build/"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/florianthalmann/dymo-core.git"

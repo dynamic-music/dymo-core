@@ -1,23 +1,24 @@
 import * as math from 'mathjs'
 import { HAS_FEATURE, TYPE, CONTEXT_URI } from '../globals/uris'
 import { Similarity } from './similarity'
-import { removeDuplicates, flattenArrayOnce } from '../util/arrays'
+import { removeDuplicates, flattenArrayOnce, removeElementAt } from '../util/arrays'
 import { BinaryHeap } from './heap'
 
 export module Cosiatec {
 
   //adds similarity relationships to the subdymos of the given dymo in the given store
-  export function buildHierarchy(dymoUri, store) {
+  export function buildHierarchy(dymoUri, store, patternIndices?: number[]) {
     var surfaceDymos = Similarity.getAllParts([dymoUri], store);
     var allPoints = this.getQuantizedPoints(surfaceDymos, store);
     var distinctPoints = this.getSortedCloneWithoutDupes(allPoints);
-    console.log(allPoints.length)
     console.log(JSON.stringify(allPoints));
+    console.log(JSON.stringify(allPoints.map(p=>p[0])));
     var patterns = this.getOverlappingCosiatecPatterns(distinctPoints);
     console.log(JSON.stringify(patterns.map(r => r.map(s => s.length))));
     //just take first result for now
-    //patterns = patterns.slice(0,1);
-    patterns = [patterns[4]];
+    if (patternIndices != null) {
+      patterns = patterns.filter((p,i) => patternIndices.indexOf(i) >= 0);
+    }
     var patternDymos = [];
     for (var i = 0; i < patterns.length; i++) {
       var occurrences = patterns[i][1].map(tsl => patterns[i][0].map(p => this.round(math.add(p, tsl))));
@@ -80,12 +81,20 @@ export module Cosiatec {
   //returns an array of pairs of patterns along with their transpositions
   //jamie's cosiatec: performs sia only once, returns the best patterns necessary to cover all points
   export function getOverlappingCosiatecPatterns(points) {
+    var allPoints = points;
     var results = [];
     var patterns = this.getSiaPatterns(points);
     patterns = Object.keys(patterns).map(key => patterns[key]);
+    //console.log(JSON.stringify(patterns))
+    patterns = patterns.map(p => this.minimizePattern(p, points));
+    //console.log(JSON.stringify(patterns))
     var occurrences = this.getSiatecOccurrences(points, patterns);
-    var compactnesses = this.getFlompactness(patterns, points);
+    var compactnesses = patterns.map(p => this.getFlompactness(p, points));
     console.log(points.length, patterns.length);
+    console.log(JSON.stringify(patterns
+      .map((p,i)=>[p.length, occurrences[0][i].length, compactnesses[i], p])
+      .sort((a,b)=>b[2]-a[2])
+      .slice(0,5)))
     while (points.length > 0 && patterns.length > 0) {
       var iOfMaxComp = this.indexOfMax(compactnesses);
       var involvedPoints = new Set(flattenArrayOnce(occurrences[1][iOfMaxComp]).map(p => JSON.stringify(p)));
@@ -101,7 +110,46 @@ export module Cosiatec {
       occurrences[1].splice(iOfMaxComp, 1);
       compactnesses.splice(iOfMaxComp, 1);
     }
+    /*var pats = results.map(r => r[0]);
+    console.log(
+      this.getFlompactness(pats, allPoints),
+      this.getCompactness(pats, allPoints),
+      this.getCoverage(pats, allPoints.length)
+    );*/
     return results;
+  }
+
+  export function minimizePattern(pattern, allPoints) {
+    let currentCompactness = this.getFlompactness(pattern, allPoints);
+    pattern.sort((a,b)=>b[2]-a[2])
+    if (pattern.length > 1) {
+      //see if minimizable from left
+      let leftPatterns = pattern.map((p,i) => pattern.slice(i));
+      let left = this.findFirstBetterSubPattern(leftPatterns, allPoints, currentCompactness);
+      //see if minimizable from right
+      let rightPatterns = pattern.map((p,i) => pattern.slice(0,i+1)).reverse();
+      let right = this.findFirstBetterSubPattern(rightPatterns, allPoints, currentCompactness);
+
+      let betterPattern;
+      if (left[0] == right[0] && left[0] > -1) {
+        //take pattern with better compactness
+        betterPattern = left[1] >= right[1] ? leftPatterns[left[0]] : rightPatterns[right[0]];
+      } else if (left[0] < right[0] && left[0] > -1) { //left has smaller index (keeps more elements)
+        betterPattern = leftPatterns[left[0]];
+      } else if (right[0] > -1) { //right has smaller index
+        betterPattern = rightPatterns[right[0]];
+      }
+      if (betterPattern) {
+        return this.minimizePattern(betterPattern, allPoints);
+      }
+    }
+    return pattern;
+  }
+
+  export function findFirstBetterSubPattern(subPatterns, allPoints, currentCompactness) {
+    let potentialComps = subPatterns.map(s => this.getFlompactness(s, allPoints));
+    var firstBetterIndex = potentialComps.findIndex(c => c > currentCompactness);
+    return [firstBetterIndex, potentialComps[firstBetterIndex]];
   }
 
   //returns an array of pairs of patterns along with their transpositions
@@ -117,7 +165,7 @@ export module Cosiatec {
       console.log(points.length, patterns.length);
       if (patterns.length > 0) {
         var occurrences = this.getSiatecOccurrences(points, patterns);
-        var compactnesses = this.getFlompactness(patterns, points);
+        var compactnesses = patterns.map(p => this.getFlompactness(p, points));
         var iOfMaxComp = compactnesses.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
         results.push([patterns[iOfMaxComp], occurrences[0][iOfMaxComp]]);
         var involvedPoints = new Set(flattenArrayOnce(occurrences[1][iOfMaxComp]).map(p => JSON.stringify(p)));
@@ -146,22 +194,23 @@ export module Cosiatec {
     return [occurrences, occurrences.map((occ, i) => occ.map(tsl => patterns[i].map(p => math.add(p, tsl))))];
   }
 
-  export function getCoverage(occurrences, numTotalPoints) {
+  export function getCoverage(occurrences, numTotalPoints: number) {
     return occurrences.map(occ => new Set(flattenArrayOnce(occ).map(p => JSON.stringify(p))).size / numTotalPoints);
   }
 
-  export function getFlompactness(patterns, allPoints) {
-    return patterns.map(pat => pat.length / (1 + this.getPointsInBoundingBox(pat, allPoints).length - pat.length));
+  export function getFlompactness(pattern: number[][], allPoints: number[][]) {
+    return 1 / (1 + this.getPointsInBoundingBox(pattern, allPoints).length - pattern.length);
   }
 
-  export function getCompactness(patterns, allPoints) {
-    return patterns.map(pat => pat.length / this.getPointsInBoundingBox(pat, allPoints).length);
+  export function getCompactness(pattern: number[][], allPoints: number[][]) {
+    //console.log(patterns[0].length, this.getPointsInBoundingBox(patterns[0], allPoints).length)
+    return 1 / this.getPointsInBoundingBox(pattern, allPoints).length;
   }
 
   export function getPointsInBoundingBox(pattern, allPoints) {
     var maxes = math.max(pattern, 0);
     var mins = math.min(pattern, 0);
-    return allPoints.filter(p => p.every((e,i) => mins[i] <= e && e <= maxes[i]));
+    return allPoints.filter(p => p.every((e,i) => maxes[i] - mins[i] == 0 || (mins[i] <= e && e <= maxes[i])));
   }
 
   //takes an array of arrays of vectors and calculates their intersection

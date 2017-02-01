@@ -19,6 +19,10 @@ export function intersectArrays(a, b) {
 	return [];
 }
 
+export function removeElementAt(index, array) {
+	return array.slice(0,index).concat(array.slice(index+1));
+}
+
 export function removeDuplicates(array) {
 	//return Array.from(new Set(array));
 	//optimized version:
