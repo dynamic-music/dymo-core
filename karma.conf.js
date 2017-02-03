@@ -19,7 +19,8 @@ module.exports = function(config) {
       /*'spec/easystore-spec.js',
       'spec/dymostore-spec.js',
       'spec/dymo-spec.js',*/
-      'spec/structure-spec.js'
+      'spec/structure-spec.js',
+      'spec/util-spec.js'
       //'spec/mapping-spec.js'
       //'spec/control-spec.js',
     ],
@@ -33,15 +34,7 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      //'build/**/*.js': ['browserify'],
       'spec/*.js': ['browserify']
-    },
-
-    babelPreprocessor: {
-      options: {
-        presets: ['es2015'],
-        sourceMap: 'inline'
-      }
     },
 
     browserify: {

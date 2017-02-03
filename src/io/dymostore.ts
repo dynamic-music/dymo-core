@@ -103,7 +103,7 @@ export class DymoStore extends EasyStore {
 
 	///////// ADDING FUNCTIONS //////////
 
-	addDymo(dymoUri, parentUri, partUri, sourcePath, type) {
+	addDymo(dymoUri: string, parentUri?: string, partUri?: string, sourcePath?: string, type?: string) {
 		this.addTriple(dymoUri, uris.TYPE, uris.DYMO);
 		if (parentUri) {
 			this.addPart(parentUri, dymoUri);

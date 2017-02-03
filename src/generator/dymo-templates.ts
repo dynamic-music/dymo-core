@@ -1,8 +1,7 @@
 import { SIMILARITY_NAVIGATOR, GRAPH_NAVIGATOR, LEVEL_FEATURE, ONSET_FEATURE, PITCH_FEATURE, DURATION_FEATURE,
 	 ONSET } from '../globals/uris'
 import { GlobalVars } from '../globals/globals'
-import { Similarity } from './similarity'
-import { Cosiatec } from './cosiatec'
+import { DymoStructureInducer } from './dymo-structure'
 import { FeatureLoader } from './feature-loader'
 
 export module DymoTemplates {
@@ -25,7 +24,7 @@ export module DymoTemplates {
 	export function createSimilarityDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
 		var dymoUri = generator.addDymo(undefined, source);
 		this.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
-			Similarity.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
+			DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 			generator.addRendering();
 			generator.addNavigator(SIMILARITY_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 0");
 			//generator.updateGraphs();
@@ -36,7 +35,11 @@ export module DymoTemplates {
 	export function createStructuredDymoFromFeatures(generator, source, featureUris, conditions, patternIndices, onLoad) {
 		var dymoUri = generator.addDymo(undefined, source);
 		this.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
-			Cosiatec.buildHierarchy(generator.getCurrentTopDymo(), generator.getStore(), patternIndices);
+			DymoStructureInducer.addStructureToDymo(generator.getCurrentTopDymo(), generator.getStore(),
+				{
+					patternIndices: patternIndices
+				}
+			);
 			generator.addRendering();
 			onLoad();
 		});
@@ -45,8 +48,8 @@ export module DymoTemplates {
 	export function createSimilaritySuccessorDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
 		var dymoUri = generator.addDymo(undefined, source);
 		this.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
-			Similarity.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
-			Similarity.addSuccessionGraphTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
+			DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
+			DymoStructureInducer.addSuccessionGraphTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 			generator.addRendering();
 			generator.addNavigator(GRAPH_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 0");
 			//generator.updateGraphs();
