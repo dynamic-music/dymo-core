@@ -2,95 +2,74 @@ import * as math from 'mathjs'
 import * as _ from 'lodash'
 import { indicesOfNMax } from '../util/arrays'
 
-export interface Quantization { }
-
-export interface Rounded extends Quantization {
-	precision: number
+export interface QuantDimFunction {
+	(values: number[]): number[];
 }
 
-export interface Discrete extends Quantization {
-	numValues: number
+export function getRound(precision: number): QuantDimFunction {
+	return makeDimFunction(_.curryRight(round)(precision));
 }
 
-export interface Ordering extends Quantization { }
-
-export interface Summary extends Quantization {
-	numDims: number
+export function getDiscretize(numValues: number): QuantDimFunction {
+	return makeDimFunction(_.curryRight(discretize)(numValues));
 }
 
-export interface Clustered extends Quantization {
-	numClusters: number
+export function getOrder(): QuantDimFunction {
+	return makeIndexDimFunction((x,i) => i);
+}
+
+export function getSummarize(outDims: number): QuantDimFunction {
+	return makeDimFunction(_.curryRight(indicesOfNMax)(outDims));
+}
+
+export function getNormalize(): QuantDimFunction {
+	return normalize;
+}
+
+function normalize(values: number[]): number[] {
+	var max = _.max(values);
+	var min = _.min(values);
+	return values.map(v => (v-min)/(max-min));
+}
+
+function discretize(values: number[], numValues: number): number[] {
+	values = normalize(values);
+	return values.map(x => _.round(x*numValues))
+}
+
+function makeDimFunction(func: (x:any)=>any): QuantDimFunction {
+	return function(values: number[]): number[] {
+		return values.map(v => func(v));
+	}
+}
+
+function makeIndexDimFunction(func: (x:any,i:number)=>any): QuantDimFunction {
+	return function(values: number[]): number[] {
+		return values.map((v,i) => func(v,i));
+	}
+}
+
+//define so it can be curried nicely
+function round(value, precision) {
+	return _.round(value, precision);
 }
 
 export class Quantizer {
 
-	private dimConfigs: Quantization[];
+	private dimFuncs: QuantDimFunction[];
 
-	constructor(dimConfigs: Quantization[]) {
-		this.dimConfigs = dimConfigs;
+	constructor(dimFuncs: QuantDimFunction[]) {
+		this.dimFuncs = dimFuncs;
 	}
 
-	//TODO IMPLEMENT ORDER OF SUCCESSION, AND OTHER QUANTIZATIONS
-
 	getQuantizedPoints(points: number[][]): number[][] {
-		console.log(this.dimConfigs);
-		this.dimConfigs.map((dim,i) => {
-			if ((dim as Rounded).precision) {
-				this.roundDim(points, i, (dim as Rounded).precision);
-			} else if ((dim as Discrete).numValues) {
-				this.discretizeDim(points, i, (dim as Discrete).numValues);
-			} else if ((dim as Summary).numDims) {
-				this.summarizeDim(points, i, (dim as Summary).numDims);
-			} else if ((dim as Clustered).numClusters) {
-				//TODO!!
-			} else {
-				this.orderizeDim(points, i);
-			}
-		});
-
+		points = this.dimFuncs.map((f,i) => f(points.map(p => p[i])));
+		points = _.zip(...points);
 		return points.map(p => _.flatten(p));
 	}
 
 	roundPoint(point, precision) {
 		return point.map(x => _.round(x, precision));
-	}
-
-	private roundDim(points, index, precision) {
-		this.mapDim(points, index, _.curryRight(this.round)(precision));
-	}
-
-	private discretizeDim(points, index, numValues) {
-		this.normalizeDim(points, index);
-		this.mapDim(points, index, (x) => Math.round(x*numValues));
-	}
-
-	private normalizeDim(points, index) {
-		var max = points.reduce((max,p) => Math.max(max,p[index]), -Infinity);
-		var min = points.reduce((max,p) => Math.min(max,p[index]), Infinity);
-		this.mapDim(points, index, (x) => (x-min)/(max-min));
-	}
-
-	private orderizeDim(points, index) {
-		this.mapDimWithIndex(points, index, (x,i) => i);
-	}
-
-	private summarizeDim(points, index, outDims: number) {
-		//var summaryFunc = func === SUMMARY_FUNCS.MAX ? indices : ;
-		this.mapDim(points, index, _.curryRight(indicesOfNMax)(outDims));
-	}
-
-	private mapDim(points: number[][], index: number, func: (x:any)=>any): void {
-		points.forEach((p,i) => p[index] = func(p[index]));
-		//return points.map((p,i) => _.clone(p).splice(i,1,func(p[index],i)));
-	}
-
-	private mapDimWithIndex(points: number[][], index: number, func: (x:number, i:number)=>number): void {
-		points.forEach((p,i) => p[index] = func(p[index],i));
-	}
-
-	//define so it can be curried nicely
-	private round(value, precision) {
-		return _.round(value, precision);
 	}
 
 	/**
