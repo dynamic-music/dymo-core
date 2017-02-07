@@ -1,3 +1,4 @@
+import * as _ from 'lodash'
 import { BinaryHeap } from './heap'
 
 export function flattenArray(array) {
@@ -67,6 +68,15 @@ export function mergeSortedArrays(arrays) {
 
 export function indexOfMax(array) {
 	return array.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+}
+
+export function indicesOfNMax(array: number[], n: number): number[] {
+	array = _.clone(array);
+	return _.times(n, () => {
+		var i = indexOfMax(array);
+		array[i] = -Infinity
+		return i;
+	});
 }
 
 export function removeElementAt(index, array) {

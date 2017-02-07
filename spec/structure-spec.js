@@ -4,6 +4,7 @@ import { ONSET_FEATURE, PITCH_FEATURE } from '../src/globals/uris'
 import { DymoStructureInducer } from '../src/generator/dymo-structure'
 import { Siatec } from '../src/structure/siatec'
 import { Cosiatec } from '../src/structure/cosiatec'
+import { Quantizer, Summary, Rounded, Ordering } from '../src/structure/quantizer'
 import { HEURISTICS, getCompactness, getFlompactness, getPointsInBoundingBox } from '../src/structure/heuristics'
 import * as _ from 'lodash'
 
@@ -98,6 +99,13 @@ describe("a structure induction algorithm", function() {
 
 		var result = getPointsInBoundingBox([[0,1],[2,3]], [[0,0],[0,1],[0,2],[1,3],[2,4],[4,3]]);
 		expect(_.isEqual(result, [[0,1],[0,2],[1,3]])).toBe(true);
+	});
+
+	it("can quantize the data", function() {
+		//var quantizer = new Quantizer([{numDims:2} as Summary, {precision:2} as Rounded, {} as Ordering]);
+		var quantizer = new Quantizer([summarize(2), round(2), order]);
+		var result = quantizer.getQuantizedPoints([[[1,4,2,6,3],2.34264,9],[[1,4,7,6,3],5.65564,2]]);
+		expect(JSON.stringify(result)).toBe("[[3,1,2.34,0],[2,3,5.66,1]]");
 	});
 
 

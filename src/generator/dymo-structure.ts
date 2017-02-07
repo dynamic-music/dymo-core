@@ -10,28 +10,36 @@ export module DymoStructureInducer {
   //adds a hierarchical structure to the subdymos of the given dymo in the given store
   export function addStructureToDymo(dymoUri, store, options) {
     var surfaceDymos = getAllParts([dymoUri], store);
-    var points = toVectors(surfaceDymos, store);
+    var points = toVectors(surfaceDymos, store, false, true);
     var stucture = new StructureInducer(points, options.heuristic, options.overlapping);
     var occurrences = stucture.getOccurrences(options.patternIndices);
     var patternDymos = [];
     for (var i = 0; i < occurrences.length; i++) {
+      var currentPatternDymo = store.addDymo((CONTEXT_URI+"pattern"+i), dymoUri);
+      patternDymos.push(currentPatternDymo);
       var dymoUris = occurrences[i].map(occ => occ.map(index => surfaceDymos[index]));
       var features = store.findAllObjects(dymoUris[0][0], HAS_FEATURE).map(f => store.findObject(f, TYPE));
+      var occDymos = [];
       for (var j = 0; j < dymoUris.length; j++) {
-        var currentPatternDymo = store.addDymo((CONTEXT_URI+"pattern"+i)+j, dymoUri);
-        patternDymos.push(currentPatternDymo);
+        var currentOccDymo = store.addDymo((CONTEXT_URI+"occurrence"+i)+j, currentPatternDymo);
+        occDymos.push(currentOccDymo);
         //console.log(dymoUris[j], occurrences[j])
-        dymoUris[j].forEach(d => store.addPart(currentPatternDymo, d));
-        var avgFeatureVals = dymoUris[j].map(d => features.map(f => store.findFeatureValue(d, f)));
-        //remove multidimensional features
-        features = features.filter((f,i) => avgFeatureVals[0][i].constructor !== Array);
-        avgFeatureVals = avgFeatureVals.map(vs => vs.filter(v => v.constructor !== Array));
-        avgFeatureVals = math.mean(avgFeatureVals, 0);
-        //console.log(avgFeatureVals);
-        avgFeatureVals.forEach((v,k) => store.setFeature(currentPatternDymo, features[k], v));
+        dymoUris[j].forEach(d => store.addPart(currentOccDymo, d));
+        updateAverageFeatures(currentOccDymo, dymoUris[j], features, store);
       }
+      updateAverageFeatures(currentPatternDymo, occDymos, features, store);
     }
     store.setParts(dymoUri, patternDymos);
+  }
+
+  function updateAverageFeatures(parent, children, features, store) {
+    var avgFeatureVals = children.map(d => features.map(f => store.findFeatureValue(d, f)));
+    //remove multidimensional features
+    features = features.filter((f,i) => avgFeatureVals[0][i] != null && avgFeatureVals[0][i].constructor !== Array);
+    avgFeatureVals = avgFeatureVals.map(vs => vs.filter(v => v != null && v.constructor !== Array));
+    avgFeatureVals = math.mean(avgFeatureVals, 0);
+    //console.log(avgFeatureVals);
+    avgFeatureVals.forEach((v,k) => store.setFeature(parent, features[k], v));
   }
 
   //adds similarity relationships to the subdymos of the given dymo in the given store
@@ -98,7 +106,7 @@ export module DymoStructureInducer {
   /**
 	 * returns a map with a vector for each given dymo. if reduce is true, multidimensional ones are reduced
 	 */
-	export function toVectors(dymoUris, store, reduce?: boolean): number[][] {
+	export function toVectors(dymoUris, store, reduce?: boolean, noFlatten?: boolean): number[][] {
 		var vectors = [];
 		for (var i = 0, l = dymoUris.length; i < l; i++) {
 			var currentVector = [];
@@ -110,7 +118,11 @@ export module DymoStructureInducer {
 					feature = this.reduce(feature);
 				}
 				if (feature.length > 1) {
-					currentVector = currentVector.concat(feature);
+					if (noFlatten) {
+						currentVector.push(feature);
+					} else {
+						currentVector = currentVector.concat(feature);
+					}
 				} else {
 					feature = Number(feature);
 					currentVector.push(feature);

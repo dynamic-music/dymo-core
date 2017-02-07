@@ -30,7 +30,7 @@ export class DymoGenerator {
 		this.currentTopDymo = undefined; //the top dymo for the current audio file
 		this.audioFileChanged = false;
 		this.features = [];
-		this.internalAddFeature("level", LEVEL_FEATURE, 0, 2);
+		this.internalAddFeature("level", LEVEL_FEATURE, 0, 3);
 		this.internalAddFeature("random", null, 0, 1);
 	}
 

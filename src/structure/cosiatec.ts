@@ -16,7 +16,6 @@ export class Cosiatec {
     this.minimize = minimize;
     this.patterns = [];
     this.occurrences = [];
-    console.log(JSON.stringify(this.points));
     if (overlapping) {
       this.calculateOverlappingCosiatecPatterns();
     } else {

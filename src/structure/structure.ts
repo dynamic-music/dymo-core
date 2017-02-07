@@ -1,17 +1,18 @@
-import { Quantizer } from './quantizer'
+import { Quantizer, Summary, Rounded, Ordering } from './quantizer'
 import { Cosiatec } from './cosiatec'
 import { getFlompactness } from '../structure/heuristics'
 
 export class StructureInducer {
 
   private readonly PRECISION = 1;
-  private quantizer;
-  private cosiatec;
+  private quantizer: Quantizer;
+  private cosiatec: Cosiatec;
   private pointStrings;
 
-  constructor(points: number[][], heuristic = getFlompactness, overlapping = false) {
-    this.quantizer = new Quantizer(this.PRECISION);
+  constructor(points: number[][], quantizationOptions?: Object[], heuristic = getFlompactness, overlapping = false) {
+    this.quantizer = new Quantizer([<Summary>{numDims:3}, <Rounded>{precision:this.PRECISION}, <Ordering>{}]);
     var quantizedPoints = this.quantizer.getQuantizedPoints(points);
+    console.log("quantized points:", JSON.stringify(quantizedPoints));
     this.pointStrings = quantizedPoints.map(v => JSON.stringify(v));
     this.cosiatec = new Cosiatec(quantizedPoints, heuristic, overlapping);
   }
@@ -26,7 +27,7 @@ export class StructureInducer {
 
   private getPointIndex(point) {
     //quantize again to get rid of float errors!
-    return this.pointStrings.indexOf(JSON.stringify(this.quantizer.roundPoint(point)));
+    return this.pointStrings.indexOf(JSON.stringify(this.quantizer.roundPoint(point, this.PRECISION)));
   }
 
 }
