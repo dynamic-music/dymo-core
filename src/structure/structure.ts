@@ -1,4 +1,4 @@
-import { Quantizer, getSummarize, getRound, getOrder } from './quantizer'
+import { Quantizer, getToSetClass, getCluster, getRound, getOrder } from './quantizer'
 import { Cosiatec } from './cosiatec'
 import { getFlompactness } from '../structure/heuristics'
 
@@ -10,11 +10,11 @@ export class StructureInducer {
   private pointStrings;
 
   constructor(points: number[][], quantizationOptions?: Object[], heuristic = getFlompactness, overlapping = false) {
-    this.quantizer = new Quantizer([getSummarize(3), getRound(this.PRECISION), getOrder()]);
+    this.quantizer = new Quantizer([getCluster(10), getRound(this.PRECISION), getOrder()]);
     var quantizedPoints = this.quantizer.getQuantizedPoints(points);
     console.log("quantized points:", JSON.stringify(quantizedPoints));
     this.pointStrings = quantizedPoints.map(v => JSON.stringify(v));
-    this.cosiatec = new Cosiatec(quantizedPoints, heuristic, overlapping);
+    this.cosiatec = new Cosiatec(quantizedPoints, heuristic, overlapping, true);
   }
 
   //returns patterns of indices in the original point sequence

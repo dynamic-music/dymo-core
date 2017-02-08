@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@types/lodash": "^4.14.52",
+    "clusterfck": "^0.6.0",
     "jsonld": "*",
     "lodash": "^4.17.4",
     "logicjs": "git://github.com/florianthalmann/LogicJS.git",

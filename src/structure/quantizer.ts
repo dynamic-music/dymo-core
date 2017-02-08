@@ -1,68 +1,97 @@
 import * as math from 'mathjs'
 import * as _ from 'lodash'
+import * as clusterfck from 'clusterfck'
 import { indicesOfNMax } from '../util/arrays'
 
-export interface QuantDimFunction {
-	(values: number[]): number[];
+/** maps over arrays of values */
+export interface ArrayMap {
+	(values: (number|number[])[]): (number|number[])[];
 }
 
-export function getRound(precision: number): QuantDimFunction {
-	return makeDimFunction(_.curryRight(round)(precision));
+/** returns a function that rounds all numbers in an array to the given precision */
+export function getRound(precision: number): ArrayMap {
+	return toArrayMap(_.curryRight(_.round,2)(precision));
 }
 
-export function getDiscretize(numValues: number): QuantDimFunction {
-	return makeDimFunction(_.curryRight(discretize)(numValues));
+/** returns a function that maps all numbers in an array onto their index */
+export function getOrder(): ArrayMap {
+	return (values: number[]) => values.map((v,i) => i);
 }
 
-export function getOrder(): QuantDimFunction {
-	return makeIndexDimFunction((x,i) => i);
+/** returns a function that maps all arrays in an array onto the outDims highest values */
+export function getSummarize(outDims: number): ArrayMap {
+	return toMatrixMap(_.curryRight(indicesOfNMax)(outDims));
 }
 
-export function getSummarize(outDims: number): QuantDimFunction {
-	return makeDimFunction(_.curryRight(indicesOfNMax)(outDims));
+export function getToPitchClassSet(outDims: number): ArrayMap {
+	return _.flow(getSummarize(outDims), sort);
 }
 
-export function getNormalize(): QuantDimFunction {
-	return normalize;
+//TODO IS NOT REALLY SET CLASS YET, NEED TO INVERT POTENTIALLY!!
+export function getToSetClass(outDims: number): ArrayMap {
+	return _.flow(getSummarize(outDims), sort, toMatrixMap(toIntervals));
 }
 
-function normalize(values: number[]): number[] {
+/** returns a function that maps all numbers in an array onto a discrete segment [0,...,numValues-1] */
+export function getDiscretize(numValues: number): ArrayMap {
+	return _.flow(scale, _.curryRight(multiply)(numValues), toArrayMap(_.round));
+}
+
+export function getCluster(numClusters: number): ArrayMap {
+	return _.curryRight(cluster)(numClusters);
+}
+
+/** scales all values in an array to [0,1] */
+export function scale(values: number[]): number[] {
 	var max = _.max(values);
 	var min = _.min(values);
 	return values.map(v => (v-min)/(max-min));
 }
 
-function discretize(values: number[], numValues: number): number[] {
-	values = normalize(values);
-	return values.map(x => _.round(x*numValues))
+/** normalizes all values in an array */
+export function normalize(values: number[]): number[] {
+	var mean = _.mean(values);
+	var std = Math.sqrt(_.sum(values.map(v => Math.pow((v - mean), 2))) / values.length);
+	return values.map(v => (v-mean)/std);
 }
 
-function makeDimFunction(func: (x:any)=>any): QuantDimFunction {
-	return function(values: number[]): number[] {
-		return values.map(v => func(v));
-	}
+/** maps all values onto the interval by which they are reached */
+export function toIntervals(values: number[]): number[] {
+	return values.map((v,i) => i>0 ? v-values[i-1] : 0);
 }
 
-function makeIndexDimFunction(func: (x:any,i:number)=>any): QuantDimFunction {
-	return function(values: number[]): number[] {
-		return values.map((v,i) => func(v,i));
-	}
+/** clusters all values and maps them onto their cluster index */
+function cluster(values: number[][], clusterCount: number): number[] {
+	var kmeans = new clusterfck.Kmeans(null);
+	var clusters = kmeans.cluster(values, clusterCount, null, null, null);
+	return values.map(v => kmeans.classify(v, null));
 }
 
-//define so it can be curried nicely
-function round(value, precision) {
-	return _.round(value, precision);
+function multiply(values: number[], multiplier: number): number[] {
+	return values.map(v => v*multiplier);
+}
+
+function sort(values: number[][]): number[][] {
+	return values.map(v => _.sortBy(v));
+}
+
+function toArrayMap(func: (x:number)=>number): ArrayMap {
+	return (values: number[]) => values.map(v => func(v));
+}
+
+function toMatrixMap(func: (x:number[])=>number[]): ArrayMap {
+	return (values: number[][]) => values.map(v => func(v));
 }
 
 export class Quantizer {
 
-	private dimFuncs: QuantDimFunction[];
+	private dimFuncs: ArrayMap[];
 
-	constructor(dimFuncs: QuantDimFunction[]) {
+	constructor(dimFuncs: ArrayMap[]) {
 		this.dimFuncs = dimFuncs;
 	}
 
-	getQuantizedPoints(points: number[][]): number[][] {
+	getQuantizedPoints(points: (number|number[])[][]): number[][] {
 		points = this.dimFuncs.map((f,i) => f(points.map(p => p[i])));
 		points = _.zip(...points);
 		return points.map(p => _.flatten(p));
