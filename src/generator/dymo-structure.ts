@@ -11,7 +11,7 @@ export module DymoStructureInducer {
   export function addStructureToDymo(dymoUri, store, options) {
     var surfaceDymos = getAllParts([dymoUri], store);
     var points = toVectors(surfaceDymos, store, false, true);
-    var stucture = new StructureInducer(points, options.heuristic, options.overlapping);
+    var stucture = new StructureInducer(points, options);
     var occurrences = stucture.getOccurrences(options.patternIndices);
     var patternDymos = [];
     for (var i = 0; i < occurrences.length; i++) {

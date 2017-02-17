@@ -4,8 +4,8 @@ import { ONSET_FEATURE, PITCH_FEATURE } from '../src/globals/uris'
 import { DymoStructureInducer } from '../src/generator/dymo-structure'
 import { Siatec } from '../src/structure/siatec'
 import { Cosiatec } from '../src/structure/cosiatec'
-import { Quantizer, getToSetClass, getRound, getOrder, getCluster } from '../src/structure/quantizer'
-import { HEURISTICS, getCompactness, getFlompactness, getPointsInBoundingBox } from '../src/structure/heuristics'
+import { Quantizer, QUANT_FUNCS } from '../src/structure/quantizer'
+import { HEURISTICS } from '../src/structure/heuristics'
 import * as _ from 'lodash'
 
 describe("a structure induction algorithm", function() {
@@ -66,10 +66,17 @@ describe("a structure induction algorithm", function() {
 		//console.log(JSON.stringify(occurrences))
 
 		var minimized = siatec.minimizePattern(patterns[5], vectors);
+		console.log(JSON.stringify(minimized));
 		expect(patterns[5].length).toBe(4);
 		expect(minimized.length).toBe(3);
-		expect(getFlompactness(patterns[5], vectors)).toBe(0.25);
-		expect(getFlompactness(minimized, vectors)).toBe(0.5);
+		expect(HEURISTICS.COMPACTNESS2(patterns[5], null, vectors)).toBe(0.25);
+		expect(HEURISTICS.COMPACTNESS2(minimized, null, vectors)).toBe(0.5);
+
+		var divided = siatec.dividePattern(patterns[5], vectors);
+		console.log(JSON.stringify(divided));
+		expect(divided.length).toBe(2);
+		expect(divided[0].length).toBe(2);
+		expect(divided[1].length).toBe(2);
 	});
 
 	it("can select the best patterns", function() {
@@ -88,25 +95,24 @@ describe("a structure induction algorithm", function() {
 	it("has various different heuristics", function() {
 		var siatec = new Siatec(vectors, HEURISTICS.COMPACTNESS2, false);
 		var patterns = siatec.getPatterns();
+		var occurrences = siatec.getOccurrences();
 
-		//TODO TEST COVERAGE
+		var coverage = patterns.map((p,i) => HEURISTICS.COVERAGE(p, occurrences[i], vectors));
+		expect(coverage).toEqual([ 0.375, 0.75, 0.75, 1, 0.75, 0.75, 1, 1, 1, 0.75, 0.75, 1, 1, 0.75, 1, 1, 1 ]);
 
-		var compactness = patterns.map(p => getCompactness(p, vectors));
+		var compactness = patterns.map(p => HEURISTICS.COMPACTNESS(p, null, vectors));
 		expect(compactness).toEqual([ 0.25, 0.2, 0.2, 0.125, 0.2, 0.14285714285714285, 0.125, 0.125, 0.125, 0.3333333333333333, 0.3333333333333333, 0.125, 0.125, 0.3333333333333333, 0.125, 0.125, 0.125 ]);
 
-		var flompactness = patterns.map(p => getFlompactness(p, vectors));
-		expect(flompactness).toEqual([ 0.3333333333333333, 0.25, 0.25, 0.125, 0.3333333333333333, 0.25, 0.125, 0.125, 0.125, 0.5, 0.5, 0.125, 0.125, 0.5, 0.125, 0.125, 0.125 ]);
-
-		var result = getPointsInBoundingBox([[0,1],[2,3]], [[0,0],[0,1],[0,2],[1,3],[2,4],[4,3]]);
-		expect(_.isEqual(result, [[0,1],[0,2],[1,3]])).toBe(true);
+		var compactness2 = patterns.map(p => HEURISTICS.COMPACTNESS2(p, null, vectors));
+		expect(compactness2).toEqual([ 0.3333333333333333, 0.25, 0.25, 0.125, 0.3333333333333333, 0.25, 0.125, 0.125, 0.125, 0.5, 0.5, 0.125, 0.125, 0.5, 0.125, 0.125, 0.125 ]);
 	});
 
 	it("can quantize the data", function() {
-		var quantizer = new Quantizer([getToSetClass(2), getRound(2), getOrder()]);
+		var quantizer = new Quantizer([QUANT_FUNCS.TRANSP_SORTED_SUMMARIZE(2), QUANT_FUNCS.ROUND(2), QUANT_FUNCS.ORDER()]);
 		var result = quantizer.getQuantizedPoints([[[1,4,2,6,3],2.34264,9],[[1,4,7,6,3],5.65564,2]]);
 		expect(JSON.stringify(result)).toBe("[[0,2,2.34,0],[0,1,5.66,1]]");
 
-		var quantizer = new Quantizer([getCluster(2)]);
+		var quantizer = new Quantizer([QUANT_FUNCS.CLUSTER(2)]);
 		result = JSON.stringify(quantizer.getQuantizedPoints([[[0,2,3]],[[1,1,2]],[[7,9,2]],[[0,3,1]]]));
 		expect(result === "[[0],[0],[1],[0]]" || result === "[[1],[1],[0],[1]]").toBe(true);
 	});

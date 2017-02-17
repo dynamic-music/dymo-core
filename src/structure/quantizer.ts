@@ -3,60 +3,82 @@ import * as _ from 'lodash'
 import * as clusterfck from 'clusterfck'
 import { indicesOfNMax } from '../util/arrays'
 
+export const QUANT_FUNCS = {
+	CONSTANT: getConstant,
+	ROUND: getRound,
+	ORDER: getOrder,
+	SUMMARIZE: getSummarize,
+	SORTED_SUMMARIZE: getSortedSummarize,
+	TRANSP_SORTED_SUMMARIZE: getTransposedSortedSummarize,
+	DISCRETIZE: getDiscretize,
+	CLUSTER: getCluster,
+	SCALE: scale,
+	NORMALIZE: normalize,
+	INTERVALS: toIntervals
+}
+
+type twoDArray = number|number[];
+
 /** maps over arrays of values */
 export interface ArrayMap {
 	(values: (number|number[])[]): (number|number[])[];
 }
 
+/** maps all values of an array to the given constant */
+function getConstant(value: number): ArrayMap {
+	return toArrayMap(() => value);
+}
+
 /** returns a function that rounds all numbers in an array to the given precision */
-export function getRound(precision: number): ArrayMap {
+function getRound(precision: number): ArrayMap {
 	return toArrayMap(_.curryRight(_.round,2)(precision));
 }
 
 /** returns a function that maps all numbers in an array onto their index */
-export function getOrder(): ArrayMap {
+function getOrder(): ArrayMap {
 	return (values: number[]) => values.map((v,i) => i);
 }
 
 /** returns a function that maps all arrays in an array onto the outDims highest values */
-export function getSummarize(outDims: number): ArrayMap {
+function getSummarize(outDims: number): ArrayMap {
 	return toMatrixMap(_.curryRight(indicesOfNMax)(outDims));
 }
 
-export function getToPitchClassSet(outDims: number): ArrayMap {
+/** returns a function that summarizes and sorts the arrays of an array */
+function getSortedSummarize(outDims: number): ArrayMap {
 	return _.flow(getSummarize(outDims), sort);
 }
 
 //TODO IS NOT REALLY SET CLASS YET, NEED TO INVERT POTENTIALLY!!
-export function getToSetClass(outDims: number): ArrayMap {
+function getTransposedSortedSummarize(outDims: number): ArrayMap {
 	return _.flow(getSummarize(outDims), sort, toMatrixMap(toIntervals));
 }
 
 /** returns a function that maps all numbers in an array onto a discrete segment [0,...,numValues-1] */
-export function getDiscretize(numValues: number): ArrayMap {
+function getDiscretize(numValues: number): ArrayMap {
 	return _.flow(scale, _.curryRight(multiply)(numValues), toArrayMap(_.round));
 }
 
-export function getCluster(numClusters: number): ArrayMap {
+function getCluster(numClusters: number): ArrayMap {
 	return _.curryRight(cluster)(numClusters);
 }
 
 /** scales all values in an array to [0,1] */
-export function scale(values: number[]): number[] {
+function scale(values: number[]): number[] {
 	var max = _.max(values);
 	var min = _.min(values);
 	return values.map(v => (v-min)/(max-min));
 }
 
 /** normalizes all values in an array */
-export function normalize(values: number[]): number[] {
+function normalize(values: number[]): number[] {
 	var mean = _.mean(values);
 	var std = Math.sqrt(_.sum(values.map(v => Math.pow((v - mean), 2))) / values.length);
 	return values.map(v => (v-mean)/std);
 }
 
 /** maps all values onto the interval by which they are reached */
-export function toIntervals(values: number[]): number[] {
+function toIntervals(values: number[]): number[] {
 	return values.map((v,i) => i>0 ? v-values[i-1] : 0);
 }
 

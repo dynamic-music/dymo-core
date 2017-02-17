@@ -1,34 +1,46 @@
 import * as math from 'mathjs'
 import * as _ from 'lodash'
-import { intersectSortedArrays, mergeSortedArrays } from '../util/arrays'
+import { intersectSortedArrays, mergeSortedArrays, indexOfMax } from '../util/arrays'
+import { HEURISTICS } from './heuristics'
+
+export enum OPTIMIZATION {
+  NONE,
+  MINIMIZE,
+  DIVIDE
+}
 
 export class Siatec {
 
   private points;
-  private heuristic;
-  private minimize;
+  private heuristic: HEURISTICS.CosiatecHeuristic;
+  private optimizationMethod: number;
+  private optimizationDimension: number;
   private vectorTable;
   private patterns;
   private occurrenceVectors;
   private occurrences;
   private heuristics;
 
-  constructor(points: number[][], heuristic: Function, minimize: boolean) {
+  constructor(points: number[][], heuristic: HEURISTICS.CosiatecHeuristic, optimizationMethod: number, optimizationDimension?: number) {
     this.points = points;
     this.heuristic = heuristic;
-    this.minimize = minimize;
+    this.optimizationMethod = optimizationMethod;
+    this.optimizationDimension = optimizationDimension;
     this.run();
   }
 
   run() {
     this.vectorTable = this.getVectorTable(this.points);
     this.patterns = this.calculateSiaPatterns(this.points);
-    if (this.minimize) {
-      this.patterns = this.patterns.map(p => this.minimizePattern(p, this.points));
+    //TODO GET OCCURRENCES HERE FOR MINIMIZATION HEURISTICS
+    if (this.optimizationMethod === OPTIMIZATION.MINIMIZE) {
+      this.patterns = this.patterns.map(p => this.minimizePattern(p, this.points, this.optimizationDimension));
+    } else if (this.optimizationMethod === OPTIMIZATION.DIVIDE) {
+      this.patterns = _.flatten(this.patterns.map(p => this.dividePattern(p, this.points, this.optimizationDimension)));
     }
     this.occurrenceVectors = this.calculateSiatecOccurrences(this.points, this.patterns);
     this.occurrences = this.occurrenceVectors.map((occ, i) => occ.map(tsl => this.patterns[i].map(p => math.add(p, tsl))));
-    this.heuristics = this.patterns.map(p => this.heuristic(p, this.points));
+    this.heuristics = this.patterns.map((p,i) => this.heuristic(p, this.occurrenceVectors[i], this.occurrences[i], this.points));
   }
 
   getPatterns() {
@@ -70,9 +82,9 @@ export class Siatec {
     return occurrences;
   }
 
-  minimizePattern(pattern, allPoints) {
-    let currentHeuristicValue = this.heuristic(pattern, allPoints);
-    pattern.sort((a,b)=>b[2]-a[2])
+  minimizePattern(pattern: number[][], allPoints: number[][], optimDim: number): number[][] {
+    let currentHeuristicValue = this.heuristic(pattern, null, null, allPoints); //TODO SOMEHOW GET OCCURRENCES!!
+    pattern.sort((a,b)=>b[optimDim]-a[optimDim]);
     if (pattern.length > 1) {
       //see if minimizable from left
       let leftPatterns = pattern.map((p,i) => pattern.slice(i));
@@ -82,25 +94,65 @@ export class Siatec {
       let right = this.findFirstBetterSubPattern(rightPatterns, allPoints, currentHeuristicValue);
 
       let betterPattern;
-      if (left[0] == right[0] && left[0] > -1) {
-        //take pattern with better heuristic value
-        betterPattern = left[1] >= right[1] ? leftPatterns[left[0]] : rightPatterns[right[0]];
-      } else if (left[0] < right[0] && left[0] > -1) { //left has smaller index (keeps more elements)
+      if (left[0] > -1 && right[0] > -1) {
+        if (left[0] == right[0]) { //take pattern with better heuristic value
+          betterPattern = left[1] >= right[1] ? leftPatterns[left[0]] : rightPatterns[right[0]];
+        } else { //take pattern that keeps more elements
+          betterPattern = left[0] <= right[0] ? leftPatterns[left[0]] : rightPatterns[right[0]];
+        }
+      } else if (left[0] > -1) { //only left worked
         betterPattern = leftPatterns[left[0]];
-      } else if (right[0] > -1) { //right has smaller index
+      } else if (right[0] > -1) { //only right worked
         betterPattern = rightPatterns[right[0]];
       }
       if (betterPattern) {
-        return this.minimizePattern(betterPattern, allPoints);
+        return this.minimizePattern(betterPattern, allPoints, optimDim);
       }
     }
     return pattern;
   }
 
+  dividePattern(pattern: number[][], allPoints: number[][], optimDim: number): number[][][] {
+    let currentHeuristicValue = this.heuristic(pattern, null, null, allPoints);//TODO SOMEHOW GET OCCURRENCES!!
+    pattern.sort((a,b)=>b[optimDim]-a[optimDim]);
+    if (pattern.length > 1) {
+      let leftPatterns = this.getLeftPatterns(pattern);
+      let leftHeuristics = this.getAllHeuristics(leftPatterns, allPoints);
+      let rightPatterns = this.getRightPatterns(pattern).reverse();
+      let rightHeuristics = this.getAllHeuristics(rightPatterns, allPoints);
+      let productHeuristics = leftHeuristics.map((h,i) => h * rightHeuristics[i]);
+      let indexOfBest = indexOfMax(productHeuristics);
+      if (leftPatterns.length > 11) {
+        console.log(leftPatterns.length, currentHeuristicValue, productHeuristics, indexOfBest, leftHeuristics[indexOfBest], rightHeuristics[indexOfBest]);
+      }
+      if (Math.max(leftHeuristics[indexOfBest], rightHeuristics[indexOfBest]) > currentHeuristicValue) {
+        let leftPattern = pattern.slice(indexOfBest);
+        let rightPattern = pattern.slice(0, indexOfBest);
+        return _.flatten([this.dividePattern(leftPattern, allPoints, optimDim), this.dividePattern(rightPattern, allPoints, optimDim)]);
+      }
+    }
+    return [pattern];
+  }
+
+  private getLeftPatterns(pattern) {
+    return pattern.map((p,i) => pattern.slice(i));
+  }
+
+  private getRightPatterns(pattern) {
+    return pattern.map((p,i) => pattern.slice(0,i+1)).reverse();
+  }
+
+  private getAllHeuristics(patterns, allPoints) {
+    return patterns.map(s => this.heuristic(s, null, null, allPoints)); //TODO SOMEHOW GET OCCURRENCES!!
+  }
+
   private findFirstBetterSubPattern(subPatterns, allPoints, currentHeuristicValue: number) {
-    let potentialComps = subPatterns.map(s => this.heuristic(s, allPoints));
-    var firstBetterIndex = potentialComps.findIndex(c => c > currentHeuristicValue);
-    return [firstBetterIndex, potentialComps[firstBetterIndex]];
+    let potentialHeuristics = this.getAllHeuristics(subPatterns, allPoints);
+    var firstBetterIndex = potentialHeuristics.findIndex(c => c > currentHeuristicValue);
+    if (subPatterns.length > 14) {
+      console.log(subPatterns.length, currentHeuristicValue, potentialHeuristics, firstBetterIndex);
+    }
+    return [firstBetterIndex, potentialHeuristics[firstBetterIndex]];
   }
 
   //takes an array of arrays of vectors and calculates their intersection
