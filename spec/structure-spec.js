@@ -2,6 +2,7 @@ import { DymoStore } from '../src/io/dymostore'
 import { GlobalVars } from '../src/globals/globals'
 import { ONSET_FEATURE, PITCH_FEATURE } from '../src/globals/uris'
 import { DymoStructureInducer } from '../src/generator/dymo-structure'
+import { StructureInducer } from '../src/structure/structure'
 import { Siatec } from '../src/structure/siatec'
 import { Cosiatec } from '../src/structure/cosiatec'
 import { Quantizer, QUANT_FUNCS } from '../src/structure/quantizer'
@@ -53,8 +54,14 @@ describe("a structure induction algorithm", function() {
 
 	});
 
+	it ("can build a hierarchy from patterns", function() {
+		var inducer = new StructureInducer(vectors);
+		var structure = inducer.getStructure(0);
+		expect(JSON.stringify(structure)).toEqual("[0,[1,2,3,4],[5,6],7]");
+	});
+
 	it("can find repeating geometric patterns", function() {
-		var siatec = new Siatec(vectors, HEURISTICS.COMPACTNESS2, false);
+		var siatec = new Siatec(vectors);
 		var patterns = siatec.getPatterns();
 
 		expect(patterns.length).toBe(17);
@@ -69,8 +76,8 @@ describe("a structure induction algorithm", function() {
 		console.log(JSON.stringify(minimized));
 		expect(patterns[5].length).toBe(4);
 		expect(minimized.length).toBe(3);
-		expect(HEURISTICS.COMPACTNESS2(patterns[5], null, vectors)).toBe(0.25);
-		expect(HEURISTICS.COMPACTNESS2(minimized, null, vectors)).toBe(0.5);
+		expect(HEURISTICS.COMPACTNESS2(patterns[5], null, null, vectors)).toBe(0.25);
+		expect(HEURISTICS.COMPACTNESS2(minimized, null, null, vectors)).toBe(0.5);
 
 		var divided = siatec.dividePattern(patterns[5], vectors);
 		console.log(JSON.stringify(divided));
@@ -81,29 +88,29 @@ describe("a structure induction algorithm", function() {
 
 	it("can select the best patterns", function() {
 		//non-overlapping patterns
-		var cosiatec = new Cosiatec(vectors, HEURISTICS.COMPACTNESS2, false);
+		var cosiatec = new Cosiatec(vectors);
 		var patterns = cosiatec.getPatterns();
 		expect(JSON.stringify(patterns)).toEqual("[[[1,1],[2,2]],[[1,3]]]");
 
 		//overlapping patterns
-		cosiatec = new Cosiatec(vectors, HEURISTICS.COMPACTNESS2, true);
+		cosiatec = new Cosiatec(vectors, {overlapping: true});
 		patterns = cosiatec.getPatterns();
 		expect(JSON.stringify(patterns)).toEqual("[[[1,1],[2,2]],[[2,1],[2,2]],[[1,1],[1,3],[2,2]]]");
 	});
 
 
 	it("has various different heuristics", function() {
-		var siatec = new Siatec(vectors, HEURISTICS.COMPACTNESS2, false);
+		var siatec = new Siatec(vectors);
 		var patterns = siatec.getPatterns();
 		var occurrences = siatec.getOccurrences();
 
-		var coverage = patterns.map((p,i) => HEURISTICS.COVERAGE(p, occurrences[i], vectors));
+		var coverage = patterns.map((p,i) => HEURISTICS.COVERAGE(p, null, occurrences[i], vectors));
 		expect(coverage).toEqual([ 0.375, 0.75, 0.75, 1, 0.75, 0.75, 1, 1, 1, 0.75, 0.75, 1, 1, 0.75, 1, 1, 1 ]);
 
-		var compactness = patterns.map(p => HEURISTICS.COMPACTNESS(p, null, vectors));
+		var compactness = patterns.map(p => HEURISTICS.COMPACTNESS(p, null, null, vectors));
 		expect(compactness).toEqual([ 0.25, 0.2, 0.2, 0.125, 0.2, 0.14285714285714285, 0.125, 0.125, 0.125, 0.3333333333333333, 0.3333333333333333, 0.125, 0.125, 0.3333333333333333, 0.125, 0.125, 0.125 ]);
 
-		var compactness2 = patterns.map(p => HEURISTICS.COMPACTNESS2(p, null, vectors));
+		var compactness2 = patterns.map(p => HEURISTICS.COMPACTNESS2(p, null, null, vectors));
 		expect(compactness2).toEqual([ 0.3333333333333333, 0.25, 0.25, 0.125, 0.3333333333333333, 0.25, 0.125, 0.125, 0.125, 0.5, 0.5, 0.125, 0.125, 0.5, 0.125, 0.125, 0.125 ]);
 	});
 

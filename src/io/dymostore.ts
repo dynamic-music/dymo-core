@@ -125,8 +125,12 @@ export class DymoStore extends EasyStore {
 	}
 
 	setParts(dymoUri, partUris) {
-		this.deleteList(dymoUri, uris.HAS_PART);
+		this.removeParts(dymoUri);
 		this.addObjectsToList(dymoUri, uris.HAS_PART, partUris);
+	}
+
+	removeParts(dymoUri) {
+		this.deleteList(dymoUri, uris.HAS_PART);
 	}
 
 	replacePartAt(dymoUri, partUri, index) {

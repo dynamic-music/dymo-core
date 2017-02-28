@@ -35,7 +35,7 @@ export module DymoTemplates {
 	export function createStructuredDymoFromFeatures(generator, source, featureUris, conditions, options, onLoad) {
 		var dymoUri = generator.addDymo(undefined, source);
 		this.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
-			DymoStructureInducer.addStructureToDymo(generator.getCurrentTopDymo(), generator.getStore(), options);
+			DymoStructureInducer.testSmithWaterman(generator.getCurrentTopDymo(), generator.getStore(), options);
 			generator.addRendering();
 			onLoad();
 		});

@@ -11,8 +11,7 @@ export module DymoStructureInducer {
   export function addStructureToDymo(dymoUri, store, options) {
     var surfaceDymos = getAllParts([dymoUri], store);
     var points = toVectors(surfaceDymos, store, false, true);
-    var stucture = new StructureInducer(points, options);
-    var occurrences = stucture.getOccurrences(options.patternIndices);
+    var occurrences = new StructureInducer(points, options).getOccurrences(options.patternIndices);
     var patternDymos = [];
     for (var i = 0; i < occurrences.length; i++) {
       var currentPatternDymo = store.addDymo((CONTEXT_URI+"pattern"+i), dymoUri);
@@ -30,6 +29,38 @@ export module DymoStructureInducer {
       updateAverageFeatures(currentPatternDymo, occDymos, features, store);
     }
     store.setParts(dymoUri, patternDymos);
+  }
+
+  export function addStructureToDymo2(dymoUri, store, options) {
+    var surfaceDymos = getAllParts([dymoUri], store);
+    var points = toVectors(surfaceDymos, store, false, true);
+    var structure = new StructureInducer(points, options).getStructure();
+
+    store.removeParts(dymoUri);
+    var features = store.findAllObjects(surfaceDymos[0], HAS_FEATURE).map(f => store.findObject(f, TYPE));
+    recursiveCreateDymoStructure(structure, [], dymoUri, surfaceDymos, features, store);
+  }
+
+  export function testSmithWaterman(dymoUri, store, options) {
+    var surfaceDymos = getAllParts([dymoUri], store);
+    var points = toVectors(surfaceDymos, store, false, true);
+    console.log(JSON.stringify(new StructureInducer(points, options).getSmithWaterman()));
+  }
+
+  function recursiveCreateDymoStructure(structure, currentPath, currentParentUri, leafDymos, features, store) {
+    for (let i = 0; i < structure.length; i++) {
+      if (typeof structure[i] === 'number') {
+        let leafDymo = leafDymos[structure[i]];
+        store.addPart(currentParentUri, leafDymo);
+      } else {
+        let currentSubPath = currentPath.concat(i);
+        let segmentUri = store.addDymo((CONTEXT_URI+"segment"+currentSubPath.join('.')), currentParentUri);
+        recursiveCreateDymoStructure(structure[i], currentSubPath, segmentUri, leafDymos, features, store);
+        //after the recursion call, the children are there
+        let children = store.findParts(segmentUri);
+        updateAverageFeatures(segmentUri, children, features, store);
+      }
+    }
   }
 
   function updateAverageFeatures(parent, children, features, store) {

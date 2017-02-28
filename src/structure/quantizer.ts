@@ -1,4 +1,3 @@
-import * as math from 'mathjs'
 import * as _ from 'lodash'
 import * as clusterfck from 'clusterfck'
 import { indicesOfNMax } from '../util/arrays'
@@ -73,7 +72,7 @@ function scale(values: number[]): number[] {
 /** normalizes all values in an array */
 function normalize(values: number[]): number[] {
 	var mean = _.mean(values);
-	var std = Math.sqrt(_.sum(values.map(v => Math.pow((v - mean), 2))) / values.length);
+	var std = std(values, mean);
 	return values.map(v => (v-mean)/std);
 }
 
@@ -97,6 +96,10 @@ function sort(values: number[][]): number[][] {
 	return values.map(v => _.sortBy(v));
 }
 
+function std(values: number[], mean: number): number {
+	return Math.sqrt(_.sum(values.map(v => Math.pow((v - mean), 2))) / values.length);
+}
+
 function toArrayMap(func: (x:number)=>number): ArrayMap {
 	return (values: number[]) => values.map(v => func(v));
 }
@@ -114,8 +117,10 @@ export class Quantizer {
 	}
 
 	getQuantizedPoints(points: (number|number[])[][]): number[][] {
-		points = this.dimFuncs.map((f,i) => f(points.map(p => p[i])));
-		points = _.zip(...points);
+		if (this.dimFuncs.length > 0) {
+			points = this.dimFuncs.map((f,i) => f(points.map(p => p[i])));
+			points = _.zip(...points);
+		}
 		return points.map(p => _.flatten(p));
 	}
 
@@ -138,8 +143,8 @@ export class Quantizer {
 					currentDim.push(vectors[j][i]);
 				}
 			}
-			means[i] = math.mean(currentDim);
-			vars[i] = math.var(currentDim);
+			means[i] = _.mean(currentDim);
+			vars[i] = std(currentDim, means[i]);
 		}
 		return vectors.map(v => v.map((e,i) => (e-means[i])/vars[i]));
 	}
