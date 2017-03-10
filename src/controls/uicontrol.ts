@@ -2,18 +2,15 @@ import { BUTTON, TOGGLE } from '../globals/uris'
 
 /**
  * A wrapper for dymo-core controls to be used as Angular UI controls.
- * @param {Object=} $scope angular scope, used to call $scope.$apply (optional)
  */
 export class UIControl {
 
 	private control;
 	private value;
-	private $scope;
 
-	constructor(control, $scope?) {
+	constructor(control) {
 		this.value = control.getValue();
 		this.control = control;
-		this.$scope = $scope;
 		this.control.setUpdateFunction(this.updateFunction);
 	}
 
@@ -50,11 +47,6 @@ export class UIControl {
 			}
 		} else {
 			this.value = newValue;
-		}
-		if (this.$scope) {
-			setTimeout(function() {
-				this.$scope.$apply();
-			}, 10);
 		}
 	}
 

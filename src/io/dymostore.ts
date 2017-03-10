@@ -16,14 +16,21 @@ export class DymoStore extends EasyStore {
 	private dymoSimpleContextPath = "http://tiny.cc/dymo-context-simple";
 	private dymoBasePaths = {};
 
-	//creates the store and loads some basic ontology files
-	constructor(callback?: Function) {
+	//creates the store
+	constructor() {
 		super();
-		this.loadFileIntoStore(this.dymoOntologyPath, false, () => {
-			this.loadFileIntoStore(this.mobileOntologyPath, false, () => {
-				if (callback) {
-					callback();
-				}
+	}
+
+	//loads some basic ontology files
+	loadOntologies(): Promise<any> {
+		console.log("hmmmm")
+		return new Promise((resolve, reject) => {
+			console.log("HELLO")
+			this.loadFileIntoStore(this.dymoOntologyPath, false, () => {
+				this.loadFileIntoStore(this.mobileOntologyPath, false, () => {
+					console.log("DONE")
+					resolve();
+				});
 			});
 		});
 	}
@@ -200,7 +207,7 @@ export class DymoStore extends EasyStore {
 		this.addTriple(renderingUri, uris.HAS_DYMO, dymoUri);
 	}
 
-	addMapping(ownerUri, mappingFunction, targetList, targetFunction, rangeUri) {
+	addMapping(ownerUri: string, mappingFunction, targetList, targetFunction, rangeUri: string) {
 		var mappingUri = this.createBlankNode();
 		this.addTriple(mappingUri, uris.TYPE, uris.MAPPING);
 		if (ownerUri) {

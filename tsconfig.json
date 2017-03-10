@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "outDir": "./build",
-        "allowJs": true,
+        "outDir": "./lib",
+        "allowJs": false,
         "declaration": true,
         "module": "commonjs",
         "target": "es2015",

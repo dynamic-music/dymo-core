@@ -2,43 +2,44 @@ import { SIMILARITY_NAVIGATOR, GRAPH_NAVIGATOR, LEVEL_FEATURE, ONSET_FEATURE, PI
 	 ONSET } from '../globals/uris'
 import { GlobalVars } from '../globals/globals'
 import { DymoStructureInducer } from './dymo-structure'
+import { DymoGenerator } from './dymo-generator'
 import { FeatureLoader } from './feature-loader'
 
 export module DymoTemplates {
 
-	export function createSingleSourceDymoFromFeatures(generator, source, featureUris, conditions, onLoad) {
+	export function createSingleSourceDymoFromFeatures(generator, source, featureUris, conditions) {
 		var dymoUri = generator.addDymo(undefined, source);
-		this.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, onLoad);
+		loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
+		.then(r => {console.log("LOADED"); generator.updateManager();});
 	}
 
-	export function createMultiSourceDymo(generator, parentDymo, dymoType, sources, featureUris, onLoad) {
+	export function createMultiSourceDymo(generator, parentDymo, dymoType, sources, featureUris): Promise<string> {
 		var conjunctionDymo = generator.addDymo(parentDymo, null, dymoType);
 		var loadSources = sources.map((s,i) => new Promise(resolve => {
 			var dymoUri = generator.addDymo(conjunctionDymo, s);
-			this.loadMultipleFeatures(generator, dymoUri, featureUris[i], null, resolve);
+			return loadMultipleFeatures(generator, dymoUri, featureUris[i], null);
 		}));
-		Promise.all(loadSources)
-			.then(r => onLoad(conjunctionDymo));
+		return Promise.all(loadSources)
+			.then(r => conjunctionDymo);
 	}
 
-	export function createSimilarityDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
+	export function createSimilarityDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold) {
 		var dymoUri = generator.addDymo(undefined, source);
-		this.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
-			DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
-			generator.addRendering();
-			generator.addNavigator(SIMILARITY_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 0");
-			//generator.updateGraphs();
-			onLoad();
-		});
+		loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
+			.then(r => {
+				DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
+				generator.addRendering();
+				generator.addNavigator(SIMILARITY_NAVIGATOR, {"d":LEVEL_FEATURE}, "return d == 0");
+			});
 	}
 
-	export function createStructuredDymoFromFeatures(generator, source, featureUris, conditions, options, onLoad) {
+	export function createStructuredDymoFromFeatures(generator, source, featureUris, conditions, options) {
 		var dymoUri = generator.addDymo(undefined, source);
-		this.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
-			DymoStructureInducer.testSmithWaterman(generator.getCurrentTopDymo(), generator.getStore(), options);
-			generator.addRendering();
-			onLoad();
-		});
+		loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
+			.then(r => {
+				DymoStructureInducer.testSmithWaterman(generator.getCurrentTopDymo(), generator.getStore(), options);
+				generator.addRendering();
+			});
 	}
 
 	export function createSimilaritySuccessorDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
@@ -149,7 +150,7 @@ export module DymoTemplates {
 		}
 	}*/
 
-	function getUris(dir, files, names, conditions) {
+	/*function getUris(dir, files, names, conditions) {
 		var uris = [];
 		var conds = [];
 		for (var i = 0, l = names.length; i < l; i++) {
@@ -160,16 +161,15 @@ export module DymoTemplates {
 			}
 		}
 		return [uris, conds];
-	}
+	}*/
 
-	export function loadMultipleFeatures(generator, dymoUri, featureUris, conditions, onLoad) {
+	function loadMultipleFeatures(generator: DymoGenerator, dymoUri: string, featureUris: string[], conditions: string[]): Promise<any> {
 		//Benchmarker.startTask("loadFeatures")
 		var loader = new FeatureLoader(generator, dymoUri);
 		var loadFeatures = featureUris.map((f,i) => new Promise(resolve =>
 			loader.loadFeature(f, conditions?conditions[i]:null, resolve)
 		));
-		Promise.all(loadFeatures)
-			.then(r => onLoad());
+		return Promise.all(loadFeatures);
 	}
 
 	export function createSebastianDymo(generator, scheduler, $http) {

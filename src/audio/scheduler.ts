@@ -1,5 +1,7 @@
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable } from 'rxjs/Observable';
 import { GlobalVars } from '../globals/globals'
-import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER } from '../globals/uris'
+import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER, CONTEXT_URI } from '../globals/uris'
 import { flattenArray, removeDuplicates } from '../util/arrays'
 import { SchedulerThread } from './thread'
 
@@ -8,34 +10,31 @@ import { SchedulerThread } from './thread'
  */
 export class Scheduler {
 
-	private audioContext;
-	private onPlaybackChange;
 	private buffers = {};
-	private threads = [];
-	private urisOfPlayingDymos = [];
+	private threads: SchedulerThread[] = [];
+	private playingDymoUris: BehaviorSubject<string[]> = new BehaviorSubject([]);
 
 	private convolverSend;
 	private delaySend;
-	private numCurrentlyLoading = 0;
 
-	constructor(audioContext, onPlaybackChange?: Function) {
-		this.audioContext = audioContext;
-		this.onPlaybackChange = onPlaybackChange;
+	constructor(private audioContext) { }
+
+	getPlayingDymoUris(): Observable<string[]> {
+		return this.playingDymoUris.asObservable();
 	}
 
-	init(reverbFile, dymoUris, callback) {
+	init(reverbFile, dymoUris): Promise<any> {
 		//init horizontal listener orientation in degrees
 		GlobalVars.DYMO_STORE.addParameter(null, LISTENER_ORIENTATION, 0, self);
-		this.loadBuffers(dymoUris, callback);
+		let loadingPromises = this.loadBuffers(dymoUris);
+
 		//init reverb if needed
 		if (reverbFile && GlobalVars.DYMO_STORE.find(null, null, REVERB).length > 0) {
 			this.convolverSend = this.audioContext.createConvolver();
 			this.convolverSend.connect(this.audioContext.destination);
-			this.loadAudio(reverbFile, buffer => {
-				this.convolverSend.buffer = buffer;
-				this.bufferLoaded(callback);
-			});
+			loadingPromises.push(this.loadReverbFile(reverbFile));
 		}
+
 		//init delay if needed
 		if (GlobalVars.DYMO_STORE.find(null, null, DELAY).length > 0) {
 			var delaySend = this.audioContext.createDelay();
@@ -48,9 +47,19 @@ export class Scheduler {
 		}
 		//start observing play parameters
 		GlobalVars.DYMO_STORE.addTypeObserver(PLAY, VALUE, self);
+		return Promise.all(loadingPromises);
 	}
 
-	private loadBuffers(dymoUris: string[], callback) {
+	private loadReverbFile(reverbFile): Promise<any> {
+		return new Promise(resolve =>
+			this.loadAudio(reverbFile, buffer => {
+				this.convolverSend.buffer = buffer;
+				resolve();
+			})
+		);
+	}
+
+	private loadBuffers(dymoUris: string[]): Promise<void>[] {
 		//let allPaths = [];
 		//console.log(GlobalVars.DYMO_STORE.find(null, HAS_PART).map(r => r.subject + " " + r.object));
 		let allPaths = flattenArray(dymoUris.map(uri =>
@@ -58,31 +67,21 @@ export class Scheduler {
 		));
 		allPaths = allPaths.filter(p => typeof p === "string");
 		allPaths = removeDuplicates(allPaths);
-		allPaths.map(path => {
+		return allPaths.map(path => new Promise(resolve => {
 			//only add if not there yet..
 			if (!this.buffers[path]) {
 				this.loadAudio(path, buffer => {
 					this.buffers[path] = buffer;
-					this.bufferLoaded(callback);
+					resolve();
 				});
+			} else {
+				resolve();
 			}
-		});
-		if (this.numCurrentlyLoading == 0 && callback) {
-			callback();
-		}
+		}));
 	}
 
 	getBuffer(dymoUri) {
 		return this.buffers[GlobalVars.DYMO_STORE.getSourcePath(dymoUri)];
-	}
-
-	private bufferLoaded(callback?: Function) {
-		if (this.numCurrentlyLoading > 0) {
-			this.numCurrentlyLoading--;
-		}
-		if (this.numCurrentlyLoading == 0 && callback) {
-			callback();
-		}
 	}
 
 	updateNavigatorPosition(dymoUri, level, position) {
@@ -120,11 +119,11 @@ export class Scheduler {
 	}
 
 	play(dymoUri, navigator?: Navigator) {
-		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.buffers, this.convolverSend, this.delaySend, this.updatePlayingDymos, this.threadEnded.bind(this));
+		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.buffers, this.convolverSend, this.delaySend, this.updatePlayingDymos.bind(this), this.threadEnded.bind(this));
 		this.threads.push(thread);
 	}
 
-	pause(dymoUri) {
+	/*pause(dymoUri) {
 		if (dymoUri) {
 			for (var i = 0; i < this.threads.length; i++) {
 				this.threads[i].pause(dymoUri);
@@ -132,7 +131,7 @@ export class Scheduler {
 		} else {
 
 		}
-	}
+	}*/
 
 	stop(dymoUri) {
 		if (dymoUri) {
@@ -144,7 +143,7 @@ export class Scheduler {
 		}
 	}
 
-	/** @private returns all sources correponding to the given dymo */
+	/*//returns all sources correponding to the given dymo
 	private getSources(dymoUri) {
 		var sources = [];
 		for (var i = 0; i < this.threads.length; i++) {
@@ -156,27 +155,26 @@ export class Scheduler {
 			}
 		}
 		return sources;
-	}
+	}*/
 
 	private threadEnded(thread) {
 		this.threads.splice(this.threads.indexOf(thread), 1);
 	}
 
-	private updatePlayingDymos(changedThread) {
+	private updatePlayingDymos(changedThread: SchedulerThread) {
 		if (!GlobalVars.OPTIMIZED_MODE) {
-			var uris = Array.from(changedThread.getAllSources().keys());
+			let uris = flattenArray(this.threads.map(t => Array.from(t.getAllSources().keys())));
+			uris = removeDuplicates(uris);
 			uris = flattenArray(uris.map(d => GlobalVars.DYMO_STORE.findAllParents(d)));
 			uris = removeDuplicates(uris);
 			uris.sort();
-			this.urisOfPlayingDymos = uris;
-			if (this.onPlaybackChange) {
-				this.onPlaybackChange(this.urisOfPlayingDymos);
-			}
+			uris = uris.map(uri => uri.replace(CONTEXT_URI, ""));
+			this.playingDymoUris.next(uris);
 		}
 	}
 
 	getUrisOfPlayingDymos() {
-		return this.urisOfPlayingDymos;
+		return this.playingDymoUris;
 	}
 
 	observedValueChanged(paramUri, paramType, value) {
@@ -194,8 +192,6 @@ export class Scheduler {
 	}
 
 	private loadAudio(path, callback) {
-		//console.log(path)
-		this.numCurrentlyLoading++;
 		var request = new XMLHttpRequest();
 		request.open('GET', path, true);
 		request.responseType = 'arraybuffer';

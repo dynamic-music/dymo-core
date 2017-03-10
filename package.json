@@ -6,7 +6,7 @@
   "typings": "build/index",
   "files": [
     "audio/",
-    "build/"
+    "lib/"
   ],
   "repository": {
     "type": "git",
@@ -58,6 +58,7 @@
     "logicjs": "git://github.com/florianthalmann/LogicJS.git",
     "mathjs": "*",
     "n3": "*",
+    "rxjs": "^5.2.0",
     "soundtouch-js": "git://github.com/florianthalmann/soundtouch-js.git"
   }
 }
