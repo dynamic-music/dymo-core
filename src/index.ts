@@ -13,3 +13,6 @@ export { DymoTemplates } from './generator/dymo-templates'
 export { QUANT_FUNCS } from './structure/quantizer'
 export { HEURISTICS } from './structure/heuristics'
 export { OPTIMIZATION } from './structure/siatec'
+
+//structure exports
+import { IterativeSmithWatermanResult } from './structure/structure'

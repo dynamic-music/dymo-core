@@ -2,15 +2,17 @@ import { SIMILARITY_NAVIGATOR, GRAPH_NAVIGATOR, LEVEL_FEATURE, ONSET_FEATURE, PI
 	 ONSET } from '../globals/uris'
 import { GlobalVars } from '../globals/globals'
 import { DymoStructureInducer } from './dymo-structure'
+import { IterativeSmithWatermanResult } from '../structure/structure'
 import { DymoGenerator } from './dymo-generator'
 import { FeatureLoader } from './feature-loader'
 
 export module DymoTemplates {
 
-	export function createSingleSourceDymoFromFeatures(generator, source, featureUris, conditions) {
+	export function createSingleSourceDymoFromFeatures(generator, source, featureUris, conditions): Promise<string> {
 		var dymoUri = generator.addDymo(undefined, source);
-		loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
-		.then(r => {console.log("LOADED"); generator.updateManager();});
+		return loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
+			.then(r => generator.getManager().reloadFromStore())
+			.then(r => dymoUri);
 	}
 
 	export function createMultiSourceDymo(generator, parentDymo, dymoType, sources, featureUris): Promise<string> {
@@ -33,13 +35,23 @@ export module DymoTemplates {
 			});
 	}
 
-	export function createStructuredDymoFromFeatures(generator, source, featureUris, conditions, options) {
-		var dymoUri = generator.addDymo(undefined, source);
-		loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
+	export function createStructuredDymoFromFeatures(generator, options): Promise<IterativeSmithWatermanResult> {
+		DymoStructureInducer.flattenStructure(generator.getCurrentTopDymo(), generator.getManager().getStore());
+		return generator.getManager().reloadFromStore()
 			.then(r => {
-				DymoStructureInducer.testSmithWaterman(generator.getCurrentTopDymo(), generator.getStore(), options);
+				let result = DymoStructureInducer.testSmithWaterman(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
+				//DymoStructureInducer.addStructureToDymo2(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
 				generator.addRendering();
+				return generator.getManager().reloadFromStore()
+				 .then(r => result);
 			});
+	}
+
+	export function testSmithWatermanComparison(generator, options, uri1, uri2): Promise<void> {
+		DymoStructureInducer.compareSmithWaterman(uri1, uri2, generator.getManager().getStore(), options);
+		//DymoStructureInducer.addStructureToDymo2(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
+		generator.addRendering();
+		return generator.getManager().reloadFromStore();
 	}
 
 	export function createSimilaritySuccessorDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold, onLoad) {

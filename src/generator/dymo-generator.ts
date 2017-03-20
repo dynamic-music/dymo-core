@@ -14,7 +14,7 @@ import { Feature } from './types';
 export class DymoGenerator {
 
 	private manager: DymoManager;
-	private storeReady: Promise<DymoStore>;
+	private ready: Promise<any>;
 	private currentTopDymo; //the top dymo for the current audio file
 	private currentRenderingUri;
 	private features: BehaviorSubject<Feature[]>;
@@ -26,17 +26,21 @@ export class DymoGenerator {
 	constructor() {
 		this.features = new BehaviorSubject([]);
 		this.manager = new DymoManager(new AudioContext(), null, false, null);
-		this.storeReady = this.init();
+		this.ready = this.init();
 	}
 
-	private init(): Promise<DymoStore> {
-		return new Promise((resolve, reject) => {
+	private init(): Promise<any> {
+		return new Promise(resolve => {
 			this.manager.init()
 			.then(r => {
 				this.resetDymo();
-				resolve(this.manager.getStore());
+				resolve();
 			})
 		});
+	}
+
+	isReady(): Promise<any> {
+		return this.ready;
 	}
 
 	resetDymo() {
@@ -47,10 +51,6 @@ export class DymoGenerator {
 
 	getManager(): DymoManager {
 		return this.manager;
-	}
-
-	updateManager() {
-		this.manager.reloadFromStore();
 	}
 
 	getFeatures(): Observable<Feature[]> {
@@ -181,7 +181,7 @@ export class DymoGenerator {
 
 	addSegmentation(segments, dymoUri) {
 		this.initTopDymoIfNecessary();
-		var maxLevel = this.manager.getStore().findMaxLevel();
+		var maxLevel = this.manager.getStore().findMaxLevel(this.currentTopDymo);
 		for (var i = 0; i < segments.length; i++) {
 			var parentUri = this.getSuitableParent(segments[i].time, maxLevel, dymoUri);
 			var startTime = segments[i].time;
@@ -288,7 +288,6 @@ export class DymoGenerator {
 	}
 
 	private internalAddFeature(name, uri, min?: number, max?: number): Feature {
-		console.log(name, uri, min, max)
 		//complete attributes if necessary
 		name = !name && uri ? URI_TO_TERM[uri] : name;
 		uri = name && !uri ? CONTEXT_URI+name : uri;

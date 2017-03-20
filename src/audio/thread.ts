@@ -119,7 +119,7 @@ export class SchedulerThread {
 				source.stop(startTime);
 			}
 		}
-		setTimeout(() => this.onChanged(this), delay);
+		setTimeout(() => this.onChanged(this), delay+50);
 		//create next sources and wait or end and reset
 		this.nextSources = this.createNextSources();
 		if (this.nextSources && this.nextSources.size > 0) {
@@ -166,7 +166,7 @@ export class SchedulerThread {
 		if (sourceList.length <= 0) {
 			this.sources.delete(source.getDymoUri());
 		}
-		this.onChanged(this);
+		setTimeout(() => this.onChanged(this), 50);
 		this.endThreadIfNoMoreSources();
 	}
 

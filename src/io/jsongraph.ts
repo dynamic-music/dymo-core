@@ -1,5 +1,6 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
+import { DymoStore } from './dymostore';
 
 export interface JsonGraph {
   nodes: Object[],
@@ -14,14 +15,13 @@ export interface JsonEdge {
 
 export class JsonGraphSubject extends BehaviorSubject<JsonGraph> {
 
-  constructor(private nodeClass, private edgeProperty, private store) {
+  constructor(private nodeClass: string, private edgeProperty: string, private store: DymoStore, private cacheNodes?: boolean) {
     super({nodes:[], edges:[]});
   }
 
   update() {
-    this.store.toJsonGraph(this.nodeClass, this.edgeProperty, graph => {
-      this.next(graph);
-    });
+    this.store.toJsonGraph(this.nodeClass, this.edgeProperty, this.cacheNodes ? this.getValue() : null)
+      .then(graph => this.next(graph));
   }
 
 }

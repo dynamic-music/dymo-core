@@ -370,17 +370,20 @@ export class EasyStore {
 		return [subjectUris, predicateUris];
 	}
 
-	/** return all triples about the given uri and its affiliated objects, stops at objects of the given type */
-	recursiveFindAllTriples(uri, type?: string) {
+	/** return all triples about the given uri and its affiliated objects, stops at objects of the given type, or
+		at the given predicates */
+	recursiveFindAllTriples(uri, type?: string, predicates?: string[]) {
 		//find all triples for given uri
 		var triples = this.store.find(uri, null, null);
 		var subTriples = [];
 		for (var i = triples.length-1; i >= 0; i--) {
 			//remove all triples whose object is of the given type
-			if (type && this.store.find(triples[i].object, TYPE, type).length > 0) {
+			if (predicates && predicates.indexOf(triples[i].predicate) >= 0) {
+				triples.splice(i, 1);
+			} else if (type && this.store.find(triples[i].object, TYPE, type).length > 0) {
 				triples.splice(i, 1);
 			} else {
-				subTriples = subTriples.concat(this.recursiveFindAllTriples(triples[i].object, type));
+				subTriples = subTriples.concat(this.recursiveFindAllTriples(triples[i].object, type, predicates));
 			}
 		}
 		return triples.concat(subTriples);
@@ -529,17 +532,19 @@ export class EasyStore {
 
 	///////// WRITING FUNCTIONS //////////
 
-	toRdf(callback) {
+	toRdf(): Promise<string> {
 		var allTriples = this.store.find(null, null, null);
-		this.triplesToRdf(allTriples, callback);
+		return this.triplesToRdf(allTriples);
 	}
 
-	triplesToRdf(triples, callback) {
-		var writer = Writer({ format: 'application/nquads' }, null);
-		for (var i = 0; i < triples.length; i++) {
-			writer.addTriple(triples[i]);
-		}
-		writer.end((err, rdf) => callback(rdf));
+	triplesToRdf(triples): Promise<string> {
+		return new Promise(resolve => {
+			var writer = Writer({ format: 'application/nquads' }, null);
+			for (var i = 0; i < triples.length; i++) {
+				writer.addTriple(triples[i]);
+			}
+			writer.end((err, rdf) => resolve(rdf));
+		});
 	}
 
 	logData() {

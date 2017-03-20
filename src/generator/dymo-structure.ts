@@ -1,17 +1,39 @@
 import * as math from 'mathjs'
 import * as _ from 'lodash'
 import { HAS_FEATURE, TYPE, CONTEXT_URI } from '../globals/uris'
-import { StructureInducer } from '../structure/structure'
+import { StructureInducer, IterativeSmithWatermanResult } from '../structure/structure'
 import { Similarity } from '../structure/similarity'
 import { Quantizer } from '../structure/quantizer'
+import { SmithWaterman } from '../structure/smith-waterman'
 
 export module DymoStructureInducer {
+
+  export function flattenStructure(dymoUri, store) {
+    let leaves = recursiveFlatten(dymoUri, store);
+    store.setParts(dymoUri, leaves);
+  }
+
+  function recursiveFlatten(dymoUri: string, store, parentUri?: string) {
+    let parts = getAllParts([dymoUri], store);
+    if (parts.length > 0) {
+      if (parentUri) {
+        store.removeDymo(dymoUri);
+      }
+      return _.uniq(_.flatten(parts.map(p => recursiveFlatten(p, store, dymoUri))));
+    } else {
+      return dymoUri;
+    }
+  }
 
   //adds a hierarchical structure to the subdymos of the given dymo in the given store
   export function addStructureToDymo(dymoUri, store, options) {
     var surfaceDymos = getAllParts([dymoUri], store);
     var points = toVectors(surfaceDymos, store, false, true);
     var occurrences = new StructureInducer(points, options).getOccurrences(options.patternIndices);
+    createStructure(occurrences, store, dymoUri, surfaceDymos);
+  }
+
+  function createStructure(occurrences: number[][][], store, dymoUri, surfaceDymos) {
     var patternDymos = [];
     for (var i = 0; i < occurrences.length; i++) {
       var currentPatternDymo = store.addDymo((CONTEXT_URI+"pattern"+i), dymoUri);
@@ -29,6 +51,8 @@ export module DymoStructureInducer {
       updateAverageFeatures(currentPatternDymo, occDymos, features, store);
     }
     store.setParts(dymoUri, patternDymos);
+    var freeSurfaceDymos = _.intersection(store.findTopDymos(), surfaceDymos);
+    freeSurfaceDymos.forEach(d => store.addPart(dymoUri, d));
   }
 
   export function addStructureToDymo2(dymoUri, store, options) {
@@ -41,10 +65,31 @@ export module DymoStructureInducer {
     recursiveCreateDymoStructure(structure, [], dymoUri, surfaceDymos, features, store);
   }
 
-  export function testSmithWaterman(dymoUri, store, options) {
+  export function testSmithWaterman(dymoUri, store, options): IterativeSmithWatermanResult {
+    //this.flattenStructure(dymoUri, store);
     var surfaceDymos = getAllParts([dymoUri], store);
     var points = toVectors(surfaceDymos, store, false, true);
-    console.log(JSON.stringify(new StructureInducer(points, options).getSmithWaterman()));
+    //TODO ADD SORTING DIM TO OPTIONS!!!
+    let zipped = _.zip(surfaceDymos, points);
+    zipped.sort((a,b) => a[1][2]-b[1][2]);
+    [surfaceDymos, points] = _.unzip(zipped);
+    //console.log(JSON.stringify(new StructureInducer(points, options).getSmithWaterman()));
+    let result = new StructureInducer(points, options).getSmithWatermanOccurrences(options);
+    createStructure(result.segments, store, dymoUri, surfaceDymos);
+    return result;
+  }
+
+  export function compareSmithWaterman(uri1, uri2, store, options) {
+    var points1 = quant(uri1, options, store).map(p => p.slice(0,3));
+    var points2 = quant(uri2, options, store).map(p => p.slice(0,3));
+    new SmithWaterman().run(points1, points2);
+  }
+
+  function quant(uri, options, store) {
+    let points = toVectors(getAllParts([uri], store), store, false, true);
+    let quantizerFuncs = options ? options.quantizerFunctions : [];
+    let quantizer = new Quantizer(quantizerFuncs);
+    return quantizer.getQuantizedPoints(points);
   }
 
   function recursiveCreateDymoStructure(structure, currentPath, currentParentUri, leafDymos, features, store) {

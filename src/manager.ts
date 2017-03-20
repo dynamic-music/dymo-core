@@ -35,10 +35,9 @@ export class DymoManager {
 	}
 
 	init(): Promise<any> {
-		console.log("INIT")
 		return new Promise((resolve, reject) => {
 			GlobalVars.DYMO_STORE.loadOntologies()
-				.then(r => {console.log("RESOLVE");resolve()});
+				.then(r => resolve());
 		});
 	}
 
@@ -54,8 +53,8 @@ export class DymoManager {
 		return this.processLoadedDymoAndRendering(loader, dymo, rendering);
 	}
 
-	getJsonGraph(nodeClass, edgeProperty): Observable<JsonGraph> {
-		let newGraph = new JsonGraphSubject(nodeClass, edgeProperty, GlobalVars.DYMO_STORE);
+	getJsonGraph(nodeClass, edgeProperty, cacheNodes?: boolean): Observable<JsonGraph> {
+		let newGraph = new JsonGraphSubject(nodeClass, edgeProperty, GlobalVars.DYMO_STORE, cacheNodes);
 		this.graphs.push(newGraph);
 		return newGraph.asObservable();
 	}

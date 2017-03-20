@@ -1,9 +1,11 @@
 import { Util } from 'n3'
-import { fromRDF, frame, compact } from 'jsonld'
+import { fromRDF, frame, flatten, compact } from 'jsonld'
+import * as _ from 'lodash'
 import { EasyStore } from './easystore'
 import * as uris from '../globals/uris'
 import { DYMO_CONTEXT, DYMO_SIMPLE_CONTEXT } from '../globals/contexts'
 import { intersectArrays } from '../util/arrays'
+import { JsonGraph, JsonEdge } from './jsongraph'
 
 /**
  * A graph store for dymos based on EasyStore.
@@ -23,12 +25,9 @@ export class DymoStore extends EasyStore {
 
 	//loads some basic ontology files
 	loadOntologies(): Promise<any> {
-		console.log("hmmmm")
 		return new Promise((resolve, reject) => {
-			console.log("HELLO")
 			this.loadFileIntoStore(this.dymoOntologyPath, false, () => {
 				this.loadFileIntoStore(this.mobileOntologyPath, false, () => {
-					console.log("DONE")
 					resolve();
 				});
 			});
@@ -125,6 +124,12 @@ export class DymoStore extends EasyStore {
 			this.addTriple(dymoUri, uris.CDT, type);
 		}
 		return dymoUri;
+	}
+
+	//removes a dymo and its part relations (TODO REMOVE EVERYTHING ELSE TOO!)
+	removeDymo(dymoUri) {
+		this.removeTriple(dymoUri, uris.TYPE, uris.DYMO);
+		this.removeParts(dymoUri);
 	}
 
 	addPart(dymoUri, partUri) {
@@ -261,12 +266,12 @@ export class DymoStore extends EasyStore {
 
 	///////// QUERY FUNCTIONS //////////
 
-	//returns an array with all uris of dymos that do not have parents
+	//returns an array with all uris of dymos that do not have any parents
 	findTopDymos() {
 		var allDymos = this.findAllSubjects(uris.TYPE, uris.DYMO);
 		var allParents = this.findAllSubjects(uris.HAS_PART);
-		var allParts = [].concat.apply([], allParents.map(p => this.findParts(p)));
-		return allDymos.filter(p => allParts.indexOf(p) < 0);
+		var allParts = _.flatten(allParents.map(p => this.findParts(p)));
+		return _.difference(allDymos, allParts);
 	}
 
 	//returns an array with the uris of all parts of the object with the given uri
@@ -397,43 +402,50 @@ export class DymoStore extends EasyStore {
 		return level;
 	}
 
-	//TODO optimize
-	findMaxLevel() {
-		var allDymos = this.findAllSubjects(uris.TYPE, uris.DYMO);
-		var maxLevel = 0;
-		for (var i = 0; i < allDymos.length; i++) {
-			maxLevel = Math.max(maxLevel, this.findLevel(allDymos[i]));
+	findMaxLevel(dymoUri?: string) {
+		let dymos;
+		if (dymoUri) {
+			dymos = this.findAllObjectsInHierarchy(dymoUri);
+		} else {
+			dymos = this.findAllSubjects(uris.TYPE, uris.DYMO);
 		}
-		return maxLevel;
+		return dymos.reduce((max, d) => {
+			let lev = this.findLevel(d);
+			return lev > max ? lev : max;
+		}, 0);
 	}
 
 
 	///////// WRITING FUNCTIONS //////////
 
-	toJsonld(callback) {
+	/*toJsonld(): Promise<string> {
 		var firstTopDymo = this.findTopDymos()[0];
-		this.toRdf(result => this.rdfToJsonld(result, firstTopDymo, callback));
+		return this.toRdf()
+			.then(result => this.rdfToJsonld(result, firstTopDymo));
+	}*/
+
+	private triplesToJsonld(triples, frameId): Promise<string> {
+		return this.triplesToRdf(triples)
+			.then(result => this.rdfToJsonld(result, frameId));
 	}
 
-	private triplesToJsonld(triples, frameId, callback) {
-		this.triplesToRdf(triples, result => this.rdfToJsonld(result, frameId, callback));
-	}
-
-	private rdfToJsonld(rdf, frameId, callback) {
-		rdf = rdf.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
-		fromRDF(rdf, {format: 'application/nquads'}, (err, doc) => {
-			frame(doc, {"@id":frameId}, (err, framed) => {
-				compact(framed, DYMO_CONTEXT, (err, compacted) => {
-					//deal with imperfections of jsonld.js compaction algorithm to make it reeaally nice
-					compact(compacted, DYMO_SIMPLE_CONTEXT, (err, compacted) => {
-						//make it even nicer by removing blank nodes
-						this.removeBlankNodeIds(compacted);
-						//put the right context back
-						compacted["@context"] = this.dymoContextPath;
-						//compact local uris
-						var result = JSON.stringify(compacted);
-						result = result.replace(new RegExp(this.dymoContextPath+'/', 'g'), "");
-						callback(result);
+	private rdfToJsonld(rdf, frameId): Promise<string> {
+		return new Promise(resolve => {
+			rdf = rdf.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
+			fromRDF(rdf, {format: 'application/nquads'}, (err, doc) => {
+				frame(doc, {"@id":frameId}, (err, framed) => {
+					compact(framed, DYMO_CONTEXT, (err, compacted) => {
+						//deal with imperfections of jsonld.js compaction algorithm to make it reeaally nice
+						compact(compacted, DYMO_SIMPLE_CONTEXT, (err, compacted) => {
+							//make it even nicer by removing blank nodes
+							this.removeBlankNodeIds(compacted);
+							//put the right context back
+							compacted["@context"] = this.dymoContextPath;
+							//compact local uris
+							var result = JSON.stringify(compacted);
+							result = result.replace(new RegExp(this.dymoContextPath+'/', 'g'), "");
+							resolve(result);
+						});
 					});
 				});
 			});
@@ -441,17 +453,73 @@ export class DymoStore extends EasyStore {
 	}
 
 	//returns a jsonld representation of an object removed from any hierarchy of objects of the same type
-	private toFlatJsonld(uri, callback) {
+	private toFlatJsonld(uri): Promise<string> {
 		var type = this.findObject(uri, uris.TYPE);
-		var triples = this.recursiveFindAllTriples(uri, type);
-		this.triplesToJsonld(triples, uri, result => {
-			var json = JSON.parse(result);
-			//TODO a hack to insert level feature, maybe put in a better place
-			if (type == uris.DYMO) {
-				var level = this.findLevel(uri).toString();
-				if (!json["features"]) {
-					json["features"] = [];
+		var triples = this.recursiveFindAllTriples(uri, type, [uris.HAS_PART, uris.HAS_SIMILAR, uris.HAS_SUCCESSOR]);
+		return this.triplesToJsonld(triples, uri)
+			.then(result => new Promise(resolve => {
+				var json = JSON.parse(result);
+				this.updateLevelFeature(uri, json);
+				resolve(json);
+			}));
+	}
+
+	/* if a previous graph is given as an argument, only reads new nodes from store */
+	toJsonGraph(nodeClass, edgeProperty, previousGraph?: JsonGraph): Promise<JsonGraph> {
+		var graph: JsonGraph = {"nodes":[], "edges":[]};
+		var nodeMap = {};
+		if (previousGraph) {
+			//fill nodeMap with previous nodes
+			previousGraph.nodes.forEach(n => nodeMap[uris.CONTEXT_URI+n["@id"]] = n);
+		}
+		var nodeUris = this.findAllSubjects(uris.TYPE, nodeClass);
+		var edgeTriples = this.find(null, edgeProperty, null);
+		var uncachedNodes = _.difference(nodeUris, Object.keys(nodeMap));
+
+		return new Promise(resolve => {
+			//only load new nodes from store
+			Promise.all(uncachedNodes.map(uri => this.toFlatJsonld(uri)))
+			.then(result => {
+				result.forEach(n => nodeMap[uris.CONTEXT_URI+n["@id"]] = n);
+				graph.nodes = nodeUris.map(uri => nodeMap[uri]);
+				graph.nodes.forEach((n,i) => this.updateLevelFeature(nodeUris[i], n));
+				//edges are always new
+				graph["edges"] = this.createEdges(edgeTriples, edgeProperty, nodeClass, nodeMap);
+				resolve(graph);
+			});
+		});
+	}
+
+	private createEdges(edgeTriples, edgeProperty, nodeClass, nodeMap): JsonEdge[] {
+		var edges = [];
+		for (var i = 0; i < edgeTriples.length; i++) {
+			if (this.find(edgeTriples[i].object, uris.TYPE, nodeClass).length == 0) {
+				if (this.find(edgeTriples[i].object, uris.FIRST, null).length > 0) {
+					//it's a list!!
+					var objects = this.findObjectOrList(edgeTriples[i].subject, edgeProperty);
+					objects = objects.map(t => this.createLink(nodeMap[edgeTriples[i].subject], nodeMap[t]));
+					edges = edges.concat(objects);
 				}
+			} else {
+				edges.push(this.createLink(nodeMap[edgeTriples[i].subject], nodeMap[edgeTriples[i].object]));
+			}
+		}
+		return edges;
+	}
+
+	private updateLevelFeature(uri, json) {
+		//TODO a hack to insert level feature, maybe put in a better place
+		if (this.findObject(uri, uris.TYPE) == uris.DYMO) {
+			var level = this.findLevel(uri).toString();
+			if (!json["features"]) {
+				json["features"] = [];
+			}
+			var levelFeature = json["features"].filter(f => f["@type"] === "level");
+			//if feature exists, update
+			if (levelFeature.length > 0) {
+				levelFeature[0]["value"]["@value"] = level;
+			//else add the feature
+			} else {
 				json["features"].push({
 					"@type": "level",
 					"value": {
@@ -460,38 +528,7 @@ export class DymoStore extends EasyStore {
 					}
 				});
 			}
-			callback(json);
-		});
-	}
-
-	toJsonGraph(nodeClass, edgeProperty, callback) {
-		var graph = {"nodes":[], "edges":[]};
-		var nodeMap = {};
-		var nodeUris = this.findAllSubjects(uris.TYPE, nodeClass);
-		var edgeTriples = this.find(null, edgeProperty, null);
-
-		//TODO REWRITE THIS WITH PROMISES!!!!!!!
-		Promise.all(nodeUris.map(uri => new Promise(resolve => this.toFlatJsonld(uri, resolve))))
-		.then(result => {
-			graph["nodes"] = result;
-			for (var i = 0; i < nodeUris.length; i++) {
-				nodeMap[nodeUris[i]] = graph["nodes"][i];
-			}
-			graph["edges"] = [];
-			for (var i = 0; i < edgeTriples.length; i++) {
-				if (this.find(edgeTriples[i].object, uris.TYPE, nodeClass).length == 0) {
-					if (this.find(edgeTriples[i].object, uris.FIRST, null).length > 0) {
-						//it's a list!!
-						var objects = this.findObjectOrList(edgeTriples[i].subject, edgeProperty);
-						objects = objects.map(t => this.createLink(nodeMap[edgeTriples[i].subject], nodeMap[t]));
-						graph["edges"] = graph["edges"].concat(objects);
-					}
-				} else {
-					graph["edges"].push(this.createLink(nodeMap[edgeTriples[i].subject], nodeMap[edgeTriples[i].object]));
-				}
-			}
-			callback(graph);
-		});
+		}
 	}
 
 	/*this.toJsonMappingGraph(callback) {
