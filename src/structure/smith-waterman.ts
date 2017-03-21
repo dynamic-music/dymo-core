@@ -1,6 +1,7 @@
-import * as math from 'mathjs'
-import * as _ from 'lodash'
+import * as math from 'mathjs';
+import * as _ from 'lodash';
 import { indexOfMax } from '../util/arrays';
+import { Similarity } from './similarity';
 
 export enum TRACES {
   DIAGONAL,
@@ -20,7 +21,8 @@ export class SmithWaterman {
   private mismatchScore = -2;
   private gapScore = -1;
 
-  constructor() {}
+  //if similarity threshold is null, equality is enforced
+  constructor(private similarityTreshold: number) {}
 
   run(seq1: number[][], seq2: number[][], ignoredPoints?: number[][]): SmithWatermanResult {
     if (!ignoredPoints) {
@@ -48,7 +50,7 @@ export class SmithWaterman {
           let l_last = scoreMatrix[i][j-1];
           //here we don't give scores for self alignment!! hence i != j
           let notIgnored = ignoredPoints.indexOf(i+","+j) < 0;
-          let d_new = d_last + (notIgnored && _.isEqual(s1, s2) ? this.matchScore : this.mismatchScore);
+          let d_new = d_last + (notIgnored && this.isSimilar(s1, s2) ? this.matchScore : this.mismatchScore);
           let u_new = u_last + this.gapScore;
           let l_new = l_last + this.gapScore;
           let options = [d_new, u_new, l_new, 0];
@@ -60,6 +62,11 @@ export class SmithWaterman {
     });
     //console.log(JSON.stringify(scoreMatrix))
     return {scoreMatrix:scoreMatrix, traceMatrix:traceMatrix};
+  }
+
+  private isSimilar(v1: number[], v2: number[]): boolean {
+    return (this.similarityTreshold != null && Similarity.getCosineSimilarity(v1, v2) > this.similarityTreshold)
+      || _.isEqual(v1, v2);
   }
 
 }

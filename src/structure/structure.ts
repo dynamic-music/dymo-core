@@ -34,7 +34,7 @@ export class StructureInducer {
 
   getSmithWaterman() {
     let points = this.quantizedPoints.map(p => p.slice(0,3));
-    return new SmithWaterman().run(points, points)[0];
+    return new SmithWaterman(null).run(points, points)[0];
   }
 
   /*getSmithWatermanOccurrences(options): number[][][] {
@@ -95,10 +95,10 @@ export class StructureInducer {
     return segments;
   }*/
 
-  private getAdjustedSWMatrices(result: IterativeSmithWatermanResult, ignoredPoints?) {
+  private getAdjustedSWMatrices(similarityThreshold: number, result: IterativeSmithWatermanResult, ignoredPoints?) {
     //TODO MAKE SURE NO SLICING NEEDS TO HAPPEN (JUST RUN WITH COLLAPSED TEMPORAL FEATURES??)
-    let points = this.quantizedPoints.map(p => p.slice(0,3));
-    let matrices = new SmithWaterman().run(points, points, ignoredPoints);
+    let points = this.quantizedPoints.map(p => p.slice(0,p.length-1));
+    let matrices = new SmithWaterman(similarityThreshold).run(points, points, ignoredPoints);
     result.matrices.push(_.clone(matrices));
     //make lower matrix 0
     matrices.scoreMatrix = matrices.scoreMatrix.map((r,i) => r.map((c,j) => j < i ? 0 : c));
@@ -106,29 +106,29 @@ export class StructureInducer {
   }
 
   /**
-   * relevant options are: iterative, maxThreshold, endThreshold, minSegmentLength, patternIndices
+   * relevant options are: iterative, similarityThreshold, maxThreshold, endThreshold, minSegmentLength, patternIndices
    */
   getSmithWatermanOccurrences(options): IterativeSmithWatermanResult {
     let result: IterativeSmithWatermanResult = {segments:[], matrices:[]};
-    let matrices = this.getAdjustedSWMatrices(result);
+    let matrices = this.getAdjustedSWMatrices(options.similarityThreshold, result);
     var max: number, i: number, j: number;
     [i, j, max] = this.getIJAndMax(matrices.scoreMatrix);
     var allSelectedPoints: number[][] = [];
 
     while (max > options.maxThreshold) {
-      let currentPoints = this.getAlignment(matrices, i, j, options.endThreshold);
+      let currentPoints = this.getAlignment(matrices, i, j, options.endThreshold, options.onlyDiagonals);
       let currentSegments = this.toSegments(currentPoints);
 
       //only add if longer than minSegmentLength
       if (currentSegments[0].length > options.minSegmentLength && currentSegments[1].length > options.minSegmentLength) {
-        console.log("current max: " + max + " current segments: " + JSON.stringify(currentSegments));
+        console.log("current max: " + max, "\ncurrent points: " + JSON.stringify(currentPoints), "\ncurrent segments: " + JSON.stringify(currentSegments));
         //TODO ONLY ADD IF DIFFERENCE FROM EXISTING ONES SMALL ENOUGH!!!!!
         result.segments.push(currentSegments);
-        //add reflections at diagonal
-        currentPoints = _.concat(currentPoints, currentPoints.map(p => _.reverse(_.clone(p))));
-        allSelectedPoints = _.concat(allSelectedPoints, currentPoints);
         if (options.iterative) {
-          matrices = this.getAdjustedSWMatrices(result, allSelectedPoints);
+          //add reflections at diagonal
+          currentPoints = _.concat(currentPoints, currentPoints.map(p => _.reverse(_.clone(p))));
+          allSelectedPoints = _.concat(allSelectedPoints, currentPoints);
+          matrices = this.getAdjustedSWMatrices(options.similarityThreshold, result, allSelectedPoints);
         }
       }
       [i, j, max] = this.getIJAndMax(matrices.scoreMatrix);
@@ -140,7 +140,7 @@ export class StructureInducer {
     return result;
   }
 
-  private getAlignment(matrices, i, j, endThreshold?: number): number[][] {
+  private getAlignment(matrices, i, j, endThreshold?: number, onlyDiagonals?: number): number[][] {
     //find ij trace in matrix
     let currentValue = matrices.scoreMatrix[i][j];
     let currentTrace = matrices.traceMatrix[i][j];
@@ -151,9 +151,9 @@ export class StructureInducer {
       matrices.scoreMatrix[i][j] = 0;//-= 3;
       if (currentTrace === TRACES.DIAGONAL) {
         [i,j] = [i-1,j-1];
-      } else if (currentTrace === TRACES.UP) {
+      } else if (currentTrace === TRACES.UP && !onlyDiagonals) {
         [i,j] = [i-1,j];
-      } else if (currentTrace === TRACES.LEFT) {
+      } else if (currentTrace === TRACES.LEFT && !onlyDiagonals) {
         [i,j] = [i,j-1];
       } else {
         break;

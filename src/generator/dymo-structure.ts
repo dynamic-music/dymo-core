@@ -82,7 +82,7 @@ export module DymoStructureInducer {
   export function compareSmithWaterman(uri1, uri2, store, options) {
     var points1 = quant(uri1, options, store).map(p => p.slice(0,3));
     var points2 = quant(uri2, options, store).map(p => p.slice(0,3));
-    new SmithWaterman().run(points1, points2);
+    new SmithWaterman(options.similarityThreshold).run(points1, points2);
   }
 
   function quant(uri, options, store) {
