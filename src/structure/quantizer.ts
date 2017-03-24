@@ -3,6 +3,7 @@ import * as clusterfck from 'clusterfck'
 import { indicesOfNMax } from '../util/arrays'
 
 export const QUANT_FUNCS = {
+	IDENTITY: identity,
 	CONSTANT: getConstant,
 	ROUND: getRound,
 	ORDER: getOrder,
@@ -21,6 +22,10 @@ type twoDArray = number|number[];
 /** maps over arrays of values */
 export interface ArrayMap {
 	(values: (number|number[])[]): (number|number[])[];
+}
+
+function identity(): ArrayMap {
+	return toArrayMap(x => x);
 }
 
 /** maps all values of an array to the given constant */

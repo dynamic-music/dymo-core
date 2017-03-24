@@ -121,7 +121,8 @@ export class StructureInducer {
 
       //only add if longer than minSegmentLength
       if (currentSegments[0].length > options.minSegmentLength && currentSegments[1].length > options.minSegmentLength) {
-        console.log("current max: " + max, "\ncurrent points: " + JSON.stringify(currentPoints), "\ncurrent segments: " + JSON.stringify(currentSegments));
+        let dist = currentSegments[1][0]-currentSegments[0][0];
+        console.log("current max: " + max, "current dist: " + dist, "\ncurrent points: " + JSON.stringify(currentPoints), "\ncurrent segments: " + JSON.stringify(currentSegments));
         //TODO ONLY ADD IF DIFFERENCE FROM EXISTING ONES SMALL ENOUGH!!!!!
         result.segments.push(currentSegments);
         if (options.iterative) {
