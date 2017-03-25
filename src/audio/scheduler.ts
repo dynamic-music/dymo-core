@@ -1,8 +1,8 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
+import { flattenArray, removeDuplicates } from 'arrayutils';
 import { GlobalVars } from '../globals/globals'
 import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER, CONTEXT_URI } from '../globals/uris'
-import { flattenArray, removeDuplicates } from '../util/arrays'
 import { SchedulerThread } from './thread'
 
 /**

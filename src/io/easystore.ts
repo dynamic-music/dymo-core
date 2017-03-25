@@ -1,7 +1,7 @@
 import { Store, Parser, Writer, Util } from 'n3'
 import { toRDF } from 'jsonld'
+import { flattenArray, removeDuplicates } from 'arrayutils'
 import { RDFS_URI, TYPE, FIRST, REST, NIL } from '../globals/uris'
-import { flattenArray, removeDuplicates } from '../util/arrays'
 import { loadFile } from '../util/files'
 
 /**

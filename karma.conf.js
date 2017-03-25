@@ -16,12 +16,10 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       //'spec/*.js'
-      /*'spec/easystore-spec.js',
-      'spec/dymostore-spec.js',
-      'spec/dymo-spec.js',*/
-      'spec/structure-spec.js',
-      'spec/util-spec.js'
-      //'spec/mapping-spec.js'
+      'spec/easystore-spec.js',
+      //'spec/dymostore-spec.js',
+      //'spec/dymo-spec.js',
+      //'spec/mapping-spec.js',
       //'spec/control-spec.js',
     ],
 

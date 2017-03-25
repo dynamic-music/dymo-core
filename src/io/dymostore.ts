@@ -1,10 +1,10 @@
 import { Util } from 'n3'
 import { fromRDF, frame, flatten, compact } from 'jsonld'
 import * as _ from 'lodash'
+import { intersectArrays } from 'arrayutils'
 import { EasyStore } from './easystore'
 import * as uris from '../globals/uris'
 import { DYMO_CONTEXT, DYMO_SIMPLE_CONTEXT } from '../globals/contexts'
-import { intersectArrays } from '../util/arrays'
 import { JsonGraph, JsonEdge } from './jsongraph'
 
 /**

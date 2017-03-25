@@ -1,7 +1,7 @@
+import { flattenArray } from 'arrayutils'
 import { GlobalVars, MORE, DONE } from '../globals/globals'
 import * as uris from '../globals/uris'
 import { SubsetNavigator } from './subsetnav'
-import { flattenArray } from '../util/arrays'
 
 /**
  * A navigator that follows the order of parts.
