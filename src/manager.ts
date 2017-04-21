@@ -7,6 +7,7 @@ import { DymoStore } from './io/dymostore'
 import { DymoLoader } from './io/dymoloader'
 import { UIControl } from './controls/uicontrol'
 import { JsonGraphSubject, JsonGraph } from './io/jsongraph'
+import { FeatureInfo } from './globals/types';
 
 /**
  * A class for easy access of all dymo core functionality.
@@ -21,6 +22,7 @@ export class DymoManager {
 	private mappings = {};
 	private reverbFile;
 	private graphs: JsonGraphSubject[] = [];
+	private featureInfo: BehaviorSubject<FeatureInfo[]> = new BehaviorSubject([]);
 
 	constructor(audioContext, scheduleAheadTime, optimizedMode, reverbFile) {
 		GlobalVars.DYMO_STORE = new DymoStore();
@@ -49,7 +51,6 @@ export class DymoManager {
 		var loader = new DymoLoader(GlobalVars.DYMO_STORE);
 		var dymo = loader.createDymoFromStore();
 		var rendering = loader.createRenderingFromStore();
-		this.graphs.forEach(g => g.update());
 		return this.processLoadedDymoAndRendering(loader, dymo, rendering);
 	}
 
@@ -57,6 +58,10 @@ export class DymoManager {
 		let newGraph = new JsonGraphSubject(nodeClass, edgeProperty, GlobalVars.DYMO_STORE, cacheNodes);
 		this.graphs.push(newGraph);
 		return newGraph.asObservable();
+	}
+
+	getFeatureInfo(): Observable<FeatureInfo[]> {
+		return this.featureInfo.asObservable();
 	}
 
 	loadDymoAndRendering(dymoUri, renderingUri): Promise<any> {
@@ -86,6 +91,8 @@ export class DymoManager {
 		if (!this.reverbFile) {
 			this.reverbFile = 'node_modules/dymo-core/audio/impulse_rev.wav';
 		}
+		this.graphs.forEach(g => g.update());
+		this.featureInfo.next(GlobalVars.DYMO_STORE.getFeatureInfo());
 		return this.scheduler.init(this.reverbFile, loadedDymos);
 	}
 

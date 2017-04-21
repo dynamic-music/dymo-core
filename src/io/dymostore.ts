@@ -5,7 +5,9 @@ import { intersectArrays } from 'arrayutils'
 import { EasyStore } from './easystore'
 import * as uris from '../globals/uris'
 import { DYMO_CONTEXT, DYMO_SIMPLE_CONTEXT } from '../globals/contexts'
+import { URI_TO_TERM } from '../globals/terms'
 import { JsonGraph, JsonEdge } from './jsongraph'
+import { FeatureInfo } from '../globals/types'
 
 /**
  * A graph store for dymos based on EasyStore.
@@ -454,7 +456,7 @@ export class DymoStore extends EasyStore {
 		return this.triplesToJsonld(triples, uri)
 			.then(result => new Promise(resolve => {
 				var json = JSON.parse(result);
-				this.updateLevelFeature(uri, json);
+				this.updateLevelAndIndexFeatures(uri, json);
 				resolve(json);
 			}));
 	}
@@ -477,7 +479,7 @@ export class DymoStore extends EasyStore {
 			.then(result => {
 				result.forEach(n => nodeMap[uris.CONTEXT_URI+n["@id"]] = n);
 				graph.nodes = nodeUris.map(uri => nodeMap[uri]);
-				graph.nodes.forEach((n,i) => this.updateLevelFeature(nodeUris[i], n));
+				graph.nodes.forEach((n,i) => this.updateLevelAndIndexFeatures(nodeUris[i], n));
 				//edges are always new
 				graph["edges"] = this.createEdges(edgeTriples, edgeProperty, nodeClass, nodeMap);
 				resolve(graph);
@@ -502,27 +504,33 @@ export class DymoStore extends EasyStore {
 		return edges;
 	}
 
-	private updateLevelFeature(uri, json) {
+	private updateLevelAndIndexFeatures(uri, json) {
 		//TODO a hack to insert level feature, maybe put in a better place
 		if (this.findObject(uri, uris.TYPE) == uris.DYMO) {
-			var level = this.findLevel(uri).toString();
 			if (!json["features"]) {
 				json["features"] = [];
 			}
-			var levelFeature = json["features"].filter(f => f["@type"] === "level");
-			//if feature exists, update
-			if (levelFeature.length > 0) {
-				levelFeature[0]["value"]["@value"] = level;
-			//else add the feature
-			} else {
-				json["features"].push({
-					"@type": "level",
-					"value": {
-						"@type": "xsd:integer",
-						"@value": level
-					}
-				});
-			}
+			this.updateFeature("level", "xsd:integer", this.findLevel(uri).toString(), json);
+			let index = this.findPartIndex(uri);
+			let indexString = isNaN(index) ? "" : index.toString();
+			this.updateFeature("index", "xsd:integer", indexString, json);
+		}
+	}
+
+	private updateFeature(term: string, type: string, value: any, json: Object) {
+		var feature = json["features"].filter(f => f["@type"] === term);
+		//if feature exists, update
+		if (feature.length > 0) {
+			feature[0]["value"]["@value"] = value;
+		//else add the feature
+		} else {
+			json["features"].push({
+				"@type": term,
+				"value": {
+					"@type": type,
+					"@value": value
+				}
+			});
 		}
 	}
 
@@ -579,6 +587,44 @@ export class DymoStore extends EasyStore {
 					this.removeBlankNodeIds(obj[key]);
 				}
 			}
+		}
+	}
+
+	getFeatureInfo(): FeatureInfo[] {
+		let featureObjects = {};
+		let allDymos = this.findAllSubjects(uris.TYPE, uris.DYMO);
+
+		//add features from store
+		let allFeatures = _.flatten(allDymos.map(d => this.findAllObjects(d, uris.HAS_FEATURE)));
+		allFeatures.forEach(f => this.updateFeatureObjectFromUri(featureObjects, f));
+
+		//add level and index features
+		allDymos.forEach(d => this.updateFeatureObject(featureObjects, uris.LEVEL_FEATURE, this.findLevel(d)));
+		allDymos.forEach(d => this.updateFeatureObject(featureObjects, uris.INDEX_FEATURE, this.findPartIndex(d)));
+
+		//convert to array
+		return Object.keys(featureObjects).map(k => featureObjects[k]);
+	}
+
+	private updateFeatureObjectFromUri(objects, uri: string) {
+		let type = this.findObject(uri, uris.TYPE);
+		let value = this.findObjectValue(uri, uris.VALUE);
+		this.updateFeatureObject(objects, type, value);
+	}
+
+	private updateFeatureObject(objects, type, value) {
+		if (!objects[type]) {
+			let name = URI_TO_TERM[type] ? URI_TO_TERM[type] : type.replace(uris.CONTEXT_URI, '');
+			objects[type] = {
+				name: name,
+				uri: type,
+				min: Infinity,
+				max: -Infinity
+			};
+		}
+		if (!isNaN(value)) {
+			objects[type].min = Math.min(value, objects[type].min);
+			objects[type].max = Math.max(value, objects[type].max);
 		}
 	}
 
