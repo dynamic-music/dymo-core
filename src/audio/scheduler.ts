@@ -24,30 +24,33 @@ export class Scheduler {
 	}
 
 	init(reverbFile, dymoUris): Promise<any> {
-		//init horizontal listener orientation in degrees
-		GlobalVars.DYMO_STORE.addParameter(null, LISTENER_ORIENTATION, 0, self);
-		let loadingPromises = this.loadBuffers(dymoUris);
+		if (this.audioContext) {
+			//init horizontal listener orientation in degrees
+			GlobalVars.DYMO_STORE.addParameter(null, LISTENER_ORIENTATION, 0, this);
+			let loadingPromises = this.loadBuffers(dymoUris);
 
-		//init reverb if needed
-		if (reverbFile && GlobalVars.DYMO_STORE.find(null, null, REVERB).length > 0) {
-			this.convolverSend = this.audioContext.createConvolver();
-			this.convolverSend.connect(this.audioContext.destination);
-			loadingPromises.push(this.loadReverbFile(reverbFile));
-		}
+			//init reverb if needed
+			if (reverbFile && GlobalVars.DYMO_STORE.find(null, null, REVERB).length > 0) {
+				this.convolverSend = this.audioContext.createConvolver();
+				this.convolverSend.connect(this.audioContext.destination);
+				loadingPromises.push(this.loadReverbFile(reverbFile));
+			}
 
-		//init delay if needed
-		if (GlobalVars.DYMO_STORE.find(null, null, DELAY).length > 0) {
-			var delaySend = this.audioContext.createDelay();
-			delaySend.delayTime.value = 0.5;
-			delaySend.connect(this.audioContext.destination);
-			var delayFeedback = this.audioContext.createGain();
-			delayFeedback.gain.value = 0.6;
-			delaySend.connect(delayFeedback);
-			delayFeedback.connect(delaySend);
+			//init delay if needed
+			if (GlobalVars.DYMO_STORE.find(null, null, DELAY).length > 0) {
+				var delaySend = this.audioContext.createDelay();
+				delaySend.delayTime.value = 0.5;
+				delaySend.connect(this.audioContext.destination);
+				var delayFeedback = this.audioContext.createGain();
+				delayFeedback.gain.value = 0.6;
+				delaySend.connect(delayFeedback);
+				delayFeedback.connect(delaySend);
+			}
+			//start observing play parameters
+			GlobalVars.DYMO_STORE.addTypeObserver(PLAY, VALUE, this);
+			return Promise.all(loadingPromises);
 		}
-		//start observing play parameters
-		GlobalVars.DYMO_STORE.addTypeObserver(PLAY, VALUE, self);
-		return Promise.all(loadingPromises);
+		return Promise.resolve();
 	}
 
 	private loadReverbFile(reverbFile): Promise<any> {
@@ -192,11 +195,21 @@ export class Scheduler {
 	}
 
 	private loadAudio(path, callback) {
-		var request = new XMLHttpRequest();
+		fetch(path, {
+			mode:'cors',
+			headers: new Headers({
+				'Content-Type': 'arraybuffer'
+			})
+		})
+		.then(r => r.arrayBuffer())
+		.then(r => this.audioContext ? this.audioContext.decodeAudioData(r, buffer => callback(buffer)) : null)
+		.catch(e => console.log(e));
+
+		/*var request = new XMLHttpRequest();
 		request.open('GET', path, true);
 		request.responseType = 'arraybuffer';
 		request.onload = () => this.audioContext.decodeAudioData(request.response, buffer => callback(buffer));
-		request.send();
+		request.send();*/
 	}
 
 }

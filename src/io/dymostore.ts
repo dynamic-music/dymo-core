@@ -25,13 +25,8 @@ export class DymoStore extends EasyStore {
 
 	//loads some basic ontology files
 	loadOntologies(): Promise<any> {
-		return new Promise((resolve, reject) => {
-			this.loadFileIntoStore(this.dymoOntologyPath, false, () => {
-				this.loadFileIntoStore(this.mobileOntologyPath, false, () => {
-					resolve();
-				});
-			});
-		});
+		return this.loadFileIntoStore(this.dymoOntologyPath, false)
+			.then(() => this.loadFileIntoStore(this.mobileOntologyPath, false));
 	}
 
 	addBasePath(dymoUri, path) {

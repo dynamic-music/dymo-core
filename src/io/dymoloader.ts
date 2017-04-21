@@ -1,6 +1,5 @@
 import * as uris from '../globals/uris'
 import { DymoStore } from '../io/dymostore'
-import { loadFile } from '../util/files'
 import { Rendering } from '../model/rendering'
 import { Mapping } from '../model/mapping'
 import { DymoFunction } from '../model/function'
@@ -40,51 +39,52 @@ export class DymoLoader {
 		return this.mappings;
 	}
 
-	loadDymoFromJson(jsonUri, callback) {
+	loadDymoFromJson(jsonUri): Promise<string[]> {
 		var fileIndex = jsonUri.lastIndexOf('/')+1;
 		this.dymoBasePath = jsonUri.substring(0, fileIndex);
-		this.loadJsonld(jsonUri, function() {
-			callback(this.createDymoFromStore());
-		});
+		return this.loadJsonld(jsonUri)
+			.then(() => this.createDymoFromStore());
 	}
 
-	parseDymoFromJson(json, callback) {
-		this.dymoStore.loadData(json, true, function() {
-			callback(this.createDymoFromStore());
-		});
+	parseDymoFromJson(json): Promise<string[]> {
+		return this.dymoStore.loadData(json, true)
+			.then(() => this.createDymoFromStore());
 	}
 
-	loadRenderingFromJson(jsonUri, callback) {
-		this.loadJsonld(jsonUri, function() {
-			callback(this.createRenderingFromStore());
-		});
+	loadRenderingFromJson(jsonUri): Promise<Object[]> {
+		return this.loadJsonld(jsonUri)
+			.then(() => this.createRenderingFromStore());
 	}
 
-	parseDymoFromTurtle(turtle, callback) {
-		this.dymoStore.loadData(turtle, false, function() {
-			callback(this.createDymoFromStore());
-		});
+	parseDymoFromTurtle(turtle): Promise<string[]> {
+		return this.dymoStore.loadData(turtle, false)
+			.then(() => this.createDymoFromStore());
 	}
 
 	//load jsonld into triple store
-	private loadJsonld(jsonUri, callback) {
-		this.recursiveLoadJson(jsonUri, "", function(loaded) {
-			this.dymoStore.loadData(loaded, true, callback);
-		});
+	private loadJsonld(jsonUri): Promise<any> {
+		return new Promise(resolve =>
+			this.recursiveLoadJson(jsonUri, "", loaded => {
+				this.dymoStore.loadData(loaded, true)
+					.then(() => resolve())
+			})
+		);
 	}
 
 	private recursiveLoadJson(jsonUri, jsonString, callback) {
-		loadFile(jsonUri, function(responseText) {
-			if (responseText.indexOf("Cannot GET") < 0) {
+		fetch(jsonUri, { mode:'cors' })
+		.then(response => response.text())
+		.then(text => {
+			if (text.indexOf("Cannot GET") < 0) {
 				//console.log(this.responseText.substring(0,20), isJsonString(this.responseText))
-				if (this.isJsonString(responseText)) {
+				if (this.isJsonString(text)) {
 					if (jsonString) {
 						if (jsonUri.indexOf(this.dymoBasePath) >= 0) {
 							jsonUri = jsonUri.replace(this.dymoBasePath, "");
 						}
-						jsonString = jsonString.replace('"'+jsonUri+'"', responseText);
+						jsonString = jsonString.replace('"'+jsonUri+'"', text);
 					} else {
-						jsonString = responseText;
+						jsonString = text;
 					}
 				}
 				var nextUri = this.findNextJsonUri(jsonString);
@@ -122,7 +122,7 @@ export class DymoLoader {
 		}
 	}
 
-	createDymoFromStore() {
+	createDymoFromStore(): string[] {
 		var topDymos = [];
 		//first create all dymos and save references in map
 		var topDymoUris = this.dymoStore.findTopDymos();
@@ -134,7 +134,7 @@ export class DymoLoader {
 		return topDymoUris;
 	}
 
-	createRenderingFromStore() {
+	createRenderingFromStore(): Object[] {
 		var renderingUri = this.dymoStore.findSubject(uris.TYPE, uris.RENDERING);
 		var rendering = new Rendering(this.dymoStore.findObject(renderingUri, uris.HAS_DYMO));
 		this.loadMappings(renderingUri);
@@ -220,16 +220,16 @@ export class DymoLoader {
 		var domainDimTypes = [];
 		for (var j = 0; j < domainDimUris.length; j++) {
 			var currentType = this.dymoStore.findObject(domainDimUris[j], uris.TYPE);
-			if (currentType == uris.FEATURE_TYPE || this.dymoStore.isSubtypeOf(currentType, uris.FEATURE_TYPE)) {
-				if (currentType == uris.FEATURE_TYPE) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM FEATURES
+			if (currentType === uris.FEATURE_TYPE || this.dymoStore.isSubtypeOf(currentType, uris.FEATURE_TYPE)) {
+				if (currentType === uris.FEATURE_TYPE) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM FEATURES
 					currentType = domainDimUris[j];
 				}
 				domainDims.push(currentType);
 				domainDimTypes.push(uris.FEATURE_TYPE);
-			} else if (currentType == uris.PARAMETER_TYPE || this.dymoStore.isSubclassOf(currentType, uris.PARAMETER_TYPE)
+			} else if (currentType === uris.PARAMETER_TYPE || this.dymoStore.isSubclassOf(currentType, uris.PARAMETER_TYPE)
 						|| this.dymoStore.isSubclassOf(this.dymoStore.findObject(currentType, uris.TYPE), uris.PARAMETER_TYPE)) {
 				var currentParameter;
-				if (currentType == uris.CUSTOM_PARAMETER) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM PARAMETERS
+				if (currentType === uris.CUSTOM_PARAMETER) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM PARAMETERS
 					currentType = domainDimUris[j];
 				}
 				currentParameter = dymoUri ? this.dymoStore.setParameter(dymoUri, currentType) : domainDimUris[j];

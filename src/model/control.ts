@@ -3,14 +3,14 @@
  */
 export class Control {
 
-	protected uri;
-	private name;
-	private type;
-	private value;
+	protected uri: string;
+	private name: string;
+	private type: string;
+	private value: number;
 	private observers = [];
-	private backpropFunction;
+	private backpropFunction: Function;
 
-	constructor(uri, name, type) {
+	constructor(uri: string, name: string, type: string) {
 		this.uri = uri;
 		this.name = name;
 		this.type = type;
@@ -32,7 +32,7 @@ export class Control {
 		return this.type;
 	}
 
-	setBackpropFunction(func) {
+	setBackpropFunction(func: Function) {
 		this.backpropFunction = func;
 	}
 

@@ -1,17 +1,18 @@
-import { BUTTON, TOGGLE } from '../globals/uris'
+import { BUTTON, TOGGLE } from '../globals/uris';
+import { Control } from '../model/control';
 
 /**
  * A wrapper for dymo-core controls to be used as Angular UI controls.
  */
 export class UIControl {
 
-	private control;
-	private value;
+	private control: Control;
+	private value: any;
 
 	constructor(control) {
 		this.value = control.getValue();
 		this.control = control;
-		this.control.setUpdateFunction(this.updateFunction);
+		this.control.setBackpropFunction(this.updateFunction);
 	}
 
 	getName() {

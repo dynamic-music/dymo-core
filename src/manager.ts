@@ -60,15 +60,14 @@ export class DymoManager {
 	}
 
 	loadDymoAndRendering(dymoUri, renderingUri): Promise<any> {
-		return new Promise(resolve => {
-			let loader = new DymoLoader(GlobalVars.DYMO_STORE);
-			loader.loadDymoFromJson(dymoUri, function(loadedDymos) {
-				loader.loadRenderingFromJson(renderingUri, function(loadedRendering) {
-					this.processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering)
-						.then(resolve());
-				});
-			});
-		});
+		let loader = new DymoLoader(GlobalVars.DYMO_STORE);
+		let loadedDymos, loadedRendering;
+		return loader.loadDymoFromJson(dymoUri)
+			.then(res => loadedDymos = res)
+			.then(() => loader.loadRenderingFromJson(renderingUri))
+			.then(res => loadedRendering = res)
+			.then(() => this.processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering))
+			.catch(err => console.log(err));
 	}
 
 	private processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering): Promise<any> {
@@ -85,19 +84,19 @@ export class DymoManager {
 			}
 		}
 		if (!this.reverbFile) {
-			this.reverbFile = 'bower_components/dymo-core/audio/impulse_rev.wav';
+			this.reverbFile = 'node_modules/dymo-core/audio/impulse_rev.wav';
 		}
 		return this.scheduler.init(this.reverbFile, loadedDymos);
 	}
 
-	loadDymoFromJson(jsonDymo, callback) {
+	loadDymoFromJson(jsonDymo): Promise<string[]> {
 		var loader = new DymoLoader(GlobalVars.DYMO_STORE);
-		loader.loadDymoFromJson(jsonDymo, callback);
+		return loader.loadDymoFromJson(jsonDymo);
 	}
 
-	parseDymoFromJson(jsonDymo, callback) {
+	parseDymoFromJson(jsonDymo): Promise<string[]> {
 		var loader = new DymoLoader(GlobalVars.DYMO_STORE);
-		loader.parseDymoFromJson(jsonDymo, callback);
+		return loader.parseDymoFromJson(jsonDymo);
 	}
 
 	replacePartOfTopDymo(index, dymoUri) {

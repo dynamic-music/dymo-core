@@ -2,7 +2,6 @@ import { Store, Parser, Writer, Util } from 'n3'
 import { toRDF } from 'jsonld'
 import { flattenArray, removeDuplicates } from 'arrayutils'
 import { RDFS_URI, TYPE, FIRST, REST, NIL } from '../globals/uris'
-import { loadFile } from '../util/files'
 
 /**
  * A graph store based on N3 that easily manages lists, value replacing and observing,
@@ -503,30 +502,40 @@ export class EasyStore {
 
 	///////// LOADING FUNCTIONS //////////
 
-	loadData(data, isJsonld, callback) {
-		this.jsonldToNquads(data, isJsonld, nquads => {
-			Parser(null).parse(nquads, (error, triple, prefixes) => {
-				//keep streaming triples
-				if (triple) {
-					this.store.addTriple(triple);
-				//done
-				} else if (callback) {
-					callback();
-				}
-			});
+	loadData(data, isJsonld): Promise<any> {
+		//TODO NOT SURE IF THIS WORKS...
+		return new Promise((resolve, reject) =>
+			this.jsonldToNquads(data, isJsonld)
+			.then(nquads => {
+				Parser(null).parse(nquads, (error, triple, prefixes) => {
+					//keep streaming triples
+					if (triple) {
+						this.store.addTriple(triple);
+					//done
+					} else if (error) {
+						reject();
+					} else {
+						resolve();
+					}
+				});
+			})
+		);
+	}
+
+	loadFileIntoStore(path, isJsonld): Promise<any> {
+		return fetch(path, { mode:'cors' })
+			.then(response => response.text())
+			.then(data => this.loadData(data, isJsonld));
+	}
+
+	private jsonldToNquads(data, isJsonld): Promise<string> {
+		return new Promise(resolve => {
+			if (isJsonld) {
+				toRDF(data, {format: 'application/nquads'}, (err, nquads) => resolve(nquads));
+			} else {
+				resolve(data);
+			}
 		});
-	}
-
-	loadFileIntoStore(path, isJsonld, callback) {
-		loadFile(path, data => this.loadData(data, isJsonld, callback));
-	}
-
-	private jsonldToNquads(data, isJsonld, callback) {
-		if (isJsonld) {
-			toRDF(data, {format: 'application/nquads'}, (err, nquads) => callback(nquads));
-		} else {
-			callback(data);
-		}
 	}
 
 
