@@ -35,8 +35,6 @@ export class DymoFunction {
 		this.init();
 	}
 
-
-	/** @private */
 	private init() {
 		if (!this.vars) {
 			//make identity in standard case
@@ -91,8 +89,7 @@ export class DymoFunction {
 		this.observers.push(observer);
 	}
 
-	/** @private */
-	notifyObservers() {
+	private notifyObservers() {
 		var self = this;
 		this.observers.forEach(o => o.observedFunctionChanged(self));
 	}
@@ -130,8 +127,7 @@ export class DymoFunction {
 		}
 	}
 
-	/** @private */
-	updateArg(index, value) {
+	private updateArg(index, value) {
 		if (this.args[index].backpropagate) {
 			this.args[index].backpropagate(value, this);
 		} else {
@@ -139,8 +135,7 @@ export class DymoFunction {
 		}
 	}
 
-	/** @private */
-	applyConstraint(args, lvar) {
+	private applyConstraint(args, lvar) {
 		var result = logic.run(this.constraintFunction.apply(null, args.concat(logic)), lvar, 1);
 		//console.log(args, result, this.constraintFunction)
 		if (result.length > 0 && !isNaN(result[0])) {
@@ -166,8 +161,7 @@ export class DymoFunction {
 		}
 	}
 
-	/** @private */
-	getArgValues(changedArgIndex, value, dymoUri) {
+	private getArgValues(changedArgIndex, value, dymoUri) {
 		var cacheKey = dymoUri ? dymoUri : '';
 		if (!this.argCache[cacheKey]) {
 			this.argCache[cacheKey] = [];
@@ -175,10 +169,11 @@ export class DymoFunction {
 
 		if (changedArgIndex != null) {
 			if (this.isDymoSpecificParam[changedArgIndex]) {
+				//update it for specific dymo
 				this.argCache[cacheKey][changedArgIndex] = value;
 			} else {
-				var cache = this.argCache;
-				Object.keys(cache).map(key => cache[key][changedArgIndex] = value);
+				//update it for all dymos
+				Object.keys(this.argCache).map(key => this.argCache[key][changedArgIndex] = value);
 			}
 		}
 
@@ -190,8 +185,7 @@ export class DymoFunction {
 		return this.argCache[cacheKey].slice(0);
 	}
 
-	/** @private */
-	getArgValue(index, dymoUri) {
+	private getArgValue(index, dymoUri) {
 		if (typeof this.args[index] === 'string' || this.args[index] instanceof String) {
 			var value = GlobalVars.DYMO_STORE.findObjectValue(this.args[index], VALUE);
 			if (value == null) {

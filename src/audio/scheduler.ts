@@ -196,10 +196,10 @@ export class Scheduler {
 
 	private loadAudio(path, callback) {
 		fetch(path, {
-			mode:'cors',
-			headers: new Headers({
+			//mode:'cors',
+			/*headers: new Headers({
 				'Content-Type': 'arraybuffer'
-			})
+			})*/
 		})
 		.then(r => r.arrayBuffer())
 		.then(r => this.audioContext ? this.audioContext.decodeAudioData(r, buffer => callback(buffer)) : null)

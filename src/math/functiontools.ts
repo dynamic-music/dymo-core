@@ -98,7 +98,7 @@ export module FunctionTools {
 
 	export function toReturnValueString(functionString) {
 		var index = functionString.indexOf("return ");
-		if (index > 0) {
+		if (index >= 0) {
 			return functionString.substring(index+7, functionString.indexOf(";"));
 		}
 		return functionString;

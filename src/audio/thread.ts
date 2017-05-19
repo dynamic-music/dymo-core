@@ -25,8 +25,7 @@ export class SchedulerThread {
 	private nextSources;
 	private timeoutID;
 	private currentSources = new Map();
-	private currentEndTime;
-	private previousOnset;
+	private nextEventTime;
 
 	constructor(dymoUri, navigator, audioContext, buffers, convolverSend, delaySend, onChanged, onEnded) {
 		this.dymoUri = dymoUri;
@@ -100,13 +99,8 @@ export class SchedulerThread {
 		//create sources and init
 		this.currentSources = this.getNextSources();
 		this.registerSources(this.currentSources);
-		if (!this.previousOnset) {
-			var previousSourceDymoUri = this.currentSources.keys().next().value;
-			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
-			this.previousOnset = GlobalVars.DYMO_STORE.findParameterValue(previousSourceDymoUri, ONSET);
-		}
 		//calculate delay and schedule
-		var delay = this.currentEndTime ? this.currentEndTime-this.audioContext.currentTime : GlobalVars.SCHEDULE_AHEAD_TIME;
+		var delay = this.nextEventTime ? this.nextEventTime-this.audioContext.currentTime : GlobalVars.SCHEDULE_AHEAD_TIME;
 		var startTime = this.audioContext.currentTime+delay;
 		//console.log("START", startTime)
 		for (var source of this.currentSources.values()) {
@@ -123,18 +117,18 @@ export class SchedulerThread {
 		//create next sources and wait or end and reset
 		this.nextSources = this.createNextSources();
 		if (this.nextSources && this.nextSources.size > 0) {
-			this.currentEndTime = this.getCurrentEndTime(startTime);
-			var longestSource = this.currentEndTime[1];
-			this.currentEndTime = this.currentEndTime[0];
+			this.nextEventTime = this.getNextEventTime(startTime);
+			var longestSource = this.nextEventTime[1];
+			this.nextEventTime = this.nextEventTime[0];
 			//smooth transition in case of a loop
-			if (GlobalVars.DYMO_STORE.findParameterValue(longestSource.getDymoUri(), LOOP)) {
-				this.currentEndTime -= GlobalVars.FADE_LENGTH;
+			if (longestSource && GlobalVars.DYMO_STORE.findParameterValue(longestSource.getDymoUri(), LOOP)) {
+				this.nextEventTime -= GlobalVars.FADE_LENGTH;
 			}
-			var wakeupTime = (this.currentEndTime-this.audioContext.currentTime-GlobalVars.SCHEDULE_AHEAD_TIME)*1000;
+			var wakeupTime = (this.nextEventTime-this.audioContext.currentTime-GlobalVars.SCHEDULE_AHEAD_TIME)*1000;
 			this.timeoutID = setTimeout(() => this.recursivePlay(), wakeupTime);
 		} else {
-			this.currentEndTime = this.getCurrentEndTime(startTime);
-			var wakeupTime = (this.currentEndTime-this.audioContext.currentTime)*1000;
+			this.nextEventTime = this.getNextEventTime(startTime);
+			var wakeupTime = (this.nextEventTime-this.audioContext.currentTime)*1000;
 			setTimeout(() => {
 				this.endThreadIfNoMoreSources();
 			}, wakeupTime+100);
@@ -188,15 +182,17 @@ export class SchedulerThread {
 		}
 	}
 
-	private getCurrentEndTime(startTime) {
+	private getNextEventTime(startTime) {
 		if (this.nextSources) {
-			var nextSourceDymoUri = this.nextSources.keys().next().value;
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
+			var previousSourceDymoUri = this.currentSources.keys().next().value;
+			var previousOnset = GlobalVars.DYMO_STORE.findParameterValue(previousSourceDymoUri, ONSET);
+			var nextSourceDymoUri = this.nextSources.keys().next().value;
 			var nextOnset = GlobalVars.DYMO_STORE.findParameterValue(nextSourceDymoUri, ONSET);
-			var timeToNextOnset = nextOnset-this.previousOnset;
-			this.previousOnset = nextOnset;
+			//console.log(nextOnset)
+			var timeToNextOnset = nextOnset-previousOnset;
 			if (!isNaN(nextOnset)) {
-				return startTime+timeToNextOnset;
+				return [startTime+timeToNextOnset];
 			}
 		}
 		var maxDuration = 0;
@@ -208,6 +204,7 @@ export class SchedulerThread {
 				longestSource = source;
 			}
 		}
+		//console.log(startTime, maxDuration)
 		return [startTime+maxDuration, longestSource];
 	}
 

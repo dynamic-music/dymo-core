@@ -157,6 +157,9 @@ export class DymoStore extends EasyStore {
 	}
 
 	setFeature(dymoUri, featureType, value) {
+		if (!this.findObject(featureType, uris.TYPE)) {
+			this.setTriple(featureType, uris.TYPE, uris.FEATURE_TYPE);
+		}
 		return this.setObjectValue(dymoUri, uris.HAS_FEATURE, featureType, uris.VALUE, value);
 	}
 
@@ -415,11 +418,15 @@ export class DymoStore extends EasyStore {
 
 	///////// WRITING FUNCTIONS //////////
 
-	/*toJsonld(): Promise<string> {
+	toJsonld(): Promise<string> {
 		var firstTopDymo = this.findTopDymos()[0];
+		return this.uriToJsonld(firstTopDymo);
+	}
+
+	uriToJsonld(frameUri: string): Promise<string> {
 		return this.toRdf()
-			.then(result => this.rdfToJsonld(result, firstTopDymo));
-	}*/
+			.then(result => this.rdfToJsonld(result, frameUri));
+	}
 
 	private triplesToJsonld(triples, frameId): Promise<string> {
 		return this.triplesToRdf(triples)

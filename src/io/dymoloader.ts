@@ -220,7 +220,8 @@ export class DymoLoader {
 		var domainDimTypes = [];
 		for (var j = 0; j < domainDimUris.length; j++) {
 			var currentType = this.dymoStore.findObject(domainDimUris[j], uris.TYPE);
-			if (currentType === uris.FEATURE_TYPE || this.dymoStore.isSubtypeOf(currentType, uris.FEATURE_TYPE)) {
+			//console.log(domainDimUris[j], currentType)
+			if (currentType === uris.FEATURE_TYPE || this.dymoStore.isSubclassOf(currentType, uris.FEATURE_TYPE)) {
 				if (currentType === uris.FEATURE_TYPE) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM FEATURES
 					currentType = domainDimUris[j];
 				}

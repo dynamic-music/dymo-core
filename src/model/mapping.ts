@@ -74,6 +74,7 @@ export class Mapping {
 
 	private update(changedArgIndex, value, target?: string) {
 		var newValue = this.mappingFunction.applyDirect(changedArgIndex, value, target);
+		//console.log(changedArgIndex, value, target, this.parameterName, newValue)
 		GlobalVars.DYMO_STORE.setParameter(target, this.parameterName, newValue);
 	}
 
