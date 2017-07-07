@@ -67,18 +67,22 @@ export class SchedulerThread {
 	}*/
 
 	stop(dymoUri) {
-		var subDymoUris = GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(this.dymoUri);
+		var subDymoUris = GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(dymoUri);
 		for (var i = 0, ii = subDymoUris.length; i < ii; i++) {
+			if (this.nextSources) {
+				var currentNextSource = this.nextSources.get(subDymoUris[i])
+				if (currentNextSource) {
+					currentNextSource.removeAndDisconnect();
+					this.nextSources.delete(subDymoUris[i]);
+				}
+				if (this.nextSources.size <= 0) {
+					this.nextSources = undefined;
+				}
+			}
 			var currentSources = this.sources.get(subDymoUris[i]);
 			if (currentSources) {
 				for (var j = 0; j < currentSources.length; j++) {
 					currentSources[j].stop();
-				}
-			}
-			if (this.nextSources) {
-				this.nextSources.delete(subDymoUris[i]);
-				if (this.nextSources.size <= 0) {
-					this.nextSources = undefined;
 				}
 			}
 		}
@@ -89,7 +93,7 @@ export class SchedulerThread {
 	}
 
 	/** returns the sources correponding to the given dymo */
-	private getSources(dymo) {
+	getSources(dymo) {
 		return this.sources.get(dymo);
 	}
 
@@ -158,6 +162,7 @@ export class SchedulerThread {
 		var sourceList = this.sources.get(source.getDymoUri());
 		sourceList.splice(sourceList.indexOf(source), 1);
 		if (sourceList.length <= 0) {
+			source.removeAndDisconnect();
 			this.sources.delete(source.getDymoUri());
 		}
 		setTimeout(() => this.onChanged(this), 50);
@@ -166,16 +171,13 @@ export class SchedulerThread {
 
 	private endThreadIfNoMoreSources() {
 		if (this.sources.size == 0 && (!this.nextSources || this.nextSources.size == 0)) {
-			window.clearTimeout(this.timeoutID);
+			clearTimeout(this.timeoutID);
 			this.navigator.reset();
 			//remove all nodes (TODO works well but COULD BE DONE SOMEWHERE ELSE FOR EVERY NODE THAT HAS NO LONGER ANYTHING ATTACHED TO INPUT..)
 			var subDymoUris = GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(this.dymoUri);
-			for (var i = 0, ii = subDymoUris.length; i < ii; i++) {
-				var currentNode = this.nodes.get(subDymoUris[i]);
-				if (currentNode) {
-					currentNode.removeAndDisconnect();
-				}
-			}
+			subDymoUris.forEach(uri => {
+				this.nodes.get(uri) ? this.nodes.get(uri).removeAndDisconnect() : null;
+			});
 			if (this.onEnded) {
 				this.onEnded();
 			}
@@ -216,7 +218,9 @@ export class SchedulerThread {
 	private createNextSources() {
 		var nextParts = this.navigator.getNextParts();
 		if (nextParts) {
-			this.logNextIndices(nextParts);
+			if (GlobalVars.LOGGING_ON) {
+				this.logNextIndices(nextParts);
+			}
 			var nextSources = new Map();
 			for (var i = 0; i < nextParts.length; i++) {
 				var sourcePath = GlobalVars.DYMO_STORE.getSourcePath(nextParts[i]);

@@ -26,3 +26,5 @@ dist/*.map
 !audio/impulse_rev.wav
 
 lib
+dist
+spec/lib

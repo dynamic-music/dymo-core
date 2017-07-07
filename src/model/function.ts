@@ -1,4 +1,3 @@
-import * as logic from 'logicjs'
 import { GlobalVars } from '../globals/globals'
 import { TYPE, PARAMETER_TYPE, VALUE, HAS_PARAMETER } from '../globals/uris'
 import { FunctionTools } from '../math/functiontools'
@@ -22,7 +21,7 @@ export class DymoFunction {
 	private inverseFunction;
 	private constraintFunction
 
-	constructor(vars: string[], args: string[], argTypes, body: string, isUnidirectional) {
+	constructor(vars: string[], args: any[], argTypes, body: string, isUnidirectional) {
 		this.vars = vars;
 		this.args = args;
 		this.argTypes = argTypes;
@@ -97,8 +96,8 @@ export class DymoFunction {
 	applyDirect(changedArgIndex, value, dymoUri) {
 		var argValues = this.getArgValues(changedArgIndex, value, dymoUri);
 		if (this.constraintFunction) {
-			var returnVar = logic.lvar();
-			this.resultCache[dymoUri] = this.applyConstraint([returnVar].concat(argValues), returnVar);
+			//simply solve for first arg
+			this.resultCache[dymoUri] = LogicTools.solveConstraint(this.constraintFunction, ["dummy"].concat(argValues), 0);
 			//console.log("DIR", dymoUri, argValues, this.resultCache[dymoUri])
 		} else {
 			this.resultCache[dymoUri] = this.directFunction.apply(this, argValues);
@@ -109,15 +108,11 @@ export class DymoFunction {
 	applyInverse(value, dymoUri) {
 		if (!this.resultCache[dymoUri] || this.resultCache[dymoUri] != value) {
 			if (this.constraintFunction) {
-				//console.log("INV", value, dymoUri)
 				var updatableArgs = this.args.filter((a,i) => a.backpropagate || this.argTypes[i] == PARAMETER_TYPE);
 				var randomUpdatableArg = updatableArgs[Math.floor(Math.random()*updatableArgs.length)];
 				var randomArgIndex = this.args.indexOf(randomUpdatableArg);
 				var argValues = this.getArgValues(null, null, dymoUri);
-				//console.log("HEY2", logic)
-				var randomArgVar = logic.lvar();
-				argValues.splice(randomArgIndex, 1, randomArgVar);
-				var newArgValue = this.applyConstraint([value].concat(argValues), randomArgVar);
+				var newArgValue = LogicTools.solveConstraint(this.constraintFunction, [value].concat(argValues), randomArgIndex+1);
 				//console.log(randomArgIndex, newArgValue)
 				this.updateArg(randomArgIndex, newArgValue);
 			} else if (this.inverseFunction && this.args && this.args.length == 1) {
@@ -132,14 +127,6 @@ export class DymoFunction {
 			this.args[index].backpropagate(value, this);
 		} else {
 			GlobalVars.DYMO_STORE.setValue(this.args[index], VALUE, value);
-		}
-	}
-
-	private applyConstraint(args, lvar) {
-		var result = logic.run(this.constraintFunction.apply(null, args.concat(logic)), lvar, 1);
-		//console.log(args, result, this.constraintFunction)
-		if (result.length > 0 && !isNaN(result[0])) {
-			return result[0];
 		}
 	}
 

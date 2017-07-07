@@ -1,5 +1,5 @@
 import { Store, Parser, Writer, Util } from 'n3'
-import { toRDF } from 'jsonld'
+import { promises as jsonld } from 'jsonld';
 import { flattenArray, removeDuplicates } from 'arrayutils'
 import { RDFS_URI, TYPE, FIRST, REST, NIL } from '../globals/uris'
 
@@ -232,7 +232,7 @@ export class EasyStore {
 	///////// QUERYING FUNCTIONS //////////
 
 	//calls regular store.find function
-	find(subject, predicate, object) {
+	find(subject: string, predicate?: string, object?: string) {
 		return this.store.find(subject, predicate, object);
 	}
 
@@ -502,10 +502,10 @@ export class EasyStore {
 
 	///////// LOADING FUNCTIONS //////////
 
-	loadData(data, isJsonld): Promise<any> {
+	loadData(data): Promise<any> {
 		//TODO NOT SURE IF THIS WORKS...
 		return new Promise((resolve, reject) =>
-			this.jsonldToNquads(data, isJsonld)
+			this.jsonldToNquads(data)
 			.then(nquads => {
 				Parser(null).parse(nquads, (error, triple, prefixes) => {
 					//keep streaming triples
@@ -513,29 +513,39 @@ export class EasyStore {
 						this.store.addTriple(triple);
 					//done
 					} else if (error) {
+						console.log(error)
 						reject();
 					} else {
 						resolve();
 					}
 				});
 			})
+			.catch(err => reject(err))
 		);
 	}
 
-	loadFileIntoStore(path, isJsonld): Promise<any> {
+	loadFileIntoStore(path): Promise<any> {
 		return fetch(path, { mode:'cors' })
 			.then(response => response.text())
-			.then(data => this.loadData(data, isJsonld));
+			.then(data => this.loadData(data))
+			.catch(err => console.log(err));
 	}
 
-	private jsonldToNquads(data, isJsonld): Promise<string> {
-		return new Promise(resolve => {
+	private jsonldToNquads(data: string): Promise<string> {
+		if (data[0] === '{') {
+			return jsonld.toRDF(JSON.parse(data), {format: 'application/nquads'});
+		}
+		return Promise.resolve(data);
+		/*return new Promise((resolve, reject) => {
 			if (isJsonld) {
-				toRDF(data, {format: 'application/nquads'}, (err, nquads) => resolve(nquads));
+				console.log(data, isJsonld)
+				//toRDF(data, {format: 'application/nquads'}, (err, nquads) => {console.log("TOO");nquads ? resolve(nquads): reject(err)});
+				resolve(jsonld.toRDF(data, {format: 'application/nquads'})
+					.then
 			} else {
 				resolve(data);
 			}
-		});
+		});*/
 	}
 
 

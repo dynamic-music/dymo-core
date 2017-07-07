@@ -4,6 +4,7 @@ import { flattenArray, removeDuplicates } from 'arrayutils';
 import { GlobalVars } from '../globals/globals'
 import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER, CONTEXT_URI } from '../globals/uris'
 import { SchedulerThread } from './thread'
+declare const Buffer;
 
 /**
  * Manages playing back any number of dymos.
@@ -146,7 +147,7 @@ export class Scheduler {
 		}
 	}
 
-	/*//returns all sources correponding to the given dymo
+	//returns all sources correponding to the given dymo
 	private getSources(dymoUri) {
 		var sources = [];
 		for (var i = 0; i < this.threads.length; i++) {
@@ -158,7 +159,7 @@ export class Scheduler {
 			}
 		}
 		return sources;
-	}*/
+	}
 
 	private threadEnded(thread) {
 		this.threads.splice(this.threads.indexOf(thread), 1);
@@ -201,7 +202,9 @@ export class Scheduler {
 				'Content-Type': 'arraybuffer'
 			})*/
 		})
-		.then(r => r.arrayBuffer())
+		.then(r => this.toArrayBuffer(r))
+		//.then(r => {return r.body.getReader().read()})
+		//.then(value => this.audioContext.decodeAudioData(value.buffer, buffer => callback(buffer)))
 		.then(r => this.audioContext ? this.audioContext.decodeAudioData(r, buffer => callback(buffer)) : null)
 		.catch(e => console.log(e));
 
@@ -210,6 +213,31 @@ export class Scheduler {
 		request.responseType = 'arraybuffer';
 		request.onload = () => this.audioContext.decodeAudioData(request.response, buffer => callback(buffer));
 		request.send();*/
+	}
+
+	private toArrayBuffer(response) {
+		if (response.arrayBuffer) {
+			return response.arrayBuffer();
+		} else {
+			// isomorphic-fetch does not support response.arrayBuffer
+			return new Promise((resolve, reject) => {
+				let chunks = [];
+				let bytes = 0;
+
+				response.body.on('error', err => {
+					reject("invalid audio url");
+				});
+
+				response.body.on('data', chunk => {
+					chunks.push(chunk);
+					bytes += chunk.length;
+				});
+
+				response.body.on('end', () => {
+					resolve(Buffer.concat(chunks));
+				});
+			});
+		}
 	}
 
 }

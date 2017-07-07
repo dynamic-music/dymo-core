@@ -1,28 +1,32 @@
+import 'isomorphic-fetch';
 import { SLIDER, ONSET_FEATURE, FEATURE_TYPE, PARAMETER_TYPE, MOBILE_CONTROL, AMPLITUDE, RAMP,
-	AUTO_CONTROL_TRIGGER } from '../src/globals/uris'
-import { GlobalVars } from '../src/globals/globals'
-import { Mapping } from '../src/model/mapping'
-import { DymoFunction } from '../src/model/function'
-import { Control } from '../src/model/control'
-import { DymoStore } from '../src/io/dymostore'
+	AUTO_CONTROL_TRIGGER } from '../../src/globals/uris';
+import { GlobalVars } from '../../src/globals/globals';
+import { Mapping } from '../../src/model/mapping';
+import { DymoFunction } from '../../src/model/function';
+import { Control } from '../../src/model/control';
+import { DymoStore } from '../../src/io/dymostore';
+import { SERVER_ROOT } from './server';
 
 describe("a mapping", function() {
 
 	var value = 0;
-	var control = new Control("control1", SLIDER);
+	var control = new Control("c1", "control1", SLIDER);
 	var dymo1, dymo2, mapping;
 
 	beforeEach(function(done) {
 		GlobalVars.DYMO_STORE = null;
-		GlobalVars.DYMO_STORE = new DymoStore(function(){
+		GlobalVars.DYMO_STORE = new DymoStore();
+		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/')
+		.then(() => {
 			GlobalVars.DYMO_STORE.addDymo("dymo1");
 			GlobalVars.DYMO_STORE.setFeature("dymo1", ONSET_FEATURE, 5);
 			GlobalVars.DYMO_STORE.setParameter("dymo1", AMPLITUDE, 1);
 			GlobalVars.DYMO_STORE.addDymo("dymo2");
 			GlobalVars.DYMO_STORE.setFeature("dymo2", ONSET_FEATURE, 3);
 			GlobalVars.DYMO_STORE.setParameter("dymo2", AMPLITUDE, 1);
-			var mappingFunction = new DymoFunction(["a","b"], [control, ONSET_FEATURE], [MOBILE_CONTROL, FEATURE_TYPE], "return a * b;");
-			mapping = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE);
+			var mappingFunction = new DymoFunction(["a","b"], [control, ONSET_FEATURE], [MOBILE_CONTROL, FEATURE_TYPE], "return a * b;", false);
+			mapping = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE, false);
 			done();
 		});
 	});
@@ -40,8 +44,8 @@ describe("a mapping", function() {
 
 	it("can map from parameters to other parameters", function() {
 		var highLevelParamUri = GlobalVars.DYMO_STORE.setParameter("dymo1", "high-level", 1);
-		var mappingFunction = new DymoFunction(["a","b"], [highLevelParamUri, ONSET_FEATURE], [PARAMETER_TYPE, FEATURE_TYPE], "return a * b;");
-		var mapping2 = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE);
+		var mappingFunction = new DymoFunction(["a","b"], [highLevelParamUri, ONSET_FEATURE], [PARAMETER_TYPE, FEATURE_TYPE], "return a * b;", false);
+		var mapping2 = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE, false);
 		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(5);
 		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBe(3);
 		GlobalVars.DYMO_STORE.setParameter("dymo1", "high-level", 0.3);
@@ -54,10 +58,10 @@ describe("a mapping", function() {
 
 	it("updates a control parameter", function() {
 		GlobalVars.DYMO_STORE.addControl("control2", SLIDER);
-		var control2 = new Control("control2", SLIDER);
+		var control2 = new Control("c2", "control2", SLIDER);
 		var rampUri = GlobalVars.DYMO_STORE.addControl(undefined, RAMP);
-		var mappingFunction = new DymoFunction(["a"], [control2], [MOBILE_CONTROL], "return a;");
-		var mapping2 = new Mapping(mappingFunction, [rampUri], AUTO_CONTROL_TRIGGER);
+		var mappingFunction = new DymoFunction(["a"], [control2], [MOBILE_CONTROL], "return a;", false);
+		var mapping2 = new Mapping(mappingFunction, [rampUri], AUTO_CONTROL_TRIGGER, false);
 		control2.updateValue(1);
 		expect(GlobalVars.DYMO_STORE.findParameterValue(rampUri, AUTO_CONTROL_TRIGGER)).toBe(1);
 		control2.updateValue(0);
@@ -66,8 +70,8 @@ describe("a mapping", function() {
 
 	it("updates a control with inverse if possible", function() {
 		mapping.disconnect();
-		var mappingFunction = new DymoFunction(["a", "b"], [control, ONSET_FEATURE], [MOBILE_CONTROL, FEATURE_TYPE], "return 5*a+b*a-1;");
-		new Mapping(mappingFunction, ["dymo1"], AMPLITUDE);
+		var mappingFunction = new DymoFunction(["a", "b"], [control, ONSET_FEATURE], [MOBILE_CONTROL, FEATURE_TYPE], "return 5*a+b*a-1;", false);
+		new Mapping(mappingFunction, ["dymo1"], AMPLITUDE, false);
 		control.updateValue(0.15);
 		//currently non-invertible function
 		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(0.5);
@@ -77,8 +81,8 @@ describe("a mapping", function() {
 		//currently invertible function
 		GlobalVars.DYMO_STORE.addDymo("dymo3");
 		GlobalVars.DYMO_STORE.setParameter("dymo3", AMPLITUDE, 1);
-		mappingFunction = new DymoFunction(["a"], [control], [MOBILE_CONTROL], "return 5*a-1;");
-		new Mapping(mappingFunction, ["dymo3"], AMPLITUDE);
+		mappingFunction = new DymoFunction(["a"], [control], [MOBILE_CONTROL], "return 5*a-1;", false);
+		new Mapping(mappingFunction, ["dymo3"], AMPLITUDE, false);
 		control.updateValue(0.1);
 		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo3", AMPLITUDE)).toBe(-0.5);
 		control.updateValue(0.3);

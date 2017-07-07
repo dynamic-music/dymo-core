@@ -36,9 +36,9 @@ export class DymoManager {
 		this.reverbFile = reverbFile;
 	}
 
-	init(): Promise<any> {
+	init(ontologiesPath?: string): Promise<any> {
 		return new Promise((resolve, reject) => {
-			GlobalVars.DYMO_STORE.loadOntologies()
+			GlobalVars.DYMO_STORE.loadOntologies(ontologiesPath)
 				.then(r => resolve());
 		});
 	}
@@ -67,9 +67,9 @@ export class DymoManager {
 	loadDymoAndRendering(dymoUri, renderingUri): Promise<any> {
 		let loader = new DymoLoader(GlobalVars.DYMO_STORE);
 		let loadedDymos, loadedRendering;
-		return loader.loadDymoFromJson(dymoUri)
+		return loader.loadDymoFromFile(dymoUri)
 			.then(res => loadedDymos = res)
-			.then(() => loader.loadRenderingFromJson(renderingUri))
+			.then(() => loader.loadRenderingFromFile(renderingUri))
 			.then(res => loadedRendering = res)
 			.then(() => this.processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering))
 			.catch(err => console.log(err));
@@ -98,12 +98,12 @@ export class DymoManager {
 
 	loadDymoFromJson(jsonDymo): Promise<string[]> {
 		var loader = new DymoLoader(GlobalVars.DYMO_STORE);
-		return loader.loadDymoFromJson(jsonDymo);
+		return loader.loadDymoFromFile(jsonDymo);
 	}
 
 	parseDymoFromJson(jsonDymo): Promise<string[]> {
 		var loader = new DymoLoader(GlobalVars.DYMO_STORE);
-		return loader.parseDymoFromJson(jsonDymo);
+		return loader.parseDymoFromString(jsonDymo);
 	}
 
 	replacePartOfTopDymo(index, dymoUri) {

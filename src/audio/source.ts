@@ -152,6 +152,10 @@ export class DymoSource extends DymoNode {
 		this.parameters[AMPLITUDE].setValueAtTime(this.parameters[AMPLITUDE].value, now);
 		this.parameters[AMPLITUDE].linearRampToValueAtTime(0, now+GlobalVars.FADE_LENGTH);
 		this.source.stop(now+2*GlobalVars.FADE_LENGTH);
+		//inserted here for using with nodejs WAA implementation (does not call source.onended when stopped)
+		if (this.onEnded) {
+			this.onEnded(this);
+		}
 	}
 
 	private toSamples(seconds, buffer) {

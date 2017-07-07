@@ -11,7 +11,7 @@ export class RampControl extends AutoControl {
 	private currentValue;
 	private isIncreasing;
 
-	constructor(uri, duration, initialValue) {
+	constructor(uri: string, duration: number, initialValue?: number) {
 		super(uri, RAMP);
 		this.duration = duration ? duration : 10000;
 		this.currentValue = initialValue ? initialValue : 0;

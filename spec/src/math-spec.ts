@@ -1,5 +1,5 @@
-import { FunctionTools } from '../build/math/functiontools'
-import { PolygonTools } from '../build/math/polygontools'
+import { FunctionTools } from '../../src/math/functiontools';
+import { PolygonTools } from '../../src/math/polygontools';
 
 describe("the math tools", function() {
 
@@ -80,11 +80,11 @@ describe("the math tools", function() {
 		expect(func(point2[0], point2[1])).toBeFalsy();
 		expect(func(point3[0], point3[1])).toBeFalsy();
 		var centroid = PolygonTools.getCentroid(polygon);
-		func = Function.apply(this, PolygonTools.getInterpolatedPolygonFunctionArgs(polygon));
-		expect(func.call(this, point1[0], point1[1])).toBeCloseTo(0.352092461065317, 15);
-		expect(func.call(this, centroid[0], centroid[1])).toBe(1);
-		expect(func(point2[0], point2[1])).toBe(0);
-		expect(func(point3[0], point3[1])).toBe(0);
+		var func2 = PolygonTools.getInterpolatedPolygonFunctionArgs(polygon);
+		expect(func2.call(this, point1[0], point1[1])).toBeCloseTo(0.352092461065317, 15);
+		expect(func2.call(this, centroid[0], centroid[1])).toBe(1);
+		expect(func2(point2[0], point2[1])).toBe(0);
+		expect(func2(point3[0], point3[1])).toBe(0);
 	});
 
 });

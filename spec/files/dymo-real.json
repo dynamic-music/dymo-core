@@ -1,5 +1,5 @@
 {
-	"@context":"http://tiny.cc/dymo-context",
+	"@context":"http://localhost:8181/ontologies/dymo-context.json",
 	"@id":"demoBeat",
 	"@type":"Dymo",
 	"ct":"parallel",

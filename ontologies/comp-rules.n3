@@ -36,7 +36,7 @@
         mb:hasFunction [a mb:Function;
             mb:hasArgument [a mb:Argument;
                 mb:hasVariable "a";
-                mb:hasValue [a dy:CustomParameter]];
+                mb:hasValue [a dy:ParameterType]];
             mb:hasArgument [a mb:Argument;
                 mb:hasVariable "b";
                 mb:hasValue dy:IndexFeature];

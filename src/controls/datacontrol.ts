@@ -23,7 +23,9 @@ export class DataControl extends AutoControl {
 		.then(res => res.json())
 		.then(json => this.jsonMap(json))
 		.then(mapped => {
-			console.log("data received:", mapped);
+			if (GlobalVars.LOGGING_ON) {
+				console.log("data received:", mapped);
+			}
 			this.updateValue(mapped)
 		})
 		.catch(e => console.log(e));

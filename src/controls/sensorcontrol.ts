@@ -1,7 +1,10 @@
-import { GlobalVars } from '../globals/globals'
-import { AUTO_CONTROL_FREQUENCY } from '../globals/uris'
-import { Control } from '../model/control'
-import { Ramp } from '../util/ramp'
+import { GlobalVars } from '../globals/globals';
+import { AUTO_CONTROL_FREQUENCY } from '../globals/uris';
+import { Control } from '../model/control';
+import { Ramp } from '../util/ramp';
+
+export var UNAVAILABLE = "unavailable";
+export var CALIBRATING = "calibrating";
 
 /**
  * Sensor controls that read their values from sensors.
@@ -21,7 +24,7 @@ export class SensorControl extends Control {
 	private previousValues;
 	private previousUpdateTime;
 	private ramp;
-	private message = "not available";
+	private status = UNAVAILABLE;
 
 	private watch;
 
@@ -34,11 +37,15 @@ export class SensorControl extends Control {
 	}
 
 	getValue() {
-		var value = super.getValue.call(this);
-		if (isNaN(value)) {
-			return this.message;
-		}
-		return value;
+		return this.value;
+	}
+
+	getStatus() {
+		return this.status;
+	}
+
+	getReferenceValue() {
+		return this.referenceValue;
 	}
 
 	setReferenceAverageOf(count) {
@@ -61,6 +68,8 @@ export class SensorControl extends Control {
 
 	resetReferenceValueAndAverage() {
 		this.referenceValue = undefined;
+		this.value = undefined;
+		this.status = UNAVAILABLE;
 		this.previousValues = [];
 	}
 
@@ -73,27 +82,27 @@ export class SensorControl extends Control {
 			this.watch = this.$ngSensor[this.watchFunctionName](this.options);
 			this.watch.then(null, this.onError, result => {
 				this.updateFunction(result);
-				if (this.$scope) {
+				/*if (this.$scope) {
 					//scope apply here whenever something changes
 					setTimeout(function() {
 						this.$scope.$apply();
 					}, 10);
-				}
+				}*/
 			});
 		} else {
-			console.log(this.uri + " not available");
+			console.log(this.uri + " " + UNAVAILABLE);
 		}
 	}
 
 	update(newValue) {
-		this.message = "calibrating";
+		this.status = CALIBRATING;
 		//still measuring reference value
 		if (this.referenceAverageOf && this.previousValues.length < this.referenceAverageOf) {
 			this.previousValues.push(newValue);
 			//done collecting values. calculate average and adjust previous values
 			if (this.previousValues.length == this.referenceAverageOf) {
 				this.referenceValue = this.getAverage(this.previousValues);
-				this.previousValues = this.previousValues.map(function(a) { return a - this.referenceValue; });
+				this.previousValues = this.previousValues.map(a => a - this.referenceValue);
 			}
 		//done measuring. adjust value if initialvalue taken
 		} else {
@@ -126,21 +135,21 @@ export class SensorControl extends Control {
 				this.previousUpdateTime = now;
 			} else {
 				//call regular super method
-				Control.prototype.updateValue.call(this, newValue);
+				this.updateValue(newValue);
 			}
 		}
 	}
 
 	private getAverage(list) {
-		var sum = list.reduce(function(a, b) { return a + b; });
+		var sum = list.reduce((a, b) => a + b);
 		return sum / list.length;
 	}
 
 	private startUpdateRamp(targetValue, duration) {
 		var frequency = GlobalVars.DYMO_STORE.findParameterValue(this.uri, AUTO_CONTROL_FREQUENCY);
-		this.ramp.startOrUpdate(targetValue, duration, frequency? frequency: 100, function(value) {
+		this.ramp.startOrUpdate(targetValue, duration, frequency? frequency: 100, value => {
 			//call regular super method
-			Control.prototype.updateValue.call(self, value);
+			this.updateValue(value);
 		});
 	}
 

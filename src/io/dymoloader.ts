@@ -39,65 +39,56 @@ export class DymoLoader {
 		return this.mappings;
 	}
 
-	loadDymoFromJson(jsonUri): Promise<string[]> {
-		var fileIndex = jsonUri.lastIndexOf('/')+1;
-		this.dymoBasePath = jsonUri.substring(0, fileIndex);
-		return this.loadJsonld(jsonUri)
+	loadDymoFromFile(fileUri): Promise<string[]> {
+		var fileIndex = fileUri.lastIndexOf('/')+1;
+		this.dymoBasePath = fileUri.substring(0, fileIndex);
+		return this.recursiveLoadFile(fileUri, "")
+			.then(loaded => this.dymoStore.loadData(loaded))
 			.then(() => this.createDymoFromStore());
 	}
 
-	parseDymoFromJson(json): Promise<string[]> {
-		return this.dymoStore.loadData(json, true)
+	parseDymoFromString(jsonldOrRdf): Promise<string[]> {
+		return this.dymoStore.loadData(jsonldOrRdf)
 			.then(() => this.createDymoFromStore());
 	}
 
-	loadRenderingFromJson(jsonUri): Promise<Object[]> {
-		return this.loadJsonld(jsonUri)
+	loadRenderingFromFile(fileUri): Promise<Object[]> {
+		return this.recursiveLoadFile(fileUri, "")
+			.then(loaded => this.dymoStore.loadData(loaded))
 			.then(() => this.createRenderingFromStore());
 	}
 
-	parseDymoFromTurtle(turtle): Promise<string[]> {
-		return this.dymoStore.loadData(turtle, false)
-			.then(() => this.createDymoFromStore());
-	}
-
-	//load jsonld into triple store
-	private loadJsonld(jsonUri): Promise<any> {
-		return new Promise(resolve =>
-			this.recursiveLoadJson(jsonUri, "", loaded => {
-				this.dymoStore.loadData(loaded, true)
-					.then(() => resolve())
-			})
-		);
-	}
-
-	private recursiveLoadJson(jsonUri, jsonString, callback) {
-		fetch(jsonUri, { mode:'cors' })
-		.then(response => response.text())
-		.then(text => {
-			if (text.indexOf("Cannot GET") < 0) {
+	//recursively load files that may contain references to other files. only if json-ld, otherwise simple.
+	private recursiveLoadFile(fileUri, jsonString): Promise<string> {
+		return fetch(fileUri, { mode:'cors' })
+			.then(response => response.text())
+			.then(text => {
+				if (text.indexOf("Cannot GET") >= 0) {
+					return null;
+				}
 				//console.log(this.responseText.substring(0,20), isJsonString(this.responseText))
 				if (this.isJsonString(text)) {
 					if (jsonString) {
-						if (jsonUri.indexOf(this.dymoBasePath) >= 0) {
-							jsonUri = jsonUri.replace(this.dymoBasePath, "");
+						if (fileUri.indexOf(this.dymoBasePath) >= 0) {
+							fileUri = fileUri.replace(this.dymoBasePath, "");
 						}
-						jsonString = jsonString.replace('"'+jsonUri+'"', text);
+						jsonString = jsonString.replace('"'+fileUri+'"', text);
 					} else {
 						jsonString = text;
 					}
-				}
-				var nextUri = this.findNextJsonUri(jsonString);
-				if (nextUri) {
-					if (nextUri.indexOf(this.dymoBasePath) < 0) {
-						nextUri = this.dymoBasePath+nextUri;
+					var nextUri = this.findNextJsonUri(jsonString);
+					if (nextUri) {
+						if (nextUri.indexOf(this.dymoBasePath) < 0) {
+							nextUri = this.dymoBasePath+nextUri;
+						}
+						return this.recursiveLoadFile(nextUri, jsonString);
+					} else if (jsonString) {
+						return jsonString;
 					}
-					this.recursiveLoadJson(nextUri, jsonString, callback);
-				} else if (jsonString) {
-					callback(JSON.parse(jsonString));
+				} else {
+					return text;
 				}
-			}
-		});
+			});
 	}
 
 	private isJsonString(str) {
@@ -211,6 +202,7 @@ export class DymoLoader {
 		if (vars && args && body) {
 			var argTypes;
 			[args, argTypes] = this.createFunctionDomain(args, dymoUri);
+			//console.log(vars, args, argTypes, body)
 			return new DymoFunction(vars, args, argTypes, body, isUnidirectional);
 		}
 	}
@@ -220,7 +212,7 @@ export class DymoLoader {
 		var domainDimTypes = [];
 		for (var j = 0; j < domainDimUris.length; j++) {
 			var currentType = this.dymoStore.findObject(domainDimUris[j], uris.TYPE);
-			//console.log(domainDimUris[j], currentType)
+			//console.log(domainDimUris[j], currentType, this.dymoStore.isSubclassOf(currentType, uris.FEATURE_TYPE))
 			if (currentType === uris.FEATURE_TYPE || this.dymoStore.isSubclassOf(currentType, uris.FEATURE_TYPE)) {
 				if (currentType === uris.FEATURE_TYPE) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM FEATURES
 					currentType = domainDimUris[j];

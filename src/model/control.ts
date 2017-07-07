@@ -6,7 +6,7 @@ export class Control {
 	protected uri: string;
 	private name: string;
 	private type: string;
-	private value: number;
+	protected value: number;
 	private observers = [];
 	private backpropFunction: Function;
 
@@ -24,7 +24,7 @@ export class Control {
 		return this.uri;
 	}
 
-	getValue() {
+	getValue(): number {
 		return this.value;
 	}
 

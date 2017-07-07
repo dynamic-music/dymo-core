@@ -30,7 +30,7 @@ export module  PolygonTools {
 			x += (point1[0] + point2[0]) * f;
 			y += (point1[1] + point2[1]) * f;
 		}
-		f = this.getArea(polygon) * 6;
+		f = getArea(polygon) * 6;
 		return {0:x/f, 1:y/f};
 	};
 
@@ -50,7 +50,7 @@ export module  PolygonTools {
 	export function getMinDistanceFromEdge(polygon, point) {
 		var minDistance = Number.POSITIVE_INFINITY;
 		for (var i = 0; i < polygon.length; i++) {
-			var currentDistance = this.getDistanceFromSegment(point, polygon[i], polygon[(i+1)%polygon.length]);
+			var currentDistance = getDistanceFromSegment(point, polygon[i], polygon[(i+1)%polygon.length]);
 			minDistance = Math.min(currentDistance, minDistance);
 		}
 		return minDistance;
@@ -60,23 +60,26 @@ export module  PolygonTools {
 	export function howFarIsPointInPolygon(polygon, centroid, point) {
 		if (isPointInPolygon(polygon, point)) {
 			var centroidDistance = Math.sqrt(Math.pow(point[0]-centroid[0], 2) + Math.pow(point[1]-centroid[1], 2));
-			var edgeDistance = this.getMinDistanceFromEdge(polygon, point);
+			var edgeDistance = getMinDistanceFromEdge(polygon, point);
 			return Math.sqrt((1-centroidDistance)*edgeDistance/Math.abs(centroidDistance+edgeDistance));
 		}
 		return 0;
 	};
 
 	export function getPolygonFunction(polygon) {
-		/*return function(a,b) {
+		return function(a,b) {
 			return isPointInPolygon(polygon, {0:a, 1:b});
-		};*/
-		return [["a","b"], "return PolygonTools.isPointInPolygon(" + getPolygonOrPointString(polygon) + ", {0:a, 1:b});"];
+		};
+		//return [["a","b"], "console.log(this);return PolygonTools.isPointInPolygon(" + getPolygonOrPointString(polygon) + ", {0:a, 1:b});"];
 	};
 
 	export function getInterpolatedPolygonFunctionArgs(polygon) {
-		var polygonString = getPolygonOrPointString(polygon);
-		var centroidString = getPolygonOrPointString(this.getCentroid(polygon));
-		return [["a","b"], "return PolygonTools.howFarIsPointInPolygon(" + polygonString + "," + centroidString + ", {0:a, 1:b});"];
+		//var polygonString = getPolygonOrPointString(polygon);
+		//var centroidString = getPolygonOrPointString(getCentroid(polygon));
+		return function(a,b) {
+			return howFarIsPointInPolygon(polygon, getCentroid(polygon), {0:a, 1:b});
+		};
+		//return [["a","b"], "return PolygonTools.howFarIsPointInPolygon(" + polygonString + "," + centroidString + ", {0:a, 1:b});"];
 	};
 
 	function getPolygonOrPointString(polygonOrPoint) {

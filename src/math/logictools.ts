@@ -1,5 +1,6 @@
-import * as math from 'mathjs'
-import { FunctionTools } from '../math/functiontools'
+import * as logic from 'logicjs';
+import * as math from 'mathjs';
+import { FunctionTools } from '../math/functiontools';
 
 /**
  * Creates and solves logical constraints.
@@ -14,6 +15,16 @@ export module LogicTools {
 			created[body] = createGoal(toEquation(body));
 		}
 		return created[body];
+	}
+
+	export function solveConstraint(constraint: Function, args: any[], solveIndex: number) {
+		var solveVar = logic.lvar();
+		args.splice(solveIndex, 1, solveVar);
+		var result = logic.run(constraint.apply(null, args.concat(logic)), solveVar, 1);
+		//console.log(args, result, constraint)
+		if (result.length > 0 && !isNaN(result[0])) {
+			return result[0];
+		}
 	}
 
 	function createGoal(returnValue) {

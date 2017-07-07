@@ -1,5 +1,4 @@
 var gulp = require('gulp');
-var karma = require('karma');
 var browserify = require('browserify');
 var tsify = require('tsify');
 var source = require('vinyl-source-stream');
@@ -25,11 +24,4 @@ gulp.task('default', function () {
 		.pipe(sourcemaps.init({loadMaps: true}))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('dist'));
-});
-
-gulp.task('test', function (done) {
-  new karma.Server({
-    configFile: __dirname + '/karma.conf.js',
-    singleRun: true
-  }, done).start();
 });

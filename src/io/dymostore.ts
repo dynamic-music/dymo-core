@@ -14,10 +14,11 @@ import { FeatureInfo } from '../globals/types'
  */
 export class DymoStore extends EasyStore {
 
-	private dymoOntologyPath = "http://tiny.cc/dymo-ontology"//"../ontologies/dymo-ontology.n3";//"http://tiny.cc/dymo-ontology";
-	private mobileOntologyPath = "http://tiny.cc/mobile-audio-ontology"//"../ontologies/mobile-audio-ontology.n3";//"http://tiny.cc/mobile-audio-ontology";
-	private dymoContextPath = "http://tiny.cc/dymo-context";
-	private dymoSimpleContextPath = "http://tiny.cc/dymo-context-simple";
+	private onlinePath = "http://tiny.cc/";
+	private dymoOntologyPath = "dymo-ontology";
+	private mobileOntologyPath = "mobile-audio-ontology";
+	private dymoContextPath = "dymo-context";
+	private dymoSimpleContextPath = "dymo-context-simple";
 	private dymoBasePaths = {};
 
 	//creates the store
@@ -26,9 +27,17 @@ export class DymoStore extends EasyStore {
 	}
 
 	//loads some basic ontology files
-	loadOntologies(): Promise<any> {
-		return this.loadFileIntoStore(this.dymoOntologyPath, false)
-			.then(() => this.loadFileIntoStore(this.mobileOntologyPath, false));
+	loadOntologies(localPath?: string): Promise<any> {
+		let dymoPath, mobilePath;
+		if (localPath) {
+			dymoPath = localPath+this.dymoOntologyPath+'.n3';
+			mobilePath = localPath+this.mobileOntologyPath+'.n3';
+		} else {
+			dymoPath = this.onlinePath+this.dymoOntologyPath;
+			mobilePath = this.onlinePath+this.mobileOntologyPath;
+		}
+		return this.loadFileIntoStore(dymoPath)
+			.then(() => this.loadFileIntoStore(mobilePath));
 	}
 
 	addBasePath(dymoUri, path) {
@@ -233,16 +242,15 @@ export class DymoStore extends EasyStore {
 		return mappingUri;
 	}
 
-	addNavigator(renderingUri, navigatorType, subsetFunctionArgs, subsetFunctionBody) {
+	addNavigator(renderingUri: string, navigatorType: string, selectionFuncUri: string): string {
 		var navUri = this.createBlankNode();
 		this.addTriple(renderingUri, uris.HAS_NAVIGATOR, navUri);
 		this.addTriple(navUri, uris.TYPE, navigatorType);
-		var funcUri = this.addFunction(subsetFunctionArgs, subsetFunctionBody);
-		this.addTriple(navUri, uris.NAV_DYMOS, funcUri);
+		this.addTriple(navUri, uris.NAV_DYMOS, selectionFuncUri);
 		return navUri;
 	}
 
-	addFunction(args, body) {
+	addFunction(args: Object, body: string): string {
 		var funcUri = this.createBlankNode();
 		var vars = Object.keys(args);
 		for (var i = 0; i < vars.length; i++) {
@@ -434,9 +442,10 @@ export class DymoStore extends EasyStore {
 	}
 
 	private rdfToJsonld(rdf, frameId): Promise<string> {
-		return new Promise(resolve => {
+		return new Promise((resolve, reject) => {
 			rdf = rdf.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
 			fromRDF(rdf, {format: 'application/nquads'}, (err, doc) => {
+				if (err) { console.log(err, rdf); reject(err); }
 				frame(doc, {"@id":frameId}, (err, framed) => {
 					compact(framed, DYMO_CONTEXT, (err, compacted) => {
 						//deal with imperfections of jsonld.js compaction algorithm to make it reeaally nice
@@ -457,15 +466,15 @@ export class DymoStore extends EasyStore {
 	}
 
 	//returns a jsonld representation of an object removed from any hierarchy of objects of the same type
-	private toFlatJsonld(uri): Promise<string> {
+	private toFlatJsonld(uri): Promise<Object> {
 		var type = this.findObject(uri, uris.TYPE);
 		var triples = this.recursiveFindAllTriples(uri, type, [uris.HAS_PART, uris.HAS_SIMILAR, uris.HAS_SUCCESSOR]);
 		return this.triplesToJsonld(triples, uri)
-			.then(result => new Promise(resolve => {
+			.then(result => {
 				var json = JSON.parse(result);
 				this.updateLevelAndIndexFeatures(uri, json);
-				resolve(json);
-			}));
+				return json;
+			});
 	}
 
 	/* if a previous graph is given as an argument, only reads new nodes from store */
@@ -517,21 +526,24 @@ export class DymoStore extends EasyStore {
 			if (!json["features"]) {
 				json["features"] = [];
 			}
-			this.updateFeature("level", "xsd:integer", this.findLevel(uri).toString(), json);
+			if (json["features"].constructor !== Array) {
+				json["features"] = [json["features"]];
+			}
+			this.updateFeature(json["features"], "level", "xsd:integer", this.findLevel(uri).toString());
 			let index = this.findPartIndex(uri);
 			let indexString = isNaN(index) ? "" : index.toString();
-			this.updateFeature("index", "xsd:integer", indexString, json);
+			this.updateFeature(json["features"], "index", "xsd:integer", indexString);
 		}
 	}
 
-	private updateFeature(term: string, type: string, value: any, json: Object) {
-		var feature = json["features"].filter(f => f["@type"] === term);
+	private updateFeature(features: Object[], term: string, type: string, value: any) {
+		var feature = features.filter(f => f["@type"] === term);
 		//if feature exists, update
 		if (feature.length > 0) {
 			feature[0]["value"]["@value"] = value;
 		//else add the feature
 		} else {
-			json["features"].push({
+			features.push({
 				"@type": term,
 				"value": {
 					"@type": type,
@@ -620,7 +632,7 @@ export class DymoStore extends EasyStore {
 	}
 
 	private updateFeatureObject(objects, type, value) {
-		if (!objects[type]) {
+		if (type &&!objects[type]) {
 			let name = URI_TO_TERM[type] ? URI_TO_TERM[type] : type.replace(uris.CONTEXT_URI, '');
 			objects[type] = {
 				name: name,
@@ -628,10 +640,10 @@ export class DymoStore extends EasyStore {
 				min: Infinity,
 				max: -Infinity
 			};
-		}
-		if (!isNaN(value)) {
-			objects[type].min = Math.min(value, objects[type].min);
-			objects[type].max = Math.max(value, objects[type].max);
+			if (!isNaN(value)) {
+				objects[type].min = Math.min(value, objects[type].min);
+				objects[type].max = Math.max(value, objects[type].max);
+			}
 		}
 	}
 

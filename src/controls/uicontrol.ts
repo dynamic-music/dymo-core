@@ -12,7 +12,7 @@ export class UIControl {
 	constructor(control) {
 		this.value = control.getValue();
 		this.control = control;
-		this.control.setBackpropFunction(this.updateFunction);
+		this.control.setBackpropFunction(this.updateFunction.bind(this));
 	}
 
 	getName() {

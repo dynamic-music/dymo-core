@@ -1,5 +1,5 @@
 {
-  "@context": "http://tiny.cc/dymo-context",
+  "@context": "http://localhost:8181/ontologies/dymo-context.json",
   "@id": "dymo0",
   "@type": "Dymo",
   "ch:cdt": {
@@ -10,15 +10,15 @@
     {
       "@id": "dymo3",
       "@type": "Dymo",
-      "features": "http://tiny.cc/dymo-context/onset",
+      "features": "http://localhost:8181/ontologies/dymo-context.json/onset",
       "dy:hasSource": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav"
     },
     {
       "@id": "dymo2",
       "@type": "Dymo",
       "features": [
-        "http://tiny.cc/dymo-context/pitch",
-        "http://tiny.cc/dymo-context/onset"
+        "http://localhost:8181/ontologies/dymo-context.json/pitch",
+        "http://localhost:8181/ontologies/dymo-context.json/onset"
       ],
       "dy:hasSource": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p055_ne0001_s000827.wav"
     },
@@ -26,8 +26,8 @@
       "@id": "dymo1",
       "@type": "Dymo",
       "features": [
-        "http://tiny.cc/dymo-context/pitch",
-        "http://tiny.cc/dymo-context/onset"
+        "http://localhost:8181/ontologies/dymo-context.json/pitch",
+        "http://localhost:8181/ontologies/dymo-context.json/onset"
       ],
       "dy:hasSource": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav"
     }
@@ -35,7 +35,7 @@
   "dy:hasFeature": [
     {
       "@id": "pitch",
-      "adt": "http://tiny.cc/dymo-context/Pitch",
+      "adt": "http://localhost:8181/ontologies/dymo-context.json/Pitch",
       "value": [
         {
           "@type": "xsd:integer",

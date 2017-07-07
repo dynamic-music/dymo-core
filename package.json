@@ -8,6 +8,11 @@
     "audio/",
     "lib/"
   ],
+  "scripts": {
+    "pretest": "tsc -p spec/",
+    "test": "jasmine",
+    "prepublish":"npm install speaker --mpg123-backend=openal"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/florianthalmann/dymo-core.git"
@@ -28,11 +33,11 @@
   "homepage": "https://github.com/florianthalmann/dymo-core#readme",
   "dependencies": {
     "arrayutils": "*",
-    "jsonld": "*",
+    "jsonld": "^0.4.12",
     "lodash": "^4.17.4",
     "logicjs": "git://github.com/florianthalmann/LogicJS.git",
     "mathjs": "*",
-    "n3": "0.9.1",
+    "n3": "^0.9.0",
     "rxjs": "^5.2.0",
     "soundtouch-js": "git://github.com/florianthalmann/soundtouch-js.git"
   },
@@ -48,16 +53,12 @@
     "gulp-uglify": "^2.0.0",
     "isomorphic-fetch": "^2.2.1",
     "jasmine-core": "^2.4.1",
-    "karma": "^1.4.0",
-    "karma-babel-preprocessor": "^6.0.1",
-    "karma-browserify": "^5.1.0",
-    "karma-chrome-launcher": "^2.0.0",
-    "karma-jasmine": "^1.1.0",
-    "karma-sourcemap-loader": "^0.3.7",
+    "speaker": "^0.3.0",
     "tsify": "^3.0.0",
-    "typescript": "^2.1.5",
+    "typescript": "^2.3.3",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.8.0"
+    "watchify": "^3.8.0",
+    "web-audio-api": "git://github.com/florianthalmann/web-audio-api.git"
   }
 }

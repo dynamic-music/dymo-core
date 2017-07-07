@@ -1,7 +1,9 @@
-import { EasyStore } from '../src/io/easystore'
-import { DymoStore } from '../src/io/dymostore'
+import 'isomorphic-fetch';
+import { EasyStore } from '../../src/io/easystore';
+import { DymoStore } from '../../src/io/dymostore';
 import { TYPE, FIRST, REST, NIL, ONSET_FEATURE, FEATURE_TYPE, ACCELEROMETER_X, SENSOR_CONTROL, MOBILE_CONTROL, AMPLITUDE,
-	AUDIO_PARAMETER, PARAMETER_TYPE } from '../src/globals/uris'
+	AUDIO_PARAMETER, PARAMETER_TYPE } from '../../src/globals/uris';
+import { SERVER_ROOT } from './server';
 
 describe("an easystore", function() {
 
@@ -199,27 +201,24 @@ describe("an easystore", function() {
 		expect(easyStore.find().length).toBe(0);
 	});
 
-	it("can find subclasses", function(done) {
-		easyStore = new DymoStore(function() {
-			expect(easyStore.isSubclassOf(ONSET_FEATURE, FEATURE_TYPE)).toBe(false);
-			expect(easyStore.isSubclassOf(ACCELEROMETER_X, SENSOR_CONTROL)).toBe(true);
-			expect(easyStore.isSubclassOf(ACCELEROMETER_X, MOBILE_CONTROL)).toBe(true);
-			expect(easyStore.isSubclassOf(AMPLITUDE, AUDIO_PARAMETER)).toBe(false);
-			expect(easyStore.isSubclassOf(AUDIO_PARAMETER, PARAMETER_TYPE)).toBe(true);
-			expect(easyStore.isSubclassOf(AMPLITUDE, PARAMETER_TYPE)).toBe(false);
-			expect(easyStore.recursiveFindAllSubClasses(MOBILE_CONTROL).length).toBe(22);
-			done();
-		});
-	});
+	it("can find subclasses and subtypes", function(done) {
+		easyStore = new DymoStore();
+		easyStore.loadOntologies(SERVER_ROOT+'ontologies/')
+			.then(() => {
+				expect(easyStore.isSubclassOf(ONSET_FEATURE, FEATURE_TYPE)).toBe(false);
+				expect(easyStore.isSubclassOf(ACCELEROMETER_X, SENSOR_CONTROL)).toBe(true);
+				expect(easyStore.isSubclassOf(ACCELEROMETER_X, MOBILE_CONTROL)).toBe(true);
+				expect(easyStore.isSubclassOf(AMPLITUDE, AUDIO_PARAMETER)).toBe(false);
+				expect(easyStore.isSubclassOf(AUDIO_PARAMETER, PARAMETER_TYPE)).toBe(true);
+				expect(easyStore.isSubclassOf(AMPLITUDE, PARAMETER_TYPE)).toBe(false);
+				expect(easyStore.recursiveFindAllSubClasses(MOBILE_CONTROL).length).toBe(22);
 
-	it("can find subtypes", function(done) {
-		easyStore = new DymoStore(function() {
-			expect(easyStore.isSubtypeOf(ONSET_FEATURE, FEATURE_TYPE)).toBe(true);
-			expect(easyStore.isSubtypeOf(AMPLITUDE, AUDIO_PARAMETER)).toBe(true);
-			expect(easyStore.isSubtypeOf(AUDIO_PARAMETER, PARAMETER_TYPE)).toBe(false);
-			expect(easyStore.isSubtypeOf(AMPLITUDE, PARAMETER_TYPE)).toBe(false);
-			done();
-		});
+				expect(easyStore.isSubtypeOf(ONSET_FEATURE, FEATURE_TYPE)).toBe(true);
+				expect(easyStore.isSubtypeOf(AMPLITUDE, AUDIO_PARAMETER)).toBe(true);
+				expect(easyStore.isSubtypeOf(AUDIO_PARAMETER, PARAMETER_TYPE)).toBe(false);
+				expect(easyStore.isSubtypeOf(AMPLITUDE, PARAMETER_TYPE)).toBe(false);
+				done();
+			});
 	});
 
 	it("can delete structures", function(done) {
