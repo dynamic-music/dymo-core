@@ -173,7 +173,9 @@ export class Scheduler {
 			uris = removeDuplicates(uris);
 			uris.sort();
 			uris = uris.map(uri => uri.replace(CONTEXT_URI, ""));
-			this.playingDymoUris.next(uris);
+			setTimeout(() => {
+				this.playingDymoUris.next(uris);
+			}, GlobalVars.SCHEDULE_AHEAD_TIME*1000);
 		}
 	}
 

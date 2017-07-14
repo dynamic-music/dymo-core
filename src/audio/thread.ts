@@ -67,6 +67,9 @@ export class SchedulerThread {
 	}*/
 
 	stop(dymoUri) {
+		if (dymoUri === this.dymoUri) {
+			clearTimeout(this.timeoutID);
+		}
 		var subDymoUris = GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(dymoUri);
 		for (var i = 0, ii = subDymoUris.length; i < ii; i++) {
 			if (this.nextSources) {
@@ -160,12 +163,14 @@ export class SchedulerThread {
 
 	private sourceEnded(source) {
 		var sourceList = this.sources.get(source.getDymoUri());
-		sourceList.splice(sourceList.indexOf(source), 1);
-		if (sourceList.length <= 0) {
-			source.removeAndDisconnect();
-			this.sources.delete(source.getDymoUri());
+		if (sourceList) {
+			sourceList.splice(sourceList.indexOf(source), 1);
+			if (sourceList.length <= 0) {
+				source.removeAndDisconnect();
+				this.sources.delete(source.getDymoUri());
+			}
+			setTimeout(() => this.onChanged(this), 50);
 		}
-		setTimeout(() => this.onChanged(this), 50);
 		this.endThreadIfNoMoreSources();
 	}
 
@@ -191,8 +196,8 @@ export class SchedulerThread {
 			var previousOnset = GlobalVars.DYMO_STORE.findParameterValue(previousSourceDymoUri, ONSET);
 			var nextSourceDymoUri = this.nextSources.keys().next().value;
 			var nextOnset = GlobalVars.DYMO_STORE.findParameterValue(nextSourceDymoUri, ONSET);
+			var timeToNextOnset = Math.max(0, nextOnset-previousOnset);
 			//console.log(nextOnset)
-			var timeToNextOnset = nextOnset-previousOnset;
 			if (!isNaN(nextOnset)) {
 				return [startTime+timeToNextOnset];
 			}

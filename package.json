@@ -6,7 +6,8 @@
   "typings": "lib/index",
   "files": [
     "audio/",
-    "lib/"
+    "lib/",
+    "ontologies/"
   ],
   "scripts": {
     "pretest": "tsc -p spec/",

@@ -17,8 +17,8 @@ export class DymoStore extends EasyStore {
 	private onlinePath = "http://tiny.cc/";
 	private dymoOntologyPath = "dymo-ontology";
 	private mobileOntologyPath = "mobile-audio-ontology";
-	private dymoContextPath = "dymo-context";
-	private dymoSimpleContextPath = "dymo-context-simple";
+	private dymoContextPath = this.onlinePath+"dymo-context";
+	//private dymoSimpleContextPath = "dymo-context-simple";
 	private dymoBasePaths = {};
 
 	//creates the store
@@ -632,14 +632,16 @@ export class DymoStore extends EasyStore {
 	}
 
 	private updateFeatureObject(objects, type, value) {
-		if (type &&!objects[type]) {
-			let name = URI_TO_TERM[type] ? URI_TO_TERM[type] : type.replace(uris.CONTEXT_URI, '');
-			objects[type] = {
-				name: name,
-				uri: type,
-				min: Infinity,
-				max: -Infinity
-			};
+		if (type) {
+			if (!objects[type]) {
+				let name = URI_TO_TERM[type] ? URI_TO_TERM[type] : type.replace(uris.CONTEXT_URI, '');
+				objects[type] = {
+					name: name,
+					uri: type,
+					min: Infinity,
+					max: -Infinity
+				};
+			}
 			if (!isNaN(value)) {
 				objects[type].min = Math.min(value, objects[type].min);
 				objects[type].max = Math.max(value, objects[type].max);
