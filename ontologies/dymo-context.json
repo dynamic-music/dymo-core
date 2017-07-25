@@ -23,6 +23,7 @@
 		"varName": { "@id": "ex:varName", "@type": "xsd:string" },
 		"varType": { "@id": "ex:varType", "@type": "@vocab" },
 		"varExpr": { "@id": "ex:varExpr", "@type": "@vocab" },
+		"varValue": { "@id": "ex:varValue", "@type": "@vocab" },
 		"Constant": "ex:Constant",
 		"Quantifier": "ex:Quantifier",
 		"ForAll": "ex:ForAll",

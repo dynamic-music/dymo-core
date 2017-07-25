@@ -87,9 +87,10 @@ function createExpressionOntology(path) {
 	addProperty({term:"isfunction", iri:"isFunction", type:"xsd:boolean"}, "Expression", prefixes["xsd"]+"boolean", false);
 
 	addClass("Variable");
-	addProperty({term:"varName", iri:"varName", type:"xsd:string"}, "Variable", prefixes["xsd"]+"string", false);
-	addProperty({term:"varType", iri:"varType", type:"@vocab"}, "Variable", rdfPrefix+"Resource", true);
-	addProperty({term:"varExpr", iri:"varExpr", type:"@vocab"}, "Variable", "Expression", true);
+	addProperty({term:"varName", iri:"varName", type:"xsd:string"}, "Variable", prefixes["xsd"]+"string", false, true);
+	addProperty({term:"varType", iri:"varType", type:"@vocab"}, "Variable", rdfPrefix+"Resource", true, true);
+	addProperty({term:"varExpr", iri:"varExpr", type:"@vocab"}, "Variable", "Expression", true, true);
+	addProperty({term:"varValue", iri:"varValue", type:"@vocab"}, "Variable", rdfPrefix+"Resource", true);
 
 	addClass("Constant");
 

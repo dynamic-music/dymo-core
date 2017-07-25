@@ -21,6 +21,7 @@ export const VARIABLE: string = "http://tiny.cc/expression-ontology#Variable";
 export const VAR_NAME: string = "http://tiny.cc/expression-ontology#varName";
 export const VAR_TYPE: string = "http://tiny.cc/expression-ontology#varType";
 export const VAR_EXPR: string = "http://tiny.cc/expression-ontology#varExpr";
+export const VAR_VALUE: string = "http://tiny.cc/expression-ontology#varValue";
 export const CONSTANT: string = "http://tiny.cc/expression-ontology#Constant";
 export const QUANTIFIER: string = "http://tiny.cc/expression-ontology#Quantifier";
 export const FOR_ALL: string = "http://tiny.cc/expression-ontology#ForAll";

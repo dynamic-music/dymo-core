@@ -3,7 +3,7 @@ import * as u from '../../src/globals/uris';
 import { DymoStore } from '../../src/io/dymostore';
 import { Constraint } from '../../src/model/constraint';
 import { Expression } from '../../src/model/expression';
-import { BoundVariable } from '../../src/model/variable';
+import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../../src/model/variable';
 import { ExpressionTools } from '../../src/math/expressiontools';
 import { MathjsNode } from '../../src/globals/types';
 
@@ -22,10 +22,14 @@ export class ConstraintWriter {
     let varUri = this.store.createBlankNode();
     this.store.addTriple(varUri, u.TYPE, u.VARIABLE);
     this.store.setValue(varUri, u.VAR_NAME, variable.getName());
-    this.store.addTriple(varUri, u.VAR_TYPE, variable.getType());
-    let typeExpr = variable.getTypeExpression();
-    if (typeExpr) {
-      this.store.addTriple(varUri, u.VAR_EXPR, this.addExpression(typeExpr));
+    if (variable instanceof TypedVariable) {
+      this.store.addTriple(varUri, u.VAR_TYPE, variable.getType());
+    }
+    if (variable instanceof ExpressionVariable) {
+      this.store.addTriple(varUri, u.VAR_EXPR, this.addExpression(variable.getTypeExpression()));
+    }
+    if (variable instanceof SetBasedVariable) {
+      variable.getSet().forEach(v => this.store.addTriple(varUri, u.VAR_VALUE, v));
     }
     return varUri;
   }

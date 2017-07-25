@@ -1,5 +1,6 @@
 import 'isomorphic-fetch';
 import * as _ from 'lodash';
+import * as math from 'mathjs';
 import * as u from '../../src/globals/uris';
 import { DymoStore } from '../../src/io/dymostore';
 import { DymoLoader } from '../../src/io/dymoloader';
@@ -7,7 +8,7 @@ import { ConstraintWriter } from '../../src/io/constraintwriter';
 import { SERVER_ROOT } from './server';
 import { Constraint } from '../../src/model/constraint';
 import { Expression } from '../../src/model/expression';
-import { BoundVariable } from '../../src/model/variable';
+import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../../src/model/variable';
 
 describe("the expressions unit", function() {
 
@@ -42,7 +43,7 @@ describe("the expressions unit", function() {
     let exp2 = 'Amplitude(x) < 1 / DurationRatio(x)';
 
     //for all x in exp1 make sure that exp2
-    let vars = [new BoundVariable('x', u.DYMO, new Expression(exp1)), new BoundVariable('y', u.DYMO, new Expression(exp1.replace('x','y')))];
+    let vars = [new ExpressionVariable('x', u.DYMO, new Expression(exp1)), new ExpressionVariable('y', u.DYMO, new Expression(exp1.replace('x','y')))];
     let constraint = new Constraint(vars, new Expression(exp2));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     let loader = new DymoLoader(store);
@@ -54,6 +55,22 @@ describe("the expressions unit", function() {
 
   });
 
+  it("can handle bound variables of different types", function() {
+
+    let vari: BoundVariable = new TypedVariable('x', u.DYMO);
+    expect(vari.getValues(store).length).toEqual(3);
+
+    vari = new ExpressionVariable('x', u.DYMO, new Expression('x == "'+dymo2+'"'));
+    expect(vari.getValues(store).length).toEqual(1);
+
+    vari = new ExpressionVariable('x', u.DYMO, new Expression('PitchFeature(x) > 58'));
+    expect(vari.getValues(store).length).toEqual(2);
+
+    vari = new SetBasedVariable('x', [dymo1, dymo3]);
+    expect(vari.getValues(store).length).toEqual(2);
+
+  });
+
   it("can evaluate expressions", function() {
 
     let renderingUri = u.CONTEXT_URI+"rendering1";
@@ -62,7 +79,7 @@ describe("the expressions unit", function() {
     let exp2 = 'Amplitude(x) < 1 / DurationRatio(x)';
 
     //for all x in exp1 make sure that exp2
-    let vars = [new BoundVariable('x', u.DYMO, new Expression(exp1)), new BoundVariable('y', u.DYMO, new Expression(exp1.replace('x','y')))];
+    let vars = [new ExpressionVariable('x', u.DYMO, new Expression(exp1)), new ExpressionVariable('y', u.DYMO, new Expression(exp1.replace('x','y')))];
     let constraint = new Constraint(vars, new Expression(exp2));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     new DymoLoader(store).createRenderingFromStore();
@@ -80,7 +97,7 @@ describe("the expressions unit", function() {
     let exp = 'Amplitude(x) == 1 / DurationRatio(x)';
 
     //set it all up and check if it worked
-    let vars = [new BoundVariable('x', u.DYMO)];
+    let vars = [new TypedVariable('x', u.DYMO)];
     let constraint = new Constraint(vars, new Expression(exp));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(0.8);
@@ -116,7 +133,7 @@ describe("the expressions unit", function() {
     let exp = 'Amplitude(x) == 1 / DurationRatio(x)';
 
     //set it all up and check if it worked
-    let vars = [new BoundVariable('x', u.DYMO)];
+    let vars = [new TypedVariable('x', u.DYMO)];
     let constraint = new Constraint(vars, new Expression(exp, true));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     let loader = new DymoLoader(store)
@@ -149,8 +166,8 @@ describe("the expressions unit", function() {
 
     //set it all up and check if it worked
     let vars = [
-      new BoundVariable('x', u.DYMO),
-      new BoundVariable('y', u.SLIDER, new Expression('y == "'+controlUri+'"'))
+      new TypedVariable('x', u.DYMO),
+      new ExpressionVariable('y', u.SLIDER, new Expression('y == "'+controlUri+'"'))
     ];
     let constraint = new Constraint(vars, new Expression(exp));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);

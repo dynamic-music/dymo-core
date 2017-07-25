@@ -3,7 +3,7 @@ import * as math from 'mathjs';
 import * as uris from '../globals/uris';
 import { DymoStore } from '../io/dymostore';
 import { Constraint } from '../model/constraint';
-import { BoundVariable } from '../model/variable';
+import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../model/variable';
 import { Expression } from '../model/expression';
 import { ExpressionTools } from '../math/expressiontools';
 
@@ -33,7 +33,14 @@ export class ConstraintLoader {
       let varType = this.store.findObject(varUri, uris.VAR_TYPE);
       let varExpr = this.store.findObject(varUri, uris.VAR_EXPR);
       let body = this.store.findObject(expressionUri, uris.Q_BODY);
-      this.vars.push(new BoundVariable(varName, varType, this.loadExpression(varExpr)));
+      let values = this.store.findAllObjects(expressionUri, uris.VAR_VALUE);
+      if (varExpr) {
+        this.vars.push(new ExpressionVariable(varName, varType, this.loadExpression(varExpr)));
+      } else if (values.length > 0) {
+        this.vars.push(new SetBasedVariable(varName, values));
+      } else {
+        this.vars.push(new TypedVariable(varName, varType));
+      }
       return this.recursiveLoadBoundVariables(body);
     }
     return expressionUri;

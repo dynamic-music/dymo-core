@@ -23,6 +23,7 @@
 		"varName": "ex:varName",
 		"varType": "ex:varType",
 		"varExpr": "ex:varExpr",
+		"varValue": "ex:varValue",
 		"Constant": "ex:Constant",
 		"Quantifier": "ex:Quantifier",
 		"ForAll": "ex:ForAll",

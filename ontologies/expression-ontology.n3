@@ -17,15 +17,18 @@ ex:isFunction a owl:DatatypeProperty;
     rdfs:domain ex:Expression;
     rdfs:range "http://www.w3.org/2001/XMLSchema#boolean".
 ex:Variable a owl:Class.
-ex:varName a owl:DatatypeProperty;
+ex:varName a owl:DatatypeProperty, owl:FunctionalProperty;
     rdfs:domain ex:Variable;
     rdfs:range "http://www.w3.org/2001/XMLSchema#string".
-ex:varType a owl:ObjectProperty;
+ex:varType a owl:ObjectProperty, owl:FunctionalProperty;
     rdfs:domain ex:Variable;
     rdfs:range rdf:Resource.
-ex:varExpr a owl:ObjectProperty;
+ex:varExpr a owl:ObjectProperty, owl:FunctionalProperty;
     rdfs:domain ex:Variable;
     rdfs:range ex:Expression.
+ex:varValue a owl:ObjectProperty;
+    rdfs:domain ex:Variable;
+    rdfs:range rdf:Resource.
 ex:Constant a owl:Class.
 ex:Quantifier a owl:Class;
     rdfs:subClassOf ex:Expression.
