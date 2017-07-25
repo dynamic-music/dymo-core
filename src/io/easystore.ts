@@ -279,25 +279,25 @@ export class EasyStore {
 		}
 	}
 
-	findObjectValueOfType(subject, predicate, type, valuePredicate) {
+	findObjectValueOfType(subject: string, predicate, type, valuePredicate) {
 		var objectUri = this.findObjectOfType(subject, predicate, type);
 		return this.findObjectValue(objectUri, valuePredicate);
 	}
 
 	//returns the object uris of all results found in the store, including the list elements if they are lists
-	findAllObjects(subject, predicate) {
+	findAllObjects(subject, predicate): string[] {
 		var allObjects = this.store.find(subject, predicate).map(t => t.object);
 		allObjects = allObjects.map(this.getListElementsIfList, this);
 		return flattenArray(allObjects);
 	}
 
 	//returns the object values of all results found in the store, including the list elements if they are lists
-	findAllObjectValues(subject, predicate) {
+	findAllObjectValues(subject, predicate): any[] {
 		var values = this.findAllObjects(subject, predicate).filter(Util.isLiteral);
 		return values.map(this.getLiteralValue, this);
 	}
 
-	findAllObjectValuesOfType(subject, predicate, valuePredicate) {
+	findAllObjectValuesOfType(subject, predicate, valuePredicate): any[] {
 		var objectValues = [];
 		var objectUris = this.findAllObjects(subject, predicate);
 		for (var i = 0, j = objectUris.length; i < j; i++) {
@@ -310,7 +310,7 @@ export class EasyStore {
 	}
 
 	//returns the uri of the subject of the first result found in the store, object doesn't have to be a uri
-	findSubject(predicate, object) {
+	findSubject(predicate, object): string {
 		var subject = this.getSubject(predicate, object);
 		if (!subject) {
 			//try again with literal
@@ -326,7 +326,7 @@ export class EasyStore {
 		}
 	}
 	/** returns the subjects of all results found in the store */
-	findAllSubjects(predicate, object?) {
+	findAllSubjects(predicate: string, object?: string): string[] {
 		var results = this.store.find(null, predicate, object);
 		if (results.length == 0) {
 			results = this.store.find(null, predicate, Util.createLiteral(object));
@@ -490,7 +490,7 @@ export class EasyStore {
 		}
 	}
 
-	private getLiteralValue(uri) {
+	getLiteralValue(uri) {
 		var value = Util.getLiteralValue(uri);
 		var type = Util.getLiteralType(uri);
 		if (type != "http://www.w3.org/2001/XMLSchema#string" && type != "http://www.w3.org/2001/XMLSchema#boolean") {
@@ -567,7 +567,7 @@ export class EasyStore {
 	}
 
 	logData() {
-		var rows = this.store.find(null).map(t => t.subject +"\n" + t.predicate + "\n" + t.object);
+		var rows = this.store.find(null).map(t => t.subject + "\t" + t.predicate + "\t" + t.object);
 		for (var i in rows) {
 			console.log(rows[i]);
 		}

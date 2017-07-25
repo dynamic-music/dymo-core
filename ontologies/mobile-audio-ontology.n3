@@ -1,3 +1,4 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
@@ -7,6 +8,7 @@
 @prefix ch: <http://tiny.cc/charm-ontology#>.
 @prefix dy: <http://tiny.cc/dymo-ontology#>.
 @prefix mb: <http://tiny.cc/mobile-audio-ontology#>.
+@prefix ex: <http://tiny.cc/expression-ontology#>.
 
 <http://tiny.cc/mobile-audio-ontology#> a owl:Ontology;
     rdfs:comment "An ontology for describing renderings of Dynamic Music Objects on mobile devices".
@@ -92,6 +94,9 @@ mb:MappingOwners a owl:Class;
 mb:hasDymo a owl:ObjectProperty, owl:FunctionalProperty;
     rdfs:domain mb:Rendering;
     rdfs:range dy:Dymo.
+mb:constraint a owl:ObjectProperty;
+    rdfs:domain mb:Rendering;
+    rdfs:range ex:Expression.
 mb:hasMapping a owl:ObjectProperty;
     rdfs:domain mb:MappingOwners;
     rdfs:range mb:Mapping.

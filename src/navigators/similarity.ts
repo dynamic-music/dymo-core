@@ -38,14 +38,14 @@ export class SimilarityNavigator extends SequentialNavigator {
 					//console.log(parts[i], similars)
 					if (similars.length > 0) {
 						if (Math.random() < GlobalVars.DYMO_STORE.findParameterValue(null, uris.LEAPING_PROBABILITY)) {
-							var selectedOption = Math.floor(Math.random()*similars.length);
+							var selectedOption = similars[Math.floor(Math.random()*similars.length)];
 							if (GlobalVars.DYMO_STORE.findParameterValue(null, uris.CONTINUE_AFTER_LEAPING) > 0) {
 								var index = GlobalVars.DYMO_STORE.findParts(this.dymoUri).indexOf(selectedOption);
 								if (index) {
 									this.partsNavigated = index+1;
 								}
 							}
-							parts[i] = similars[selectedOption];
+							parts[i] = selectedOption;
 						}
 					}
 				}

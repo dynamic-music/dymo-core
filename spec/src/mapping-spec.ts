@@ -11,12 +11,13 @@ import { SERVER_ROOT } from './server';
 describe("a mapping", function() {
 
 	var value = 0;
-	var control = new Control("c1", "control1", SLIDER);
+	var control;
 	var dymo1, dymo2, mapping;
 
 	beforeEach(function(done) {
 		GlobalVars.DYMO_STORE = null;
 		GlobalVars.DYMO_STORE = new DymoStore();
+		control = new Control("c1", "control1", SLIDER, GlobalVars.DYMO_STORE);
 		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/')
 		.then(() => {
 			GlobalVars.DYMO_STORE.addDymo("dymo1");
@@ -58,7 +59,7 @@ describe("a mapping", function() {
 
 	it("updates a control parameter", function() {
 		GlobalVars.DYMO_STORE.addControl("control2", SLIDER);
-		var control2 = new Control("c2", "control2", SLIDER);
+		var control2 = new Control("c2", "control2", SLIDER, GlobalVars.DYMO_STORE);
 		var rampUri = GlobalVars.DYMO_STORE.addControl(undefined, RAMP);
 		var mappingFunction = new DymoFunction(["a"], [control2], [MOBILE_CONTROL], "return a;", false);
 		var mapping2 = new Mapping(mappingFunction, [rampUri], AUTO_CONTROL_TRIGGER, false);
@@ -91,14 +92,6 @@ describe("a mapping", function() {
 		expect(control.getValue()).toBe(0.4);
 		GlobalVars.DYMO_STORE.setParameter("dymo3", AMPLITUDE, 4);
 		expect(control.getValue()).toBe(1);
-	});
-
-	it("requests a value", function() {
-		expect(mapping.requestValue("dymo1")).toBe(5);
-		/*expect(mapping.requestValue(dymo1)).toBe(10);
-		expect(mapping.requestValue(dymo2)).toBe(9);
-		expect(mapping.requestValue(dymo2)).toBe(12);
-		expect(mapping.requestValue(dymo2)).toBe(15);*/
 	});
 
 });

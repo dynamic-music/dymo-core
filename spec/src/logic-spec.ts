@@ -70,7 +70,7 @@ describe("the logic unit", function() {
 			GlobalVars.DYMO_STORE.addDymo("dymo2");
 			GlobalVars.DYMO_STORE.setFeature("dymo2", ONSET_FEATURE, 3);
 			GlobalVars.DYMO_STORE.setParameter("dymo2", AMPLITUDE, 1);
-			var control = new Control("c1", "Slider1", SLIDER);
+			var control = new Control("c1", "Slider1", SLIDER, GlobalVars.DYMO_STORE);
 			control.updateValue(0.1);
 			var mappingFunction = new DymoFunction(["a","b"], [control, ONSET_FEATURE], [MOBILE_CONTROL, FEATURE_TYPE], "return a * b;", false);
 			var mapping = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE, false);

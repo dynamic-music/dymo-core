@@ -17,6 +17,7 @@ export class DymoStore extends EasyStore {
 	private onlinePath = "http://tiny.cc/";
 	private dymoOntologyPath = "dymo-ontology";
 	private mobileOntologyPath = "mobile-audio-ontology";
+	private expressionOntologyPath = "expression-ontology";
 	private dymoContextPath = this.onlinePath+"dymo-context";
 	//private dymoSimpleContextPath = "dymo-context-simple";
 	private dymoBasePaths = {};
@@ -28,15 +29,18 @@ export class DymoStore extends EasyStore {
 
 	//loads some basic ontology files
 	loadOntologies(localPath?: string): Promise<any> {
-		let dymoPath, mobilePath;
+		let dymoPath, mobilePath, expressionPath;
 		if (localPath) {
 			dymoPath = localPath+this.dymoOntologyPath+'.n3';
 			mobilePath = localPath+this.mobileOntologyPath+'.n3';
+			expressionPath = localPath+this.expressionOntologyPath+'.n3';
 		} else {
 			dymoPath = this.onlinePath+this.dymoOntologyPath;
 			mobilePath = this.onlinePath+this.mobileOntologyPath;
+			expressionPath = this.onlinePath+this.expressionOntologyPath;
 		}
-		return this.loadFileIntoStore(dymoPath)
+		return this.loadFileIntoStore(expressionPath)
+			.then(() => this.loadFileIntoStore(dymoPath))
 			.then(() => this.loadFileIntoStore(mobilePath));
 	}
 
@@ -356,7 +360,7 @@ export class DymoStore extends EasyStore {
 		}
 	}
 
-	findAttributeValue(dymoUri, attributeType) {
+	findAttributeValue(dymoUri: string, attributeType: string) {
 		var value = this.findParameterValue(dymoUri, attributeType);
 		if (value == null) {
 			value = this.findFeatureValue(dymoUri, attributeType);
@@ -364,7 +368,7 @@ export class DymoStore extends EasyStore {
 		return value;
 	}
 
-	findFeatureValue(dymoUri, featureType) {
+	findFeatureValue(dymoUri: string, featureType: string) {
 		if (featureType === uris.LEVEL_FEATURE) {
 			return this.findLevel(dymoUri);
 		} else if (featureType === uris.INDEX_FEATURE) {
@@ -374,19 +378,19 @@ export class DymoStore extends EasyStore {
 		}
 	}
 
-	findAllFeatureValues(dymoUri) {
+	findAllFeatureValues(dymoUri: string) {
 		return this.findAllObjectValuesOfType(dymoUri, uris.HAS_FEATURE, uris.VALUE)
 	}
 
-	findAllNumericFeatureValues(dymoUri) {
+	findAllNumericFeatureValues(dymoUri: string) {
 		return this.findAllFeatureValues(dymoUri).filter(v => !isNaN(v));
 	}
 
-	findParameterValue(dymoUri, parameterType) {
+	findParameterValue(dymoUri: string, parameterType: string) {
 		return this.findObjectValueOfType(dymoUri, uris.HAS_PARAMETER, parameterType, uris.VALUE);
 	}
 
-	findParameterUri(ownerUri, parameterType) {
+	findParameterUri(ownerUri: string, parameterType: string) {
 		if (ownerUri) {
 			return this.findObjectOfType(ownerUri, uris.HAS_PARAMETER, parameterType);
 		}
@@ -394,13 +398,13 @@ export class DymoStore extends EasyStore {
 	}
 
 	//TODO FOR NOW ONLY WORKS WITH SINGLE HIERARCHY..
-	findPartIndex(dymoUri) {
+	findPartIndex(dymoUri: string) {
 		var firstParentUri = this.findParents(dymoUri)[0];
 		return this.findObjectIndexInList(firstParentUri, uris.HAS_PART, dymoUri);
 	}
 
 	//TODO FOR NOW ONLY WORKS WITH SINGLE HIERARCHY..
-	findLevel(dymoUri) {
+	findLevel(dymoUri: string) {
 		var level = 0;
 		var parent = this.findParents(dymoUri)[0];
 		while (parent) {
@@ -445,8 +449,10 @@ export class DymoStore extends EasyStore {
 		return new Promise((resolve, reject) => {
 			rdf = rdf.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
 			fromRDF(rdf, {format: 'application/nquads'}, (err, doc) => {
+				//console.log(JSON.stringify(doc))
 				if (err) { console.log(err, rdf); reject(err); }
 				frame(doc, {"@id":frameId}, (err, framed) => {
+					//console.log(frameId, JSON.stringify(framed))
 					compact(framed, DYMO_CONTEXT, (err, compacted) => {
 						//deal with imperfections of jsonld.js compaction algorithm to make it reeaally nice
 						compact(compacted, DYMO_SIMPLE_CONTEXT, (err, compacted) => {

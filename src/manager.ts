@@ -19,7 +19,6 @@ export class DymoManager {
 	private rendering;
 	private uiControls = {};
 	private sensorControls = {};
-	private mappings = {};
 	private reverbFile;
 	private graphs: JsonGraphSubject[] = [];
 	private featureInfo: BehaviorSubject<FeatureInfo[]> = new BehaviorSubject([]);
@@ -78,7 +77,6 @@ export class DymoManager {
 	private processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering): Promise<any> {
 		this.topDymos = loadedDymos;
 		this.rendering = loadedRendering[0];
-		this.mappings = loader.getMappings();
 		for (var key in loadedRendering[1]) {
 			var currentControl = loadedRendering[1][key];
 			if (GlobalVars.DYMO_STORE.isSubclassOf(currentControl.getType(), uris.UI_CONTROL)) {
@@ -159,10 +157,6 @@ export class DymoManager {
 
 	getRendering() {
 		return this.rendering;
-	}
-
-	getMappings() {
-		return this.mappings;
 	}
 
 	getUIControls() {

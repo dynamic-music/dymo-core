@@ -7,6 +7,7 @@ var rdfPrefix = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 var rdfType = rdfPrefix+"type";
 
 var prefixes = {
+	"rdf": rdfPrefix,
 	"xsd": "http://www.w3.org/2001/XMLSchema#",
 	"rdfs": "http://www.w3.org/2000/01/rdf-schema#",
 	"owl": "http://www.w3.org/2002/07/owl#",
@@ -16,6 +17,7 @@ var prefixes = {
 	"ch": "http://tiny.cc/charm-ontology#",
 	"dy": "http://tiny.cc/dymo-ontology#",
 	"mb": "http://tiny.cc/mobile-audio-ontology#",
+	"ex": "http://tiny.cc/expression-ontology#"
 };
 var contextBase = "http://tiny.cc/dymo-context/";
 
@@ -29,6 +31,7 @@ var uriToTerm = {};
 
 initContext();
 initUris();
+createExpressionOntology("ontologies/expression-ontology.n3");
 createDymoOntology("ontologies/dymo-ontology.n3");
 createMobileAudioOntology("ontologies/mobile-audio-ontology.n3");
 writeContextToFile("ontologies/dymo-context.json", context, contextBase);
@@ -43,24 +46,29 @@ function initWriter(base) {
 }
 
 function initContext() {
+	currentBase = "rdf";
+	addToContext("value");
 	currentBase = "sch";
 	addToContext("name");
 	//mock charm stuff
 	currentBase = "ch";
 	addToContext("cdt", "cdt", "@vocab");
 	addToContext("adt", "adt", "@vocab");
-	addToContext("value");
 	addToContext("parts", "hasPart");
 }
 
 function initUris() {
-	addUri("RDFS_URI", prefixes["rdfs"]);
 	addUri("CONTEXT_URI", contextBase);
+	addUri("RDFS_URI", prefixes["rdfs"]);
+	addUri("EXPRESSION_ONTOLOGY_URI", prefixes["ex"]);
+	addUri("DYMO_ONTOLOGY_URI", prefixes["dy"]);
+	addUri("MOBILE_AUDIO_ONTOLOGY_URI", prefixes["mb"]);
 	//SOME PROPERTIES
 	addUri("TYPE", rdfType);
 	addUri("FIRST", rdfPrefix+"first");
 	addUri("REST", rdfPrefix+"rest");
 	addUri("NIL", rdfPrefix+"nil");
+	addUri("VALUE", rdfPrefix+"value");
 	addUri("DOMAIN", prefixes["rdfs"]+"domain");
 	addUri("RANGE", prefixes["rdfs"]+"range");
 	addUri("LABEL", prefixes["rdfs"]+"label");
@@ -68,8 +76,52 @@ function initUris() {
 	//mock charm stuff
 	addUri("CDT", prefixes["ch"]+"cdt");
 	addUri("ADT", prefixes["ch"]+"adt");
-	addUri("VALUE", prefixes["ch"]+"value");
 	addUri("HAS_PART", prefixes["ch"]+"hasPart");
+}
+
+function createExpressionOntology(path) {
+	initWriter("ex");
+	addOntology("An ontology for the representation of logical and mathematical expressions");
+	//dymos and dymo types
+	addClass("Expression");
+	addProperty({term:"isfunction", iri:"isFunction", type:"xsd:boolean"}, "Expression", prefixes["xsd"]+"boolean", false);
+
+	addClass("Variable");
+	addProperty({term:"varName", iri:"varName", type:"xsd:string"}, "Variable", prefixes["xsd"]+"string", false);
+	addProperty({term:"varType", iri:"varType", type:"@vocab"}, "Variable", rdfPrefix+"Resource", true);
+	addProperty({term:"varExpr", iri:"varExpr", type:"@vocab"}, "Variable", "Expression", true);
+
+	addClass("Constant");
+
+	addClass("Quantifier", "Expression");
+	addClass("ForAll", "Quantifier");
+	addClass("ThereExists", "Quantifier");
+	addProperty({term:"vars", iri:"vars"}, "Quantifier", "Variable", true);
+	addProperty({term:"qBody", iri:"qBody"}, "Quantifier", "Expression", true);
+
+	addClass("FunctionalTerm", "Expression");
+	addProperty({term:"tFunction", iri:"tFunction", type:"xsd:string"}, "FunctionalTerm", prefixes["xsd"]+"string", false, true);
+	addProperty({term:"tArgs", iri:"tArgs"}, "FunctionalTerm", "Variable", true);
+
+	addClass("BinaryOperator", "Expression");
+	addProperty({term:"left", iri:"left"}, "BinaryOperator", "Expression", true, true);
+	addProperty({term:"right", iri:"right"}, "BinaryOperator", "Expression", true, true);
+
+	addClass("RelationalOperator", "BinaryOperator");
+	addClass("EqualTo", "RelationalOperator");
+	addClass("NotEqualTo", "RelationalOperator");
+	addClass("GreaterThan", "RelationalOperator");
+	addClass("LessThan", "RelationalOperator");
+	addClass("GreaterThanOrEqualTo", "RelationalOperator");
+	addClass("LessThanOrEqualTo", "RelationalOperator");
+
+	addClass("ArithmeticOperator", "BinaryOperator");
+	addClass("Addition", "ArithmeticOperator");
+	addClass("Subtraction", "ArithmeticOperator");
+	addClass("Multiplication", "ArithmeticOperator");
+	addClass("Division", "ArithmeticOperator");
+
+	writeN3ToFile(path);
 }
 
 function createDymoOntology(path) {
@@ -188,6 +240,7 @@ function createMobileAudioOntology(path) {
 	addUnionClass("MappingOwners", ["Dymo", "Rendering"]);
 	//mapping properties
 	addProperty({term:"dymo", iri:"hasDymo", type: "@id"}, "Rendering", "Dymo", true, true);
+	addProperty({term:"constraint", iri:"constraint"}, "Rendering", "Expression", true);
 	addProperty({term:"mappings", iri:"hasMapping"}, "MappingOwners", "Mapping", true);
 	addProperty({term:"function", iri:"hasFunction"}, "Mapping", "Function", true);
 	addProperty({term:"args", iri:"hasArgument"}, "Function", "Argument", true);

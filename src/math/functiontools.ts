@@ -1,4 +1,5 @@
-import * as math from 'mathjs'
+import * as math from 'mathjs';
+import { ExpressionTools } from './expressiontools';
 
 /**
  * Tools to manipulate and invert simple functions.
@@ -59,20 +60,20 @@ export module FunctionTools {
 					currentNode = ifNextNode(currentNode.args[0]);
 				} else if (currentNode.fn == 'add' || currentNode.fn == 'multiply') {
 					if (currentNode.args[0].isConstantNode) {
-						invertedTree = new math.expression.node.OperatorNode(getOp(invertedOperator), invertedOperator, [invertedTree, currentNode.args[0]]);
+						invertedTree = ExpressionTools.createOperatorNode(invertedOperator, [invertedTree, currentNode.args[0]]);
 						currentNode = ifNextNode(currentNode.args[1]);
 					} else if (currentNode.args[1].isConstantNode) {
-						invertedTree = new math.expression.node.OperatorNode(getOp(invertedOperator), invertedOperator, [invertedTree, currentNode.args[1]]);
+						invertedTree = ExpressionTools.createOperatorNode(invertedOperator, [invertedTree, currentNode.args[1]]);
 						currentNode = ifNextNode(currentNode.args[0]);
 					} else {
 						return;
 					}
 				} else if (currentNode.fn == 'subtract' || currentNode.fn == 'divide') {
 					if (currentNode.args[0].isConstantNode) {
-						invertedTree = new math.expression.node.OperatorNode(getOp(currentNode.fn), currentNode.fn, [currentNode.args[0], invertedTree]);
+						invertedTree = ExpressionTools.createOperatorNode(currentNode.fn, [currentNode.args[0], invertedTree]);
 						currentNode = ifNextNode(currentNode.args[1]);
 					} else if (currentNode.args[1].isConstantNode) {
-						invertedTree = new math.expression.node.OperatorNode(getOp(invertedOperator), invertedOperator, [invertedTree, currentNode.args[1]]);
+						invertedTree = ExpressionTools.createOperatorNode(invertedOperator, [invertedTree, currentNode.args[1]]);
 						currentNode = ifNextNode(currentNode.args[0]);
 					} else {
 						return;
@@ -126,19 +127,6 @@ export module FunctionTools {
 			return "multiply";
 		} else if (operator == "unaryMinus") {
 			return "unaryMinus";
-		}
-	}
-
-	/** @private weirdly mathjs doesn't seem to offer this */
-	function getOp(fn) {
-		if (fn == "add") {
-			return "+";
-		} else if (fn == "subtract" || fn == "unaryMinus") {
-			return "-";
-		} else if (fn == "multiply") {
-			return "*";
-		} else if (fn == "divide") {
-			return "/";
 		}
 	}
 

@@ -11,7 +11,7 @@ export abstract class AutoControl extends Control {
 	private intervalID;
 
 	constructor(uri, name, frequency?: number) {
-		super(uri, name, AUTO_CONTROL);
+		super(uri, name, AUTO_CONTROL, GlobalVars.DYMO_STORE);
 		if (!frequency) frequency = 100;
 		GlobalVars.DYMO_STORE.addParameter(uri, AUTO_CONTROL_FREQUENCY, frequency, this);
 		GlobalVars.DYMO_STORE.addParameter(uri, AUTO_CONTROL_TRIGGER, 0, this);

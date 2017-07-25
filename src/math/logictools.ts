@@ -1,6 +1,8 @@
 import * as logic from 'logicjs';
 import * as math from 'mathjs';
 import { FunctionTools } from '../math/functiontools';
+import { ExpressionTools } from '../math/expressiontools';
+import { MathjsNode } from '../globals/types';
 
 /**
  * Creates and solves logical constraints.
@@ -21,7 +23,6 @@ export module LogicTools {
 		var solveVar = logic.lvar();
 		args.splice(solveIndex, 1, solveVar);
 		var result = logic.run(constraint.apply(null, args.concat(logic)), solveVar, 1);
-		//console.log(args, result, constraint)
 		if (result.length > 0 && !isNaN(result[0])) {
 			return result[0];
 		}
@@ -43,11 +44,11 @@ export module LogicTools {
 		return createGoalFunction(currentNode);
 	}
 
-	function createGoalFunction(currentNode) {
+	export function createGoalFunction(mathjsTree: MathjsNode): Function {
 		var vars = [];
 		var localVars = [];
 		//write return string
-		var goalString = recursiveCreateGoalString(currentNode, vars, localVars);
+		var goalString = recursiveCreateGoalString(mathjsTree, vars, localVars);
 		if (goalString) {
 			goalString = goalString.slice(0,-1);
 			var returnString = "return logic.and(" + goalString + ");";
@@ -69,7 +70,7 @@ export module LogicTools {
 		if (currentNode.isParenthesisNode) {
 			return rec(currentNode.content, mainVars, localVars, currentString, parentVar);
 		} else if (currentNode.isOperatorNode) {
-			var opString = toLogicJsOperatorString(currentNode);
+			var opString = ExpressionTools.toLogicJsOperatorString(currentNode);
 			opString += "(";
 			for (var i = 0; i < currentNode.args.length; i++) {
 				if (currentNode.args[i].isSymbolNode) {
@@ -84,7 +85,7 @@ export module LogicTools {
 				} else if (currentNode.args[i].isConstantNode && currentNode.args[i].valueType == "number") {
 					opString += currentNode.args[i].value;
 				} else {
-					let varName = "v" + varCount++;
+					let varName = "w" + varCount++;
 					localVars.push(varName);
 					opString += varName;
 					var partGoal = rec(currentNode.args[i], mainVars, localVars, currentString, varName);
@@ -103,20 +104,6 @@ export module LogicTools {
 			}
 			opString += "),";
 			return currentString + opString;
-		}
-	}
-
-	function toLogicJsOperatorString(operatorNode) {
-		if (operatorNode.op == '==') {
-			return "logic.eq";
-		} else if (operatorNode.op == '+') {
-			return "logic.add";
-		} else if (operatorNode.op == '-') {
-			return "logic.sub";
-		} else if (operatorNode.op == '*') {
-			return "logic.mul";
-		} else if (operatorNode.op == '/') {
-			return "logic.div";
 		}
 	}
 

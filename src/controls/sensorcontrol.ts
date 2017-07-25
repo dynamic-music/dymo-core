@@ -29,7 +29,7 @@ export class SensorControl extends Control {
 	private watch;
 
 	constructor(uri, sensorName, watchFunctionName, updateFunction, resetFunction?: Function, options?: Object) {
-		super(uri, uri, uri);
+		super(uri, uri, uri, GlobalVars.DYMO_STORE);
 		this.watchFunctionName = watchFunctionName;
 		this.updateFunction = updateFunction;
 		this.resetFunction = resetFunction;
