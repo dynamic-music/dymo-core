@@ -1,14 +1,15 @@
-import { DataControl } from '../datacontrol'
+import { DataControl } from '../datacontrol';
+import { DymoStore } from '../../io/dymostore';
 
 /**
  * A control based on weather data
  */
 export class WeatherControl extends DataControl {
 
-	constructor(uri) {
+	constructor(uri: string, store: DymoStore) {
 		var WEATHER_KEY = "3d77879a046ee9e970e66bb2f5c5200d";
 		var API_URL = `http://api.openweathermap.org/data/2.5/weather?appid=${WEATHER_KEY}`;
-		super(uri, API_URL+"&q=london", j => j["main"]["temp"]);
+		super(uri, API_URL+"&q=london", j => j["main"]["temp"], store);
 	}
 
 	/*constructor(uri) {

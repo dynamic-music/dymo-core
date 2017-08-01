@@ -37,7 +37,7 @@ export class SchedulerThread {
 		this.onChanged = onChanged;
 		this.onEnded = onEnded;
 		if (!this.navigator) {
-			this.navigator = new DymoNavigator(dymoUri, new SequentialNavigator(dymoUri));
+			this.navigator = new DymoNavigator(dymoUri, GlobalVars.DYMO_STORE, new SequentialNavigator(dymoUri, GlobalVars.DYMO_STORE));
 		}
 		//starts automatically
 		this.recursivePlay();

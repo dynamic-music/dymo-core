@@ -1,5 +1,5 @@
-import { GlobalVars } from '../globals/globals';
 import { AUTO_CONTROL_FREQUENCY } from '../globals/uris';
+import { DymoStore } from '../io/dymostore';
 import { Control } from '../model/control';
 import { Ramp } from '../util/ramp';
 
@@ -28,8 +28,8 @@ export class SensorControl extends Control {
 
 	private watch;
 
-	constructor(uri, sensorName, watchFunctionName, updateFunction, resetFunction?: Function, options?: Object) {
-		super(uri, uri, uri, GlobalVars.DYMO_STORE);
+	constructor(uri, sensorName, watchFunctionName, updateFunction, store: DymoStore, resetFunction?: Function, options?: Object) {
+		super(uri, uri, uri, store);
 		this.watchFunctionName = watchFunctionName;
 		this.updateFunction = updateFunction;
 		this.resetFunction = resetFunction;
@@ -75,7 +75,7 @@ export class SensorControl extends Control {
 
 	startUpdate() {
 		if (!this.options) {
-			var freq = GlobalVars.DYMO_STORE.findParameterValue(this.uri, AUTO_CONTROL_FREQUENCY);
+			var freq = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 			this.options = { frequency: freq? freq: 100 };
 		}
 		if (this.$ngSensor) {
@@ -146,7 +146,7 @@ export class SensorControl extends Control {
 	}
 
 	private startUpdateRamp(targetValue, duration) {
-		var frequency = GlobalVars.DYMO_STORE.findParameterValue(this.uri, AUTO_CONTROL_FREQUENCY);
+		var frequency = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		this.ramp.startOrUpdate(targetValue, duration, frequency? frequency: 100, value => {
 			//call regular super method
 			this.updateValue(value);

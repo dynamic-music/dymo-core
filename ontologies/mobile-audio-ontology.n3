@@ -124,6 +124,9 @@ mb:hasRange a owl:ObjectProperty;
 mb:isUnidirectional a owl:DatatypeProperty;
     rdfs:domain mb:Mapping;
     rdfs:range "http://www.w3.org/2001/XMLSchema#boolean".
+mb:hasControlParam a owl:ObjectProperty;
+    rdfs:domain mb:MobileControl;
+    rdfs:range mb:MobileParameter.
 mb:hasInitialValue a owl:DatatypeProperty;
     rdfs:domain mb:MobileControl;
     rdfs:range "http://www.w3.org/2001/XMLSchema#float".

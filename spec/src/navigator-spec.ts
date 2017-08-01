@@ -1,40 +1,44 @@
 import 'isomorphic-fetch';
 import { GlobalVars } from '../../src/globals/globals';
 import { CDT, CONJUNCTION, DISJUNCTION, SEQUENCE, LEVEL_FEATURE, FEATURE_TYPE, SIMILARITY_NAVIGATOR,
-	LEAPING_PROBABILITY, CONTINUE_AFTER_LEAPING } from '../../src/globals/uris';
+	LEAPING_PROBABILITY, CONTINUE_AFTER_LEAPING, DYMO } from '../../src/globals/uris';
 import { DymoStore } from '../../src/io/dymostore';
 import { DymoManager } from '../../src/manager';
 import { DymoNavigator } from '../../src/navigators/navigator';
-import { DymoFunction } from '../../src/model/function';
 import { SequentialNavigator } from '../../src/navigators/sequential';
 import { SimilarityNavigator } from '../../src/navigators/similarity';
 import { GraphNavigator } from '../../src/navigators/graph';
+import { ExpressionVariable } from '../../src/model/variable';
+import { ConstraintWriter } from '../../src/io/constraintwriter';
+import { Expression } from '../../src/model/expression';
 import { SERVER_ROOT, AUDIO_CONTEXT, initSpeaker, endSpeaker } from './server';
 
 describe("a navigator", function() {
 
+	let store;
+
 	beforeEach(function(done) {
 		initSpeaker();
 		//(1:(2:5,6),(3:7,(8:11,12),9),(4:10)))
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
-			GlobalVars.DYMO_STORE.addDymo("dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo2", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo3", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo4", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo5", "dymo2");
-			GlobalVars.DYMO_STORE.addDymo("dymo6", "dymo2");
-			GlobalVars.DYMO_STORE.addDymo("dymo7", "dymo3");
-			GlobalVars.DYMO_STORE.addDymo("dymo8", "dymo3");
-			GlobalVars.DYMO_STORE.addDymo("dymo9", "dymo3");
-			GlobalVars.DYMO_STORE.addDymo("dymo10", "dymo4");
-			GlobalVars.DYMO_STORE.addDymo("dymo11", "dymo8");
-			GlobalVars.DYMO_STORE.addDymo("dymo12", "dymo8");
-			GlobalVars.DYMO_STORE.addSimilar("dymo5", "dymo7");
-			GlobalVars.DYMO_STORE.addSimilar("dymo7", "dymo5");
-			GlobalVars.DYMO_STORE.addSimilar("dymo6", "dymo9");
-			GlobalVars.DYMO_STORE.addSimilar("dymo8", "dymo10");
-			GlobalVars.DYMO_STORE.addSimilar("dymo10", "dymo6");
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
+			store.addDymo("dymo1");
+			store.addDymo("dymo2", "dymo1");
+			store.addDymo("dymo3", "dymo1");
+			store.addDymo("dymo4", "dymo1");
+			store.addDymo("dymo5", "dymo2");
+			store.addDymo("dymo6", "dymo2");
+			store.addDymo("dymo7", "dymo3");
+			store.addDymo("dymo8", "dymo3");
+			store.addDymo("dymo9", "dymo3");
+			store.addDymo("dymo10", "dymo4");
+			store.addDymo("dymo11", "dymo8");
+			store.addDymo("dymo12", "dymo8");
+			store.addSimilar("dymo5", "dymo7");
+			store.addSimilar("dymo7", "dymo5");
+			store.addSimilar("dymo6", "dymo9");
+			store.addSimilar("dymo8", "dymo10");
+			store.addSimilar("dymo10", "dymo6");
 			//dymo2.addSimilar(dymo3);
 			//dymo3.addSimilar(dymo2);
 			//dymo4.addSimilar(dymo5);
@@ -48,7 +52,7 @@ describe("a navigator", function() {
 	});
 
 	it("is normally sequential", function() {
-		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
+		var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
 		expect(navigator.getNextParts()[0]).toBe("dymo7");
@@ -117,9 +121,9 @@ describe("a navigator", function() {
 	});*/
 
 	it("can handle conjunctions", function() {
-		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
-		GlobalVars.DYMO_STORE.setTriple("dymo2", CDT, CONJUNCTION);
-		GlobalVars.DYMO_STORE.setTriple("dymo8", CDT, CONJUNCTION);
+		var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
+		store.setTriple("dymo2", CDT, CONJUNCTION);
+		store.setTriple("dymo8", CDT, CONJUNCTION);
 		expect(navigator.getNextParts()).toEqual(["dymo5","dymo6"]);
 		expect(navigator.getNextParts()[0]).toBe("dymo7");
 		expect(navigator.getNextParts()).toEqual(["dymo11","dymo12"]);
@@ -130,9 +134,9 @@ describe("a navigator", function() {
 	});
 
 	it("can handle disjunctions", function() {
-		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
-		GlobalVars.DYMO_STORE.setTriple("dymo2", CDT, DISJUNCTION);
-		GlobalVars.DYMO_STORE.setTriple("dymo8", CDT, DISJUNCTION);
+		var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
+		store.setTriple("dymo2", CDT, DISJUNCTION);
+		store.setTriple("dymo8", CDT, DISJUNCTION);
 		var nextPart = navigator.getNextParts()[0];
 		expect(nextPart == "dymo5" || nextPart == "dymo6").toBe(true);
 		expect(navigator.getNextParts()[0]).toBe("dymo7");
@@ -147,16 +151,16 @@ describe("a navigator", function() {
 	});
 
 	it("can handle conjunctions of sequences", function(done) {
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
-			GlobalVars.DYMO_STORE.addDymo("meal", null, null, null, CONJUNCTION);
-			GlobalVars.DYMO_STORE.addDymo("dish", "meal", null, null, SEQUENCE);
-			GlobalVars.DYMO_STORE.addDymo("noodles", "dish");
-			GlobalVars.DYMO_STORE.addDymo("veggies", "dish");
-			GlobalVars.DYMO_STORE.addDymo("pizza", "dish");
-			GlobalVars.DYMO_STORE.addDymo("hotsauce", "meal");
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
+			store.addDymo("meal", null, null, null, CONJUNCTION);
+			store.addDymo("dish", "meal", null, null, SEQUENCE);
+			store.addDymo("noodles", "dish");
+			store.addDymo("veggies", "dish");
+			store.addDymo("pizza", "dish");
+			store.addDymo("hotsauce", "meal");
 
-			var navigator = new DymoNavigator("meal", new SequentialNavigator("meal"));
+			var navigator = new DymoNavigator("meal", store, new SequentialNavigator("meal", store));
 			expect(navigator.getNextParts()).toEqual(["noodles", "hotsauce"]);
 			expect(navigator.getNextParts()).toEqual(["veggies", "hotsauce"]);
 			expect(navigator.getNextParts()).toEqual(["pizza", "hotsauce"]);
@@ -169,18 +173,18 @@ describe("a navigator", function() {
 	});
 
 	it("can handle a sequence of a sequence", function(done) {
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
-			GlobalVars.DYMO_STORE.addDymo("food");
-			GlobalVars.DYMO_STORE.addDymo("meal", "food");
-			GlobalVars.DYMO_STORE.addDymo("noodles", "meal");
-			GlobalVars.DYMO_STORE.addDymo("veggies", "meal");
-			GlobalVars.DYMO_STORE.addDymo("pizza", "meal");
-			GlobalVars.DYMO_STORE.addPart("food", "meal");
-			GlobalVars.DYMO_STORE.addPart("food", "meal");
-			GlobalVars.DYMO_STORE.addDymo("canttakeitnomore", "food");
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
+			store.addDymo("food");
+			store.addDymo("meal", "food");
+			store.addDymo("noodles", "meal");
+			store.addDymo("veggies", "meal");
+			store.addDymo("pizza", "meal");
+			store.addPart("food", "meal");
+			store.addPart("food", "meal");
+			store.addDymo("canttakeitnomore", "food");
 
-			var navigator = new DymoNavigator("food", new SequentialNavigator("food"));
+			var navigator = new DymoNavigator("food", store, new SequentialNavigator("food", store));
 			expect(navigator.getNextParts()).toEqual(["noodles"]);
 			expect(navigator.getNextParts()).toEqual(["veggies"]);
 			expect(navigator.getNextParts()).toEqual(["pizza"]);
@@ -200,20 +204,20 @@ describe("a navigator", function() {
 	});
 
 	it("can navigate larger typed structures", function(done) {
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
-			GlobalVars.DYMO_STORE.addDymo("dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo2", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo3", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo4", "dymo2");
-			GlobalVars.DYMO_STORE.addDymo("dymo4", "dymo3");
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
+			store.addDymo("dymo1");
+			store.addDymo("dymo2", "dymo1");
+			store.addDymo("dymo3", "dymo1");
+			store.addDymo("dymo4", "dymo2");
+			store.addDymo("dymo4", "dymo3");
 
-			var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
+			var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
 			expect(navigator.getNextParts()).toEqual(["dymo4"]);
 			expect(navigator.getNextParts()).toEqual(["dymo4"]);
 			expect(navigator.getNextParts()).toEqual(["dymo4"]);
 			navigator.reset();
-			GlobalVars.DYMO_STORE.addDymo("dymo5", "dymo2");
+			store.addDymo("dymo5", "dymo2");
 			expect(navigator.getNextParts()).toEqual(["dymo4"]);
 			expect(navigator.getNextParts()).toEqual(["dymo5"]);
 			expect(navigator.getNextParts()).toEqual(["dymo4"]);
@@ -221,18 +225,18 @@ describe("a navigator", function() {
 			expect(navigator.getNextParts()).toEqual(["dymo5"]);
 			expect(navigator.getNextParts()).toEqual(["dymo4"]);
 
-			GlobalVars.DYMO_STORE.setTriple("dymo2", CDT, CONJUNCTION);
-			GlobalVars.DYMO_STORE.setTriple("dymo3", CDT, CONJUNCTION);
-			var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
+			store.setTriple("dymo2", CDT, CONJUNCTION);
+			store.setTriple("dymo3", CDT, CONJUNCTION);
+			var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
 			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5"]);
 			expect(navigator.getNextParts()).toEqual(["dymo4"]);
 			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5"]);
 			expect(navigator.getNextParts()).toEqual(["dymo4"]);
 
-			GlobalVars.DYMO_STORE.addDymo("dymo0", null, "dymo1");
-			GlobalVars.DYMO_STORE.addPart("dymo0", "dymo1");
-			GlobalVars.DYMO_STORE.setTriple("dymo1", CDT, CONJUNCTION);
-			var navigator = new DymoNavigator("dymo0", new SequentialNavigator("dymo1"));
+			store.addDymo("dymo0", null, "dymo1");
+			store.addPart("dymo0", "dymo1");
+			store.setTriple("dymo1", CDT, CONJUNCTION);
+			var navigator = new DymoNavigator("dymo0", store, new SequentialNavigator("dymo1", store));
 			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5", "dymo4"]);
 			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5", "dymo4"]);
 			expect(navigator.getNextParts()).toEqual(["dymo4", "dymo5", "dymo4"]);
@@ -243,24 +247,24 @@ describe("a navigator", function() {
 	});
 
 	it("can navigate more larger typed structures", function(done) {
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
-			GlobalVars.DYMO_STORE.addDymo("song");
-			GlobalVars.DYMO_STORE.addDymo("verse1", "song", null, null, CONJUNCTION);
-			GlobalVars.DYMO_STORE.addDymo("verse2", "song", null, null, CONJUNCTION);
-			GlobalVars.DYMO_STORE.addDymo("accomp", "verse1", null, null, CONJUNCTION);
-			GlobalVars.DYMO_STORE.addDymo("solo1", "verse1", null, null, DISJUNCTION);
-			GlobalVars.DYMO_STORE.addPart("verse2", "accomp");
-			GlobalVars.DYMO_STORE.addDymo("solo2", "verse2", null, null, DISJUNCTION);
-			GlobalVars.DYMO_STORE.addDymo("bass", "accomp");
-			GlobalVars.DYMO_STORE.addDymo("piano", "accomp");
-			GlobalVars.DYMO_STORE.addDymo("sax1", "solo1");
-			GlobalVars.DYMO_STORE.addDymo("sax2", "solo1");
-			GlobalVars.DYMO_STORE.addDymo("sax3", "solo2");
-			GlobalVars.DYMO_STORE.addDymo("sax4", "solo2");
-			GlobalVars.DYMO_STORE.addDymo("sax5", "solo2");
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
+			store.addDymo("song");
+			store.addDymo("verse1", "song", null, null, CONJUNCTION);
+			store.addDymo("verse2", "song", null, null, CONJUNCTION);
+			store.addDymo("accomp", "verse1", null, null, CONJUNCTION);
+			store.addDymo("solo1", "verse1", null, null, DISJUNCTION);
+			store.addPart("verse2", "accomp");
+			store.addDymo("solo2", "verse2", null, null, DISJUNCTION);
+			store.addDymo("bass", "accomp");
+			store.addDymo("piano", "accomp");
+			store.addDymo("sax1", "solo1");
+			store.addDymo("sax2", "solo1");
+			store.addDymo("sax3", "solo2");
+			store.addDymo("sax4", "solo2");
+			store.addDymo("sax5", "solo2");
 
-			var navigator = new DymoNavigator("song", new SequentialNavigator("song"));
+			var navigator = new DymoNavigator("song", store, new SequentialNavigator("song", store));
 			var nextParts = navigator.getNextParts();
 			expect(nextParts.length).toBe(3);
 			expect(nextParts).toContain("bass");
@@ -283,24 +287,24 @@ describe("a navigator", function() {
 	});
 
 	it("can navigate even more larger typed structures", function(done) {
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
-			GlobalVars.DYMO_STORE.addDymo("song");
-			GlobalVars.DYMO_STORE.addDymo("verse1", "song", null, null, CONJUNCTION);
-			GlobalVars.DYMO_STORE.addDymo("verse2", "song", null, null, CONJUNCTION);
-			GlobalVars.DYMO_STORE.addDymo("accomp", "verse1");
-			GlobalVars.DYMO_STORE.addDymo("solo1", "verse1");
-			GlobalVars.DYMO_STORE.addPart("verse2", "accomp");
-			GlobalVars.DYMO_STORE.addDymo("solo2", "verse2");
-			GlobalVars.DYMO_STORE.addDymo("bass", "accomp");
-			GlobalVars.DYMO_STORE.addDymo("piano", "accomp");
-			GlobalVars.DYMO_STORE.addDymo("sax1", "solo1");
-			GlobalVars.DYMO_STORE.addDymo("sax2", "solo1");
-			GlobalVars.DYMO_STORE.addDymo("sax3", "solo2");
-			GlobalVars.DYMO_STORE.addDymo("sax4", "solo2");
-			GlobalVars.DYMO_STORE.addDymo("sax5", "solo2");
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
+			store.addDymo("song");
+			store.addDymo("verse1", "song", null, null, CONJUNCTION);
+			store.addDymo("verse2", "song", null, null, CONJUNCTION);
+			store.addDymo("accomp", "verse1");
+			store.addDymo("solo1", "verse1");
+			store.addPart("verse2", "accomp");
+			store.addDymo("solo2", "verse2");
+			store.addDymo("bass", "accomp");
+			store.addDymo("piano", "accomp");
+			store.addDymo("sax1", "solo1");
+			store.addDymo("sax2", "solo1");
+			store.addDymo("sax3", "solo2");
+			store.addDymo("sax4", "solo2");
+			store.addDymo("sax5", "solo2");
 
-			var navigator = new DymoNavigator("song", new SequentialNavigator("song"));
+			var navigator = new DymoNavigator("song", store, new SequentialNavigator("song", store));
 			expect(navigator.getNextParts()).toEqual(["bass","sax1"]);
 			expect(navigator.getNextParts()).toEqual(["piano","sax2"]);
 			expect(navigator.getNextParts()).toEqual(["bass","sax3"]);
@@ -315,8 +319,8 @@ describe("a navigator", function() {
 	});
 
 	it("can have various subset navigators", function() {
-		var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
-		navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],[FEATURE_TYPE], "return d == 1;", true), new SequentialNavigator("dymo1", true));
+		var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
+		navigator.addSubsetNavigator(new ExpressionVariable("d", DYMO, new Expression("LevelFeature(d) == 1")), new SequentialNavigator("dymo1", store, true));
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
 		expect(navigator.getNextParts()[0]).toBe("dymo9");
@@ -330,8 +334,8 @@ describe("a navigator", function() {
 	});
 
 	it("can have missing subset navigators", function() {
-		var navigator = new DymoNavigator("dymo1");
-		navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],[FEATURE_TYPE],"return d <= 1;", true), new SequentialNavigator("dymo1"));
+		var navigator = new DymoNavigator("dymo1", store);
+		navigator.addSubsetNavigator(new ExpressionVariable("d", DYMO, new Expression("LevelFeature(d) <= 1")), new SequentialNavigator("dymo1", store));
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
 		expect(navigator.getNextParts()[0]).toBe("dymo7");
@@ -341,34 +345,34 @@ describe("a navigator", function() {
 		//starts over
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
-		var navigator = new DymoNavigator("dymo1");
-		navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],[FEATURE_TYPE],"return d == 0;", true), new SequentialNavigator("dymo1"));
+		var navigator = new DymoNavigator("dymo1", store);
+		navigator.addSubsetNavigator(new ExpressionVariable("d", DYMO, new Expression("LevelFeature(d) == 0")), new SequentialNavigator("dymo1", store));
 		expect(navigator.getNextParts()[0]).toBe("dymo2");
 		expect(navigator.getNextParts()[0]).toBe("dymo3");
 		expect(navigator.getNextParts()[0]).toBe("dymo4");
 	});
 
 	it("can also be based on similarity", function(done) {
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
-			GlobalVars.DYMO_STORE.addDymo("dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo2", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo3", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo4", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo5", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo6", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo7", "dymo1");
-			GlobalVars.DYMO_STORE.addSimilar("dymo2", "dymo3");
-			GlobalVars.DYMO_STORE.addSimilar("dymo3", "dymo2");
-			GlobalVars.DYMO_STORE.addSimilar("dymo4", "dymo5");
-			GlobalVars.DYMO_STORE.addSimilar("dymo4", "dymo6");
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
+			store.addDymo("dymo1");
+			store.addDymo("dymo2", "dymo1");
+			store.addDymo("dymo3", "dymo1");
+			store.addDymo("dymo4", "dymo1");
+			store.addDymo("dymo5", "dymo1");
+			store.addDymo("dymo6", "dymo1");
+			store.addDymo("dymo7", "dymo1");
+			store.addSimilar("dymo2", "dymo3");
+			store.addSimilar("dymo3", "dymo2");
+			store.addSimilar("dymo4", "dymo5");
+			store.addSimilar("dymo4", "dymo6");
 
 			//test without replacing of objects (probability 0)
-			var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
-			var simNav = new SimilarityNavigator("dymo1")
-			navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],[FEATURE_TYPE],"return d == 0;", true), simNav);
-			GlobalVars.DYMO_STORE.setParameter(null, LEAPING_PROBABILITY, 0);
-			GlobalVars.DYMO_STORE.setParameter(null, CONTINUE_AFTER_LEAPING, 0);
+			var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
+			var simNav = new SimilarityNavigator("dymo1", store)
+			navigator.addSubsetNavigator(new ExpressionVariable("d", DYMO, new Expression("LevelFeature(d) == 0")), simNav);
+			store.setControlParam(null, LEAPING_PROBABILITY, 0);
+			store.setControlParam(null, CONTINUE_AFTER_LEAPING, 0);
 			expect(["dymo2"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo3"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo4"]).toContain(navigator.getNextParts()[0]);
@@ -382,7 +386,7 @@ describe("a navigator", function() {
 
 			//test replacing of objects with similars (probability 1)
 			navigator.reset();
-			GlobalVars.DYMO_STORE.setParameter(null, LEAPING_PROBABILITY, 1);
+			store.setControlParam(null, LEAPING_PROBABILITY, 1);
 			expect(["dymo3"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo2"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo5","dymo6"]).toContain(navigator.getNextParts()[0]);
@@ -396,7 +400,7 @@ describe("a navigator", function() {
 
 			//test replacing of objects with similars (probability 0.5)
 			navigator.reset();
-			GlobalVars.DYMO_STORE.setParameter(null, LEAPING_PROBABILITY, 0.5);
+			store.setControlParam(null, LEAPING_PROBABILITY, 0.5);
 			expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo4","dymo5","dymo6"]).toContain(navigator.getNextParts()[0]);
@@ -410,7 +414,7 @@ describe("a navigator", function() {
 
 			//test leaping and continuing
 			navigator.reset();
-			GlobalVars.DYMO_STORE.setParameter(null, CONTINUE_AFTER_LEAPING, 1);
+			store.setControlParam(null, CONTINUE_AFTER_LEAPING, 1);
 			expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo2","dymo3"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo2","dymo3","dymo4","dymo5","dymo6"]).toContain(navigator.getNextParts()[0]);
@@ -422,24 +426,24 @@ describe("a navigator", function() {
 	});
 
 	it("can navigate directed graphs", function(done) {
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
-			GlobalVars.DYMO_STORE.addDymo("dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo2", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo3", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo4", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo5", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo6", "dymo1");
-			GlobalVars.DYMO_STORE.addDymo("dymo7", "dymo1");
-			GlobalVars.DYMO_STORE.addSuccessor("dymo2", "dymo3");
-			GlobalVars.DYMO_STORE.addSuccessor("dymo3", "dymo2");
-			GlobalVars.DYMO_STORE.addSuccessor("dymo4", "dymo5");
-			GlobalVars.DYMO_STORE.addSuccessor("dymo4", "dymo6");
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
+			store.addDymo("dymo1");
+			store.addDymo("dymo2", "dymo1");
+			store.addDymo("dymo3", "dymo1");
+			store.addDymo("dymo4", "dymo1");
+			store.addDymo("dymo5", "dymo1");
+			store.addDymo("dymo6", "dymo1");
+			store.addDymo("dymo7", "dymo1");
+			store.addSuccessor("dymo2", "dymo3");
+			store.addSuccessor("dymo3", "dymo2");
+			store.addSuccessor("dymo4", "dymo5");
+			store.addSuccessor("dymo4", "dymo6");
 
 			//test without replacing of objects (probability 0)
-			var navigator = new DymoNavigator("dymo1", new SequentialNavigator("dymo1"));
-			var graphNav = new GraphNavigator("dymo1")
-			navigator.addSubsetNavigator(new DymoFunction(["d"],[LEVEL_FEATURE],[FEATURE_TYPE],"return d == 0;", true), graphNav);
+			var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
+			var graphNav = new GraphNavigator("dymo1", store)
+			navigator.addSubsetNavigator(new ExpressionVariable("d", DYMO, new Expression("LevelFeature(d) == 0")), graphNav);
 			expect(["dymo2"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo3"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo2","dymo4"]).toContain(navigator.getNextParts()[0]);
@@ -450,17 +454,25 @@ describe("a navigator", function() {
 	});
 
 	it("can be loaded from a rendering", function(done) {
+		/*let store2 = new DymoStore();
+    let var2 = new ExpressionVariable('x', DYMO, new Expression('LevelFeature(x) == 1'))
+    let varUri = new ConstraintWriter(store2).addVariable(var2);
+    store2.uriToJsonld(varUri)
+    //.then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","qBody":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","tArgs":"x","tFunction":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
+    .then(j => console.log(j))*/
+
 		var manager = new DymoManager(AUDIO_CONTEXT, null, false, null);
 		manager.init(SERVER_ROOT+'ontologies/').then(() => {
 			manager.loadDymoAndRendering(SERVER_ROOT+'spec/files/similarity-dymo.json', SERVER_ROOT+'spec/files/similarity-rendering.json')
 			.then(() => {
+				store = GlobalVars.DYMO_STORE;
 				var dymoUri = manager.getTopDymo();
-				expect(GlobalVars.DYMO_STORE.findParts(dymoUri).length).toBe(5);
-				expect(GlobalVars.DYMO_STORE.findSimilars(GlobalVars.DYMO_STORE.findParts(dymoUri)[1]).length).toBe(1);
+				expect(store.findParts(dymoUri).length).toBe(5);
+				expect(store.findSimilars(store.findParts(dymoUri)[1]).length).toBe(1);
 				var navigators = manager.getRendering().getNavigator().getSubsetNavigators();
-				expect(navigators.length).toBe(1);
+				expect(navigators.size).toBe(1);
 				//expect(navigators[0][0]).toEqual(REPEATED_NAVIGATOR);
-				expect(navigators[0][1].getType()).toEqual(SIMILARITY_NAVIGATOR);
+				expect(navigators.values().next().value.getType()).toEqual(SIMILARITY_NAVIGATOR);
 				manager.startPlaying();
 				setTimeout(function() {
 					manager.stopPlaying();

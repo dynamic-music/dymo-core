@@ -102,7 +102,7 @@ function createExpressionOntology(path) {
 
 	addClass("FunctionalTerm", "Expression");
 	addProperty({term:"tFunction", iri:"tFunction", type:"xsd:string"}, "FunctionalTerm", prefixes["xsd"]+"string", false, true);
-	addProperty({term:"tArgs", iri:"tArgs"}, "FunctionalTerm", "Variable", true);
+	addProperty({term:"tArgs", iri:"tArgs", type:"xsd:string"}, "FunctionalTerm", prefixes["xsd"]+"string", true);
 
 	addClass("BinaryOperator", "Expression");
 	addProperty({term:"left", iri:"left"}, "BinaryOperator", "Expression", true, true);
@@ -252,6 +252,7 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"range", iri:"hasRange", type: "@vocab"}, "Mapping", "MappingRange", true);
 	addProperty({term:"unidirectional", iri:"isUnidirectional", type: "xsd:boolean"}, "Mapping", prefixes["xsd"]+"boolean", false);
 	//control properties
+	addProperty({term:"controlParam", iri:"hasControlParam"}, "MobileControl", "MobileParameter", true);
 	addProperty({term:"init", iri:"hasInitialValue", type: "xsd:float"}, "MobileControl", prefixes["xsd"]+"float", false);
 	addProperty({term:"url", iri:"hasUrl", type: "xsd:string"}, "DataControl", prefixes["xsd"]+"string", false);
 	addProperty({term:"map", iri:"hasJsonMap", type: "xsd:string"}, "DataControl", prefixes["xsd"]+"string", false);

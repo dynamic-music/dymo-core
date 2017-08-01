@@ -155,11 +155,13 @@ export class DymoLoader {
     }
   }
 
-  private loadNavigators(renderingUri, rendering) {
+  private loadNavigators(renderingUri: string, rendering: Rendering) {
     var navigators = this.store.findAllObjects(renderingUri, uris.HAS_NAVIGATOR);
     for (var i = 0; i < navigators.length; i++) {
-      var dymosFunction = this.createFunction(this.store.findObject(navigators[i], uris.NAV_DYMOS), true);
-      rendering.addSubsetNavigator(dymosFunction, this.getNavigator(this.store.findObject(navigators[i], uris.TYPE)));
+      //TODO NEEDS TO BE AN EXPRESSION!!!!!
+      //var dymosFunction = this.createFunction(this.store.findObject(navigators[i], uris.NAV_DYMOS), true);
+      var variable = new ConstraintLoader(this.store).loadVariable(this.store.findObject(navigators[i], uris.NAV_DYMOS));
+      rendering.addSubsetNavigator(variable, this.getNavigator(this.store.findObject(navigators[i], uris.TYPE)));
     }
   }
 
@@ -243,36 +245,36 @@ export class DymoLoader {
 
   private getNavigator(type) {
     if (type == uris.SIMILARITY_NAVIGATOR) {
-      return new SimilarityNavigator(undefined);
+      return new SimilarityNavigator(undefined, this.store);
     } else if (type == uris.GRAPH_NAVIGATOR) {
-      return new GraphNavigator(undefined);
+      return new GraphNavigator(undefined, this.store);
     }
-    return new SequentialNavigator(undefined);
+    return new SequentialNavigator(undefined, this.store);
   }
 
   private getControl(uri, name, type) {
     var control;
     if (type == uris.ACCELEROMETER_X || type == uris.ACCELEROMETER_Y || type == uris.ACCELEROMETER_Z) {
-      control = new AccelerometerControl(type);
+      control = new AccelerometerControl(type, this.store);
     } else if (type == uris.TILT_X || type == uris.TILT_Y) {
-      control = new TiltControl(type);
+      control = new TiltControl(type, this.store);
     } else if (type == uris.GEOLOCATION_LATITUDE || type == uris.GEOLOCATION_LONGITUDE) {
-      control = new GeolocationControl(type);
+      control = new GeolocationControl(type, this.store);
     }  else if (type == uris.GEOLOCATION_DISTANCE) {
-      control = new DistanceControl();
+      control = new DistanceControl(this.store);
     }  else if (type == uris.COMPASS_HEADING) {
-      control = new CompassControl();
+      control = new CompassControl(this.store);
     }  else if (type == uris.BEACON) {
       var uuid = this.store.findObjectValue(uri, uris.HAS_UUID);
       var major = this.store.findObjectValue(uri, uris.HAS_MAJOR);
       var minor = this.store.findObjectValue(uri, uris.HAS_MINOR);
-      control = new BeaconControl(uuid, major, minor);
+      control = new BeaconControl(uuid, major, minor, this.store);
     }  else if (type == uris.SLIDER || type == uris.TOGGLE || type == uris.BUTTON || type == uris.CUSTOM_CONTROL) {
       control = new Control(uri, name, type, this.store);
       var init = this.store.findObjectValue(uri, uris.HAS_INITIAL_VALUE);
       control.updateValue(init);
     } else if (type == uris.RANDOM) {
-      control = new RandomControl(uri);
+      control = new RandomControl(uri, this.store);
     } else if (type == uris.BROWNIAN) {
       var init = this.store.findObjectValue(uri, uris.HAS_INITIAL_VALUE);
       control = new BrownianControl(uri, init);
@@ -284,7 +286,7 @@ export class DymoLoader {
       var url = this.store.findObjectValue(uri, uris.HAS_URL);
       var jsonMapString = String(this.store.findObjectValue(uri, uris.HAS_JSON_MAP));
       var jsonMap = new Function("json", jsonMapString);
-      control = new DataControl(uri, url, jsonMap);
+      control = new DataControl(uri, url, jsonMap, this.store);
     }
     //TODO implement in better way (only works for sensor controls)
     if (this.store.findObjectValue(uri, uris.IS_SMOOTH) && control.setSmooth) {

@@ -1,5 +1,6 @@
 import { SensorControl } from '../sensorcontrol'
 import { BEACON } from '../../globals/uris'
+import { DymoStore } from '../../io/dymostore';
 
 /**
  * A control based on the distance from a bluetooth beacon
@@ -10,13 +11,12 @@ export class BeaconControl extends SensorControl {
 	private major;
 	private minor;
 
-	constructor(uuid, major, minor) {
+	constructor(uuid, major, minor, store: DymoStore) {
 		super(BEACON,
 			"$cordovaBeacon",
 			null,
 			function() {},
-			null,
-			null
+			store
 		);
 		this.uuid = uuid;
 		this.major = major;

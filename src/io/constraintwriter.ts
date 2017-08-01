@@ -18,7 +18,7 @@ export class ConstraintWriter {
     this.store.addTriple(renderingUri, u.CONSTRAINT, expUri);
   }
 
-  private addVariable(variable: BoundVariable): string {
+  addVariable(variable: BoundVariable): string {
     let varUri = this.store.createBlankNode();
     this.store.addTriple(varUri, u.TYPE, u.VARIABLE);
     this.store.setValue(varUri, u.VAR_NAME, variable.getName());

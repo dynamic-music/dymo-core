@@ -1,6 +1,6 @@
-import { RAMP, AUTO_CONTROL_FREQUENCY } from '../../globals/uris'
-import { AutoControl } from '../autocontrol'
-import { GlobalVars } from '../../globals/globals'
+import { RAMP, AUTO_CONTROL_FREQUENCY } from '../../globals/uris';
+import { DymoStore } from '../../io/dymostore';
+import { AutoControl } from '../autocontrol';
 
 /**
  * Ramp controls that gradually interpolate between given values.
@@ -11,8 +11,8 @@ export class RampControl extends AutoControl {
 	private currentValue;
 	private isIncreasing;
 
-	constructor(uri: string, duration: number, initialValue?: number) {
-		super(uri, RAMP);
+	constructor(uri: string, duration: number, store: DymoStore, initialValue?: number) {
+		super(uri, RAMP, store);
 		this.duration = duration ? duration : 10000;
 		this.currentValue = initialValue ? initialValue : 0;
 		this.isIncreasing = this.currentValue != 1;
@@ -21,7 +21,7 @@ export class RampControl extends AutoControl {
 
 	update() {
 		//TODO IMPROVE, ONLY CALCULATE WHEN FREQUENCY CHANGES!!!
-		var delta = 1/this.duration*Number(GlobalVars.DYMO_STORE.findParameterValue(this.uri, AUTO_CONTROL_FREQUENCY));
+		var delta = 1/this.duration*Number(this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY));
 		if (!this.isIncreasing) {
 			delta *= -1;
 		}

@@ -1,6 +1,7 @@
-import { DATA_CONTROL, AUTO_CONTROL_TRIGGER } from '../globals/uris'
-import { AutoControl } from './autocontrol'
-import { GlobalVars } from '../globals/globals'
+import { DATA_CONTROL, AUTO_CONTROL_TRIGGER } from '../globals/uris';
+import { GlobalVars } from '../globals/globals';
+import { DymoStore } from '../io/dymostore';
+import { AutoControl } from './autocontrol';
 
 /**
  * Data controls that fetch data online to set their values.
@@ -10,12 +11,12 @@ export class DataControl extends AutoControl {
 	private url;
 	private jsonMap;
 
-	constructor(uri, url, jsonMap, frequency?: number) {
+	constructor(uri, url, jsonMap, store: DymoStore, frequency?: number) {
 		if (!frequency) frequency = 60000;
-		super(uri, DATA_CONTROL, frequency);
+		super(uri, DATA_CONTROL, store, frequency);
 		this.url = url;
 		this.jsonMap = jsonMap;
-		GlobalVars.DYMO_STORE.setParameter(uri, AUTO_CONTROL_TRIGGER, 1);
+		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 1);
 	}
 
 	update() {

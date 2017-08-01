@@ -29,21 +29,24 @@ export class ConstraintLoader {
     let expressionType = this.store.findObject(expressionUri, uris.TYPE);
     if (this.store.isSubclassOf(expressionType, uris.QUANTIFIER)) {
       let varUri = this.store.findObject(expressionUri, uris.VARS);
-      let varName = this.store.findObjectValue(varUri, uris.VAR_NAME);
-      let varType = this.store.findObject(varUri, uris.VAR_TYPE);
-      let varExpr = this.store.findObject(varUri, uris.VAR_EXPR);
       let body = this.store.findObject(expressionUri, uris.Q_BODY);
-      let values = this.store.findAllObjects(expressionUri, uris.VAR_VALUE);
-      if (varExpr) {
-        this.vars.push(new ExpressionVariable(varName, varType, this.loadExpression(varExpr)));
-      } else if (values.length > 0) {
-        this.vars.push(new SetBasedVariable(varName, values));
-      } else {
-        this.vars.push(new TypedVariable(varName, varType));
-      }
+      this.vars.push(this.loadVariable(varUri));
       return this.recursiveLoadBoundVariables(body);
     }
     return expressionUri;
+  }
+
+  loadVariable(varUri: string): BoundVariable {
+    let varName = this.store.findObjectValue(varUri, uris.VAR_NAME);
+    let varType = this.store.findObject(varUri, uris.VAR_TYPE);
+    let varExpr = this.store.findObject(varUri, uris.VAR_EXPR);
+    let values = this.store.findAllObjects(varUri, uris.VAR_VALUE);
+    if (varExpr) {
+      return new ExpressionVariable(varName, varType, this.loadExpression(varExpr));
+    } else if (values.length > 0) {
+      return new SetBasedVariable(varName, values);
+    }
+    return new TypedVariable(varName, varType);
   }
 
   private loadExpression(expressionUri: string): Expression {

@@ -6,6 +6,10 @@ import { DONE } from '../globals/globals'
  */
 export class OneShotNavigator extends SubsetNavigator {
 
+	getCopy() {
+		return new OneShotNavigator(this.dymoUri);
+	}
+
 	getNextParts() {
 		return [[this.dymoUri], DONE];
 	}

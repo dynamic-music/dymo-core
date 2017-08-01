@@ -1,3 +1,5 @@
+import { DymoStore } from '../io/dymostore';
+import { BoundVariable } from '../model/variable';
 import { SubsetNavigator } from './subsetnav'
 import { OneShotNavigator } from './oneshot'
 
@@ -10,10 +12,10 @@ export class DymoNavigator {
 	private dymoUri: string;
 	private defaultSubsetNavigator;
 	private defaultLeafNavigator;
-	private subsetNavigators = [];
+	private subsetNavigators: Map<BoundVariable,SubsetNavigator> = new Map<BoundVariable,SubsetNavigator>();
 	private navigator: SubsetNavigator;
 
-	constructor(dymoUri, defaultSubsetNavigator?: Object, defaultLeafNavigator?: Object) {
+	constructor(dymoUri, private store: DymoStore, defaultSubsetNavigator?: Object, defaultLeafNavigator?: Object) {
 		this.dymoUri = dymoUri;
 		this.defaultSubsetNavigator = defaultSubsetNavigator;
 		this.defaultLeafNavigator = defaultLeafNavigator;
@@ -44,11 +46,11 @@ export class DymoNavigator {
 		//}
 	}
 
-	addSubsetNavigator(subsetFunction, navigator) {
-		this.subsetNavigators.push([subsetFunction, navigator]);
+	addSubsetNavigator(subset: BoundVariable, navigator: SubsetNavigator) {
+		this.subsetNavigators.set(subset, navigator);
 	}
 
-	getSubsetNavigators() {
+	getSubsetNavigators(): Map<BoundVariable,SubsetNavigator> {
 		return this.subsetNavigators;
 	}
 
@@ -141,10 +143,10 @@ export class DymoNavigator {
 		}
 	}*/
 
-	private getNavigator(dymoUri) {
-		for (var i = 0, j = this.subsetNavigators.length; i < j; i++) {
-			if (this.subsetNavigators[i][0].applyDirect(null, null, dymoUri)) {
-				return this.subsetNavigators[i][1].getCopy(dymoUri, this.getNavigator.bind(this));
+	private getNavigator(dymoUri: string) {
+		for (var subset of this.subsetNavigators.keys()) {
+			if (subset.getValues(this.store).indexOf(dymoUri) >= 0) {
+				return this.subsetNavigators.get(subset).getCopy(dymoUri, this.getNavigator.bind(this));
 			}
 		}
 		if (dymoUri && this.defaultSubsetNavigator) { //&& DYMO_STORE.findParts(dymoUri).length > 0) {

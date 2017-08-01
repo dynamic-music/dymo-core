@@ -149,6 +149,7 @@
 		"targets": "mb:toTarget",
 		"range": "mb:hasRange",
 		"unidirectional": "mb:isUnidirectional",
+		"controlParam": "mb:hasControlParam",
 		"init": "mb:hasInitialValue",
 		"url": "mb:hasUrl",
 		"map": "mb:hasJsonMap",

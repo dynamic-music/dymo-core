@@ -1,12 +1,13 @@
-import { SensorControl } from '../sensorcontrol'
-import { GEOLOCATION_LATITUDE } from '../../globals/uris'
+import { SensorControl } from '../sensorcontrol';
+import { GEOLOCATION_LATITUDE } from '../../globals/uris';
+import { DymoStore } from '../../io/dymostore';
 
 /**
  * A control based on geolocation sensors (controlName is either GEOLOCATION_LATITUDE or GEOLOCATION_LONGITUDE)
  */
 export class GeolocationControl extends SensorControl {
 
-	constructor(controlName) {
+	constructor(controlName: string, store: DymoStore) {
 		super(controlName,
 			"$cordovaGeolocation",
 			"watchPosition",
@@ -19,6 +20,7 @@ export class GeolocationControl extends SensorControl {
 				}
 				this.updateValue(newValue);
 			},
+			store,
 			() => this.resetReferenceValueAndAverage(),
 			{
 				enableHighAccuracy: true,

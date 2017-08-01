@@ -10,8 +10,8 @@ export class Control {
   private observers = [];
   private backpropFunction: Function;
 
-  constructor(protected uri: string, private name: string, private type: string, private store: DymoStore) {
-    store.addValueObserver(uri, VALUE, this);
+  constructor(protected uri: string, private name: string, private type: string, protected store: DymoStore) {
+    this.store.addValueObserver(this.uri, VALUE, this);
   }
 
   getName() {

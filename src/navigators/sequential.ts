@@ -1,7 +1,8 @@
 import { flattenArray } from 'arrayutils'
-import { GlobalVars, MORE, DONE } from '../globals/globals'
+import { MORE, DONE } from '../globals/globals'
 import * as uris from '../globals/uris'
 import { SubsetNavigator } from './subsetnav'
+import { DymoStore } from '../io/dymostore';
 
 /**
  * A navigator that follows the order of parts.
@@ -16,14 +17,12 @@ export class SequentialNavigator extends SubsetNavigator {
 	private currentSubNavs;
 	private doneSubNavs;
 
-	constructor(dymoUri, backwards?: boolean, getNavigator?: Function) {
+	constructor(dymoUri, protected store: DymoStore, backwards?: boolean, getNavigator?: Function) {
 		super(dymoUri);
-		this.parts = GlobalVars.DYMO_STORE.findParts(dymoUri);
-		this.dymoType = GlobalVars.DYMO_STORE.findObject(this.dymoUri, uris.CDT);
-		/** @private */
+		this.parts = store.findParts(dymoUri);
+		this.dymoType = store.findObject(this.dymoUri, uris.CDT);
 		this.backwards = backwards;
 		this.getNavigator = getNavigator;
-		/** @protected */
 		this.partsNavigated = 0;
 		this.currentSubNavs = null;
 	}
@@ -46,7 +45,7 @@ export class SequentialNavigator extends SubsetNavigator {
 	}
 
 	getCopy(dymoUri, getNavigator) {
-		return new SequentialNavigator(dymoUri, this.backwards, getNavigator);
+		return new SequentialNavigator(dymoUri, this.store, this.backwards, getNavigator);
 	}
 
 	getDymo() {

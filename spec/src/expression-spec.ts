@@ -53,6 +53,15 @@ describe("the expressions unit", function() {
     //console.log(loadedString);
     expect(loadedString).toEqual(constraint.toString());
 
+    let store2 = new DymoStore();
+    let vars2 = [new TypedVariable('x', u.DYMO)];
+    constraint = new Constraint(vars2, new Expression('LevelFeature(x) == 1'));
+    new ConstraintWriter(store2).addConstraint(renderingUri, constraint);
+    store2.uriToJsonld(renderingUri)
+    .then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","qBody":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","tArgs":{"@id":"_:b0"},"tFunction":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
+    //.then(j => console.log(j))
+
+
   });
 
   it("can handle bound variables of different types", function() {
@@ -156,6 +165,34 @@ describe("the expressions unit", function() {
     expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(1.6);
 
   });
+
+  //TODO MAKE TEST WITH TWO CONSTRAINTS THAT BUILD A LOOP and solve problem!
+
+  /*it("can handle dependency loops", function() {
+
+    let renderingUri = u.CONTEXT_URI+"rendering1";
+    let exp = 'Amplitude(x) == 1 / DurationRatio(x) * Amplitude(x)';
+
+    //set it all up and check if it worked
+    let vars = [new TypedVariable('x', u.DYMO)];
+    let constraint = new Constraint(vars, new Expression(exp, true));
+    new ConstraintWriter(store).addConstraint(renderingUri, constraint);
+    let loader = new DymoLoader(store)
+    loader.createRenderingFromStore();
+    (<Constraint[]>_.values(loader.getMappings())).forEach(c => c.maintain(store));
+    expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(0.4);
+    expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(2);
+
+    //check if system reacts to changed vars
+    store.setParameter(dymo1, u.DURATION_RATIO, 1.6);
+    expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(0.25);
+    expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(1.6);
+    //should be unchanged
+    store.setParameter(dymo1, u.AMPLITUDE, 1.25);
+    expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(0.25);
+    expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(1.6);
+
+  });*/
 
   it("can handle controls", function() {
 

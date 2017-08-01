@@ -147,6 +147,7 @@ export const HAS_BODY: string = "http://tiny.cc/mobile-audio-ontology#hasBody";
 export const TO_TARGET: string = "http://tiny.cc/mobile-audio-ontology#toTarget";
 export const HAS_RANGE: string = "http://tiny.cc/mobile-audio-ontology#hasRange";
 export const IS_UNIDIRECTIONAL: string = "http://tiny.cc/mobile-audio-ontology#isUnidirectional";
+export const HAS_CONTROL_PARAM: string = "http://tiny.cc/mobile-audio-ontology#hasControlParam";
 export const HAS_INITIAL_VALUE: string = "http://tiny.cc/mobile-audio-ontology#hasInitialValue";
 export const HAS_URL: string = "http://tiny.cc/mobile-audio-ontology#hasUrl";
 export const HAS_JSON_MAP: string = "http://tiny.cc/mobile-audio-ontology#hasJsonMap";

@@ -1,6 +1,8 @@
 import { GlobalVars } from '../globals/globals'
 import { PLAY } from '../globals/uris'
 import { DymoNavigator } from '../navigators/navigator'
+import { SubsetNavigator } from '../navigators/subsetnav'
+import { BoundVariable } from '../model/variable';
 
 /**
  * A rendering defines how a given dymo is played back.
@@ -26,11 +28,11 @@ export class Rendering {
 		}
 	}
 
-	addSubsetNavigator(dymoFunction, nav) {
+	addSubsetNavigator(boundVar: BoundVariable, nav: SubsetNavigator) {
 		if (!this.navigator) {
-			this.navigator = new DymoNavigator(this.dymoUri);//, new SequentialNavigator(dymo));
+			this.navigator = new DymoNavigator(this.dymoUri, GlobalVars.DYMO_STORE);//, new SequentialNavigator(dymo));
 		}
-		this.navigator.addSubsetNavigator(dymoFunction, nav);
+		this.navigator.addSubsetNavigator(boundVar, nav);
 	}
 
 	getNavigator() {

@@ -1,5 +1,6 @@
 import { SensorControl } from '../sensorcontrol'
 import { TILT_X, TILT_Y } from '../../globals/uris'
+import { DymoStore } from '../../io/dymostore';
 
 /**
  * A tilt control based on an accelerometer dimension
@@ -8,7 +9,7 @@ export class TiltControl extends SensorControl {
 
 	private readonly TILT_SENSITIVITY = 0.1;
 
-	constructor(dimension) {
+	constructor(dimension, store: DymoStore) {
 		super(dimension,
 			"$cordovaDeviceMotion",
 			"watchAcceleration",
@@ -25,7 +26,8 @@ export class TiltControl extends SensorControl {
 					newValue = 0;
 				}
 				this.updateValue(newValue);
-			}
+			},
+			store
 		);
 	}
 

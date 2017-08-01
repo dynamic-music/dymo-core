@@ -189,7 +189,18 @@ export class DymoStore extends EasyStore {
 		return paramUri;
 	}
 
-	setParameter(ownerUri, parameterType, value?) {
+	setControlParam(controlUri: string, parameterType: string, value: any, observer?: Object): string {
+		//set the new value
+		var parameterUri = this.setObjectValue(controlUri, uris.HAS_CONTROL_PARAM, parameterType, uris.VALUE, value);
+		if (observer) {
+			this.addValueObserver(parameterUri, uris.VALUE, observer);
+		}
+		return parameterUri;
+	}
+
+
+
+	setParameter(ownerUri: string, parameterType: string, value?: any): string {
 		//initialize in case the parameter doesn't exist yet
 		if (!this.findParameterUri(ownerUri, parameterType) && (value == null || isNaN(value))) {
 			value = this.findObjectValue(parameterType, uris.HAS_STANDARD_VALUE);
@@ -386,6 +397,10 @@ export class DymoStore extends EasyStore {
 		return this.findAllFeatureValues(dymoUri).filter(v => !isNaN(v));
 	}
 
+	findControlParamValue(controlUri: string, parameterType: string) {
+		return this.findObjectValueOfType(controlUri, uris.HAS_CONTROL_PARAM, parameterType, uris.VALUE);
+	}
+
 	findParameterValue(dymoUri: string, parameterType: string) {
 		return this.findObjectValueOfType(dymoUri, uris.HAS_PARAMETER, parameterType, uris.VALUE);
 	}
@@ -449,8 +464,7 @@ export class DymoStore extends EasyStore {
 		return new Promise((resolve, reject) => {
 			rdf = rdf.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
 			fromRDF(rdf, {format: 'application/nquads'}, (err, doc) => {
-				//console.log(JSON.stringify(doc))
-				if (err) { console.log(err, rdf); reject(err); }
+			  if (err) { console.log(err, rdf); reject(err); }
 				frame(doc, {"@id":frameId}, (err, framed) => {
 					//console.log(frameId, JSON.stringify(framed))
 					compact(framed, DYMO_CONTEXT, (err, compacted) => {
@@ -603,16 +617,23 @@ export class DymoStore extends EasyStore {
 		return {"source":source, "target":target, "value":1};
 	}
 
-	private removeBlankNodeIds(obj) {
-		if (obj && obj instanceof Object) {
-			for (var key in obj) {
-				if (key == "@id" && obj[key].includes("_:b")) {
-					delete obj[key];
+	private removeBlankNodeIds(jldObj: Object, jldStr: string = JSON.stringify(jldObj)) {
+		if (jldObj && jldObj instanceof Object) {
+			for (var key in jldObj) {
+				if (key == "@id" && jldObj[key].includes("_:b")) {
+					if (this.countOccurrences(jldStr, jldObj[key]) == 1) {
+						//only remove if occurs once
+						delete jldObj[key];
+					}
 				} else {
-					this.removeBlankNodeIds(obj[key]);
+					this.removeBlankNodeIds(jldObj[key], jldStr);
 				}
 			}
 		}
+	}
+
+	private countOccurrences(string: string, substring: string): number {
+		return string.split(substring).length - 1;
 	}
 
 	getFeatureInfo(): FeatureInfo[] {

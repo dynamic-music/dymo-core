@@ -1,5 +1,6 @@
 import { SensorControl } from '../sensorcontrol'
 import { GEOLOCATION_DISTANCE } from '../../globals/uris'
+import { DymoStore } from '../../io/dymostore';
 
 /**
  * A control based on geolocation distance
@@ -8,7 +9,7 @@ export class DistanceControl extends SensorControl {
 
 	private reference;
 
-	constructor() {
+	constructor(store: DymoStore) {
 		super(GEOLOCATION_DISTANCE,
 			"$cordovaGeolocation",
 			"watchPosition",
@@ -20,6 +21,7 @@ export class DistanceControl extends SensorControl {
 					this.updateValue(currentDistance);
 				}
 			},
+			store,
 			() => this.resetReferenceValueAndAverage(),
 			{
 				enableHighAccuracy: true,

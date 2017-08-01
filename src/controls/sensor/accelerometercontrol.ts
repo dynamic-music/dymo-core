@@ -1,12 +1,13 @@
 import { SensorControl } from '../sensorcontrol'
 import { ACCELEROMETER_X, ACCELEROMETER_Y } from '../../globals/uris'
+import { DymoStore } from '../../io/dymostore';
 
 /**
  * A control based on an accelerometer dimension
  */
 export class AccelerometerControl extends SensorControl {
 
-	constructor(dimension) {
+	constructor(dimension, store: DymoStore) {
 		super(dimension,
 			"$cordovaDeviceMotion",
 			"watchAcceleration",
@@ -20,7 +21,8 @@ export class AccelerometerControl extends SensorControl {
 					newValue = acceleration.z;
 				}
 				this.updateValue(this.normalizeAcceleration(newValue));
-			}
+			},
+			store
 		);
 	}
 

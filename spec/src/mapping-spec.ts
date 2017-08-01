@@ -1,97 +1,105 @@
 import 'isomorphic-fetch';
-import { SLIDER, ONSET_FEATURE, FEATURE_TYPE, PARAMETER_TYPE, MOBILE_CONTROL, AMPLITUDE, RAMP,
-	AUTO_CONTROL_TRIGGER } from '../../src/globals/uris';
+import * as u from '../../src/globals/uris';
 import { GlobalVars } from '../../src/globals/globals';
-import { Mapping } from '../../src/model/mapping';
-import { DymoFunction } from '../../src/model/function';
 import { Control } from '../../src/model/control';
 import { DymoStore } from '../../src/io/dymostore';
 import { SERVER_ROOT } from './server';
+import { Constraint } from '../../src/model/constraint';
+import { Expression } from '../../src/model/expression';
+import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../../src/model/variable';
 
 describe("a mapping", function() {
 
-	var value = 0;
-	var control;
-	var dymo1, dymo2, mapping;
+  let store: DymoStore;
+  var value = 0;
+  var control;
+  var dymo1, dymo2, mapping;
+  let constraint: Constraint;
 
-	beforeEach(function(done) {
-		GlobalVars.DYMO_STORE = null;
-		GlobalVars.DYMO_STORE = new DymoStore();
-		control = new Control("c1", "control1", SLIDER, GlobalVars.DYMO_STORE);
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/')
-		.then(() => {
-			GlobalVars.DYMO_STORE.addDymo("dymo1");
-			GlobalVars.DYMO_STORE.setFeature("dymo1", ONSET_FEATURE, 5);
-			GlobalVars.DYMO_STORE.setParameter("dymo1", AMPLITUDE, 1);
-			GlobalVars.DYMO_STORE.addDymo("dymo2");
-			GlobalVars.DYMO_STORE.setFeature("dymo2", ONSET_FEATURE, 3);
-			GlobalVars.DYMO_STORE.setParameter("dymo2", AMPLITUDE, 1);
-			var mappingFunction = new DymoFunction(["a","b"], [control, ONSET_FEATURE], [MOBILE_CONTROL, FEATURE_TYPE], "return a * b;", false);
-			mapping = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE, false);
-			done();
-		});
-	});
+  beforeEach(function(done) {
+    store = new DymoStore();
+    store.loadOntologies(SERVER_ROOT+'ontologies/')
+    .then(() => {
+      store.addDymo("dymo1");
+      store.setFeature("dymo1", u.ONSET_FEATURE, 5);
+      store.setParameter("dymo1", u.AMPLITUDE, 1);
+      store.addDymo("dymo2");
+      store.setFeature("dymo2", u.ONSET_FEATURE, 3);
+      store.setParameter("dymo2", u.AMPLITUDE, 1);
+      let controlUri = store.addControl("control1", u.SLIDER);
+      control = new Control(controlUri, "control1", u.SLIDER, store);
+      let vars = [new SetBasedVariable('c', [controlUri]), new TypedVariable('d', u.DYMO)];
+      constraint = new Constraint(vars, new Expression('Amplitude(d) == c * OnsetFeature(d)', true));
+      constraint.maintain(store);
+      done();
+    });
+  });
 
-	it("updates a dymo parameter", function() {
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(1);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBe(1);
-		control.updateValue(0.3);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(1.5);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBeCloseTo(0.9, 10);
-		control.updateValue(0.1);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(0.5);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBeCloseTo(0.3, 10);
-	});
+  it("updates a dymo parameter", function() {
+    expect(store.findParameterValue("dymo1", u.AMPLITUDE)).toBe(1);
+    expect(store.findParameterValue("dymo2", u.AMPLITUDE)).toBe(1);
+    control.updateValue(0.3);
+    expect(store.findParameterValue("dymo1", u.AMPLITUDE)).toBe(1.5);
+    expect(store.findParameterValue("dymo2", u.AMPLITUDE)).toBeCloseTo(0.9, 10);
+    control.updateValue(0.1);
+    expect(store.findParameterValue("dymo1", u.AMPLITUDE)).toBe(0.5);
+    expect(store.findParameterValue("dymo2", u.AMPLITUDE)).toBeCloseTo(0.3, 10);
+  });
 
-	it("can map from parameters to other parameters", function() {
-		var highLevelParamUri = GlobalVars.DYMO_STORE.setParameter("dymo1", "high-level", 1);
-		var mappingFunction = new DymoFunction(["a","b"], [highLevelParamUri, ONSET_FEATURE], [PARAMETER_TYPE, FEATURE_TYPE], "return a * b;", false);
-		var mapping2 = new Mapping(mappingFunction, ["dymo1", "dymo2"], AMPLITUDE, false);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(5);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBe(3);
-		GlobalVars.DYMO_STORE.setParameter("dymo1", "high-level", 0.3);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(1.5);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBeCloseTo(0.9, 10);
-		GlobalVars.DYMO_STORE.setParameter("dymo1", "high-level", 0.1);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(0.5);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo2", AMPLITUDE)).toBeCloseTo(0.3, 10);
-	});
+  it("can map from parameters to other parameters", function() {
+    var highLevelParamUri = store.setParameter("dymo1", "high-level", 1);
+    let vars = [new SetBasedVariable('p', [highLevelParamUri]), new TypedVariable('d', u.DYMO)];
+    new Constraint(vars, new Expression('Amplitude(d) == p * OnsetFeature(d)', true)).maintain(store);
+    expect(store.findParameterValue("dymo1", u.AMPLITUDE)).toBe(5);
+    expect(store.findParameterValue("dymo2", u.AMPLITUDE)).toBe(3);
+    store.setParameter("dymo1", "high-level", 0.3);
+    expect(store.findParameterValue("dymo1", u.AMPLITUDE)).toBe(1.5);
+    expect(store.findParameterValue("dymo2", u.AMPLITUDE)).toBeCloseTo(0.9, 10);
+    store.setParameter("dymo1", "high-level", 0.1);
+    expect(store.findParameterValue("dymo1", u.AMPLITUDE)).toBe(0.5);
+    expect(store.findParameterValue("dymo2", u.AMPLITUDE)).toBeCloseTo(0.3, 10);
+  });
 
-	it("updates a control parameter", function() {
-		GlobalVars.DYMO_STORE.addControl("control2", SLIDER);
-		var control2 = new Control("c2", "control2", SLIDER, GlobalVars.DYMO_STORE);
-		var rampUri = GlobalVars.DYMO_STORE.addControl(undefined, RAMP);
-		var mappingFunction = new DymoFunction(["a"], [control2], [MOBILE_CONTROL], "return a;", false);
-		var mapping2 = new Mapping(mappingFunction, [rampUri], AUTO_CONTROL_TRIGGER, false);
-		control2.updateValue(1);
-		expect(GlobalVars.DYMO_STORE.findParameterValue(rampUri, AUTO_CONTROL_TRIGGER)).toBe(1);
-		control2.updateValue(0);
-		expect(GlobalVars.DYMO_STORE.findParameterValue(rampUri, AUTO_CONTROL_TRIGGER)).toBe(0);
-	});
+  it("updates a control parameter", function() {
+    let controlUri = store.addControl("control2", u.SLIDER);
+    var control2 = new Control(controlUri, "control2", u.SLIDER, store);
+    var rampUri = store.addControl(undefined, u.RAMP);
+    store.setControlParam(rampUri, u.AUTO_CONTROL_TRIGGER, 1);
+    let vars = [new SetBasedVariable('c', [controlUri]), new SetBasedVariable('r', [rampUri])];
+    new Constraint(vars, new Expression('AutoControlTrigger(r) == c', true)).maintain(store);
+    control2.updateValue(1);
+    //store.logData()
+    expect(store.findControlParamValue(rampUri, u.AUTO_CONTROL_TRIGGER)).toBe(1);
+    control2.updateValue(0);
+    expect(store.findControlParamValue(rampUri, u.AUTO_CONTROL_TRIGGER)).toBe(0);
+  });
 
-	it("updates a control with inverse if possible", function() {
-		mapping.disconnect();
-		var mappingFunction = new DymoFunction(["a", "b"], [control, ONSET_FEATURE], [MOBILE_CONTROL, FEATURE_TYPE], "return 5*a+b*a-1;", false);
-		new Mapping(mappingFunction, ["dymo1"], AMPLITUDE, false);
-		control.updateValue(0.15);
-		//currently non-invertible function
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo1", AMPLITUDE)).toBe(0.5);
-		expect(control.getValue()).toBe(0.15);
-		GlobalVars.DYMO_STORE.setParameter("dymo1", AMPLITUDE, 1.5);
-		expect(control.getValue()).toBe(0.15); //doesn't update
-		//currently invertible function
-		GlobalVars.DYMO_STORE.addDymo("dymo3");
-		GlobalVars.DYMO_STORE.setParameter("dymo3", AMPLITUDE, 1);
-		mappingFunction = new DymoFunction(["a"], [control], [MOBILE_CONTROL], "return 5*a-1;", false);
-		new Mapping(mappingFunction, ["dymo3"], AMPLITUDE, false);
-		control.updateValue(0.1);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo3", AMPLITUDE)).toBe(-0.5);
-		control.updateValue(0.3);
-		expect(GlobalVars.DYMO_STORE.findParameterValue("dymo3", AMPLITUDE)).toBe(0.5);
-		GlobalVars.DYMO_STORE.setParameter("dymo3", AMPLITUDE, 1);
-		expect(control.getValue()).toBe(0.4);
-		GlobalVars.DYMO_STORE.setParameter("dymo3", AMPLITUDE, 4);
-		expect(control.getValue()).toBe(1);
-	});
+  it("updates a control with inverse if possible", function() {
+    constraint.stopMaintaining();
+    let vars = [new SetBasedVariable('c', [control.getUri()]), new SetBasedVariable('d', ["dymo1", "dymo2"])];
+    constraint = new Constraint(vars, new Expression('Amplitude(d) == 5*c + OnsetFeature(d)*c-1', true))
+    constraint.maintain(store);
+    control.updateValue(0.15);
+    //currently non-invertible function
+    expect(store.findParameterValue("dymo1", u.AMPLITUDE)).toBe(0.5);
+    expect(control.getValue()).toBe(0.15);
+    store.setParameter("dymo1", u.AMPLITUDE, 1.5);
+    expect(control.getValue()).toBe(0.15); //doesn't update
+    constraint.stopMaintaining();
+
+    //currently invertible function
+    store.addDymo("dymo3");
+    store.setParameter("dymo3", u.AMPLITUDE, 1);
+    vars = [new SetBasedVariable('c', [control.getUri()]), new SetBasedVariable('d', ["dymo3"])];
+    new Constraint(vars, new Expression('Amplitude(d) == 5*c-1')).maintain(store);
+    control.updateValue(0.1);
+    expect(store.findParameterValue("dymo3", u.AMPLITUDE)).toBe(-0.5);
+    control.updateValue(0.3);
+    expect(store.findParameterValue("dymo3", u.AMPLITUDE)).toBe(0.5);
+    store.setParameter("dymo3", u.AMPLITUDE, 1);
+    expect(control.getValue()).toBe(0.4);
+    store.setParameter("dymo3", u.AMPLITUDE, 4);
+    expect(control.getValue()).toBe(1);
+  });
 
 });

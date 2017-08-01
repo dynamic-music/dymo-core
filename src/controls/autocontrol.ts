@@ -1,6 +1,6 @@
-import { AUTO_CONTROL, AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER } from '../globals/uris'
-import { GlobalVars } from '../globals/globals'
-import { Control } from '../model/control'
+import { AUTO_CONTROL, AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER } from '../globals/uris';
+import { Control } from '../model/control';
+import { DymoStore } from '../io/dymostore';
 
 /**
  * Autocontrols that use statistics to set their values.
@@ -10,17 +10,17 @@ export abstract class AutoControl extends Control {
 
 	private intervalID;
 
-	constructor(uri, name, frequency?: number) {
-		super(uri, name, AUTO_CONTROL, GlobalVars.DYMO_STORE);
+	constructor(uri, name, store: DymoStore, private frequency?: number) {
+		super(uri, name, AUTO_CONTROL, store);
 		if (!frequency) frequency = 100;
-		GlobalVars.DYMO_STORE.addParameter(uri, AUTO_CONTROL_FREQUENCY, frequency, this);
-		GlobalVars.DYMO_STORE.addParameter(uri, AUTO_CONTROL_TRIGGER, 0, this);
 		this.intervalID = null;
+		this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency, this);
+		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0, this);
 	}
 
 	startUpdate(frequency?: number) {
 		if (!frequency) {
-			frequency = Number(GlobalVars.DYMO_STORE.findParameterValue(this.uri, AUTO_CONTROL_FREQUENCY));
+			frequency = Number(this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY));
 		}
 		this.update();
 		this.intervalID = setInterval(() => this.update(), frequency);

@@ -23,11 +23,15 @@ export class Constraint {
   maintain(store: DymoStore) {
     let vals = this.vars.map(v => v.getValues(store));
     let combos = this.cartesianProduct(vals);
-    return combos.map(c => {
+    combos.forEach(c => {
       let varsAndVals = {};
       this.vars.forEach((v,i) => varsAndVals[v.getName()] = c[i]);
-      return this.expression.maintain(varsAndVals, store);
-    })
+      this.expression.maintain(varsAndVals, store);
+    });
+  }
+
+  stopMaintaining() {
+    this.expression.stopMaintaining();
   }
 
   private cartesianProduct(arr) {
