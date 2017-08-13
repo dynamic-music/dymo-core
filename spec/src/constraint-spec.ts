@@ -8,12 +8,12 @@ import { Constraint } from '../../src/model/constraint';
 import { Expression } from '../../src/model/expression';
 import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../../src/model/variable';
 
-describe("a mapping", function() {
+describe("a constraint", function() {
 
   let store: DymoStore;
   var value = 0;
   var control;
-  var dymo1, dymo2, mapping;
+  var dymo1, dymo2;
   let constraint: Constraint;
 
   beforeEach(function(done) {

@@ -4,50 +4,38 @@ import { Control } from '../model/control';
 /**
  * A wrapper for dymo-core controls to be used as Angular UI controls.
  */
-export class UIControl {
+export class UIControl extends Control {
 
-	private control: Control;
-	private value: any;
-
-	constructor(control) {
-		this.value = control.getValue();
-		this.control = control;
-		this.control.setBackpropFunction(this.updateFunction.bind(this));
-	}
-
-	getName() {
-		return this.control.getName();
-	}
-
-	getType() {
-		return this.control.getType();
-	}
+	private uiValue;
 
 	update() {
-		if (this.control.getType() == BUTTON) {
-			if (isNaN(this.value)) {
-				this.value = 0;
+		if (this.getType() == BUTTON) {
+			if (isNaN(this.uiValue)) {
+				this.uiValue = 0;
 			}
-			this.value = 1-this.value;
+			this.uiValue = 1-this.uiValue;
 		}
-		if (this.value == true) {
-			this.control.updateValue(1);
-		} else if (this.value == false) {
-			this.control.updateValue(0);
+		if (this.uiValue == true) {
+			this.setValue(1);
+		} else if (this.uiValue == false) {
+			this.setValue(0);
 		} else {
-			this.control.updateValue(this.value);
+			this.setValue(this.uiValue);
 		}
 	}
 
-	private updateFunction(newValue) {
-		if (this.control.getType() == TOGGLE) {
-			if (newValue == 1) {
-				this.value = true;
+	protected setValue(newValue): boolean {
+		if (super.setValue(newValue)) {
+			if (this.getType() == TOGGLE) {
+				if (newValue == 1) {
+					this.uiValue = true;
+				} else {
+					this.uiValue = false;
+				}
 			} else {
-				this.value = false;
+				this.uiValue = newValue;
 			}
-		} else {
-			this.value = newValue;
+			return true;
 		}
 	}
 

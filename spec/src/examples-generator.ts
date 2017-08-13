@@ -6,6 +6,7 @@ import { SERVER_ROOT, SERVER } from './server';
 
 Promise.all([
   createExampleFile('control-rendering.json', generateControlRendering()),
+  createExampleFile('similarity-rendering.json', generateSimilarityRendering()),
   createExampleFile('mixdymo.json', createMixDymo()),
   createExampleFile('mixdymo-rendering.json', createMixDymoRendering()),
 ])
@@ -44,6 +45,15 @@ function generateControlRendering(): Promise<string> {
     => l == 360*o
   `);
   let navVar = expressionGen.addVariable('∀ x : '+uris.DYMO+', LevelFeature(x) == 2');
+  dymoGen.addNavigator(uris.SIMILARITY_NAVIGATOR, navVar);
+  return dymoGen.getManager().getStore().uriToJsonld(renderingUri);
+}
+
+function generateSimilarityRendering(): Promise<string> {
+  let dymoGen = new DymoGenerator(SERVER_ROOT+'ontologies/');
+  let expressionGen = new ExpressionGenerator(dymoGen.getManager().getStore());
+  let renderingUri = dymoGen.addRendering(uris.CONTEXT_URI+"similarityRendering", uris.CONTEXT_URI+"similarityDymo");
+  let navVar = expressionGen.addVariable('∀ d : '+uris.DYMO+', LevelFeature(d) == 1');
   dymoGen.addNavigator(uris.SIMILARITY_NAVIGATOR, navVar);
   return dymoGen.getManager().getStore().uriToJsonld(renderingUri);
 }

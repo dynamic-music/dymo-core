@@ -5,11 +5,11 @@
   "constraint": [
     {
       "@type": "ForAll",
-      "qBody": {
+      "body": {
         "@type": "ForAll",
-        "qBody": {
+        "body": {
           "@type": "EqualTo",
-          "isfunction": {
+          "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
@@ -52,20 +52,20 @@
     },
     {
       "@type": "ForAll",
-      "qBody": {
+      "body": {
         "@type": "ForAll",
-        "qBody": {
+        "body": {
           "@type": "EqualTo",
-          "isfunction": {
+          "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
             "@type": "FunctionalTerm",
-            "tArgs": {
+            "args": {
               "@id": "_:b7"
             },
-            "tFunction": "PlaybackRate"
+            "function": "PlaybackRate"
           },
           "right": {
             "@id": "_:b8"
@@ -87,10 +87,10 @@
           "@type": "GreaterThan",
           "left": {
             "@type": "FunctionalTerm",
-            "tArgs": {
+            "args": {
               "@id": "_:b7"
             },
-            "tFunction": "DurationRatio"
+            "function": "DurationRatio"
           },
           "right": {
             "@type": "Constant",
@@ -108,20 +108,20 @@
     },
     {
       "@type": "ForAll",
-      "qBody": {
+      "body": {
         "@type": "ForAll",
-        "qBody": {
+        "body": {
           "@type": "EqualTo",
-          "isfunction": {
+          "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
             "@type": "FunctionalTerm",
-            "tArgs": {
+            "args": {
               "@id": "_:b0"
             },
-            "tFunction": "Amplitude"
+            "function": "Amplitude"
           },
           "right": {
             "@id": "_:b25"
@@ -147,10 +147,10 @@
           "left": {
             "@id": "_:b2",
             "@type": "FunctionalTerm",
-            "tArgs": {
+            "args": {
               "@id": "_:b0"
             },
-            "tFunction": "LevelFeature"
+            "function": "LevelFeature"
           },
           "right": {
             "@type": "Constant",
@@ -179,10 +179,10 @@
         "@type": "EqualTo",
         "left": {
           "@type": "FunctionalTerm",
-          "tArgs": {
+          "args": {
             "@id": "_:b20"
           },
-          "tFunction": "LevelFeature"
+          "function": "LevelFeature"
         },
         "right": {
           "@type": "Constant",

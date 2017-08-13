@@ -84,7 +84,8 @@ function createExpressionOntology(path) {
 	addOntology("An ontology for the representation of logical and mathematical expressions");
 	//dymos and dymo types
 	addClass("Expression");
-	addProperty({term:"isfunction", iri:"isFunction", type:"xsd:boolean"}, "Expression", prefixes["xsd"]+"boolean", false);
+	//control this better! (not any expression can be directed, only equations)
+	addProperty({term:"directed", iri:"directed", type:"xsd:boolean"}, "Expression", prefixes["xsd"]+"boolean", false);
 
 	addClass("Variable");
 	addProperty({term:"varName", iri:"varName", type:"xsd:string"}, "Variable", prefixes["xsd"]+"string", false, true);
@@ -98,11 +99,11 @@ function createExpressionOntology(path) {
 	addClass("ForAll", "Quantifier");
 	addClass("ThereExists", "Quantifier");
 	addProperty({term:"vars", iri:"vars"}, "Quantifier", "Variable", true);
-	addProperty({term:"qBody", iri:"qBody"}, "Quantifier", "Expression", true);
+	addProperty({term:"body", iri:"body"}, "Quantifier", "Expression", true);
 
 	addClass("FunctionalTerm", "Expression");
-	addProperty({term:"tFunction", iri:"tFunction", type:"xsd:string"}, "FunctionalTerm", prefixes["xsd"]+"string", false, true);
-	addProperty({term:"tArgs", iri:"tArgs", type:"xsd:string"}, "FunctionalTerm", prefixes["xsd"]+"string", true);
+	addProperty({term:"function", iri:"function", type:"xsd:string"}, "FunctionalTerm", prefixes["xsd"]+"string", false, true);
+	addProperty({term:"args", iri:"args", type:"xsd:string"}, "FunctionalTerm", prefixes["xsd"]+"string", true);
 
 	addClass("BinaryOperator", "Expression");
 	addProperty({term:"left", iri:"left"}, "BinaryOperator", "Expression", true, true);
@@ -188,9 +189,7 @@ function createMobileAudioOntology(path) {
 	addOntology("An ontology for describing renderings of Dynamic Music Objects on mobile devices");
 	//main classes
 	addClass("Rendering", prefixes["mt"]+"MultitrackProject");
-	addClass("Mapping");
-	addClass("Function");
-	addClass("Argument");
+	//addClass("Constraint");
 	//control taxonomy
 	addClass("MobileControl");
 	addClass("SensorControl", "MobileControl");
@@ -234,27 +233,12 @@ function createMobileAudioOntology(path) {
 	addClass("SequentialNavigator", "Navigator");
 	addClass("SimilarityNavigator", "Navigator");
 	addClass("GraphNavigator", "Navigator");
-	//domain dimension and mapping target
-	addUnionClass("ArgumentValue", ["MobileControl", "ParameterType", "FeatureType"]);
-	addUnionClass("MappingTarget", ["MobileControl", "Dymo", "Function"]);
-	addUnionClass("MappingRange", ["ParameterType", "MobileParameter"]);
-	addUnionClass("MappingOwners", ["Dymo", "Rendering"]);
-	addUnionClass("ConstraintOwners", ["Dymo", "Rendering"]);
-	//mapping properties
+	//rendering and constraints
 	addProperty({term:"dymo", iri:"hasDymo", type: "@id"}, "Rendering", "Dymo", true, true);
+	addUnionClass("ConstraintOwners", ["Dymo", "Rendering"]);
 	addProperty({term:"constraint", iri:"constraint"}, "ConstraintOwners", "Expression", true);
-	addProperty({term:"mappings", iri:"hasMapping"}, "MappingOwners", "Mapping", true);
-	addProperty({term:"function", iri:"hasFunction"}, "Mapping", "Function", true);
-	addProperty({term:"args", iri:"hasArgument"}, "Function", "Argument", true);
-	addProperty({term:"var", iri:"hasVariable"}, "Argument", prefixes["xsd"]+"string", false);
-	addProperty({term:"val", iri:"hasValue", type: "@vocab"}, "Argument", "ArgumentValue", true);
-	addProperty({term:"body", iri:"hasBody"}, "Function", prefixes["xsd"]+"string", false);
-	addProperty({term:"targets", iri:"toTarget", type: "@id"}, "Mapping", "MappingTarget", true);
-	addProperty({term:"range", iri:"hasRange", type: "@vocab"}, "Mapping", "MappingRange", true);
-	addProperty({term:"unidirectional", iri:"isUnidirectional", type: "xsd:boolean"}, "Mapping", prefixes["xsd"]+"boolean", false);
 	//control properties
 	addProperty({term:"controlParam", iri:"hasControlParam"}, "MobileControl", "MobileParameter", true);
-	addProperty({term:"init", iri:"hasInitialValue", type: "xsd:float"}, "MobileControl", prefixes["xsd"]+"float", false);
 	addProperty({term:"url", iri:"hasUrl", type: "xsd:string"}, "DataControl", prefixes["xsd"]+"string", false);
 	addProperty({term:"map", iri:"hasJsonMap", type: "xsd:string"}, "DataControl", prefixes["xsd"]+"string", false);
 	addProperty({term:"smooth", iri:"isSmooth", type: "xsd:boolean"}, "SensorControl", prefixes["xsd"]+"boolean", false);
@@ -265,7 +249,7 @@ function createMobileAudioOntology(path) {
 	addProperty({term:"rampDuration", iri:"hasDuration", type: "xsd:integer"}, "Ramp", prefixes["xsd"]+"integer", false);
 	//navigator properties
 	addProperty({term:"navigators", iri:"hasNavigator"}, "Rendering", "Navigator", false);
-	addProperty({term:"dymos", iri:"navDymos"}, "Navigator", "Function", false);
+	addProperty({term:"dymos", iri:"navDymos"}, "Navigator", "Expression", false);
 	writeN3ToFile(path);
 }
 

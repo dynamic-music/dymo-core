@@ -62,7 +62,7 @@ describe("the logic unit", function() {
     expect(LogicTools.solveConstraint(constraint, [20,2,3,""], 3)).toEqual(4);
   });
 
-  it("is used in mapping functions", function(done) {
+  it("is used in constraints", function(done) {
     let store = new DymoStore();
     store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
       store.addDymo("dymo1");
@@ -73,7 +73,7 @@ describe("the logic unit", function() {
       store.setParameter("dymo2", AMPLITUDE, 1);
       var control = new Control("c1", "Slider1", SLIDER, store);
 
-      //previously non-invertible function (see mapping-spec)
+      //previously non-invertible function (see constraint-spec)
       let vars = [new SetBasedVariable('c', [control.getUri()]), new TypedVariable('d', DYMO)];
       let constraint = new Constraint(vars, new Expression('Amplitude(d) == c * OnsetFeature(d)'))
       constraint.maintain(store);

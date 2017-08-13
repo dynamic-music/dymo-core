@@ -1,7 +1,7 @@
 import 'isomorphic-fetch';
 import { DymoStore } from '../../src/io/dymostore';
 import { SLIDER, TOGGLE, LEVEL_FEATURE, AMPLITUDE, ONSET_FEATURE, PITCH_FEATURE, DURATION_FEATURE, GRAPH_NAVIGATOR,
-	ONE_SHOT_NAVIGATOR, HAS_FUNCTION, SEGMENT_LABEL_FEATURE, LISTENER_ORIENTATION, DYMO, HAS_PART, HAS_SUCCESSOR,
+	ONE_SHOT_NAVIGATOR, SEGMENT_LABEL_FEATURE, LISTENER_ORIENTATION, DYMO, HAS_PART, HAS_SUCCESSOR,
 	HAS_SIMILAR, DURATION_RATIO, FILTER, CONTEXT_URI } from '../../src/globals/uris';
 import { SERVER_ROOT } from './server';
 
@@ -28,24 +28,13 @@ describe("a dymostore", function() {
 		});
 	});
 
-	it("can add renderings, controls, functions, mappings, and navigators", function() {
+	it("can add renderings, controls, and navigators", function() {
 		dymoStore.addRendering(CU+"r0", CU+"d0");
 		var slider = dymoStore.addControl(CU+"c0", SLIDER);
-		var mappingFunction = dymoStore.addFunction({"a":slider}, "return 2*a");
-		var level1Func = dymoStore.addFunction({"d":LEVEL_FEATURE}, "return d == 1");
-		dymoStore.addMapping(CU+"r0", mappingFunction, null, level1Func, AMPLITUDE);
 		var toggle = dymoStore.addControl(CU+"c1", TOGGLE);
-		var mappingFunction2 = dymoStore.addFunction({"a":toggle,"b":DURATION_FEATURE}, "return a/b");
-		var mapping2Uri = dymoStore.addMapping(CU+"r0", mappingFunction2, [CU+"e0",CU+"d3",CU+"f0"], null, DURATION_RATIO);
-		var level0Func = dymoStore.addFunction({"d":LEVEL_FEATURE},"return d == 0");
-		dymoStore.addNavigator(CU+"r0", GRAPH_NAVIGATOR, level0Func);
-		dymoStore.addNavigator(CU+"r0", ONE_SHOT_NAVIGATOR, level1Func);
-		expect(dymoStore.find(CU+"r0").length).toBe(6);
-		expect(dymoStore.findMappings(CU+"r0").length).toBe(2);
-		var functionUri = dymoStore.findObject(mapping2Uri, HAS_FUNCTION);
-		//var foundFunction = dymoStore.findFunction(functionUri);
-		//foundFunction = new DymoFunction(foundFunction[0], foundFunction[1], foundFunction[2]);
-		//expect(foundFunction.applyDirect(3.6,7.4)).toEqual(function(a,b){return a/b;}(3.6,7.4));
+		dymoStore.addNavigator(CU+"r0", GRAPH_NAVIGATOR, CU+"levelOVar");
+		dymoStore.addNavigator(CU+"r0", ONE_SHOT_NAVIGATOR, CU+"levelOVar");
+		expect(dymoStore.find(CU+"r0").length).toBe(4);
 		expect(dymoStore.findNavigators(CU+"r0").length).toBe(2);
 	});
 

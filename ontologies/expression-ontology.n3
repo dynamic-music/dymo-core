@@ -13,7 +13,7 @@
 <http://tiny.cc/expression-ontology#> a owl:Ontology;
     rdfs:comment "An ontology for the representation of logical and mathematical expressions".
 ex:Expression a owl:Class.
-ex:isFunction a owl:DatatypeProperty;
+ex:directed a owl:DatatypeProperty;
     rdfs:domain ex:Expression;
     rdfs:range "http://www.w3.org/2001/XMLSchema#boolean".
 ex:Variable a owl:Class.
@@ -39,15 +39,15 @@ ex:ThereExists a owl:Class;
 ex:vars a owl:ObjectProperty;
     rdfs:domain ex:Quantifier;
     rdfs:range ex:Variable.
-ex:qBody a owl:ObjectProperty;
+ex:body a owl:ObjectProperty;
     rdfs:domain ex:Quantifier;
     rdfs:range ex:Expression.
 ex:FunctionalTerm a owl:Class;
     rdfs:subClassOf ex:Expression.
-ex:tFunction a owl:DatatypeProperty, owl:FunctionalProperty;
+ex:function a owl:DatatypeProperty, owl:FunctionalProperty;
     rdfs:domain ex:FunctionalTerm;
     rdfs:range "http://www.w3.org/2001/XMLSchema#string".
-ex:tArgs a owl:ObjectProperty;
+ex:args a owl:ObjectProperty;
     rdfs:domain ex:FunctionalTerm;
     rdfs:range xsd:string.
 ex:BinaryOperator a owl:Class;

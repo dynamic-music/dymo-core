@@ -2,12 +2,11 @@ import * as _ from 'lodash';
 import * as uris from '../globals/uris'
 import { DymoStore } from '../io/dymostore'
 import { Rendering } from '../model/rendering'
-import { Mapping } from '../model/mapping'
-import { DymoFunction } from '../model/function'
 import { SequentialNavigator } from '../navigators/sequential'
 import { SimilarityNavigator } from '../navigators/similarity'
 import { GraphNavigator } from '../navigators/graph'
 import { Control } from '../model/control'
+import { UIControl } from '../controls/uicontrol'
 import { DataControl } from '../controls/datacontrol'
 import { AccelerometerControl } from '../controls/sensor/accelerometercontrol'
 import { TiltControl } from '../controls/sensor/tiltcontrol'
@@ -23,7 +22,7 @@ import { Constraint } from '../model/constraint';
 
 /**
  * A DymoLoader loads dymos from rdf, jams, or json-ld into the given DymoStore
- * and creates the necessary controls, mappings, and renderings
+ * and creates the necessary controls, constraints, and renderings
  * @constructor
  * @param {DymoStore} dymoStore
  */
@@ -122,7 +121,7 @@ export class DymoLoader {
     var topDymoUris = this.store.findTopDymos();
     topDymoUris.forEach(u => {
       this.store.addBasePath(u, this.dymoBasePath)
-      //create all dymo mappings
+      //create all dymo constraints
       this.loadConstraints(u);
     })
     return topDymoUris;
@@ -132,7 +131,6 @@ export class DymoLoader {
     var renderingUri = this.store.findSubject(uris.TYPE, uris.RENDERING);
     var rendering = new Rendering(this.store.findObject(renderingUri, uris.HAS_DYMO));
     this.createControls();
-    //this.loadMappings(renderingUri);
     this.loadConstraints(renderingUri);
     this.loadNavigators(renderingUri, rendering);
     return [rendering, this.controls];
@@ -143,24 +141,6 @@ export class DymoLoader {
     constraints.forEach(c => c.maintain(this.store));
     this.constraints = this.constraints.concat(constraints);
   }
-
-  /*private loadMappings(ownerUri?) {
-    var mappingUris;
-    if (ownerUri) {
-      mappingUris = this.store.findAllObjects(ownerUri, uris.HAS_MAPPING);
-    } else {
-      mappingUris = this.store.findAllSubjects(uris.TYPE, uris.MAPPING);
-    }
-    for (var i = 0; i < mappingUris.length; i++) {
-      if (!this.mappings[mappingUris[i]]) {
-        var dymoUri = this.store.findSubject(uris.HAS_MAPPING, mappingUris[i]);
-        if (this.store.findObject(dymoUri, uris.TYPE) != uris.DYMO) {
-          dymoUri = null;
-        }
-        this.mappings[mappingUris[i]] = this.createMapping(mappingUris[i], dymoUri);
-      }
-    }
-  }*/
 
   private loadNavigators(renderingUri: string, rendering: Rendering) {
     var navigators = this.store.findAllObjects(renderingUri, uris.HAS_NAVIGATOR);
@@ -187,67 +167,6 @@ export class DymoLoader {
       }
     }
   }
-
-  /*private createMapping(mappingUri, dymoUri?) {
-    var isUnidirectional = this.store.findObjectValue(mappingUri, uris.IS_UNIDIRECTIONAL);
-    var mappingFunctionUri = this.store.findObject(mappingUri, uris.HAS_FUNCTION);
-    var mappingFunction = this.createFunction(mappingFunctionUri, isUnidirectional, dymoUri);
-    var targets = this.getTargets(mappingUri);
-    var range = this.store.findObject(mappingUri, uris.HAS_RANGE);
-    return new Mapping(mappingFunction, targets, range, isUnidirectional);
-  }
-
-  private getTargets(mappingUri) {
-    var targetUris = this.store.findAllObjects(mappingUri, uris.TO_TARGET);
-    if (targetUris.length > 0) {
-      var targetFunction = this.createFunction(targetUris[0], true);
-      if (targetFunction) {
-        return targetFunction;
-      } else {
-        return targetUris;
-      }
-    }
-  }
-
-  private createFunction(functionUri, isUnidirectional, dymoUri?) {
-    var [vars, args, body] = this.store.findFunction(functionUri);
-    if (vars && args && body) {
-      var argTypes;
-      [args, argTypes] = this.createFunctionDomain(args, dymoUri);
-      //console.log(vars, args, argTypes, body)
-      return new DymoFunction(vars, args, argTypes, body, isUnidirectional);
-    }
-  }
-
-  private createFunctionDomain(domainDimUris, dymoUri) {
-    var domainDims = [];
-    var domainDimTypes = [];
-    for (var j = 0; j < domainDimUris.length; j++) {
-      var currentType = this.store.findObject(domainDimUris[j], uris.TYPE);
-      //console.log(domainDimUris[j], currentType, this.store.isSubclassOf(currentType, uris.FEATURE_TYPE))
-      if (currentType === uris.FEATURE_TYPE || this.store.isSubclassOf(currentType, uris.FEATURE_TYPE)) {
-        if (currentType === uris.FEATURE_TYPE) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM FEATURES
-          currentType = domainDimUris[j];
-        }
-        domainDims.push(currentType);
-        domainDimTypes.push(uris.FEATURE_TYPE);
-      } else if (currentType === uris.PARAMETER_TYPE || this.store.isSubclassOf(currentType, uris.PARAMETER_TYPE)
-            || this.store.isSubclassOf(this.store.findObject(currentType, uris.TYPE), uris.PARAMETER_TYPE)) {
-        var currentParameter;
-        if (currentType === uris.CUSTOM_PARAMETER) { //TODO MAYBE FIND BETTER SOLUTION TO DEAL WITH CUSTOM PARAMETERS
-          currentType = domainDimUris[j];
-        }
-        currentParameter = dymoUri ? this.store.setParameter(dymoUri, currentType) : domainDimUris[j];
-        domainDims.push(currentParameter);
-        domainDimTypes.push(uris.PARAMETER_TYPE);
-      } else {
-        //it's a control
-        domainDims.push(this.controls[domainDimUris[j]]);
-        domainDimTypes.push(uris.MOBILE_CONTROL);
-      }
-    }
-    return [domainDims, domainDimTypes];
-  }*/
 
 
   private getNavigator(type) {
@@ -277,17 +196,17 @@ export class DymoLoader {
       var minor = this.store.findObjectValue(uri, uris.HAS_MINOR);
       control = new BeaconControl(uuid, major, minor, this.store);
     }  else if (type == uris.SLIDER || type == uris.TOGGLE || type == uris.BUTTON || type == uris.CUSTOM_CONTROL) {
-      control = new Control(uri, name, type, this.store);
-      var init = this.store.findObjectValue(uri, uris.HAS_INITIAL_VALUE);
+      control = new UIControl(uri, name, type, this.store);
+      var init = this.store.findObjectValue(uri, uris.VALUE);
       control.updateValue(init);
     } else if (type == uris.RANDOM) {
       control = new RandomControl(uri, this.store);
     } else if (type == uris.BROWNIAN) {
-      var init = this.store.findObjectValue(uri, uris.HAS_INITIAL_VALUE);
+      var init = this.store.findObjectValue(uri, uris.VALUE);
       control = new BrownianControl(uri, init);
     } else if (type == uris.RAMP) {
       var milisDuration = Math.round(this.store.findObject(uri, uris.HAS_DURATION)*1000);
-      var init = this.store.findObjectValue(uri, uris.HAS_INITIAL_VALUE);
+      var init = this.store.findObjectValue(uri, uris.VALUE);
       control = new RampControl(uri, milisDuration, init);
     } else if (type == uris.DATA_CONTROL) {
       var url = this.store.findObjectValue(uri, uris.HAS_URL);

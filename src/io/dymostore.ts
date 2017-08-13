@@ -231,46 +231,12 @@ export class DymoStore extends EasyStore {
 		this.addTriple(renderingUri, uris.HAS_DYMO, dymoUri);
 	}
 
-	addMapping(ownerUri: string, mappingFunction, targetList, targetFunction, rangeUri: string) {
-		var mappingUri = this.createBlankNode();
-		this.addTriple(mappingUri, uris.TYPE, uris.MAPPING);
-		if (ownerUri) {
-			this.addTriple(ownerUri, uris.HAS_MAPPING, mappingUri);
-		}
-		this.addTriple(mappingUri, uris.HAS_FUNCTION, mappingFunction);
-		if (targetList) {
-			for (var i = 0; i < targetList.length; i++) {
-				this.addTriple(mappingUri, uris.TO_TARGET, targetList[i]);
-			}
-		} else if (targetFunction) {
-			this.addTriple(mappingUri, uris.TO_TARGET, targetFunction);
-		}
-		this.addTriple(mappingUri, uris.HAS_RANGE, rangeUri);
-		if (!this.findObject(rangeUri, uris.TYPE)) {
-			this.addTriple(rangeUri, uris.TYPE, uris.CUSTOM_PARAMETER);
-		}
-		return mappingUri;
-	}
-
-	addNavigator(renderingUri: string, navigatorType: string, selectionFuncUri: string): string {
+	addNavigator(renderingUri: string, navigatorType: string, variableUri: string): string {
 		var navUri = this.createBlankNode();
 		this.addTriple(renderingUri, uris.HAS_NAVIGATOR, navUri);
 		this.addTriple(navUri, uris.TYPE, navigatorType);
-		this.addTriple(navUri, uris.NAV_DYMOS, selectionFuncUri);
+		this.addTriple(navUri, uris.NAV_DYMOS, variableUri);
 		return navUri;
-	}
-
-	addFunction(args: Object, body: string): string {
-		var funcUri = this.createBlankNode();
-		var vars = Object.keys(args);
-		for (var i = 0; i < vars.length; i++) {
-			var argUri = this.createBlankNode();
-			this.addTriple(funcUri, uris.HAS_ARGUMENT, argUri);
-			this.addTriple(argUri, uris.HAS_VARIABLE, Util.createLiteral(vars[i]));
-			this.addTriple(argUri, uris.HAS_VALUE, args[vars[i]]);
-		}
-		this.addTriple(funcUri, uris.HAS_BODY, Util.createLiteral(body));
-		return funcUri;
 	}
 
 	updatePartOrder(dymoUri, attributeName) {
@@ -348,22 +314,8 @@ export class DymoStore extends EasyStore {
 		return [uris.HAS_PART].concat(intersectArrays(domainUris, rangeUris));
 	}
 
-	findMappings(renderingUri) {
-		return this.findAllObjects(renderingUri, uris.HAS_MAPPING);
-	}
-
 	findNavigators(renderingUri) {
 		return this.findAllObjects(renderingUri, uris.HAS_NAVIGATOR);
-	}
-
-	findFunction(uri) {
-		if (uri) {
-			var args = this.findAllObjects(uri, uris.HAS_ARGUMENT);
-			var argVars = args.map(a => this.findObjectValue(a, uris.HAS_VARIABLE));
-			var argVals = args.map(a => this.findObject(a, uris.HAS_VALUE));
-			var body = this.findObjectValue(uri, uris.HAS_BODY);
-			return [argVars, argVals, body];
-		}
 	}
 
 	findAttributeValue(dymoUri: string, attributeType: string) {

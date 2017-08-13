@@ -14,9 +14,6 @@
     rdfs:comment "An ontology for describing renderings of Dynamic Music Objects on mobile devices".
 mb:Rendering a owl:Class;
     rdfs:subClassOf mt:MultitrackProject.
-mb:Mapping a owl:Class.
-mb:Function a owl:Class.
-mb:Argument a owl:Class.
 mb:MobileControl a owl:Class.
 mb:SensorControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
@@ -83,53 +80,17 @@ mb:SimilarityNavigator a owl:Class;
     rdfs:subClassOf mb:Navigator.
 mb:GraphNavigator a owl:Class;
     rdfs:subClassOf mb:Navigator.
-mb:ArgumentValue a owl:Class;
-    owl:unionOf (mb:MobileControl dy:ParameterType dy:FeatureType).
-mb:MappingTarget a owl:Class;
-    owl:unionOf (mb:MobileControl dy:Dymo mb:Function).
-mb:MappingRange a owl:Class;
-    owl:unionOf (dy:ParameterType mb:MobileParameter).
-mb:MappingOwners a owl:Class;
-    owl:unionOf (dy:Dymo mb:Rendering).
 mb:hasDymo a owl:ObjectProperty, owl:FunctionalProperty;
     rdfs:domain mb:Rendering;
     rdfs:range dy:Dymo.
+mb:ConstraintOwners a owl:Class;
+    owl:unionOf (dy:Dymo mb:Rendering).
 mb:constraint a owl:ObjectProperty;
-    rdfs:domain mb:Rendering;
+    rdfs:domain mb:ConstraintOwners;
     rdfs:range ex:Expression.
-mb:hasMapping a owl:ObjectProperty;
-    rdfs:domain mb:MappingOwners;
-    rdfs:range mb:Mapping.
-mb:hasFunction a owl:ObjectProperty;
-    rdfs:domain mb:Mapping;
-    rdfs:range mb:Function.
-mb:hasArgument a owl:ObjectProperty;
-    rdfs:domain mb:Function;
-    rdfs:range mb:Argument.
-mb:hasVariable a owl:DatatypeProperty;
-    rdfs:domain mb:Argument;
-    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
-mb:hasValue a owl:ObjectProperty;
-    rdfs:domain mb:Argument;
-    rdfs:range mb:ArgumentValue.
-mb:hasBody a owl:DatatypeProperty;
-    rdfs:domain mb:Function;
-    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
-mb:toTarget a owl:ObjectProperty;
-    rdfs:domain mb:Mapping;
-    rdfs:range mb:MappingTarget.
-mb:hasRange a owl:ObjectProperty;
-    rdfs:domain mb:Mapping;
-    rdfs:range mb:MappingRange.
-mb:isUnidirectional a owl:DatatypeProperty;
-    rdfs:domain mb:Mapping;
-    rdfs:range "http://www.w3.org/2001/XMLSchema#boolean".
 mb:hasControlParam a owl:ObjectProperty;
     rdfs:domain mb:MobileControl;
     rdfs:range mb:MobileParameter.
-mb:hasInitialValue a owl:DatatypeProperty;
-    rdfs:domain mb:MobileControl;
-    rdfs:range "http://www.w3.org/2001/XMLSchema#float".
 mb:hasUrl a owl:DatatypeProperty;
     rdfs:domain mb:DataControl;
     rdfs:range "http://www.w3.org/2001/XMLSchema#string".
@@ -159,4 +120,4 @@ mb:hasNavigator a owl:DatatypeProperty;
     rdfs:range "http://tiny.cc/mobile-audio-ontology#Navigator".
 mb:navDymos a owl:DatatypeProperty;
     rdfs:domain mb:Navigator;
-    rdfs:range "http://tiny.cc/mobile-audio-ontology#Function".
+    rdfs:range "http://tiny.cc/expression-ontology#Expression".

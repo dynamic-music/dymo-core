@@ -122,7 +122,7 @@ export class PerformanceDymos {
     new ExpressionGenerator(this.generator.getManager().getStore()).addConstraint(renderingUri, exp, true);
   }
 
-  private addDeformationMapping(fileInfos: FileInfo[], scoreFeature: string, perfFeature: string, parameter: string, sliderUri: string, renderingUri: string) {
+  /*private addDeformationMapping(fileInfos: FileInfo[], scoreFeature: string, perfFeature: string, parameter: string, sliderUri: string, renderingUri: string) {
     let [conv, pMin, pMax, sMin, sMax] = this.getConvAndMinMax(fileInfos, scoreFeature, perfFeature);
     //generator.getManager().getStore().addFeature();
     var functionBody = "return p + 2 * (2*(d-0.5)) * (p-((s-"+sMin+")*"+conv+"+"+pMin+"))";
@@ -147,7 +147,7 @@ export class PerformanceDymos {
     }, functionBody);
     var targetFuncUri = this.generator.getManager().getStore().addFunction({"l":uris.LEVEL_FEATURE}, "return l == 1;");
     this.generator.addMapping(renderingUri, functionUri, null, targetFuncUri, parameter);
-  }
+  }*/
 
   private getConvAndMinMax(fileInfos: FileInfo[], scoreFeature: string, perfFeature: string): string[] {
     var scoreVals = fileInfos.map(i => i.scoreValues[scoreFeature]);

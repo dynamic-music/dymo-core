@@ -84,12 +84,8 @@ export class DymoGenerator {
 		return uri;
 	}
 
-	addMapping(ownerUri: string, mappingFunction, targetList, targetFunction, rangeUri: string) {
-		this.manager.getStore().addMapping(ownerUri, mappingFunction, targetList, targetFunction, rangeUri);
-	}
-
-	addNavigator(navigatorType, selectionFunctionUri) {
-		this.manager.getStore().addNavigator(this.currentRenderingUri, navigatorType, selectionFunctionUri);
+	addNavigator(navigatorType, variableUri: string) {
+		this.manager.getStore().addNavigator(this.currentRenderingUri, navigatorType, variableUri);
 	}
 
 	getCurrentTopDymo() {

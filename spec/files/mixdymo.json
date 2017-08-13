@@ -34,20 +34,20 @@
   "constraint": [
     {
       "@type": "ForAll",
-      "qBody": {
+      "body": {
         "@type": "ForAll",
-        "qBody": {
+        "body": {
           "@type": "EqualTo",
-          "isfunction": {
+          "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
             "@type": "FunctionalTerm",
-            "tArgs": {
+            "args": {
               "@id": "_:b17"
             },
-            "tFunction": "TimeStretchRatio"
+            "function": "TimeStretchRatio"
           },
           "right": {
             "@type": "Multiplication",
@@ -66,10 +66,10 @@
             },
             "right": {
               "@type": "FunctionalTerm",
-              "tArgs": {
+              "args": {
                 "@id": "_:b17"
               },
-              "tFunction": "DurationFeature"
+              "function": "DurationFeature"
             }
           }
         },
@@ -90,10 +90,10 @@
           "@type": "EqualTo",
           "left": {
             "@type": "FunctionalTerm",
-            "tArgs": {
+            "args": {
               "@id": "_:b17"
             },
-            "tFunction": "LevelFeature"
+            "function": "LevelFeature"
           },
           "right": {
             "@type": "Constant",
@@ -111,21 +111,21 @@
     },
     {
       "@type": "ForAll",
-      "qBody": {
+      "body": {
         "@type": "ForAll",
-        "qBody": {
+        "body": {
           "@type": "EqualTo",
-          "isfunction": {
+          "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
             "@id": "_:b2",
             "@type": "FunctionalTerm",
-            "tArgs": {
+            "args": {
               "@id": "_:b3"
             },
-            "tFunction": "Amplitude"
+            "function": "Amplitude"
           },
           "right": {
             "@type": "Addition",
@@ -155,10 +155,10 @@
                 },
                 "right": {
                   "@type": "FunctionalTerm",
-                  "tArgs": {
+                  "args": {
                     "@id": "_:b3"
                   },
-                  "tFunction": "IndexFeature"
+                  "function": "IndexFeature"
                 }
               }
             },
@@ -169,10 +169,10 @@
               },
               "right": {
                 "@type": "FunctionalTerm",
-                "tArgs": {
+                "args": {
                   "@id": "_:b3"
                 },
-                "tFunction": "IndexFeature"
+                "function": "IndexFeature"
               }
             }
           }
@@ -194,10 +194,10 @@
           "@type": "EqualTo",
           "left": {
             "@type": "FunctionalTerm",
-            "tArgs": {
+            "args": {
               "@id": "_:b3"
             },
-            "tFunction": "LevelFeature"
+            "function": "LevelFeature"
           },
           "right": {
             "@type": "Constant",

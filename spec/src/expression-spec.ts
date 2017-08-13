@@ -58,7 +58,7 @@ describe("the expressions unit", function() {
     constraint = new Constraint(vars2, new Expression('LevelFeature(x) == 1'));
     new ConstraintWriter(store2).addConstraint(renderingUri, constraint);
     store2.uriToJsonld(renderingUri)
-    .then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","qBody":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","tArgs":{"@id":"_:b0"},"tFunction":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
+    .then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","body":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","args":{"@id":"_:b0"},"function":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
     //.then(j => console.log(j))
 
 
@@ -178,7 +178,6 @@ describe("the expressions unit", function() {
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     let loader = new DymoLoader(store)
     let control = loader.createRenderingFromStore()[1][controlUri];
-    //console.log(_.values(loader.getMappings())[0].toString());
     expect([0.5,0.8]).toContain(store.findParameterValue(dymo1, u.AMPLITUDE));
     expect([2,1.25]).toContain(store.findParameterValue(dymo1, u.DURATION_RATIO));
     expect([1,2]).toContain(store.findParameterValue(dymo2, u.AMPLITUDE));
@@ -205,7 +204,7 @@ describe("the expressions unit", function() {
     store.setParameter(dymo2, u.AMPLITUDE, 2);
     amp2 = store.findParameterValue(dymo2, u.AMPLITUDE);
     dur2 = store.findParameterValue(dymo2, u.DURATION_RATIO);
-    expect([[2,0.25,0.5],[2,0.5,1],[ 0,0,7.884458e-7],['Infinity',0,Infinity ]]).toContain([amp2,dur2,control.value]);
+    expect([[2,0.25,0.5],[2,0.5,1],[ 0,0,7.884458e-7],['Infinity',0,Infinity],[ 0.001953125,512,2]]).toContain([amp2,dur2,control.value]);
 
   });
 

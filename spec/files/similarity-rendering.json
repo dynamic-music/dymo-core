@@ -1,19 +1,23 @@
 {
-  "@context":"http://localhost:8181/ontologies/dymo-context.json",
-  "@id":"similarityRendering",
-  "@type":"Rendering",
-  "dymo":"similarityDymo",
-  "navigators":[{
-    "@type":"SimilarityNavigator",
+  "@context": "http://localhost:8181/ontologies/dymo-context.json",
+  "@id": "similarityRendering",
+  "@type": "Rendering",
+  "dymo": {
+    "@id": "similarityDymo"
+  },
+  "navigators": {
+    "@type": "SimilarityNavigator",
     "dymos": {
-      "@id": "x",
+      "@id": "_:b0",
       "@type": "Variable",
       "varExpr": {
         "@type": "EqualTo",
         "left": {
           "@type": "FunctionalTerm",
-          "tArgs": "x",
-          "tFunction": "LevelFeature"
+          "args": {
+            "@id": "_:b0"
+          },
+          "function": "LevelFeature"
         },
         "right": {
           "@type": "Constant",
@@ -23,10 +27,10 @@
           }
         }
       },
-      "varName": "x",
+      "varName": "d",
       "varType": {
         "@id": "dy:Dymo"
       }
     }
-  }]
+  }
 }

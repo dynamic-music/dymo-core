@@ -39,7 +39,7 @@ export class ConstraintWriter {
     let currentQuantifier = this.store.createBlankNode();
     this.store.addTriple(currentQuantifier, u.VARS, _.last(varUris));
     this.store.addTriple(currentQuantifier, u.TYPE, u.FOR_ALL);
-    this.store.addTriple(currentQuantifier, u.Q_BODY, expressionUri);
+    this.store.addTriple(currentQuantifier, u.BODY, expressionUri);
     if (varUris.length > 1) {
       return this.recursiveAddUniversalQuantifiers(_.initial(varUris), currentQuantifier);
     }
@@ -48,7 +48,7 @@ export class ConstraintWriter {
 
   private addExpression(expression: Expression): string {
     let rootUri = this.recursiveAddExpression(expression.getFullTree());
-    this.store.setValue(rootUri, u.IS_FUNCTION, expression.isFunction);
+    this.store.setValue(rootUri, u.DIRECTED, expression.isDirected);
     return rootUri;
   }
 
@@ -67,8 +67,8 @@ export class ConstraintWriter {
     } else if (mathjsTree.isFunctionNode) {
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.FUNCTIONAL_TERM);
-      this.store.setValue(currentNodeUri, u.T_FUNCTION, mathjsTree.fn);
-      this.store.setTriple(currentNodeUri, u.T_ARGS, this.recursiveAddExpression(mathjsTree.args[0]));
+      this.store.setValue(currentNodeUri, u.FUNCTION, mathjsTree.fn);
+      this.store.setTriple(currentNodeUri, u.ARGS, this.recursiveAddExpression(mathjsTree.args[0]));
     } else if (mathjsTree.isSymbolNode) {
       currentNodeUri = this.store.findSubject(u.VAR_NAME, mathjsTree.name);
     } else if (mathjsTree.isConstantNode) {

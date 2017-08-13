@@ -13,28 +13,5 @@
         "@type": "Feature",
         "adt": "Pitch"
     },
-    "mappings": [{
-        "domainDims": [{
-            "name": "fade",
-            "@type": "CustomParameter"
-        }],
-        "function": {
-            "args": ["a"],
-            "body": "return a;"
-        },
-        "targets": ["dymo1"],
-        "range": "Amplitude"
-    }, {
-        "domainDims": [{
-            "name": "fade",
-            "@type": "ParameterType"
-        }],
-        "function": {
-            "args": ["a"],
-            "body": "return 1-a;"
-        },
-        "targets": ["dymo2"],
-        "range": "Amplitude"
-    }],
     "parts": ["dymo2.json"]
 }

@@ -7,16 +7,16 @@ import { MathjsNode } from '../globals/types';
 
 export class Expression {
 
-  isFunction: boolean;
+  isDirected: boolean;
   private mathjsTree: MathjsNode;
   private treeWithoutFuncs: MathjsNode;
   private compiledFunction: Object;
   private varsAndFuncs: Map<string,MathjsNode> = new Map<string,MathjsNode>(); //map with vars and funcs
   private currentMaintainers: Map<Object,Maintainer> = new Map<Object,Maintainer>();
 
-  constructor(expressionString: string, isDirectional?: boolean, mathjsTree?: MathjsNode) {
+  constructor(expressionString: string, isDirected?: boolean, mathjsTree?: MathjsNode) {
     this.mathjsTree = mathjsTree ? mathjsTree : math.parse(expressionString);
-    this.isFunction = isDirectional && this.checkIfFunctionPossible();
+    this.isDirected = isDirected && this.checkIfFunctionPossible();
     this.treeWithoutFuncs = this.replaceFunctionalExpressions(this.mathjsTree);
   }
 
@@ -68,7 +68,7 @@ export class Expression {
           varsAndUris.set(v, objectUriOrVal);
         }
       });
-      this.currentMaintainers.set(vars, new Maintainer(varsAndUris, featureFreeTree, this.isFunction, store));
+      this.currentMaintainers.set(vars, new Maintainer(varsAndUris, featureFreeTree, this.isDirected, store));
     }
   }
 

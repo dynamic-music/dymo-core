@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 import { GlobalVars } from './globals/globals'
@@ -5,7 +6,9 @@ import * as uris from './globals/uris'
 import { Scheduler } from './audio/scheduler'
 import { DymoStore } from './io/dymostore'
 import { DymoLoader } from './io/dymoloader'
+import { Control } from './model/control'
 import { UIControl } from './controls/uicontrol'
+import { SensorControl } from './controls/sensorcontrol'
 import { JsonGraphSubject, JsonGraph } from './io/jsongraph'
 import { AttributeInfo } from './globals/types';
 
@@ -77,15 +80,8 @@ export class DymoManager {
 	private processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering): Promise<any> {
 		this.topDymos = loadedDymos;
 		this.rendering = loadedRendering[0];
-		for (var key in loadedRendering[1]) {
-			var currentControl = loadedRendering[1][key];
-			if (GlobalVars.DYMO_STORE.isSubclassOf(currentControl.getType(), uris.UI_CONTROL)) {
-				this.uiControls.push(new UIControl(currentControl));
-			}
-			if (GlobalVars.DYMO_STORE.isSubclassOf(currentControl.getType(), uris.SENSOR_CONTROL)) {
-				this.sensorControls[key] = currentControl;
-			}
-		}
+		this.uiControls = <UIControl[]>(_.values(loadedRendering[1])).filter(c => c instanceof UIControl);
+		this.sensorControls = <SensorControl[]>_.values(loadedRendering[1]).filter(c => c instanceof SensorControl);
 		if (!this.reverbFile) {
 			this.reverbFile = 'node_modules/dymo-core/audio/impulse_rev.wav';
 		}

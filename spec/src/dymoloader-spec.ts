@@ -18,7 +18,6 @@ describe("a dymoloader", function() {
 	var dymo2Path = filespath+'dymo2.json';
 	var dymo3Path = filespath+'dymo3.json';
 	var mixDymoPath = filespath+'mixdymo.json';
-	var featureRenderingPath = filespath+'feature-rendering.json';
 	var controlRenderingPath = filespath+'control-rendering.json';
 	//var reverbPath = '../audio/impulse_rev.wav';
 	var fadePosition;
@@ -73,12 +72,12 @@ describe("a dymoloader", function() {
 			loader.loadRenderingFromFile(controlRenderingPath).then(loadedRendering => {
 				rendering = loadedRendering[0];
 				var controls = loadedRendering[1];
-				var mappingsObj = loader.getConstraints();
-				var mappings = Object.keys(mappingsObj).map(k => mappingsObj[k]);
-				expect(mappings.length).toEqual(3);
-				expect(mappings[0].toString()).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, DurationRatio(x) > 0.7 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => PlaybackRate(x) == c');
-				expect(mappings[1].toString()).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, LevelFeature(x) == 1 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => Amplitude(x) == c');
-				expect(mappings[2].toString()).toEqual('∀ l in ["http://tiny.cc/mobile-audio-ontology#ListenerOrientation"] => ∀ o in ["http://tiny.cc/dymo-context/orientation"] => l == 360 * o');
+				var constraintsObj = loader.getConstraints();
+				var constraints = Object.keys(constraintsObj).map(k => constraintsObj[k]);
+				expect(constraints.length).toEqual(3);
+				expect(constraints[0].toString()).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, DurationRatio(x) > 0.7 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => PlaybackRate(x) == c');
+				expect(constraints[1].toString()).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, LevelFeature(x) == 1 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => Amplitude(x) == c');
+				expect(constraints[2].toString()).toEqual('∀ l in ["http://tiny.cc/mobile-audio-ontology#ListenerOrientation"] => ∀ o in ["http://tiny.cc/dymo-context/orientation"] => l == 360 * o');
 				//change parameter and see if selection of dymos adjusts!
 				store.setParameter(u.CONTEXT_URI+"dymo1", u.DURATION_RATIO, 0.9);
 				expect(store.findObjectValue(u.LISTENER_ORIENTATION, u.VALUE)).toBeUndefined();
