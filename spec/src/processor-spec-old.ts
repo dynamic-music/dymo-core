@@ -8,17 +8,18 @@ import { SERVER_ROOT, AUDIO_CONTEXT } from './server';
 
 describe("a processor", function() {
 
+	var store: DymoStore;
 	var basePath = SERVER_ROOT+'spec/files/';
 	var sourcePath1 = 'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
 	var scheduler;
 
 	beforeAll(function(done) {
 		scheduler = new Scheduler(AUDIO_CONTEXT);
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
-			GlobalVars.DYMO_STORE.addDymo("dymo1", null, null, sourcePath1);
-			GlobalVars.DYMO_STORE.addBasePath("dymo1", basePath);
-			GlobalVars.DYMO_STORE.setParameter("dymo1", TIME_STRETCH_RATIO, 1);
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
+			store.addDymo("dymo1", null, null, sourcePath1);
+			store.addBasePath("dymo1", basePath);
+			store.setParameter("dymo1", TIME_STRETCH_RATIO, 1);
 			scheduler.init(null, ["dymo1"])
 				.then(() => done());
 		});
@@ -33,7 +34,7 @@ describe("a processor", function() {
 	});
 
 	it("can timestretch dymos", function(done) {
-		GlobalVars.DYMO_STORE.setParameter("dymo1", TIME_STRETCH_RATIO, 0.5);
+		store.setParameter("dymo1", TIME_STRETCH_RATIO, 0.5);
 		scheduler.play("dymo1");
 		setTimeout(function() {
 			expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1"]);

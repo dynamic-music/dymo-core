@@ -1,7 +1,7 @@
 import 'isomorphic-fetch';
-import { GlobalVars } from '../../src/globals/globals';
 import { CONTEXT_URI } from '../../src/globals/uris';
 import { DymoManager } from '../../src/manager';
+import { DymoStore } from '../../src/io/dymostore';
 import { SERVER_ROOT, AUDIO_CONTEXT, initSpeaker, endSpeaker } from './server';
 
 describe("a manager", function() {
@@ -31,20 +31,20 @@ describe("a manager", function() {
 		//console.profile("dymo");
 		manager.loadDymoAndRendering(filesDir+'mixdymo.json', filesDir+'mixdymo-rendering.json')
 			.then(() => {
-				expect(GlobalVars.DYMO_STORE.findParts(manager.getTopDymo())).toEqual([CONTEXT_URI+"dymo0", CONTEXT_URI+"dymo00"]);
+				expect(manager.getStore().findParts(manager.getTopDymo())).toEqual([CONTEXT_URI+"dymo0", CONTEXT_URI+"dymo00"]);
 				return manager.loadDymoFromJson(filesDir+'dymo2.json')
 			})
 			.then(loadedDymo => {
 				replace(CONTEXT_URI+"dymo0", () => {
-					expect(GlobalVars.DYMO_STORE.findParts(manager.getTopDymo())).toEqual([CONTEXT_URI+"dymo0", CONTEXT_URI+"dymo0"]);
+					expect(manager.getStore().findParts(manager.getTopDymo())).toEqual([CONTEXT_URI+"dymo0", CONTEXT_URI+"dymo0"]);
 					manager.loadDymoFromJson(filesDir+'dymo4.json')
 					.then(loadedDymo => {
 						replace(CONTEXT_URI+"dymo00", () => {
-							expect(GlobalVars.DYMO_STORE.findParts(manager.getTopDymo())).toEqual([CONTEXT_URI+"dymo00", CONTEXT_URI+"dymo0"]);
+							expect(manager.getStore().findParts(manager.getTopDymo())).toEqual([CONTEXT_URI+"dymo00", CONTEXT_URI+"dymo0"]);
 							manager.loadDymoFromJson(filesDir+'dymo4.json')
 								.then(loadedDymo => {
 									replace(CONTEXT_URI+"dymo00", () => {
-										expect(GlobalVars.DYMO_STORE.findParts(manager.getTopDymo())).toEqual([CONTEXT_URI+"dymo00", CONTEXT_URI+"dymo00"]);
+										expect(manager.getStore().findParts(manager.getTopDymo())).toEqual([CONTEXT_URI+"dymo00", CONTEXT_URI+"dymo00"]);
 										setTimeout(() => {
 											//manager.stopPlaying();
 											expect(manager.getTopDymo()).not.toBeUndefined();
@@ -68,7 +68,7 @@ describe("a manager", function() {
 					manager.loadDymoFromJson(filesDir+'dymo2.json')
 					 	.then(loadedDymo => {
 							expect(manager.getTopDymo()).not.toBeUndefined();
-							var parts = GlobalVars.DYMO_STORE.findParts(manager.getTopDymo());
+							var parts = manager.getStore().findParts(manager.getTopDymo());
 							var pos = parts.map(p => manager.getNavigatorPosition(p, 0));
 							expect(pos[0]).toEqual(pos[1]); //now no longer fails even though nothing changed? //TODO FAILS, IS IT TOO EARLY TO CHECK HERE?
 							manager.updateNavigatorPosition(parts[0], 0, 2);
@@ -87,7 +87,7 @@ describe("a manager", function() {
 	});
 
 	function replace(nextSongDymo, callback) {
-		var currentSongDymo = GlobalVars.DYMO_STORE.findPartAt(manager.getTopDymo(), fadePosition);
+		var currentSongDymo = manager.getStore().findPartAt(manager.getTopDymo(), fadePosition);
 		fadePosition = 1-fadePosition;
 		manager.replacePartOfTopDymo(fadePosition, nextSongDymo);
 		//sync the loaded dymos to be in the same metrical position
@@ -97,7 +97,7 @@ describe("a manager", function() {
 				//manager.startPlaying();
 				isPlaying = true;
 			}
-			manager.getUIControl(CONTEXT_URI+"transition").update();
+			manager.getUIControls().filter(u=>u.getName() === "transition")[0].update();
 			callback();
 		}, 300);
 	}

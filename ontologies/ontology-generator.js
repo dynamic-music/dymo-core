@@ -239,9 +239,10 @@ function createMobileAudioOntology(path) {
 	addUnionClass("MappingTarget", ["MobileControl", "Dymo", "Function"]);
 	addUnionClass("MappingRange", ["ParameterType", "MobileParameter"]);
 	addUnionClass("MappingOwners", ["Dymo", "Rendering"]);
+	addUnionClass("ConstraintOwners", ["Dymo", "Rendering"]);
 	//mapping properties
 	addProperty({term:"dymo", iri:"hasDymo", type: "@id"}, "Rendering", "Dymo", true, true);
-	addProperty({term:"constraint", iri:"constraint"}, "Rendering", "Expression", true);
+	addProperty({term:"constraint", iri:"constraint"}, "ConstraintOwners", "Expression", true);
 	addProperty({term:"mappings", iri:"hasMapping"}, "MappingOwners", "Mapping", true);
 	addProperty({term:"function", iri:"hasFunction"}, "Mapping", "Function", true);
 	addProperty({term:"args", iri:"hasArgument"}, "Function", "Argument", true);

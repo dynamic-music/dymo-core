@@ -1,7 +1,7 @@
 import * as math from 'mathjs';
 import * as _ from 'lodash';
-import * as u from '../../src/globals/uris';
-import { DymoStore } from '../../src/io/dymostore';
+import * as u from '../globals/uris';
+import { DymoStore } from '../io/dymostore';
 import { Expression } from '../model/expression';
 
 export abstract class BoundVariable {
@@ -42,19 +42,20 @@ export class TypedVariable extends BoundVariable {
 
 export class ExpressionVariable extends TypedVariable {
 
-  constructor(name: string, type: string, private typeExpression: Expression) {
+  private typeExpressions: Expression[] = [];
+
+  constructor(name: string, type: string, ...typeExpressions: Expression[]) {
     super(name, type);
+    this.typeExpressions = typeExpressions;
   }
 
-  getTypeExpression(): Expression {
-    return this.typeExpression;
+  getTypeExpressions(): Expression[] {
+    return this.typeExpressions;
   }
 
   getValues(store: DymoStore): string[] {
     let values = super.getValues(store);
-    if (this.typeExpression) {
-      values = values.filter(d => this.typeExpression.evaluate(this.createVarsObject(d), store))
-    }
+    this.typeExpressions.forEach(e => values = values.filter(v => e.evaluate(this.createVarsObject(v), store)));
     return values;
   }
 
@@ -65,7 +66,7 @@ export class ExpressionVariable extends TypedVariable {
   }
 
   toString(): string {
-    return super.toString() + ', ' + this.typeExpression.toString();
+    return super.toString() + ', ' + this.typeExpressions.map(e => e.toString()).join(', ');
   }
 
 }
@@ -85,7 +86,7 @@ export class SetBasedVariable extends BoundVariable {
   }
 
   toString(): string {
-    return super.toString() + ' in ' + this.set.toString();
+    return super.toString() + ' in ' + JSON.stringify(this.set);
   }
 
 }

@@ -1,47 +1,201 @@
 {
-	"@context":"http://localhost:8181/ontologies/dymo-context.json",
-	"@id": "controlRendering",
-	"@type": "Rendering",
-	"dymo": "dymo0",
-	"mappings": [{
-		"function": {
-			"args": [{"var":"a", "val":{"name":"slidero","@type":"Slider"}}],
-			"body": "return a;"
-		},
-		"targets": {
-			"args": [{"var":"a", "val":"level"}],
-			"body": "return a == 1;"
-		},
-		"range": "Amplitude"
-	}, {
-		"function": {
-			"args": [{"var":"a", "val":{"name":"slidero","@type":"Slider"}}],
-			"body": "return a;"
-		},
-		"targets": {
-			"args": [{"var":"a", "val":"DurationRatio"}],
-			"body": "return a > 0.7;"
-		},
-		"range": "PlaybackRate"
-	}, {
-		"function": {
-			"args": [{
-				"var":"a",
-				"val":{
-					"@id":"orientation",
-					"name": "orientation",
-					"@type": "Slider"
-				}
-			}],
-			"body": "return 360*a;"
-		},
-		"range": "ListenerOrientation"
-	}],
-	"navigator": {
-		"targets": {
-			"args": [{"var":"a", "val":"level"}],
-			"body": "return a == 2;"
-		},
-		"@type": "SimilarityNavigator"
-	}
+  "@context": "http://localhost:8181/ontologies/dymo-context.json",
+  "@id": "controlRendering",
+  "@type": "Rendering",
+  "constraint": [
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@id": "_:b13"
+          },
+          "right": {
+            "@type": "Multiplication",
+            "left": {
+              "@type": "Constant",
+              "value": {
+                "@type": "xsd:integer",
+                "@value": "360"
+              }
+            },
+            "right": {
+              "@id": "_:b14"
+            }
+          }
+        },
+        "vars": {
+          "@id": "_:b14",
+          "@type": "Variable",
+          "varName": "o",
+          "varValue": {
+            "@id": "orientation",
+            "@type": "Slider",
+            "name": "Orientation"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b13",
+        "@type": "Variable",
+        "varName": "l",
+        "varValue": {
+          "@id": "mb:ListenerOrientation"
+        }
+      }
+    },
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b7"
+            },
+            "tFunction": "PlaybackRate"
+          },
+          "right": {
+            "@id": "_:b8"
+          }
+        },
+        "vars": {
+          "@id": "_:b8",
+          "@type": "Variable",
+          "varName": "c",
+          "varValue": {
+            "@id": "slider1"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b7",
+        "@type": "Variable",
+        "varExpr": {
+          "@type": "GreaterThan",
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b7"
+            },
+            "tFunction": "DurationRatio"
+          },
+          "right": {
+            "@type": "Constant",
+            "value": {
+              "@type": "xsd:decimal",
+              "@value": "0.7"
+            }
+          }
+        },
+        "varName": "x",
+        "varType": {
+          "@id": "dy:Dymo"
+        }
+      }
+    },
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b0"
+            },
+            "tFunction": "Amplitude"
+          },
+          "right": {
+            "@id": "_:b25"
+          }
+        },
+        "vars": {
+          "@id": "_:b25",
+          "@type": "Variable",
+          "varName": "c",
+          "varValue": {
+            "@id": "slider1",
+            "@type": "Slider",
+            "name": "Slider 1"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b0",
+        "@type": "Variable",
+        "varExpr": {
+          "@id": "_:b1",
+          "@type": "EqualTo",
+          "left": {
+            "@id": "_:b2",
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b0"
+            },
+            "tFunction": "LevelFeature"
+          },
+          "right": {
+            "@type": "Constant",
+            "value": {
+              "@type": "xsd:integer",
+              "@value": "1"
+            }
+          }
+        },
+        "varName": "x",
+        "varType": {
+          "@id": "dy:Dymo"
+        }
+      }
+    }
+  ],
+  "dymo": {
+    "@id": "dymo0"
+  },
+  "navigators": {
+    "@type": "SimilarityNavigator",
+    "dymos": {
+      "@id": "_:b20",
+      "@type": "Variable",
+      "varExpr": {
+        "@type": "EqualTo",
+        "left": {
+          "@type": "FunctionalTerm",
+          "tArgs": {
+            "@id": "_:b20"
+          },
+          "tFunction": "LevelFeature"
+        },
+        "right": {
+          "@type": "Constant",
+          "value": {
+            "@type": "xsd:integer",
+            "@value": "2"
+          }
+        }
+      },
+      "varName": "x",
+      "varType": {
+        "@id": "dy:Dymo"
+      }
+    }
+  }
 }

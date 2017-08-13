@@ -27,7 +27,8 @@ export class Scheduler {
 	init(reverbFile, dymoUris): Promise<any> {
 		if (this.audioContext) {
 			//init horizontal listener orientation in degrees
-			GlobalVars.DYMO_STORE.addParameter(null, LISTENER_ORIENTATION, 0, this);
+			GlobalVars.DYMO_STORE.setParameter(null, LISTENER_ORIENTATION, 0);
+			GlobalVars.DYMO_STORE.addParameterObserver(null, LISTENER_ORIENTATION, this);
 			let loadingPromises = this.loadBuffers(dymoUris);
 
 			//init reverb if needed

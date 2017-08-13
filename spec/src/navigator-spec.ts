@@ -1,5 +1,4 @@
 import 'isomorphic-fetch';
-import { GlobalVars } from '../../src/globals/globals';
 import { CDT, CONJUNCTION, DISJUNCTION, SEQUENCE, LEVEL_FEATURE, FEATURE_TYPE, SIMILARITY_NAVIGATOR,
 	LEAPING_PROBABILITY, CONTINUE_AFTER_LEAPING, DYMO } from '../../src/globals/uris';
 import { DymoStore } from '../../src/io/dymostore';
@@ -465,7 +464,7 @@ describe("a navigator", function() {
 		manager.init(SERVER_ROOT+'ontologies/').then(() => {
 			manager.loadDymoAndRendering(SERVER_ROOT+'spec/files/similarity-dymo.json', SERVER_ROOT+'spec/files/similarity-rendering.json')
 			.then(() => {
-				store = GlobalVars.DYMO_STORE;
+				store = manager.getStore();
 				var dymoUri = manager.getTopDymo();
 				expect(store.findParts(dymoUri).length).toBe(5);
 				expect(store.findSimilars(store.findParts(dymoUri)[1]).length).toBe(1);

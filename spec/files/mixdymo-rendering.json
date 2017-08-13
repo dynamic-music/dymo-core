@@ -1,50 +1,335 @@
 {
-	"@context":"http://localhost:8181/ontologies/dymo-context.json",
-	"@id":"demoBeatRendering",
-	"@type":"Rendering",
-	"dymo":"demoBeat",
-	"mappings":[
-		{
-			"function":{"args":[
-				{"var":"a", "val":{
-					"@type":"DataControl",
-					"url":"http://api.openweathermap.org/data/2.5/weather?appid=3d77879a046ee9e970e66bb2f5c5200d&q=london",
-					"map":"return json['main']['temp']"}
-				}
-			],"body": "return (a-273.16)/40;"},
-			"targets":["mixdymo"],
-			"range":"Fade"
-		},
-		{
-			"function":{"args":[
-				{"var":"a", "val":{"@id":"fade","name":"fade","@type":"Slider"}}
-			],"body": "return a;"},
-			"targets":["mixdymo"],
-			"range":"Fade"
-		},
-		{
-			"function":{"args":[
-				{"var":"a", "val":{"name":"beats per bar","@type":"Slider"}}
-			],"body": "return 4*a;"},
-			"targets":{"args":[{"var":"d", "val":"level"}], "body": "return d == 2;"},
-			"range":"PartCount"
-		},
-		{
-			"function":{"args":[
-				{"var":"a", "val":{"name":"offbeat duration","@type":"Slider"}}
-			],"body": "return a;"},
-			"targets":{
-				"args":[{"var":"l", "val":"level"},{"var":"i", "val":"index"}],
-				"body": "return l == 3 && i%2 == 1;"
-			},
-			"range":"DurationRatio"
-		},
-		{
-			"function":{"args":[
-				{"var":"a", "val":{"@id":"transition","name":"transition","@type":"Button"}}
-			],"body": "return a;"},
-			"targets":["fadeRamp"],
-			"range":"AutoControlTrigger"
-		}
-	]
+  "@context": "http://localhost:8181/ontologies/dymo-context.json",
+  "@id": "mixdymoRendering",
+  "@type": "Rendering",
+  "constraint": [
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b44"
+            },
+            "tFunction": "AutoControlTrigger"
+          },
+          "right": {
+            "@id": "_:b45"
+          }
+        },
+        "vars": {
+          "@id": "_:b45",
+          "@type": "Variable",
+          "varName": "t",
+          "varValue": {
+            "@type": "Button",
+            "name": "transition"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b44",
+        "@type": "Variable",
+        "varName": "r",
+        "varValue": {
+          "@id": "fadeRamp"
+        }
+      }
+    },
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b29"
+            },
+            "tFunction": "DurationRatio"
+          },
+          "right": {
+            "@id": "_:b39"
+          }
+        },
+        "vars": {
+          "@id": "_:b39",
+          "@type": "Variable",
+          "varName": "o",
+          "varValue": {
+            "@type": "Slider",
+            "name": "offbeat duration"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b29",
+        "@type": "Variable",
+        "varExpr": [
+          {
+            "@type": "EqualTo",
+            "left": {
+              "left": {
+                "@type": "FunctionalTerm",
+                "tArgs": {
+                  "@id": "_:b29"
+                },
+                "tFunction": "IndexFeature"
+              },
+              "right": {
+                "@type": "Constant",
+                "value": {
+                  "@type": "xsd:integer",
+                  "@value": "2"
+                }
+              }
+            },
+            "right": {
+              "@type": "Constant",
+              "value": {
+                "@type": "xsd:integer",
+                "@value": "1"
+              }
+            }
+          },
+          {
+            "@type": "EqualTo",
+            "left": {
+              "@type": "FunctionalTerm",
+              "tArgs": {
+                "@id": "_:b29"
+              },
+              "tFunction": "LevelFeature"
+            },
+            "right": {
+              "@type": "Constant",
+              "value": {
+                "@type": "xsd:integer",
+                "@value": "2"
+              }
+            }
+          }
+        ],
+        "varName": "d",
+        "varType": {
+          "@id": "dy:Dymo"
+        }
+      }
+    },
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b17"
+            },
+            "tFunction": "PartCount"
+          },
+          "right": {
+            "@type": "Multiplication",
+            "left": {
+              "@type": "Constant",
+              "value": {
+                "@type": "xsd:integer",
+                "@value": "4"
+              }
+            },
+            "right": {
+              "@id": "_:b21"
+            }
+          }
+        },
+        "vars": {
+          "@id": "_:b21",
+          "@type": "Variable",
+          "varName": "b",
+          "varValue": {
+            "@type": "Slider",
+            "name": "beats per bar"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b17",
+        "@type": "Variable",
+        "varExpr": {
+          "@type": "EqualTo",
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b17"
+            },
+            "tFunction": "LevelFeature"
+          },
+          "right": {
+            "@type": "Constant",
+            "value": {
+              "@type": "xsd:integer",
+              "@value": "2"
+            }
+          }
+        },
+        "varName": "d",
+        "varType": {
+          "@id": "dy:Dymo"
+        }
+      }
+    },
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b10"
+            },
+            "tFunction": "Fade"
+          },
+          "right": {
+            "@id": "_:b11"
+          }
+        },
+        "vars": {
+          "@id": "_:b11",
+          "@type": "Variable",
+          "varName": "f",
+          "varValue": {
+            "@id": "_:b1",
+            "@type": "Slider",
+            "name": "fade"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b10",
+        "@type": "Variable",
+        "varName": "m",
+        "varValue": {
+          "@id": "mixdymo"
+        }
+      }
+    },
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b9"
+            },
+            "tFunction": "Fade"
+          },
+          "right": {
+            "@type": "Division",
+            "left": {
+              "@id": "_:b2",
+              "@type": "Subtraction",
+              "left": {
+                "@id": "_:b3"
+              },
+              "right": {
+                "@id": "_:b4",
+                "@type": "Constant",
+                "value": {
+                  "@type": "xsd:decimal",
+                  "@value": "273.16"
+                }
+              }
+            },
+            "right": {
+              "@id": "_:b5",
+              "@type": "Constant",
+              "value": {
+                "@type": "xsd:integer",
+                "@value": "40"
+              }
+            }
+          }
+        },
+        "vars": {
+          "@id": "_:b3",
+          "@type": "Variable",
+          "varName": "a",
+          "varValue": {
+            "@type": "DataControl",
+            "map": "return json['main']['temp']",
+            "url": "http://api.openweathermap.org/data/2.5/weather?appid=3d77879a046ee9e970e66bb2f5c5200d&q=london"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b9",
+        "@type": "Variable",
+        "varName": "m",
+        "varValue": {
+          "@id": "mixdymo"
+        }
+      }
+    }
+  ],
+  "dymo": {
+    "@id": "mixdymo"
+  },
+  "navigators": {
+    "@type": "SimilarityNavigator",
+    "dymos": {
+      "@id": "_:b50",
+      "@type": "Variable",
+      "varExpr": {
+        "@type": "EqualTo",
+        "left": {
+          "@type": "FunctionalTerm",
+          "tArgs": {
+            "@id": "_:b50"
+          },
+          "tFunction": "LevelFeature"
+        },
+        "right": {
+          "@type": "Constant",
+          "value": {
+            "@type": "xsd:integer",
+            "@value": "2"
+          }
+        }
+      },
+      "varName": "x",
+      "varType": {
+        "@id": "dy:Dymo"
+      }
+    }
+  }
 }

@@ -1,21 +1,22 @@
 import * as _ from 'lodash';
-import * as u from '../../src/globals/uris';
-import { DymoStore } from '../../src/io/dymostore';
-import { Constraint } from '../../src/model/constraint';
-import { Expression } from '../../src/model/expression';
-import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../../src/model/variable';
-import { ExpressionTools } from '../../src/math/expressiontools';
-import { MathjsNode } from '../../src/globals/types';
+import * as u from '../globals/uris';
+import { DymoStore } from '../io/dymostore';
+import { Constraint } from '../model/constraint';
+import { Expression } from '../model/expression';
+import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../model/variable';
+import { ExpressionTools } from '../math/expressiontools';
+import { MathjsNode } from '../globals/types';
 
 export class ConstraintWriter {
 
   constructor(private store: DymoStore) {}
 
-  addConstraint(renderingUri: string, constraint: Constraint) {
+  addConstraint(ownerUri: string, constraint: Constraint): string {
     let varUris = constraint.getBoundVariables().map(v => this.addVariable(v));
     var expressionUri = this.addExpression(constraint.getExpression());
     var expUri = this.recursiveAddUniversalQuantifiers(varUris, expressionUri);
-    this.store.addTriple(renderingUri, u.CONSTRAINT, expUri);
+    this.store.addTriple(ownerUri, u.CONSTRAINT, expUri);
+    return expUri;
   }
 
   addVariable(variable: BoundVariable): string {
@@ -26,7 +27,7 @@ export class ConstraintWriter {
       this.store.addTriple(varUri, u.VAR_TYPE, variable.getType());
     }
     if (variable instanceof ExpressionVariable) {
-      this.store.addTriple(varUri, u.VAR_EXPR, this.addExpression(variable.getTypeExpression()));
+      variable.getTypeExpressions().forEach(e => this.store.addTriple(varUri, u.VAR_EXPR, this.addExpression(e)));
     }
     if (variable instanceof SetBasedVariable) {
       variable.getSet().forEach(v => this.store.addTriple(varUri, u.VAR_VALUE, v));
@@ -56,24 +57,26 @@ export class ConstraintWriter {
     if (mathjsTree.isAssignmentNode) {
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.EQUAL_TO);
-      this.addTripleOrSetValue(currentNodeUri, u.LEFT, this.recursiveAddExpression(mathjsTree["args"][0]));
-      this.addTripleOrSetValue(currentNodeUri, u.RIGHT, this.recursiveAddExpression(mathjsTree["args"][1]));
+      this.addTripleOrSetValue(currentNodeUri, u.LEFT, this.recursiveAddExpression(mathjsTree.args[0]));
+      this.addTripleOrSetValue(currentNodeUri, u.RIGHT, this.recursiveAddExpression(mathjsTree.args[1]));
     } else if (mathjsTree.isOperatorNode) {
       currentNodeUri = this.store.createBlankNode();
-      this.store.addTriple(currentNodeUri, u.TYPE, ExpressionTools.toUri(mathjsTree["fn"]));
-      this.addTripleOrSetValue(currentNodeUri, u.LEFT, this.recursiveAddExpression(mathjsTree["args"][0]));
-      this.addTripleOrSetValue(currentNodeUri, u.RIGHT, this.recursiveAddExpression(mathjsTree["args"][1]));
+      this.store.addTriple(currentNodeUri, u.TYPE, ExpressionTools.toUri(mathjsTree.fn));
+      this.addTripleOrSetValue(currentNodeUri, u.LEFT, this.recursiveAddExpression(mathjsTree.args[0]));
+      this.addTripleOrSetValue(currentNodeUri, u.RIGHT, this.recursiveAddExpression(mathjsTree.args[1]));
     } else if (mathjsTree.isFunctionNode) {
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.FUNCTIONAL_TERM);
-      this.store.setValue(currentNodeUri, u.T_FUNCTION, mathjsTree["fn"]);
-      this.store.setTriple(currentNodeUri, u.T_ARGS, this.recursiveAddExpression(mathjsTree["args"][0]));
+      this.store.setValue(currentNodeUri, u.T_FUNCTION, mathjsTree.fn);
+      this.store.setTriple(currentNodeUri, u.T_ARGS, this.recursiveAddExpression(mathjsTree.args[0]));
     } else if (mathjsTree.isSymbolNode) {
       currentNodeUri = this.store.findSubject(u.VAR_NAME, mathjsTree.name);
     } else if (mathjsTree.isConstantNode) {
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.CONSTANT);
       this.setValue(currentNodeUri, u.VALUE, mathjsTree.value);
+    } else if (mathjsTree.isParenthesisNode) {
+      return this.recursiveAddExpression(mathjsTree.content);
     }
     return currentNodeUri;
   }

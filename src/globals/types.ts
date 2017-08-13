@@ -1,4 +1,4 @@
-export interface FeatureInfo {
+export interface AttributeInfo {
   name: string,
   uri: string,
   min: number,
@@ -6,14 +6,24 @@ export interface FeatureInfo {
 }
 
 export interface MathjsNode {
-  name: string,
-  isOperatorNode: boolean,
-  isFunctionNode: boolean,
-  isAssignmentNode: boolean,
-  isSymbolNode: boolean,
-  isConstantNode: boolean,
-  value?: number,
+  compile: Function,
   eval: Function,
   transform: Function,
-  op?: string
+
+  isParenthesisNode: boolean,
+  content?: MathjsNode,
+
+  isFunctionNode: boolean,
+  fn?: string,
+  args?: MathjsNode[],
+  isOperatorNode: boolean,
+  op?: string,
+
+  isSymbolNode: boolean,
+  name: string,
+
+  isConstantNode: boolean,
+  value?: number,
+
+  isAssignmentNode: boolean
 }

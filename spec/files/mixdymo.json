@@ -1,29 +1,217 @@
 {
-	"@context":"http://localhost:8181/ontologies/dymo-context.json",
-	"@id":"mixdymo",
-	"@type":"Dymo",
-	"cdt":"Conjunction",
-	"features":["index","duration"],
-	"mappings":[
-		{
-			"@type":"Mapping",
-			"function":{"args":[
-				{"var":"a", "val":{"@id":"Fade","@type":"CustomParameter"}},
-				{"var":"b", "val":"index"}
-			],"body": "return (1-b)*(1-a)+b*a;"},
-			"targets": {"args":[{"var":"a", "val":"level"}], "body":"return a == 1;"},
-			"range":"Amplitude"
-		},
-		{
-			"@type":"Mapping",
-			"function":{"args":[
-				{"var":"a", "val":{"@id":"Tempo","@type":"CustomParameter"}},
-				{"var":"b", "val":"duration"}
-			], "body": "return a/60*b;"},
-			"targets": {"args":[{"var":"a", "val":"level"}], "body": "return a == 3;"},
-			"range":"TimeStretchRatio"
-		}
-	],
-	"parts":{"@list":["dymo2.json","dymo4.json"]},
-	"similars":[]
+  "@context": "http://localhost:8181/ontologies/dymo-context.json",
+  "@id": "mixdymo",
+  "@type": "Dymo",
+  "cdt": {
+    "@id": "dy:Conjunction"
+  },
+  "parts": {
+    "@list": [
+      {
+        "@id": "dymo0",
+        "@type": "Dymo",
+        "cdt": {
+          "@id": "dy:Disjunction"
+        }
+      },
+      {
+        "@id": "dymo00",
+        "@type": "Dymo",
+        "cdt": {
+          "@id": "dy:Disjunction"
+        }
+      }
+    ]
+  },
+  "parameters": [
+    {
+      "@id": "_:b1"
+    },
+    {
+      "@id": "_:b0"
+    }
+  ],
+  "constraint": [
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b17"
+            },
+            "tFunction": "TimeStretchRatio"
+          },
+          "right": {
+            "@type": "Multiplication",
+            "left": {
+              "@type": "Division",
+              "left": {
+                "@id": "_:b21"
+              },
+              "right": {
+                "@type": "Constant",
+                "value": {
+                  "@type": "xsd:integer",
+                  "@value": "60"
+                }
+              }
+            },
+            "right": {
+              "@type": "FunctionalTerm",
+              "tArgs": {
+                "@id": "_:b17"
+              },
+              "tFunction": "DurationFeature"
+            }
+          }
+        },
+        "vars": {
+          "@id": "_:b21",
+          "@type": "Variable",
+          "varName": "t",
+          "varValue": {
+            "@id": "_:b1",
+            "@type": "Tempo"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b17",
+        "@type": "Variable",
+        "varExpr": {
+          "@type": "EqualTo",
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b17"
+            },
+            "tFunction": "LevelFeature"
+          },
+          "right": {
+            "@type": "Constant",
+            "value": {
+              "@type": "xsd:integer",
+              "@value": "3"
+            }
+          }
+        },
+        "varName": "d",
+        "varType": {
+          "@id": "dy:Dymo"
+        }
+      }
+    },
+    {
+      "@type": "ForAll",
+      "qBody": {
+        "@type": "ForAll",
+        "qBody": {
+          "@type": "EqualTo",
+          "isfunction": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "left": {
+            "@id": "_:b2",
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b3"
+            },
+            "tFunction": "Amplitude"
+          },
+          "right": {
+            "@type": "Addition",
+            "left": {
+              "@type": "Multiplication",
+              "left": {
+                "@type": "Subtraction",
+                "left": {
+                  "@type": "Constant",
+                  "value": {
+                    "@type": "xsd:integer",
+                    "@value": "1"
+                  }
+                },
+                "right": {
+                  "@id": "_:b10"
+                }
+              },
+              "right": {
+                "@type": "Subtraction",
+                "left": {
+                  "@type": "Constant",
+                  "value": {
+                    "@type": "xsd:integer",
+                    "@value": "1"
+                  }
+                },
+                "right": {
+                  "@type": "FunctionalTerm",
+                  "tArgs": {
+                    "@id": "_:b3"
+                  },
+                  "tFunction": "IndexFeature"
+                }
+              }
+            },
+            "right": {
+              "@type": "Multiplication",
+              "left": {
+                "@id": "_:b10"
+              },
+              "right": {
+                "@type": "FunctionalTerm",
+                "tArgs": {
+                  "@id": "_:b3"
+                },
+                "tFunction": "IndexFeature"
+              }
+            }
+          }
+        },
+        "vars": {
+          "@id": "_:b10",
+          "@type": "Variable",
+          "varName": "f",
+          "varValue": {
+            "@id": "_:b0",
+            "@type": "Fade"
+          }
+        }
+      },
+      "vars": {
+        "@id": "_:b3",
+        "@type": "Variable",
+        "varExpr": {
+          "@type": "EqualTo",
+          "left": {
+            "@type": "FunctionalTerm",
+            "tArgs": {
+              "@id": "_:b3"
+            },
+            "tFunction": "LevelFeature"
+          },
+          "right": {
+            "@type": "Constant",
+            "value": {
+              "@type": "xsd:integer",
+              "@value": "1"
+            }
+          }
+        },
+        "varName": "d",
+        "varType": {
+          "@id": "dy:Dymo"
+        }
+      }
+    }
+  ]
 }

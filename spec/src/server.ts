@@ -9,7 +9,7 @@ var app = express();
 
 app.use(express["static"](__dirname+'/../../../../'));
 
-app.listen(PORT, () => {
+export var SERVER = app.listen(PORT, () => {
   console.log('spec server started on '+PORT+'!')
 });
 

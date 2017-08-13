@@ -60,7 +60,7 @@ describe("an easyreasoner", function() {
 	});
 
 	it("can infer dymos from a composition", function(done) {
-		let comp, rules, result, loader: DymoLoader;
+		let comp, rules, result, loader: DymoLoader, store: DymoStore;
 		fetch(SERVER_ROOT+'spec/files/comp.n3')
 		.then(c => c.text())
 		.then(c => comp = c)
@@ -69,13 +69,13 @@ describe("an easyreasoner", function() {
 		.then(r => rules = r)
 		.then(() => new EasyReasoner().queryAll([comp, rules]))
 		.then(r => result = r)
-		.then(() => GlobalVars.DYMO_STORE = new DymoStore())
-		.then(() => GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/'))
-		.then(() => loader = new DymoLoader(GlobalVars.DYMO_STORE))
+		.then(() => store = new DymoStore())
+		.then(() => store.loadOntologies(SERVER_ROOT+'ontologies/'))
+		.then(() => loader = new DymoLoader(store))
 		.then(() => loader.parseDymoFromString(result))
 		.then(topDymoUris => {
-			expect(GlobalVars.DYMO_STORE.findParts(topDymoUris[0]).length).toBe(2);
-			expect(Object.keys(loader.getMappings()).length).toBe(1);
+			expect(store.findParts(topDymoUris[0]).length).toBe(2);
+			expect(loader.getConstraints().length).toBe(1);
 			done();
 		});
 	});

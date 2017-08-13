@@ -1,5 +1,5 @@
 import * as math from 'mathjs';
-import * as u from '../../src/globals/uris';
+import * as u from '../globals/uris';
 import * as _ from 'lodash';
 import { MathjsNode } from '../globals/types';
 

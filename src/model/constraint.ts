@@ -1,5 +1,5 @@
 import * as math from 'mathjs';
-import { DymoStore } from '../../src/io/dymostore';
+import { DymoStore } from '../io/dymostore';
 import { BoundVariable } from './variable';
 import { Expression } from './expression';
 
@@ -49,7 +49,7 @@ export class Constraint {
   }
 
   toString(): string {
-    return this.vars.map(v => v.toString()).join(', ') + ', ' + this.expression.toString();
+    return this.vars.map(v => v.toString()).join(' => ') + ' => ' + this.expression.toString();
   }
 
 }

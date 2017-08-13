@@ -7,7 +7,7 @@ import * as uris from '../globals/uris'
 import { DYMO_CONTEXT, DYMO_SIMPLE_CONTEXT } from '../globals/contexts'
 import { URI_TO_TERM } from '../globals/terms'
 import { JsonGraph, JsonEdge } from './jsongraph'
-import { FeatureInfo } from '../globals/types'
+import { AttributeInfo } from '../globals/types'
 
 /**
  * A graph store for dymos based on EasyStore.
@@ -169,24 +169,21 @@ export class DymoStore extends EasyStore {
 		this.addTriple(dymoUri, uris.HAS_SUCCESSOR, successorUri);
 	}
 
-	setFeature(dymoUri, featureType, value) {
+	setFeature(dymoUri: string, featureType: string, value?: any): string {
 		if (!this.findObject(featureType, uris.TYPE)) {
 			this.setTriple(featureType, uris.TYPE, uris.FEATURE_TYPE);
 		}
 		return this.setObjectValue(dymoUri, uris.HAS_FEATURE, featureType, uris.VALUE, value);
 	}
 
-	addParameter(ownerUri, parameterType, value?: string|number, observer?: Object) {
-		this.setParameter(ownerUri, parameterType, value);
-		if (observer) {
-			this.addParameterObserver(ownerUri, parameterType, observer);
+	addCustomParameter(ownerUri: string, paramType: string): string {
+		let uri = this.createBlankNode();
+		if (ownerUri) {
+			this.addTriple(ownerUri, uris.HAS_PARAMETER, uri);
 		}
-	}
-
-	addCustomParameter(ownerUri, paramUri) {
-		this.addTriple(ownerUri, uris.HAS_PARAMETER, paramUri);
-		this.addTriple(paramUri, uris.TYPE, uris.CUSTOM_PARAMETER);
-		return paramUri;
+		this.addTriple(uri, uris.TYPE, paramType);
+		this.addTriple(paramType, uris.TYPE, uris.CUSTOM_PARAMETER);
+		return uri;
 	}
 
 	setControlParam(controlUri: string, parameterType: string, value: any, observer?: Object): string {
@@ -197,8 +194,6 @@ export class DymoStore extends EasyStore {
 		}
 		return parameterUri;
 	}
-
-
 
 	setParameter(ownerUri: string, parameterType: string, value?: any): string {
 		//initialize in case the parameter doesn't exist yet
@@ -636,32 +631,36 @@ export class DymoStore extends EasyStore {
 		return string.split(substring).length - 1;
 	}
 
-	getFeatureInfo(): FeatureInfo[] {
-		let featureObjects = {};
+	getAttributeInfo(): AttributeInfo[] {
+		let attributeObjects = {};
 		let allDymos = this.findAllSubjects(uris.TYPE, uris.DYMO);
+
+		//add params from store
+		let allParams = _.flatten(allDymos.map(d => this.findAllObjects(d, uris.HAS_PARAMETER)));
+		allParams.forEach(p => this.updateAttributeObjectFromUri(attributeObjects, p));
 
 		//add features from store
 		let allFeatures = _.flatten(allDymos.map(d => this.findAllObjects(d, uris.HAS_FEATURE)));
-		allFeatures.forEach(f => this.updateFeatureObjectFromUri(featureObjects, f));
+		allFeatures.forEach(f => this.updateAttributeObjectFromUri(attributeObjects, f));
 
 		//add level and index features
-		allDymos.forEach(d => this.updateFeatureObject(featureObjects, uris.LEVEL_FEATURE, this.findLevel(d)));
-		allDymos.forEach(d => this.updateFeatureObject(featureObjects, uris.INDEX_FEATURE, this.findPartIndex(d)));
+		allDymos.forEach(d => this.updateAttributeObject(attributeObjects, uris.LEVEL_FEATURE, this.findLevel(d)));
+		allDymos.forEach(d => this.updateAttributeObject(attributeObjects, uris.INDEX_FEATURE, this.findPartIndex(d)));
 
 		//convert to array
-		return Object.keys(featureObjects).map(k => featureObjects[k]);
+		return Object.keys(attributeObjects).map(k => attributeObjects[k]);
 	}
 
-	private updateFeatureObjectFromUri(objects, uri: string) {
+	private updateAttributeObjectFromUri(objects, uri: string) {
 		let type = this.findObject(uri, uris.TYPE);
 		let value = this.findObjectValue(uri, uris.VALUE);
-		this.updateFeatureObject(objects, type, value);
+		this.updateAttributeObject(objects, type, value);
 	}
 
-	private updateFeatureObject(objects, type, value) {
+	private updateAttributeObject(objects, type, value) {
 		if (type) {
 			if (!objects[type]) {
-				let name = URI_TO_TERM[type] ? URI_TO_TERM[type] : type.replace(uris.CONTEXT_URI, '');
+				let name = URI_TO_TERM[type] ? URI_TO_TERM[type] : _.replace(_.replace(type, uris.CONTEXT_URI, ''), uris.DYMO_ONTOLOGY_URI, '');
 				objects[type] = {
 					name: name,
 					uri: type,

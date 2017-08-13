@@ -7,7 +7,7 @@ import { DymoStore } from './io/dymostore'
 import { DymoLoader } from './io/dymoloader'
 import { UIControl } from './controls/uicontrol'
 import { JsonGraphSubject, JsonGraph } from './io/jsongraph'
-import { FeatureInfo } from './globals/types';
+import { AttributeInfo } from './globals/types';
 
 /**
  * A class for easy access of all dymo core functionality.
@@ -17,11 +17,11 @@ export class DymoManager {
 	private scheduler: Scheduler;
 	private topDymos;
 	private rendering;
-	private uiControls = {};
+	private uiControls: UIControl[] = [];
 	private sensorControls = {};
 	private reverbFile;
 	private graphs: JsonGraphSubject[] = [];
-	private featureInfo: BehaviorSubject<FeatureInfo[]> = new BehaviorSubject([]);
+	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
 	constructor(audioContext, scheduleAheadTime, optimizedMode, reverbFile) {
 		GlobalVars.DYMO_STORE = new DymoStore();
@@ -59,8 +59,8 @@ export class DymoManager {
 		return newGraph.asObservable();
 	}
 
-	getFeatureInfo(): Observable<FeatureInfo[]> {
-		return this.featureInfo.asObservable();
+	getAttributeInfo(): Observable<AttributeInfo[]> {
+		return this.attributeInfo.asObservable();
 	}
 
 	loadDymoAndRendering(dymoUri, renderingUri): Promise<any> {
@@ -80,7 +80,7 @@ export class DymoManager {
 		for (var key in loadedRendering[1]) {
 			var currentControl = loadedRendering[1][key];
 			if (GlobalVars.DYMO_STORE.isSubclassOf(currentControl.getType(), uris.UI_CONTROL)) {
-				this.uiControls[key] = new UIControl(currentControl);
+				this.uiControls.push(new UIControl(currentControl));
 			}
 			if (GlobalVars.DYMO_STORE.isSubclassOf(currentControl.getType(), uris.SENSOR_CONTROL)) {
 				this.sensorControls[key] = currentControl;
@@ -90,7 +90,7 @@ export class DymoManager {
 			this.reverbFile = 'node_modules/dymo-core/audio/impulse_rev.wav';
 		}
 		this.graphs.forEach(g => g.update());
-		this.featureInfo.next(GlobalVars.DYMO_STORE.getFeatureInfo());
+		this.attributeInfo.next(GlobalVars.DYMO_STORE.getAttributeInfo());
 		return this.scheduler.init(this.reverbFile, loadedDymos);
 	}
 
@@ -159,12 +159,8 @@ export class DymoManager {
 		return this.rendering;
 	}
 
-	getUIControls() {
+	getUIControls(): UIControl[] {
 		return this.uiControls;
-	}
-
-	getUIControl(key) {
-		return this.uiControls[key];
 	}
 
 	getSensorControls() {

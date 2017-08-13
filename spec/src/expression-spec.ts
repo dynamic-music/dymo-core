@@ -48,7 +48,7 @@ describe("the expressions unit", function() {
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     let loader = new DymoLoader(store);
     loader.createRenderingFromStore();
-    let loaded = loader.getMappings();
+    let loaded = loader.getConstraints();
     let loadedString = Object.keys(loaded).map(k => loaded[k].toString())[0];
     //console.log(loadedString);
     expect(loadedString).toEqual(constraint.toString());
@@ -116,13 +116,12 @@ describe("the expressions unit", function() {
     //load constraints, start maintaining, and check if it worked
     let loader = new DymoLoader(store)
     loader.createRenderingFromStore();
-    (<Constraint[]>_.values(loader.getMappings())).forEach(c => c.maintain(store));
     expect([0.5,0.8]).toContain(store.findParameterValue(dymo1, u.AMPLITUDE));
     expect([2,1.25]).toContain(store.findParameterValue(dymo1, u.DURATION_RATIO));
     expect([1,2]).toContain(store.findParameterValue(dymo2, u.AMPLITUDE));
     expect([1,0.5]).toContain(store.findParameterValue(dymo2, u.DURATION_RATIO));
-    expect(store.findParameterValue(dymo3, u.AMPLITUDE)).toBeUndefined();
-    expect(store.findParameterValue(dymo3, u.DURATION_RATIO)).toBeUndefined();
+    expect(store.findParameterValue(dymo3, u.AMPLITUDE)).toEqual(1); //automatic init with standard values!!
+    expect(store.findParameterValue(dymo3, u.DURATION_RATIO)).toEqual(1); //automatic init with standard values!!
 
     //check if system reacts to changed vars
     store.setParameter(dymo1, u.DURATION_RATIO, 1.6);
@@ -133,36 +132,6 @@ describe("the expressions unit", function() {
     store.setParameter(dymo1, u.AMPLITUDE, 1.25);
     expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(1.25);
     expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(0.8);
-
-  });
-
-  it("can handle functional expressions", function() {
-
-    let renderingUri = u.CONTEXT_URI+"rendering1";
-    let exp = 'Amplitude(x) == 1 / DurationRatio(x)';
-
-    //set it all up and check if it worked
-    let vars = [new TypedVariable('x', u.DYMO)];
-    let constraint = new Constraint(vars, new Expression(exp, true));
-    new ConstraintWriter(store).addConstraint(renderingUri, constraint);
-    let loader = new DymoLoader(store)
-    loader.createRenderingFromStore();
-    (<Constraint[]>_.values(loader.getMappings())).forEach(c => c.maintain(store));
-    expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(0.5);
-    expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(2);
-    expect(store.findParameterValue(dymo2, u.AMPLITUDE)).toEqual(2);
-    expect(store.findParameterValue(dymo2, u.DURATION_RATIO)).toEqual(0.5);
-    expect(store.findParameterValue(dymo3, u.AMPLITUDE)).toBeUndefined();
-    expect(store.findParameterValue(dymo3, u.DURATION_RATIO)).toBeUndefined();
-
-    //check if system reacts to changed vars
-    store.setParameter(dymo1, u.DURATION_RATIO, 1.6);
-    expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(0.625);
-    expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(1.6);
-    //should be unchanged
-    store.setParameter(dymo1, u.AMPLITUDE, 1.25);
-    expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(0.625);
-    expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(1.6);
 
   });
 
@@ -179,7 +148,6 @@ describe("the expressions unit", function() {
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     let loader = new DymoLoader(store)
     loader.createRenderingFromStore();
-    (<Constraint[]>_.values(loader.getMappings())).forEach(c => c.maintain(store));
     expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(0.4);
     expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(2);
 
@@ -204,20 +172,19 @@ describe("the expressions unit", function() {
     //set it all up and check if it worked
     let vars = [
       new TypedVariable('x', u.DYMO),
-      new ExpressionVariable('y', u.SLIDER, new Expression('y == "'+controlUri+'"'))
+      new SetBasedVariable('y', [controlUri])
     ];
-    let constraint = new Constraint(vars, new Expression(exp));
+    let constraint = new Constraint(vars, new Expression(exp, true));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     let loader = new DymoLoader(store)
     let control = loader.createRenderingFromStore()[1][controlUri];
-    (<Constraint[]>_.values(loader.getMappings())).forEach(c => c.maintain(store));
     //console.log(_.values(loader.getMappings())[0].toString());
-    expect(store.findParameterValue(dymo1, u.AMPLITUDE)).toEqual(0.8);
-    expect(store.findParameterValue(dymo1, u.DURATION_RATIO)).toEqual(2);
-    expect(store.findParameterValue(dymo2, u.AMPLITUDE)).toEqual(1);
-    expect(store.findParameterValue(dymo2, u.DURATION_RATIO)).toEqual(0.5);
-    expect(store.findParameterValue(dymo3, u.AMPLITUDE)).toBeUndefined();
-    expect(store.findParameterValue(dymo3, u.DURATION_RATIO)).toBeUndefined();
+    expect([0.5,0.8]).toContain(store.findParameterValue(dymo1, u.AMPLITUDE));
+    expect([2,1.25]).toContain(store.findParameterValue(dymo1, u.DURATION_RATIO));
+    expect([1,2]).toContain(store.findParameterValue(dymo2, u.AMPLITUDE));
+    expect([1,0.5]).toContain(store.findParameterValue(dymo2, u.DURATION_RATIO));
+    expect(store.findParameterValue(dymo3, u.AMPLITUDE)).toEqual(1); //automatic init with standard values!!
+    expect(store.findParameterValue(dymo3, u.DURATION_RATIO)).toEqual(1); //automatic init with standard values!!
 
     control.updateValue(0.5);
     let amp1 = store.findParameterValue(dymo1, u.AMPLITUDE);
@@ -226,10 +193,19 @@ describe("the expressions unit", function() {
     expect(store.findParameterValue(dymo2, u.AMPLITUDE)).toEqual(1);
     expect(store.findParameterValue(dymo2, u.DURATION_RATIO)).toEqual(0.5);
 
+    //constraint is directional, so no update
     store.setParameter(dymo2, u.AMPLITUDE, 2);
     let amp2 = store.findParameterValue(dymo2, u.AMPLITUDE);
     let dur2 = store.findParameterValue(dymo2, u.DURATION_RATIO);
-    expect([[2,0.25,0.5],[2,0.5,1]]).toContain([amp2,dur2,control.value]);
+    expect([[ 2, 0.5, 0.5 ]]).toContain([amp2,dur2,control.value]);
+    constraint.stopMaintaining();
+
+    //try with non-directional constraint for craziness
+    new Constraint(vars, new Expression(exp, false)).maintain(store);
+    store.setParameter(dymo2, u.AMPLITUDE, 2);
+    amp2 = store.findParameterValue(dymo2, u.AMPLITUDE);
+    dur2 = store.findParameterValue(dymo2, u.DURATION_RATIO);
+    expect([[2,0.25,0.5],[2,0.5,1],[ 0,0,7.884458e-7],['Infinity',0,Infinity ]]).toContain([amp2,dur2,control.value]);
 
   });
 

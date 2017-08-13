@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as math from 'mathjs';
-import * as u from '../../src/globals/uris';
-import { DymoStore } from '../../src/io/dymostore';
+import * as u from '../globals/uris';
+import { DymoStore } from '../io/dymostore';
 import { Maintainer } from './maintainer';
 import { MathjsNode } from '../globals/types';
 
@@ -14,9 +14,9 @@ export class Expression {
   private varsAndFuncs: Map<string,MathjsNode> = new Map<string,MathjsNode>(); //map with vars and funcs
   private currentMaintainers: Map<Object,Maintainer> = new Map<Object,Maintainer>();
 
-  constructor(expressionString: string, isFunction?: boolean, mathjsTree?: MathjsNode) {
+  constructor(expressionString: string, isDirectional?: boolean, mathjsTree?: MathjsNode) {
     this.mathjsTree = mathjsTree ? mathjsTree : math.parse(expressionString);
-    this.isFunction = isFunction && this.checkIfFunctionPossible();
+    this.isFunction = isDirectional && this.checkIfFunctionPossible();
     this.treeWithoutFuncs = this.replaceFunctionalExpressions(this.mathjsTree);
   }
 
@@ -42,8 +42,10 @@ export class Expression {
         varsAndVals[v] = value;
       }
     });
-    //then eval function with values
-    return this.treeWithoutFuncs.eval(varsAndVals);
+    if (_.keys(vars).length === _.keys(varsAndVals).length) {
+      //all values could be found, so eval function with values
+      return this.treeWithoutFuncs.eval(varsAndVals);
+    }
   }
 
   maintain(vars: Object, store: DymoStore) {
@@ -52,14 +54,18 @@ export class Expression {
       let featureFreeTree = this.treeWithoutFuncs;
       //gather the functional objects for all variables and add constants where possible
       this.varsAndFuncs.forEach((f,v) => {
-        let objectUri = this.getFunctionalObject(f, vars, store);
-        let objectType = store.findObject(objectUri, u.TYPE);
+        let objectUriOrVal = this.getFunctionalObject(f, vars, store);
+        let objectType = store.findObject(objectUriOrVal, u.TYPE);
         if (objectType === u.FEATURE_TYPE || store.isSubtypeOf(objectType, u.FEATURE_TYPE)) {
           //replace features (which are immutable) with constants
-          let featureNode = new math.expression.node.ConstantNode(store.findObjectValue(objectUri, u.VALUE));
+          let featureNode = new math.expression.node.ConstantNode(store.findObjectValue(objectUriOrVal, u.VALUE));
+          featureFreeTree = this.replaceSymbolInTree(featureFreeTree, v, featureNode);
+        } else if (objectUriOrVal != null && typeof objectUriOrVal !== 'string') {
+          //insert numerical and boolean constants TODO also string ones....
+          let featureNode = new math.expression.node.ConstantNode(objectUriOrVal);
           featureFreeTree = this.replaceSymbolInTree(featureFreeTree, v, featureNode);
         } else {
-          varsAndUris.set(v, objectUri);
+          varsAndUris.set(v, objectUriOrVal);
         }
       });
       this.currentMaintainers.set(vars, new Maintainer(varsAndUris, featureFreeTree, this.isFunction, store));
@@ -80,31 +86,41 @@ export class Expression {
     return value ? value : uri;
   }
 
-  private getFunctionalObject(expression: MathjsNode, vars: Object, store: DymoStore): string {
+  private getFunctionalObject(expression: MathjsNode, vars: Object, store: DymoStore): any {
     if (expression.isFunctionNode) {
       let arg = this.getFunctionalObject(expression["args"][0], vars, store);
       let funcName = u.DYMO_ONTOLOGY_URI+expression["fn"]["name"];
       //console.log(value, u.DYMO_ONTOLOGY_URI+func["fn"]["name"], u.PITCH_FEATURE, store.findObject(value, u.DYMO_ONTOLOGY_URI+func["fn"]["name"]))
       let result = store.findObject(arg, funcName);
       if (result == null) {
-        result = store.findObjectOfType(arg, u.HAS_PARAMETER, funcName);
-      }
-      if (result == null) {
-        result = store.findObjectOfType(arg, u.HAS_FEATURE, funcName);
-      }
-      if (result == null) {
         result = store.findObjectOfType(arg, u.HAS_CONTROL_PARAM, u.MOBILE_AUDIO_ONTOLOGY_URI+expression["fn"]["name"]);
       }
-      if (result == null && funcName === u.LEVEL_FEATURE) {
-        result = store.findLevel(arg);
+      if (result == null) {
+        result = this.findOrInitFeatureOrParam(arg, funcName, store);
       }
-      if (result == null && funcName === u.INDEX_FEATURE) {
-        result = store.findPartIndex(arg);
+      if (result == null) {
+        result = this.findOrInitFeatureOrParam(arg, u.CONTEXT_URI+expression["fn"]["name"], store);
       }
       return result;
     }
     //it's the innermost symbol node
     return vars[expression.name];
+  }
+
+  private findOrInitFeatureOrParam(owner: string, type: string, store: DymoStore): string|number {
+    if (type === u.LEVEL_FEATURE) {
+      return store.findLevel(owner);
+    } else if (type === u.INDEX_FEATURE) {
+      return store.findPartIndex(owner);
+    }
+    let typeOfType = store.findObject(type, u.TYPE);
+    if (typeOfType === u.PARAMETER_TYPE || store.isSubclassOf(typeOfType, u.PARAMETER_TYPE)) {
+      let paramUri = store.findObjectOfType(owner, u.HAS_PARAMETER, type);
+      return paramUri != null ? paramUri : store.setParameter(owner, type);
+    } else if (typeOfType === u.FEATURE_TYPE || store.isSubclassOf(typeOfType, u.FEATURE_TYPE)) {
+      let featureUri = store.findObjectOfType(owner, u.HAS_FEATURE, type);
+      return featureUri != null ? featureUri : store.setFeature(owner, type);
+    }
   }
 
   private replaceFunctionalExpressions(mathjsTree: MathjsNode) {

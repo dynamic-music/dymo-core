@@ -19,6 +19,7 @@ import { RandomControl } from '../controls/auto/randomcontrol'
 import { BrownianControl } from '../controls/auto/browniancontrol'
 import { RampControl } from '../controls/auto/rampcontrol'
 import { ConstraintLoader } from './constraintloader';
+import { Constraint } from '../model/constraint';
 
 /**
  * A DymoLoader loads dymos from rdf, jams, or json-ld into the given DymoStore
@@ -31,14 +32,14 @@ export class DymoLoader {
   private store: DymoStore;
   private dymoBasePath = '';
   private controls = {}; //dict with all the controls created
-  private mappings = {};
+  private constraints: Constraint[] = [];
 
   constructor(dymoStore) {
     this.store = dymoStore;
   }
 
-  getMappings() {
-    return this.mappings;
+  getConstraints() {
+    return this.constraints;
   }
 
   loadDymoFromFile(fileUri): Promise<string[]> {
@@ -119,11 +120,11 @@ export class DymoLoader {
     var topDymos = [];
     //first create all dymos and save references in map
     var topDymoUris = this.store.findTopDymos();
-    for (var i = 0; i < topDymoUris.length; i++) {
-      this.store.addBasePath(topDymoUris[i], this.dymoBasePath)
+    topDymoUris.forEach(u => {
+      this.store.addBasePath(u, this.dymoBasePath)
       //create all dymo mappings
-      this.loadMappings();
-    }
+      this.loadConstraints(u);
+    })
     return topDymoUris;
   }
 
@@ -131,13 +132,19 @@ export class DymoLoader {
     var renderingUri = this.store.findSubject(uris.TYPE, uris.RENDERING);
     var rendering = new Rendering(this.store.findObject(renderingUri, uris.HAS_DYMO));
     this.createControls();
-    this.loadMappings(renderingUri);
-    this.mappings = _.merge(this.mappings, new ConstraintLoader(this.store).loadConstraints(renderingUri));
+    //this.loadMappings(renderingUri);
+    this.loadConstraints(renderingUri);
     this.loadNavigators(renderingUri, rendering);
     return [rendering, this.controls];
   }
 
-  private loadMappings(ownerUri?) {
+  private loadConstraints(ownerUri: string) {
+    let constraints = new ConstraintLoader(this.store).loadConstraints(ownerUri);
+    constraints.forEach(c => c.maintain(this.store));
+    this.constraints = this.constraints.concat(constraints);
+  }
+
+  /*private loadMappings(ownerUri?) {
     var mappingUris;
     if (ownerUri) {
       mappingUris = this.store.findAllObjects(ownerUri, uris.HAS_MAPPING);
@@ -153,7 +160,7 @@ export class DymoLoader {
         this.mappings[mappingUris[i]] = this.createMapping(mappingUris[i], dymoUri);
       }
     }
-  }
+  }*/
 
   private loadNavigators(renderingUri: string, rendering: Rendering) {
     var navigators = this.store.findAllObjects(renderingUri, uris.HAS_NAVIGATOR);
@@ -181,7 +188,7 @@ export class DymoLoader {
     }
   }
 
-  private createMapping(mappingUri, dymoUri?) {
+  /*private createMapping(mappingUri, dymoUri?) {
     var isUnidirectional = this.store.findObjectValue(mappingUri, uris.IS_UNIDIRECTIONAL);
     var mappingFunctionUri = this.store.findObject(mappingUri, uris.HAS_FUNCTION);
     var mappingFunction = this.createFunction(mappingFunctionUri, isUnidirectional, dymoUri);
@@ -240,7 +247,7 @@ export class DymoLoader {
       }
     }
     return [domainDims, domainDimTypes];
-  }
+  }*/
 
 
   private getNavigator(type) {

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import * as math from 'mathjs';
-import { VALUE } from '../../src/globals/uris';
+import { VALUE } from '../globals/uris';
 import { DymoStore } from '../io/dymostore';
 import { MathjsNode } from '../globals/types';
 import { LogicTools } from '../math/logictools';
@@ -14,17 +14,20 @@ export class Maintainer {
   private logicjsGoalFunction: Function;
   private mathjsCompiledExpression: MathjsCompiled;
   private urisAndVars: Map<string,string[]> = new Map<string,string[]>();
+  private allVarNames: string[] = [];
   private currentValues: {} = {};
   private featureVars: string[];
 
-  constructor(private varsAndUris: Map<string,string>, private expression: MathjsNode, isFunction: boolean, private store: DymoStore) {
+  constructor(private varsAndUris: Map<string,string>, private expression: MathjsNode, isDirectional: boolean, private store: DymoStore) {
+    //console.log(expression.toString())
     varsAndUris.forEach((u,v) => this.setUriAndVar(u,v));
     varsAndUris.forEach((uri,varName) => {
       store.addValueObserver(uri, VALUE, this);
       this.updateVar(varName, uri);
+      this.allVarNames.push(varName);
     });
-    if (isFunction) {
-      this.mathjsCompiledExpression = this.expression["args"][1].compile();
+    if (isDirectional) {
+      this.mathjsCompiledExpression = this.expression.args[1].compile();
     } else {
       this.logicjsGoalFunction = LogicTools.createGoalFunction(this.expression);
     }
@@ -41,18 +44,28 @@ export class Maintainer {
   }
 
   private maintain(changedVars?: string[]) {
-    //only maintain if all values defined
-    if (_.keys(this.currentValues).length === this.varsAndUris.size) {
-      let varNames = _.keys(this.currentValues);
-      let values = _.values(this.currentValues);
-      if (this.mathjsCompiledExpression && (!changedVars || changedVars.length == 1 || changedVars.indexOf(varNames[0]) < 0)) {
-        let newValue = this.mathjsCompiledExpression.eval(this.currentValues);
-        this.store.setValue(this.varsAndUris.get(varNames[0]), VALUE, newValue);
-      } else if (this.logicjsGoalFunction) {
-        let index = this.getRandomIndex(varNames, changedVars);
-        let newValue = LogicTools.solveConstraint(this.logicjsGoalFunction, values, index);
-        this.store.setValue(this.varsAndUris.get(varNames[index]), VALUE, newValue);
+    let defVarNames = _.keys(this.currentValues);
+    let values = _.values(this.currentValues);
+    let undefVars = _.difference(this.allVarNames, defVarNames);
+    if (this.mathjsCompiledExpression
+      //goalvar is the only still undefined var
+      && ((undefVars.length === 1 && undefVars[0] === this.allVarNames[0])
+        //all vars defined and changed vars dont contain goal var
+        || (undefVars.length === 0 && (!changedVars || changedVars.indexOf(this.allVarNames[0]) < 0)))) {
+      let newValue = this.mathjsCompiledExpression.eval(this.currentValues);
+      this.store.setValue(this.varsAndUris.get(this.allVarNames[0]), VALUE, newValue);
+      //console.log(this.varsAndUris, this.allVarNames[0])
+    } else if (this.logicjsGoalFunction) {
+      let index;
+      if (undefVars.length === 1) {
+        //one variable still undefined, solve for that
+        index = this.allVarNames.indexOf(undefVars[0]);
+      } else {
+        //solve for one of the unchanged vars
+        index = this.getRandomIndex(this.allVarNames, changedVars);
       }
+      let newValue = LogicTools.solveConstraint(this.logicjsGoalFunction, values, index);
+      this.store.setValue(this.varsAndUris.get(this.allVarNames[index]), VALUE, newValue);
     }
   }
 

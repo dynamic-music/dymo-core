@@ -154,7 +154,7 @@ export class EasyStore {
 	 * can be used without valuePredicate/value to simply get the objectUri and/or add a missing object without a value.
 	 * can also be used without subject and predicate, in which case an independent object is added or changed
 	 */
-	setObjectValue(subject, predicate, objectType, valuePredicate?: string, value?: string): string {
+	setObjectValue(subject: string, predicate: string, objectType: string, valuePredicate?: string, value?: any): string {
 		var objectUri;
 		if (subject && predicate) {
 			objectUri = this.findObjectOfType(subject, predicate, objectType);

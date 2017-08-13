@@ -2,7 +2,6 @@ import 'isomorphic-fetch';
 import { Scheduler } from '../../src/audio/scheduler';
 import { DymoStore } from '../../src/io/dymostore';
 import { DymoLoader } from '../../src/io/dymoloader';
-import { GlobalVars } from '../../src/globals/globals';
 import * as u from '../../src/globals/uris';
 import { SERVER_ROOT } from './server';
 
@@ -11,7 +10,7 @@ describe("a dymoloader", function() {
 	//window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	//var audioContext = new AudioContext();
 
-	var loader;
+	var loader: DymoLoader, store: DymoStore;
 	var dymo, dymoMap, scheduler, rendering, manager;
 	var filespath = SERVER_ROOT+'spec/files/';
 	var dymoPath = filespath+'dymo.json';
@@ -26,10 +25,10 @@ describe("a dymoloader", function() {
 	var isPlaying;
 
 	beforeEach(function(done) {
-		GlobalVars.DYMO_STORE = new DymoStore();
-		GlobalVars.DYMO_STORE.loadOntologies(SERVER_ROOT+'ontologies/')
+		store = new DymoStore();
+		store.loadOntologies(SERVER_ROOT+'ontologies/')
 			.then(() => {
-				loader = new DymoLoader(GlobalVars.DYMO_STORE);
+				loader = new DymoLoader(store);
 				scheduler = new Scheduler(null);
 				fadePosition = 0;
 				isPlaying = false;
@@ -44,11 +43,11 @@ describe("a dymoloader", function() {
 			//dymoMap = loadedDymo[1];
 			expect(topDymoUri).toEqual(u.CONTEXT_URI+"dymo0");
 			//test if initial parameter value loaded correctly
-			expect(GlobalVars.DYMO_STORE.findParameterValue(u.CONTEXT_URI+"dymo4", u.AMPLITUDE)).toEqual(0.5);
-			expect(GlobalVars.DYMO_STORE.findParameterValue(u.CONTEXT_URI+"dymo76", u.AMPLITUDE)).toBeUndefined();
+			expect(store.findParameterValue(u.CONTEXT_URI+"dymo4", u.AMPLITUDE)).toEqual(0.5);
+			expect(store.findParameterValue(u.CONTEXT_URI+"dymo76", u.AMPLITUDE)).toBeUndefined();
 			//expect(dymoMap[CONTEXT_URI+"dymo76"].getParameter(AMPLITUDE).getValue()).toEqual(1);
-			expect(GlobalVars.DYMO_STORE.findParts(topDymoUri).length).toBe(330);
-			expect(GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(topDymoUri).length).toBe(331);
+			expect(store.findParts(topDymoUri).length).toBe(330);
+			expect(store.findAllObjectsInHierarchy(topDymoUri).length).toBe(331);
 			//expect(Object.keys(dymoMap).length).toBe(331);
 			done();
 		});
@@ -58,14 +57,13 @@ describe("a dymoloader", function() {
 		loader.loadDymoFromFile(mixDymoPath).then(loadedDymo => {
 			var topDymoUri2 = loadedDymo[0];
 			expect(topDymoUri2).toEqual(u.CONTEXT_URI+"mixdymo");
-			expect(GlobalVars.DYMO_STORE.findParts(u.CONTEXT_URI+"mixdymo").length).toBe(2);
-			expect(GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(topDymoUri2).length).toBe(9);
-			//expect(GlobalVars.DYMO_STORE.findParameterValue(CONTEXT_URI+"mixdymo", CONTEXT_URI+"Fade")).not.toBeUndefined();
-			//expect(dymo2.getParameter(CONTEXT_URI+"Fade").getObservers().length).toBe(1);
-			GlobalVars.DYMO_STORE.setParameter(u.CONTEXT_URI+"mixdymo", u.CONTEXT_URI+"Fade", 0.7);
-			var parts = GlobalVars.DYMO_STORE.findParts(u.CONTEXT_URI+"mixdymo");
-			expect(GlobalVars.DYMO_STORE.findParameterValue(parts[0], u.AMPLITUDE)).toBeCloseTo(0.3, 10);
-			expect(GlobalVars.DYMO_STORE.findParameterValue(parts[1], u.AMPLITUDE)).toBe(0.7);
+			expect(store.findParts(u.CONTEXT_URI+"mixdymo").length).toBe(2);
+			expect(store.findAllObjectsInHierarchy(topDymoUri2).length).toBe(3);
+			store.setParameter(u.CONTEXT_URI+"mixdymo", u.CONTEXT_URI+"Fade", 0.7);
+			expect(store.findParameterValue(u.CONTEXT_URI+"mixdymo", u.CONTEXT_URI+"Fade")).not.toBeUndefined();
+			var parts = store.findParts(u.CONTEXT_URI+"mixdymo");
+			expect(store.findParameterValue(parts[0], u.AMPLITUDE)).toBeCloseTo(0.3, 10);
+			expect(store.findParameterValue(parts[1], u.AMPLITUDE)).toBe(0.7);
 			done();
 		});
 	});
@@ -75,19 +73,17 @@ describe("a dymoloader", function() {
 			loader.loadRenderingFromFile(controlRenderingPath).then(loadedRendering => {
 				rendering = loadedRendering[0];
 				var controls = loadedRendering[1];
-				var mappingsObj = loader.getMappings();
+				var mappingsObj = loader.getConstraints();
 				var mappings = Object.keys(mappingsObj).map(k => mappingsObj[k]);
 				expect(mappings.length).toEqual(3);
-				expect(mappings[0].getTargets().length).toEqual(1);
-				expect(mappings[1].getTargets()).toBeUndefined();
-				expect(mappings[2].getTargets().length).toEqual(3);
-				//change feature and see if selection of dymos adjusts!
-				GlobalVars.DYMO_STORE.setParameter(u.CONTEXT_URI+"dymo1", u.DURATION_RATIO, 0.9);
-				expect(mappings[0].getTargets().length).toEqual(2);
-				expect(Object.keys(controls).length).toEqual(3);
-				expect(GlobalVars.DYMO_STORE.findParameterValue(null, u.LISTENER_ORIENTATION)).toBeUndefined();
+				expect(mappings[0].toString()).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, DurationRatio(x) > 0.7 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => PlaybackRate(x) == c');
+				expect(mappings[1].toString()).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, LevelFeature(x) == 1 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => Amplitude(x) == c');
+				expect(mappings[2].toString()).toEqual('∀ l in ["http://tiny.cc/mobile-audio-ontology#ListenerOrientation"] => ∀ o in ["http://tiny.cc/dymo-context/orientation"] => l == 360 * o');
+				//change parameter and see if selection of dymos adjusts!
+				store.setParameter(u.CONTEXT_URI+"dymo1", u.DURATION_RATIO, 0.9);
+				expect(store.findObjectValue(u.LISTENER_ORIENTATION, u.VALUE)).toBeUndefined();
 				controls[u.CONTEXT_URI+"orientation"].updateValue(0.5);
-				expect(GlobalVars.DYMO_STORE.findParameterValue(null, u.LISTENER_ORIENTATION)).toBe(180);
+				expect(store.findObjectValue(u.LISTENER_ORIENTATION, u.VALUE)).toBe(180);
 				done();
 			});
 		});
@@ -116,10 +112,10 @@ describe("a dymoloader", function() {
 		loader.loadDymoFromFile(dymo3Path).then(loadedDymo => {
 			var topDymoUri3 = loadedDymo[0];
 			expect(topDymoUri3).toEqual(u.CONTEXT_URI+"dymo");
-			var parts = GlobalVars.DYMO_STORE.findParts(u.CONTEXT_URI+"dymo");
+			var parts = store.findParts(u.CONTEXT_URI+"dymo");
 			expect(parts.length).toBe(1);
-			expect(GlobalVars.DYMO_STORE.findParts(parts[0]).length).toBe(3);
-			expect(GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(topDymoUri3).length).toBe(5);
+			expect(store.findParts(parts[0]).length).toBe(3);
+			expect(store.findAllObjectsInHierarchy(topDymoUri3).length).toBe(5);
 			done();
 		});
 	});

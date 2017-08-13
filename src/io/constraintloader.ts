@@ -9,29 +9,28 @@ import { ExpressionTools } from '../math/expressiontools';
 
 export class ConstraintLoader {
 
-  private vars: BoundVariable[] = [];
-
   constructor(private store: DymoStore) {}
 
-  loadConstraints(renderingUri: string) {
-    let constraintUris = this.store.findAllObjects(renderingUri, uris.CONSTRAINT);
+  loadConstraints(ownerUri: string): Constraint[] {
+    let constraintUris = this.store.findAllObjects(ownerUri, uris.CONSTRAINT);
     let constraints = constraintUris.map(c => this.createConstraint(c));
-    return _.zipObject(constraintUris, constraints);
+    return constraints;//_.zipObject(constraintUris, constraints);
   }
 
   private createConstraint(constraintUri: string): Constraint {
-    let body = this.recursiveLoadBoundVariables(constraintUri);
-    return new Constraint(this.vars, this.loadExpression(body));
+    let vars = [];
+    let body = this.recursiveLoadBoundVariables(constraintUri, vars);
+    return new Constraint(vars, this.loadExpression(body));
   }
 
   //returns the body of the innermost bound variable (the meat of the expression)
-  private recursiveLoadBoundVariables(expressionUri: string): string {
+  private recursiveLoadBoundVariables(expressionUri: string, vars: BoundVariable[]): string {
     let expressionType = this.store.findObject(expressionUri, uris.TYPE);
     if (this.store.isSubclassOf(expressionType, uris.QUANTIFIER)) {
       let varUri = this.store.findObject(expressionUri, uris.VARS);
       let body = this.store.findObject(expressionUri, uris.Q_BODY);
-      this.vars.push(this.loadVariable(varUri));
-      return this.recursiveLoadBoundVariables(body);
+      vars.push(this.loadVariable(varUri));
+      return this.recursiveLoadBoundVariables(body, vars);
     }
     return expressionUri;
   }
