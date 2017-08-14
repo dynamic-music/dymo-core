@@ -1,4 +1,4 @@
-import { GlobalVars } from '../globals/globals'
+import { DymoStore } from '../io/dymostore'
 import { PLAY } from '../globals/uris'
 import { DymoNavigator } from '../navigators/navigator'
 import { SubsetNavigator } from '../navigators/subsetnav'
@@ -12,25 +12,25 @@ export class Rendering {
 	private dymoUri;
 	private navigator;
 
-	constructor(dymoUri) {
+	constructor(dymoUri: string, private store: DymoStore) {
 		this.dymoUri = dymoUri;
 	}
 
 	play() {
 		if (this.dymoUri) {
-			GlobalVars.DYMO_STORE.setParameter(this.dymoUri, PLAY, 1);
+			this.store.setParameter(this.dymoUri, PLAY, 1);
 		}
 	}
 
 	stop() {
 		if (this.dymoUri) {
-			GlobalVars.DYMO_STORE.setParameter(this.dymoUri, PLAY, 0);
+			this.store.setParameter(this.dymoUri, PLAY, 0);
 		}
 	}
 
 	addSubsetNavigator(boundVar: BoundVariable, nav: SubsetNavigator) {
 		if (!this.navigator) {
-			this.navigator = new DymoNavigator(this.dymoUri, GlobalVars.DYMO_STORE);//, new SequentialNavigator(dymo));
+			this.navigator = new DymoNavigator(this.dymoUri, this.store);//, new SequentialNavigator(dymo));
 		}
 		this.navigator.addSubsetNavigator(boundVar, nav);
 	}

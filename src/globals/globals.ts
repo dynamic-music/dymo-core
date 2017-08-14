@@ -2,8 +2,6 @@ import { DymoStore } from '../io/dymostore'
 
 export module GlobalVars {
 
-  export var DYMO_STORE: DymoStore;
-
   export var OPTIMIZED_MODE: boolean = false;
   export var LOGGING_ON: boolean = false;
   export var SCHEDULE_AHEAD_TIME: number = 0.1; //seconds

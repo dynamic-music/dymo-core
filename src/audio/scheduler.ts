@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 import { flattenArray, removeDuplicates } from 'arrayutils';
+import { DymoStore } from '../io/dymostore';
 import { GlobalVars } from '../globals/globals'
 import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER, CONTEXT_URI } from '../globals/uris'
 import { SchedulerThread } from './thread'
@@ -18,7 +19,7 @@ export class Scheduler {
 	private convolverSend;
 	private delaySend;
 
-	constructor(private audioContext) { }
+	constructor(private audioContext, private store: DymoStore) { }
 
 	getPlayingDymoUris(): Observable<string[]> {
 		return this.playingDymoUris.asObservable();
@@ -27,19 +28,19 @@ export class Scheduler {
 	init(reverbFile, dymoUris): Promise<any> {
 		if (this.audioContext) {
 			//init horizontal listener orientation in degrees
-			GlobalVars.DYMO_STORE.setParameter(null, LISTENER_ORIENTATION, 0);
-			GlobalVars.DYMO_STORE.addParameterObserver(null, LISTENER_ORIENTATION, this);
+			this.store.setParameter(null, LISTENER_ORIENTATION, 0);
+			this.store.addParameterObserver(null, LISTENER_ORIENTATION, this);
 			let loadingPromises = this.loadBuffers(dymoUris);
 
 			//init reverb if needed
-			if (reverbFile && GlobalVars.DYMO_STORE.find(null, null, REVERB).length > 0) {
+			if (reverbFile && this.store.find(null, null, REVERB).length > 0) {
 				this.convolverSend = this.audioContext.createConvolver();
 				this.convolverSend.connect(this.audioContext.destination);
 				loadingPromises.push(this.loadReverbFile(reverbFile));
 			}
 
 			//init delay if needed
-			if (GlobalVars.DYMO_STORE.find(null, null, DELAY).length > 0) {
+			if (this.store.find(null, null, DELAY).length > 0) {
 				var delaySend = this.audioContext.createDelay();
 				delaySend.delayTime.value = 0.5;
 				delaySend.connect(this.audioContext.destination);
@@ -49,7 +50,7 @@ export class Scheduler {
 				delayFeedback.connect(delaySend);
 			}
 			//start observing play parameters
-			GlobalVars.DYMO_STORE.addTypeObserver(PLAY, VALUE, this);
+			this.store.addTypeObserver(PLAY, VALUE, this);
 			return Promise.all(loadingPromises);
 		}
 		return Promise.resolve();
@@ -66,9 +67,9 @@ export class Scheduler {
 
 	private loadBuffers(dymoUris: string[]): Promise<void>[] {
 		//let allPaths = [];
-		//console.log(GlobalVars.DYMO_STORE.find(null, HAS_PART).map(r => r.subject + " " + r.object));
+		//console.log(this.store.find(null, HAS_PART).map(r => r.subject + " " + r.object));
 		let allPaths = flattenArray(dymoUris.map(uri =>
-			GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(uri).map(suburi => GlobalVars.DYMO_STORE.getSourcePath(suburi))
+			this.store.findAllObjectsInHierarchy(uri).map(suburi => this.store.getSourcePath(suburi))
 		));
 		allPaths = allPaths.filter(p => typeof p === "string");
 		allPaths = removeDuplicates(allPaths);
@@ -86,7 +87,7 @@ export class Scheduler {
 	}
 
 	getBuffer(dymoUri) {
-		return this.buffers[GlobalVars.DYMO_STORE.getSourcePath(dymoUri)];
+		return this.buffers[this.store.getSourcePath(dymoUri)];
 	}
 
 	updateNavigatorPosition(dymoUri, level, position) {
@@ -124,7 +125,7 @@ export class Scheduler {
 	}
 
 	play(dymoUri, navigator?: Navigator) {
-		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.buffers, this.convolverSend, this.delaySend, this.updatePlayingDymos.bind(this), this.threadEnded.bind(this));
+		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.buffers, this.convolverSend, this.delaySend, this.updatePlayingDymos.bind(this), this.threadEnded.bind(this), this.store);
 		this.threads.push(thread);
 	}
 
@@ -170,7 +171,7 @@ export class Scheduler {
 		if (!GlobalVars.OPTIMIZED_MODE) {
 			let uris = flattenArray(this.threads.map(t => Array.from(t.getAllSources().keys())));
 			uris = removeDuplicates(uris);
-			uris = flattenArray(uris.map(d => GlobalVars.DYMO_STORE.findAllParents(d)));
+			uris = flattenArray(uris.map(d => this.store.findAllParents(d)));
 			uris = removeDuplicates(uris);
 			uris.sort();
 			uris = uris.map(uri => uri.replace(CONTEXT_URI, ""));
@@ -189,7 +190,7 @@ export class Scheduler {
 			var angleInRadians = value / 180 * Math.PI;
 			this.audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
 		} else if (paramType == PLAY) {
-			var dymoUri = GlobalVars.DYMO_STORE.findSubject(HAS_PARAMETER, paramUri);
+			var dymoUri = this.store.findSubject(HAS_PARAMETER, paramUri);
 			if (value > 0) {
 				this.play(dymoUri);
 			} else {

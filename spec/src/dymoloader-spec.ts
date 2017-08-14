@@ -28,7 +28,7 @@ describe("a dymoloader", function() {
 		store.loadOntologies(SERVER_ROOT+'ontologies/')
 			.then(() => {
 				loader = new DymoLoader(store);
-				scheduler = new Scheduler(null);
+				scheduler = new Scheduler(null, store);
 				fadePosition = 0;
 				isPlaying = false;
 				done();

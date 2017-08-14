@@ -1,4 +1,5 @@
 import { GlobalVars } from '../globals/globals'
+import { DymoStore } from '../io/dymostore'
 import { ONSET, LOOP } from '../globals/uris'
 import { DymoNode } from './node'
 import { DymoSource } from './source'
@@ -27,7 +28,7 @@ export class SchedulerThread {
 	private currentSources = new Map();
 	private nextEventTime;
 
-	constructor(dymoUri, navigator, audioContext, buffers, convolverSend, delaySend, onChanged, onEnded) {
+	constructor(dymoUri, navigator, audioContext, buffers, convolverSend, delaySend, onChanged, onEnded, private store: DymoStore) {
 		this.dymoUri = dymoUri;
 		this.navigator = navigator;
 		this.audioContext = audioContext;
@@ -37,14 +38,14 @@ export class SchedulerThread {
 		this.onChanged = onChanged;
 		this.onEnded = onEnded;
 		if (!this.navigator) {
-			this.navigator = new DymoNavigator(dymoUri, GlobalVars.DYMO_STORE, new SequentialNavigator(dymoUri, GlobalVars.DYMO_STORE));
+			this.navigator = new DymoNavigator(dymoUri, this.store, new SequentialNavigator(dymoUri, this.store));
 		}
 		//starts automatically
 		this.recursivePlay();
 	}
 
 	hasDymo(uri) {
-		var dymos = GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(this.dymoUri);
+		var dymos = this.store.findAllObjectsInHierarchy(this.dymoUri);
 		if (dymos.indexOf(uri)) {
 			return true;
 		}
@@ -70,7 +71,7 @@ export class SchedulerThread {
 		if (dymoUri === this.dymoUri) {
 			clearTimeout(this.timeoutID);
 		}
-		var subDymoUris = GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(dymoUri);
+		var subDymoUris = this.store.findAllObjectsInHierarchy(dymoUri);
 		for (var i = 0, ii = subDymoUris.length; i < ii; i++) {
 			if (this.nextSources) {
 				var currentNextSource = this.nextSources.get(subDymoUris[i])
@@ -116,7 +117,7 @@ export class SchedulerThread {
 		}
 		//stop automatically looping sources
 		for (var source of previousSources.values()) {
-			if (GlobalVars.DYMO_STORE.findParameterValue(source.getDymoUri(), LOOP)) {
+			if (this.store.findParameterValue(source.getDymoUri(), LOOP)) {
 				source.stop(startTime);
 			}
 		}
@@ -128,7 +129,7 @@ export class SchedulerThread {
 			var longestSource = this.nextEventTime[1];
 			this.nextEventTime = this.nextEventTime[0];
 			//smooth transition in case of a loop
-			if (longestSource && GlobalVars.DYMO_STORE.findParameterValue(longestSource.getDymoUri(), LOOP)) {
+			if (longestSource && this.store.findParameterValue(longestSource.getDymoUri(), LOOP)) {
 				this.nextEventTime -= GlobalVars.FADE_LENGTH;
 			}
 			var wakeupTime = (this.nextEventTime-this.audioContext.currentTime-GlobalVars.SCHEDULE_AHEAD_TIME)*1000;
@@ -179,7 +180,7 @@ export class SchedulerThread {
 			clearTimeout(this.timeoutID);
 			this.navigator.reset();
 			//remove all nodes (TODO works well but COULD BE DONE SOMEWHERE ELSE FOR EVERY NODE THAT HAS NO LONGER ANYTHING ATTACHED TO INPUT..)
-			var subDymoUris = GlobalVars.DYMO_STORE.findAllObjectsInHierarchy(this.dymoUri);
+			var subDymoUris = this.store.findAllObjectsInHierarchy(this.dymoUri);
 			subDymoUris.forEach(uri => {
 				this.nodes.get(uri) ? this.nodes.get(uri).removeAndDisconnect() : null;
 			});
@@ -193,9 +194,9 @@ export class SchedulerThread {
 		if (this.nextSources) {
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
 			var previousSourceDymoUri = this.currentSources.keys().next().value;
-			var previousOnset = GlobalVars.DYMO_STORE.findParameterValue(previousSourceDymoUri, ONSET);
+			var previousOnset = this.store.findParameterValue(previousSourceDymoUri, ONSET);
 			var nextSourceDymoUri = this.nextSources.keys().next().value;
-			var nextOnset = GlobalVars.DYMO_STORE.findParameterValue(nextSourceDymoUri, ONSET);
+			var nextOnset = this.store.findParameterValue(nextSourceDymoUri, ONSET);
 			var timeToNextOnset = Math.max(0, nextOnset-previousOnset);
 			//console.log(nextOnset)
 			if (!isNaN(nextOnset)) {
@@ -228,10 +229,10 @@ export class SchedulerThread {
 			}
 			var nextSources = new Map();
 			for (var i = 0; i < nextParts.length; i++) {
-				var sourcePath = GlobalVars.DYMO_STORE.getSourcePath(nextParts[i]);
+				var sourcePath = this.store.getSourcePath(nextParts[i]);
 				if (sourcePath) {
 					var buffer = this.buffers[sourcePath];
-					var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded.bind(this));
+					var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded.bind(this), this.store);
 					this.createAndConnectToNodes(newSource);
 					nextSources.set(nextParts[i], newSource);
 				}
@@ -242,7 +243,7 @@ export class SchedulerThread {
 
 	private logNextIndices(nextParts) {
 		console.log(nextParts.map(s => {
-			var index = GlobalVars.DYMO_STORE.findPartIndex(s);
+			var index = this.store.findPartIndex(s);
 			if (!isNaN(index)) {
 				return index;
 			} else {
@@ -253,7 +254,7 @@ export class SchedulerThread {
 
 	private createAndConnectToNodes(source) {
 		var currentNode = source;
-		var currentParentDymo = GlobalVars.DYMO_STORE.findParents(source.getDymoUri())[0];
+		var currentParentDymo = this.store.findParents(source.getDymoUri())[0];
 		while (currentParentDymo) {
 			//parent node already defined, so just connect and exit
 			if (this.nodes.has(currentParentDymo)) {
@@ -261,10 +262,10 @@ export class SchedulerThread {
 				return;
 			}
 			//parent node doesn't exist, so create entire missing parent hierarchy
-			var parentNode = new DymoNode(currentParentDymo, this.audioContext, this.convolverSend, this.delaySend);
+			var parentNode = new DymoNode(currentParentDymo, this.audioContext, this.convolverSend, this.delaySend, this.store);
 			currentNode.connect(parentNode.getInput());
 			this.nodes.set(currentParentDymo, parentNode);
-			currentParentDymo = GlobalVars.DYMO_STORE.findParents(currentParentDymo)[0];
+			currentParentDymo = this.store.findParents(currentParentDymo)[0];
 			currentNode = parentNode;
 		}
 		//no more parent, top dymo reached, connect to main output

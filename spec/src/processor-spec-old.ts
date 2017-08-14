@@ -14,8 +14,8 @@ describe("a processor", function() {
 	var scheduler;
 
 	beforeAll(function(done) {
-		scheduler = new Scheduler(AUDIO_CONTEXT);
 		store = new DymoStore();
+		scheduler = new Scheduler(AUDIO_CONTEXT, store);
 		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
 			store.addDymo("dymo1", null, null, sourcePath1);
 			store.addBasePath("dymo1", basePath);

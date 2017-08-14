@@ -129,7 +129,7 @@ export class DymoLoader {
 
   createRenderingFromStore(): Object[] {
     var renderingUri = this.store.findSubject(uris.TYPE, uris.RENDERING);
-    var rendering = new Rendering(this.store.findObject(renderingUri, uris.HAS_DYMO));
+    var rendering = new Rendering(this.store.findObject(renderingUri, uris.HAS_DYMO), this.store);
     this.createControls();
     this.loadConstraints(renderingUri);
     this.loadNavigators(renderingUri, rendering);

@@ -17,6 +17,7 @@ import { AttributeInfo } from './globals/types';
  */
 export class DymoManager {
 
+	private store: DymoStore;
 	private scheduler: Scheduler;
 	private topDymos;
 	private rendering;
@@ -27,8 +28,8 @@ export class DymoManager {
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
 	constructor(audioContext, scheduleAheadTime, optimizedMode, reverbFile) {
-		GlobalVars.DYMO_STORE = new DymoStore();
-		this.scheduler = new Scheduler(audioContext);
+		this.store = new DymoStore();
+		this.scheduler = new Scheduler(audioContext, this.store);
 		if (optimizedMode) {
 			GlobalVars.OPTIMIZED_MODE = true;
 		}
@@ -40,7 +41,7 @@ export class DymoManager {
 
 	init(ontologiesPath?: string): Promise<any> {
 		return new Promise((resolve, reject) => {
-			GlobalVars.DYMO_STORE.loadOntologies(ontologiesPath)
+			this.store.loadOntologies(ontologiesPath)
 				.then(r => resolve());
 		});
 	}
@@ -50,14 +51,14 @@ export class DymoManager {
 	}
 
 	reloadFromStore(): Promise<any> {
-		var loader = new DymoLoader(GlobalVars.DYMO_STORE);
+		var loader = new DymoLoader(this.store);
 		var dymo = loader.createDymoFromStore();
 		var rendering = loader.createRenderingFromStore();
 		return this.processLoadedDymoAndRendering(loader, dymo, rendering);
 	}
 
 	getJsonGraph(nodeClass, edgeProperty, cacheNodes?: boolean): Observable<JsonGraph> {
-		let newGraph = new JsonGraphSubject(nodeClass, edgeProperty, GlobalVars.DYMO_STORE, cacheNodes);
+		let newGraph = new JsonGraphSubject(nodeClass, edgeProperty, this.store, cacheNodes);
 		this.graphs.push(newGraph);
 		return newGraph.asObservable();
 	}
@@ -67,7 +68,7 @@ export class DymoManager {
 	}
 
 	loadDymoAndRendering(dymoUri, renderingUri): Promise<any> {
-		let loader = new DymoLoader(GlobalVars.DYMO_STORE);
+		let loader = new DymoLoader(this.store);
 		let loadedDymos, loadedRendering;
 		return loader.loadDymoFromFile(dymoUri)
 			.then(res => loadedDymos = res)
@@ -86,22 +87,22 @@ export class DymoManager {
 			this.reverbFile = 'node_modules/dymo-core/audio/impulse_rev.wav';
 		}
 		this.graphs.forEach(g => g.update());
-		this.attributeInfo.next(GlobalVars.DYMO_STORE.getAttributeInfo());
+		this.attributeInfo.next(this.store.getAttributeInfo());
 		return this.scheduler.init(this.reverbFile, loadedDymos);
 	}
 
 	loadDymoFromJson(jsonDymo): Promise<string[]> {
-		var loader = new DymoLoader(GlobalVars.DYMO_STORE);
+		var loader = new DymoLoader(this.store);
 		return loader.loadDymoFromFile(jsonDymo);
 	}
 
 	parseDymoFromJson(jsonDymo): Promise<string[]> {
-		var loader = new DymoLoader(GlobalVars.DYMO_STORE);
+		var loader = new DymoLoader(this.store);
 		return loader.parseDymoFromString(jsonDymo);
 	}
 
 	replacePartOfTopDymo(index, dymoUri) {
-		var oldDymo = GlobalVars.DYMO_STORE.replacePartAt(this.topDymos[0], this.addContext(dymoUri), index);
+		var oldDymo = this.store.replacePartAt(this.topDymos[0], this.addContext(dymoUri), index);
 		this.scheduler.stop(oldDymo);
 	}
 
@@ -132,7 +133,7 @@ export class DymoManager {
 
 	startPlaying() {
 		for (var i = 0; i < this.topDymos.length; i++) {
-			GlobalVars.DYMO_STORE.updatePartOrder(this.topDymos[i], uris.ONSET); //TODO WHERE TO PUT THIS??
+			this.store.updatePartOrder(this.topDymos[i], uris.ONSET); //TODO WHERE TO PUT THIS??
 			this.scheduler.play(this.topDymos[i], this.rendering.getNavigator());
 		}
 	}
@@ -144,7 +145,7 @@ export class DymoManager {
 	}
 
 	getStore() {
-		return GlobalVars.DYMO_STORE;
+		return this.store;
 	}
 
 	getTopDymo() {

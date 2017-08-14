@@ -1,5 +1,5 @@
-import { AMPLITUDE, PAN, HEIGHT, DISTANCE, REVERB, DELAY, FILTER } from '../globals/uris'
-import { GlobalVars } from '../globals/globals'
+import { AMPLITUDE, PAN, HEIGHT, DISTANCE, REVERB, DELAY, FILTER } from '../globals/uris';
+import { DymoStore } from '../io/dymostore';
 
 /**
  * Represents a non-leaf dymo (no source) and manages all Web Audio nodes necessary to suit the dymo's parameters.
@@ -15,7 +15,7 @@ export class DymoNode {
 	private panner;
 	private filter;
 
-	constructor(dymoUri, audioContext, reverbSend, delaySend) {
+	constructor(dymoUri, audioContext, reverbSend, delaySend, protected store: DymoStore) {
 		this.dymoUri = dymoUri;
 		this.init(audioContext, reverbSend, delaySend);
 	}
@@ -36,9 +36,9 @@ export class DymoNode {
 			this.addParameter(DELAY, this.delayGain.gain);
 		}
 		//create panner module
-		if (GlobalVars.DYMO_STORE.findParameterUri(this.dymoUri, PAN)
-				|| GlobalVars.DYMO_STORE.findParameterUri(this.dymoUri, HEIGHT)
-				|| GlobalVars.DYMO_STORE.findParameterUri(this.dymoUri, DISTANCE)) {
+		if (this.store.findParameterUri(this.dymoUri, PAN)
+				|| this.store.findParameterUri(this.dymoUri, HEIGHT)
+				|| this.store.findParameterUri(this.dymoUri, DISTANCE)) {
 			this.panner = audioContext.createPanner();
 			this.panner.connect(this.dryGain);
 			this.addParameter(PAN, {value:0}); //mock parameters since panner non-readable
@@ -46,7 +46,7 @@ export class DymoNode {
 			this.addParameter(DISTANCE, {value:0});
 		}
 		//create filter module
-		if (GlobalVars.DYMO_STORE.findParameterUri(this.dymoUri, FILTER)) {
+		if (this.store.findParameterUri(this.dymoUri, FILTER)) {
 			this.filter = audioContext.createBiquadFilter();
 			this.filter.type = "lowpass";
 			this.filter.frequency.value = 20000;
@@ -68,9 +68,9 @@ export class DymoNode {
 	}
 
 	protected addParameter(paramType, webAudioParam) {
-		GlobalVars.DYMO_STORE.addParameterObserver(this.dymoUri, paramType, this);
+		this.store.addParameterObserver(this.dymoUri, paramType, this);
 		this.parameters[paramType] = webAudioParam;
-		var paramValue = GlobalVars.DYMO_STORE.findParameterValue(this.dymoUri, paramType);
+		var paramValue = this.store.findParameterValue(this.dymoUri, paramType);
 		if (paramValue != null) {
 			this.setParameter(paramType, paramValue);
 		}
@@ -128,7 +128,7 @@ export class DymoNode {
 	removeAndDisconnect() {
 		//remove from observed parameters
 		for (var p in this.parameters) {
-			GlobalVars.DYMO_STORE.removeParameterObserver(this.dymoUri, p, this);
+			this.store.removeParameterObserver(this.dymoUri, p, this);
 		}
 		//disconnect audio nodes
 		this.dryGain.disconnect();
