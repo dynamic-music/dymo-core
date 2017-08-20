@@ -198,7 +198,8 @@ export class DymoLoader {
     }  else if (type == uris.SLIDER || type == uris.TOGGLE || type == uris.BUTTON || type == uris.CUSTOM_CONTROL) {
       control = new UIControl(uri, name, type, this.store);
       var init = this.store.findObjectValue(uri, uris.VALUE);
-      control.updateValue(init);
+      control.value = init;
+      control.update();
     } else if (type == uris.RANDOM) {
       control = new RandomControl(uri, this.store);
     } else if (type == uris.BROWNIAN) {

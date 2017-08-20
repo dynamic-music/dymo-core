@@ -17,10 +17,10 @@ export class ExpressionGenerator {
     return this.writer.addVariable(this.parseVar(expression));
   }
 
-  addConstraint(ownerUri: string, expression: string, isFunction = false): string {
+  addConstraint(ownerUri: string, expression: string, isDirected = false): string {
     let parts = expression.split('=>');
     let vars = _.initial(parts).map(v => this.parseVar(v));
-    let exp = new Expression(_.trim(_.last(parts)), isFunction);
+    let exp = new Expression(_.trim(_.last(parts)), isDirected);
     return this.writer.addConstraint(ownerUri, new Constraint(vars, exp));
   }
 

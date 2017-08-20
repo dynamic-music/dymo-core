@@ -108,18 +108,24 @@ export class Expression {
   }
 
   private findOrInitFeatureOrParam(owner: string, type: string, store: DymoStore): string|number {
+    //deal with extra-store features
     if (type === u.LEVEL_FEATURE) {
       return store.findLevel(owner);
     } else if (type === u.INDEX_FEATURE) {
       return store.findPartIndex(owner);
     }
+    //try finding existing attribute
+    let attributeUri = store.findAttributeUri(owner, type);
+    if (attributeUri) {
+      return attributeUri;
+    }
+    //try adding attribute if defined somewhere
     let typeOfType = store.findObject(type, u.TYPE);
-    if (typeOfType === u.PARAMETER_TYPE || store.isSubclassOf(typeOfType, u.PARAMETER_TYPE)) {
-      let paramUri = store.findObjectOfType(owner, u.HAS_PARAMETER, type);
-      return paramUri != null ? paramUri : store.setParameter(owner, type);
-    } else if (typeOfType === u.FEATURE_TYPE || store.isSubclassOf(typeOfType, u.FEATURE_TYPE)) {
-      let featureUri = store.findObjectOfType(owner, u.HAS_FEATURE, type);
-      return featureUri != null ? featureUri : store.setFeature(owner, type);
+    if (typeOfType === u.FEATURE_TYPE || store.isSubclassOf(typeOfType, u.FEATURE_TYPE)) {
+      //not very useful, feature will be null forever
+      return store.setFeature(owner, type);
+    } else if (typeOfType === u.PARAMETER_TYPE || store.isSubclassOf(typeOfType, u.PARAMETER_TYPE)) {
+      return store.setParameter(owner, type);
     }
   }
 

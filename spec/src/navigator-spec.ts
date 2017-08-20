@@ -460,7 +460,7 @@ describe("a navigator", function() {
     //.then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","qBody":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","tArgs":"x","tFunction":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
     .then(j => console.log(j))*/
 
-		var manager = new DymoManager(AUDIO_CONTEXT, null, false, null);
+		var manager = new DymoManager(AUDIO_CONTEXT);
 		manager.init(SERVER_ROOT+'ontologies/').then(() => {
 			manager.loadDymoAndRendering(SERVER_ROOT+'spec/files/similarity-dymo.json', SERVER_ROOT+'spec/files/similarity-rendering.json')
 			.then(() => {

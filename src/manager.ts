@@ -27,7 +27,7 @@ export class DymoManager {
 	private graphs: JsonGraphSubject[] = [];
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
-	constructor(audioContext, scheduleAheadTime, optimizedMode, reverbFile) {
+	constructor(audioContext: AudioContext, scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string) {
 		this.store = new DymoStore();
 		this.scheduler = new Scheduler(audioContext, this.store);
 		if (optimizedMode) {
@@ -35,6 +35,9 @@ export class DymoManager {
 		}
 		if (!isNaN(scheduleAheadTime)) {
 			GlobalVars.SCHEDULE_AHEAD_TIME = scheduleAheadTime;
+		}
+		if (!isNaN(fadeLength)) {
+			GlobalVars.FADE_LENGTH = fadeLength;
 		}
 		this.reverbFile = reverbFile;
 	}

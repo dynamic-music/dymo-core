@@ -4,16 +4,17 @@ import { DymoStore } from '../../src/io/dymostore';
 import { Scheduler } from '../../src/audio/scheduler';
 import { AudioProcessor } from '../../src/audio/processor';
 import { TIME_STRETCH_RATIO } from '../../src/globals/uris';
-import { SERVER_ROOT, AUDIO_CONTEXT } from './server';
+import { SERVER_ROOT, AUDIO_CONTEXT, initSpeaker, endSpeaker } from './server';
 
 describe("a processor", function() {
 
 	var store: DymoStore;
 	var basePath = SERVER_ROOT+'spec/files/';
-	var sourcePath1 = 'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
+	var sourcePath1 = 'sark1.m4a'//'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
 	var scheduler;
 
 	beforeAll(function(done) {
+		initSpeaker();
 		store = new DymoStore();
 		scheduler = new Scheduler(AUDIO_CONTEXT, store);
 		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
@@ -25,6 +26,10 @@ describe("a processor", function() {
 		});
 	});
 
+	afterAll(function() {
+		endSpeaker();
+	});
+
 	it("can timestretch", function() {
 		//console.profile("processor")
 		var buffer = scheduler.getBuffer("dymo1");
@@ -34,14 +39,14 @@ describe("a processor", function() {
 	});
 
 	it("can timestretch dymos", function(done) {
-		store.setParameter("dymo1", TIME_STRETCH_RATIO, 0.5);
+		store.setParameter("dymo1", TIME_STRETCH_RATIO, 2);
 		scheduler.play("dymo1");
 		setTimeout(function() {
-			expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1"]);
+			expect(scheduler.getUrisOfPlayingDymos().getValue()).toEqual(["dymo1"]);
 			//expect(audioContext.activeSourceCount).toBe(1);
 			scheduler.stop("dymo1");
 			done();
-		}, 100);
+		}, 200);
 	});
 
 	/*it("can timestretch live", function(done) {

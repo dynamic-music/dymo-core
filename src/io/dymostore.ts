@@ -182,7 +182,7 @@ export class DymoStore extends EasyStore {
 			this.addTriple(ownerUri, uris.HAS_PARAMETER, uri);
 		}
 		this.addTriple(uri, uris.TYPE, paramType);
-		this.addTriple(paramType, uris.TYPE, uris.CUSTOM_PARAMETER);
+		this.addTriple(paramType, uris.TYPE, uris.PARAMETER_TYPE);
 		return uri;
 	}
 
@@ -316,6 +316,14 @@ export class DymoStore extends EasyStore {
 
 	findNavigators(renderingUri) {
 		return this.findAllObjects(renderingUri, uris.HAS_NAVIGATOR);
+	}
+
+	findAttributeUri(dymoUri: string, attributeType: string) {
+		var uri = this.findObjectOfType(dymoUri, uris.HAS_PARAMETER, attributeType);
+		if (uri == null) {
+			uri = this.findObjectOfType(dymoUri, uris.HAS_FEATURE, attributeType);
+		}
+		return uri;
 	}
 
 	findAttributeValue(dymoUri: string, attributeType: string) {

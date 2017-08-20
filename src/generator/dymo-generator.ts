@@ -19,7 +19,7 @@ export class DymoGenerator {
 
 	constructor(ontogiesPath?: string) {
 		let context = typeof AudioContext !== 'undefined' ? new AudioContext() : null;
-		this.manager = new DymoManager(context, null, false, null);
+		this.manager = new DymoManager(context);
 		this.ready = this.init(ontogiesPath);
 	}
 
@@ -276,6 +276,9 @@ export class DymoGenerator {
 	}
 
 	setDymoFeature(dymoUri, featureUri, value) {
+		if (!this.manager.getStore().findObject(featureUri, uris.TYPE)) {
+			this.manager.getStore().addTriple(featureUri, uris.TYPE, uris.FEATURE_TYPE);
+		}
 		this.manager.getStore().setFeature(dymoUri, featureUri, value);
 		//this.updateMinMax(featureUri, value);
 	}

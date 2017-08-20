@@ -6,7 +6,7 @@ import { DymoStore } from '../io/dymostore';
  */
 export class Control {
 
-  protected value: number;
+  private value: number;
 
   constructor(protected uri: string, private name: string, private type: string, protected store: DymoStore) {
     this.store.addValueObserver(this.uri, VALUE, this);
@@ -34,7 +34,12 @@ export class Control {
     }
   }
 
-  protected setValue(newValue): boolean {
+  protected resetValue() {
+    this.value = null;
+    this.store.setValue(this.uri, VALUE, null);
+  }
+
+  setValue(newValue): boolean {
     if (this.value == undefined || Math.abs(newValue - this.value) > 0.000001) { //deal with floating point errors
       this.value = newValue;
       this.store.setValue(this.uri, VALUE, newValue);

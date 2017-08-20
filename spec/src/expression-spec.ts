@@ -204,7 +204,7 @@ describe("the expressions unit", function() {
     store.setParameter(dymo2, u.AMPLITUDE, 2);
     amp2 = store.findParameterValue(dymo2, u.AMPLITUDE);
     dur2 = store.findParameterValue(dymo2, u.DURATION_RATIO);
-    expect([[2,0.25,0.5],[2,0.5,1],[ 0,0,7.884458e-7],['Infinity',0,Infinity],[ 0.001953125,512,2]]).toContain([amp2,dur2,control.value]);
+    expect([[2,0.25,0.5],[2,0.5,1],[ 0,0,7.884458e-7],['Infinity',0,Infinity],[ 0.001953125,512,2],['Infinity',0,1e-12]]).toContain([amp2,dur2,control.value]);
 
   });
 

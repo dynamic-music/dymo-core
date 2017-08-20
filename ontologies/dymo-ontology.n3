@@ -37,8 +37,6 @@ dy:PitchFeature a dy:FeatureType.
 dy:DurationFeature a dy:FeatureType.
 dy:TimeFeature a dy:FeatureType.
 dy:SegmentLabelFeature a dy:FeatureType.
-dy:CustomFeature a owl:Class;
-    rdfs:subClassOf dy:FeatureType.
 dy:AudioParameter a owl:Class;
     rdfs:subClassOf dy:ParameterType.
 dy:hasStandardValue a owl:ObjectProperty;
@@ -54,6 +52,7 @@ dy:Loop a dy:AudioParameter;
     dy:hasStandardValue "0"^^xsd:integer;
     dy:isInteger "true"^^xsd:boolean.
 dy:Onset a dy:AudioParameter.
+dy:Duration a dy:AudioParameter.
 dy:DurationRatio a dy:AudioParameter;
     dy:hasStandardValue "1"^^xsd:integer.
 dy:Amplitude a dy:AudioParameter;
@@ -79,8 +78,6 @@ dy:StructuralParameter a owl:Class;
 dy:PartCount a dy:StructuralParameter.
 dy:PartDurationRatio a dy:StructuralParameter.
 dy:PartProportion a dy:StructuralParameter.
-dy:CustomParameter a owl:Class;
-    rdfs:subClassOf dy:ParameterType.
 dy:hasSource a owl:DatatypeProperty;
     rdfs:domain dy:Dymo;
     rdfs:range "http://www.w3.org/2001/XMLSchema#string".

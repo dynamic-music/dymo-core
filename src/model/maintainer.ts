@@ -47,12 +47,14 @@ export class Maintainer {
     let defVarNames = _.keys(this.currentValues);
     let values = _.values(this.currentValues);
     let undefVars = _.difference(this.allVarNames, defVarNames);
+    //console.log(this.currentValues, undefVars, this.expression.toString())
     if (this.mathjsCompiledExpression
       //goalvar is the only still undefined var
       && ((undefVars.length === 1 && undefVars[0] === this.allVarNames[0])
         //all vars defined and changed vars dont contain goal var
         || (undefVars.length === 0 && (!changedVars || changedVars.indexOf(this.allVarNames[0]) < 0)))) {
       let newValue = this.mathjsCompiledExpression.eval(this.currentValues);
+      //console.log(newValue, this.expression.toString(), this.currentValues)
       this.store.setValue(this.varsAndUris.get(this.allVarNames[0]), VALUE, newValue);
       //console.log(this.varsAndUris, this.allVarNames[0])
     } else if (this.logicjsGoalFunction) {

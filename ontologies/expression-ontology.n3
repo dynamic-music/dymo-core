@@ -82,3 +82,5 @@ ex:Multiplication a owl:Class;
     rdfs:subClassOf ex:ArithmeticOperator.
 ex:Division a owl:Class;
     rdfs:subClassOf ex:ArithmeticOperator.
+ex:Power a owl:Class;
+    rdfs:subClassOf ex:ArithmeticOperator.

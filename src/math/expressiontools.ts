@@ -5,6 +5,7 @@ import { MathjsNode } from '../globals/types';
 
 export module ExpressionTools {
 
+  //mjs-function, mjs-op, uri, logicjs
   let opDefs = [
     ["equal", "==", u.EQUAL_TO, "logic.eq"],
     ["larger", ">", u.GREATER_THAN, "logic.eq"],
@@ -13,7 +14,8 @@ export module ExpressionTools {
     ["subtract", "-", u.SUBTRACTION, "logic.sub"],
     ["multiply", "*", u.MULTIPLICATION, "logic.mul"],
     ["divide", "/", u.DIVISION, "logic.div"],
-    ["unaryMinus", "-", undefined, undefined]
+    ["unaryMinus", "-", undefined, undefined],
+    ["pow", "^", u.POWER, undefined]
   ];
 
   let funcToOp = {};

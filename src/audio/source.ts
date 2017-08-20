@@ -1,4 +1,4 @@
-import { AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, DURATION_RATIO, LOOP,
+import { AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, DURATION_RATIO, DURATION, LOOP,
 		TIME_FEATURE, DURATION_FEATURE } from '../globals/uris';
 import { GlobalVars } from '../globals/globals';
 import { DymoStore } from '../io/dymostore';
@@ -49,6 +49,10 @@ export class DymoSource extends DymoNode {
 		if (!segment[1] && this.buffer) {
 			segment[1] = this.buffer.duration-segment[0];
 		}
+		var duration = this.store.findParameterValue(this.dymoUri, DURATION);
+		if (duration && 0 < duration) {
+			segment[1] = segment[0]+duration;
+		}
 		var durationRatio = this.store.findParameterValue(this.dymoUri, DURATION_RATIO);
 		if (durationRatio && 0 < durationRatio && durationRatio < 1) {
 			segment[1] *= durationRatio;
@@ -65,6 +69,7 @@ export class DymoSource extends DymoNode {
 	}
 
 	private getProcessedBuffer(segment, stretchRatio) {
+		//console.log(segment, stretchRatio)
 		var time = segment[0];
 		var duration = segment[1];
 		if (stretchRatio != 1) {
@@ -88,6 +93,7 @@ export class DymoSource extends DymoNode {
 	}
 
 	private getStretchedAndFadedBuffer(buffer, duration, stretchRatio) {
+		//console.log(stretchRatio)
 		if (stretchRatio != 1) {
 			buffer = new AudioProcessor(this.audioContext).timeStretch(buffer, stretchRatio);
 			//trim it down again
@@ -109,6 +115,8 @@ export class DymoSource extends DymoNode {
 	}
 
 	play(startTime?: number) {
+		//console.log(this.dymoUri, this.parameters[AMPLITUDE].value)
+		//this.parameters[AMPLITUDE].setValueAtTime(0.1, this.audioContext.currentTime);
 		this.source.onended = () => {
 			//disconnect all nodes
 			this.source.disconnect();

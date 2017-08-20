@@ -36,10 +36,6 @@ export class SensorControl extends Control {
 		this.options = options;
 	}
 
-	getValue() {
-		return this.value;
-	}
-
 	getStatus() {
 		return this.status;
 	}
@@ -68,7 +64,7 @@ export class SensorControl extends Control {
 
 	resetReferenceValueAndAverage() {
 		this.referenceValue = undefined;
-		this.value = undefined;
+		this.resetValue();
 		this.status = UNAVAILABLE;
 		this.previousValues = [];
 	}

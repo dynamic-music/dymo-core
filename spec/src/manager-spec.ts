@@ -13,7 +13,7 @@ describe("a manager", function() {
 
 	beforeEach(function(done) {
 		initSpeaker();
-		manager = new DymoManager(AUDIO_CONTEXT, 0.1, false, SERVER_ROOT+'audio/impulse_rev.wav');
+		manager = new DymoManager(AUDIO_CONTEXT, 0.1, null, false, SERVER_ROOT+'audio/impulse_rev.wav');
 		manager.init(SERVER_ROOT+'ontologies/')
 			.then(() => {
 				fadePosition = 0;

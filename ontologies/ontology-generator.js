@@ -122,6 +122,7 @@ function createExpressionOntology(path) {
 	addClass("Subtraction", "ArithmeticOperator");
 	addClass("Multiplication", "ArithmeticOperator");
 	addClass("Division", "ArithmeticOperator");
+	addClass("Power", "ArithmeticOperator");
 
 	writeN3ToFile(path);
 }
@@ -148,7 +149,6 @@ function createDymoOntology(path) {
 	addIndividual({term:"duration", iri:"DurationFeature"}, "FeatureType");
 	addIndividual({term:"time", iri:"TimeFeature"}, "FeatureType");
 	addIndividual({term:"segmentLabel", iri:"SegmentLabelFeature"}, "FeatureType");
-	addClass("CustomFeature", "FeatureType");
 	//audio parameters
 	addClass("AudioParameter", "ParameterType");
 	addProperty("hasStandardValue", "ParameterType", prefixes["xsd"]+"float", true);
@@ -156,6 +156,7 @@ function createDymoOntology(path) {
 	addIndividual("Play", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
 	addIndividual("Loop", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
 	addIndividual("Onset", "AudioParameter");
+	addIndividual("Duration", "AudioParameter");
 	addIndividual("DurationRatio", "AudioParameter", {"hasStandardValue": 1});
 	addIndividual("Amplitude", "AudioParameter", {"hasStandardValue": 1});
 	addIndividual("PlaybackRate", "AudioParameter", {"hasStandardValue": 1});
@@ -171,7 +172,6 @@ function createDymoOntology(path) {
 	addIndividual("PartCount", "StructuralParameter");
 	addIndividual("PartDurationRatio", "StructuralParameter");
 	addIndividual("PartProportion", "StructuralParameter");
-	addClass("CustomParameter", "ParameterType");
 	//properties
 	addProperty({term:"source", iri:"hasSource", type:"xsd:string"}, "Dymo", prefixes["xsd"]+"string", false);
 	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
