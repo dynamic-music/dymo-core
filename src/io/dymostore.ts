@@ -123,6 +123,8 @@ export class DymoStore extends EasyStore {
 		this.addTriple(dymoUri, uris.TYPE, uris.DYMO);
 		if (parentUri) {
 			this.addPart(parentUri, dymoUri);
+		} else {
+			this.setFeature(dymoUri, uris.LEVEL_FEATURE, 0);
 		}
 		if (partUri) {
 			this.addPart(dymoUri, partUri);
@@ -142,15 +144,20 @@ export class DymoStore extends EasyStore {
 		this.removeParts(dymoUri);
 	}
 
-	addPart(dymoUri, partUri) {
-		this.addObjectToList(dymoUri, uris.HAS_PART, partUri);
+	addPart(dymoUri: string, partUri: string): void {
+		let index = this.addObjectToList(dymoUri, uris.HAS_PART, partUri);
+		let parentLevel = this.findFeatureValue(dymoUri, uris.LEVEL_FEATURE);
+		this.setFeature(partUri, uris.INDEX_FEATURE, index);
+		this.setFeature(partUri, uris.LEVEL_FEATURE, parentLevel+1);
 	}
 
+	/**really slow, use sparingly*/
 	setParts(dymoUri, partUris) {
 		this.removeParts(dymoUri);
-		this.addObjectsToList(dymoUri, uris.HAS_PART, partUris);
+		partUris.forEach(p => this.addPart(dymoUri, p))
 	}
 
+	/**really slow, use sparingly*/
 	removeParts(dymoUri) {
 		this.deleteList(dymoUri, uris.HAS_PART);
 	}
@@ -239,6 +246,7 @@ export class DymoStore extends EasyStore {
 		return navUri;
 	}
 
+	/**really slow, use sparingly*/
 	updatePartOrder(dymoUri, attributeName) {
 		var parts = this.findParts(dymoUri);
 		if (parts.length > 0) {
@@ -252,8 +260,8 @@ export class DymoStore extends EasyStore {
 
 	//returns an array with all uris of dymos that do not have any parents
 	findTopDymos() {
-		var allDymos = this.findAllSubjects(uris.TYPE, uris.DYMO);
-		var allParents = this.findAllSubjects(uris.HAS_PART);
+		var allDymos = this.findSubjects(uris.TYPE, uris.DYMO);
+		var allParents = this.findSubjects(uris.HAS_PART, null);
 		var allParts = _.flatten(allParents.map(p => this.findParts(p)));
 		return _.difference(allDymos, allParts);
 	}
@@ -290,8 +298,7 @@ export class DymoStore extends EasyStore {
 	}
 
 	findParents(dymoUri) {
-		var containingLists = this.findContainingLists(dymoUri);
-		return containingLists[0].filter((e,i) => containingLists[1][i] == uris.HAS_PART);
+		return this.findContainingLists(dymoUri, uris.HAS_PART);
 	}
 
 	//returns an array with the uris of all parts, parts of parts, etc of the object with the given uri
@@ -308,8 +315,8 @@ export class DymoStore extends EasyStore {
 	}
 
 	findDymoRelations() {
-		var domainUris = this.findAllSubjects(uris.DOMAIN, uris.DYMO);
-		var rangeUris = this.findAllSubjects(uris.RANGE, uris.DYMO);
+		var domainUris = this.findSubjects(uris.DOMAIN, uris.DYMO);
+		var rangeUris = this.findSubjects(uris.RANGE, uris.DYMO);
 		//TODO FIND uris.HAS_PART AUTOMATICALLY..
 		return [uris.HAS_PART].concat(intersectArrays(domainUris, rangeUris));
 	}
@@ -335,13 +342,7 @@ export class DymoStore extends EasyStore {
 	}
 
 	findFeatureValue(dymoUri: string, featureType: string) {
-		if (featureType === uris.LEVEL_FEATURE) {
-			return this.findLevel(dymoUri);
-		} else if (featureType === uris.INDEX_FEATURE) {
-			return this.findPartIndex(dymoUri);
-		} else {
-			return this.findObjectValueOfType(dymoUri, uris.HAS_FEATURE, featureType, uris.VALUE);
-		}
+		return this.findObjectValueOfType(dymoUri, uris.HAS_FEATURE, featureType, uris.VALUE);
 	}
 
 	findAllFeatureValues(dymoUri: string) {
@@ -356,8 +357,15 @@ export class DymoStore extends EasyStore {
 		return this.findObjectValueOfType(controlUri, uris.HAS_CONTROL_PARAM, parameterType, uris.VALUE);
 	}
 
-	findParameterValue(dymoUri: string, parameterType: string) {
-		return this.findObjectValueOfType(dymoUri, uris.HAS_PARAMETER, parameterType, uris.VALUE);
+	findParameterValue(ownerUri: string, parameterType: string) {
+		if (ownerUri) {
+			return this.findObjectValueOfType(ownerUri, uris.HAS_PARAMETER, parameterType, uris.VALUE);
+		}
+		//if no owner specified, return value of the first found independent param
+		let paramUri = this.findSubject(uris.TYPE, parameterType);
+		if (paramUri) {
+			return this.findObjectValue(paramUri, uris.VALUE);
+		}
 	}
 
 	findParameterUri(ownerUri: string, parameterType: string) {
@@ -367,7 +375,7 @@ export class DymoStore extends EasyStore {
 		return this.findSubject(null, parameterType);
 	}
 
-	//TODO FOR NOW ONLY WORKS WITH SINGLE HIERARCHY..
+	/*//TODO FOR NOW ONLY WORKS WITH SINGLE HIERARCHY..
 	findPartIndex(dymoUri: string) {
 		var firstParentUri = this.findParents(dymoUri)[0];
 		return this.findObjectIndexInList(firstParentUri, uris.HAS_PART, dymoUri);
@@ -382,17 +390,12 @@ export class DymoStore extends EasyStore {
 			parent = this.findParents(parent)[0];
 		}
 		return level;
-	}
+	}*/
 
-	findMaxLevel(dymoUri?: string) {
-		let dymos;
-		if (dymoUri) {
-			dymos = this.findAllObjectsInHierarchy(dymoUri);
-		} else {
-			dymos = this.findAllSubjects(uris.TYPE, uris.DYMO);
-		}
+	findMaxLevel(dymoUri?: string): number {
+		let dymos = dymoUri ? this.findAllObjectsInHierarchy(dymoUri) : this.findSubjects(uris.TYPE, uris.DYMO);
 		return dymos.reduce((max, d) => {
-			let lev = this.findLevel(d);
+			let lev = this.findFeatureValue(d, uris.LEVEL_FEATURE);
 			return lev > max ? lev : max;
 		}, 0);
 	}
@@ -445,22 +448,23 @@ export class DymoStore extends EasyStore {
 		var type = this.findObject(uri, uris.TYPE);
 		var triples = this.recursiveFindAllTriples(uri, type, [uris.HAS_PART, uris.HAS_SIMILAR, uris.HAS_SUCCESSOR]);
 		return this.triplesToJsonld(triples, uri)
-			.then(result => {
-				var json = JSON.parse(result);
-				this.updateLevelAndIndexFeatures(uri, json);
-				return json;
-			});
+			.then(result => JSON.parse(result));
 	}
 
 	/* if a previous graph is given as an argument, only reads new nodes from store */
 	toJsonGraph(nodeClass, edgeProperty, previousGraph?: JsonGraph): Promise<JsonGraph> {
+		//console.log(nodeClass, edgeProperty)
+		if (nodeClass === uris.DYMO && edgeProperty === uris.HAS_PART) {
+			return this.toJsonDymoPartGraph(previousGraph);
+		}
 		var graph: JsonGraph = {"nodes":[], "edges":[]};
 		var nodeMap = {};
 		if (previousGraph) {
 			//fill nodeMap with previous nodes
 			previousGraph.nodes.forEach(n => nodeMap[uris.CONTEXT_URI+n["@id"]] = n);
 		}
-		var nodeUris = this.findAllSubjects(uris.TYPE, nodeClass);
+
+		var nodeUris = this.findSubjects(uris.TYPE, nodeClass);
 		var edgeTriples = this.find(null, edgeProperty, null);
 		var uncachedNodes = _.difference(nodeUris, Object.keys(nodeMap));
 
@@ -470,12 +474,48 @@ export class DymoStore extends EasyStore {
 			.then(result => {
 				result.forEach(n => nodeMap[uris.CONTEXT_URI+n["@id"]] = n);
 				graph.nodes = nodeUris.map(uri => nodeMap[uri]);
-				graph.nodes.forEach((n,i) => this.updateLevelAndIndexFeatures(nodeUris[i], n));
 				//edges are always new
 				graph["edges"] = this.createEdges(edgeTriples, edgeProperty, nodeClass, nodeMap);
 				resolve(graph);
 			});
 		});
+	}
+
+	toJsonDymoPartGraph(previousGraph?: JsonGraph): Promise<JsonGraph> {
+		var graph: JsonGraph = {"nodes":[], "edges":[]};
+		var nodeMap = {};
+		if (previousGraph) {
+			//fill nodeMap with previous nodes
+			previousGraph.nodes.forEach(n => nodeMap[uris.CONTEXT_URI+n["@id"]] = n);
+		}
+
+		var nodeUris = this.findSubjects(uris.TYPE, uris.DYMO);
+		var edgeTriples = this.find(null, uris.HAS_PART, null);
+		var uncachedNodes = _.difference(nodeUris, Object.keys(nodeMap));
+
+		return new Promise(resolve => {
+			//only load new nodes from store
+			Promise.all(uncachedNodes.map(uri => this.toFlatDymoJsonld(uri)))
+			.then(result => {
+				result.forEach(n => nodeMap[uris.CONTEXT_URI+n["@id"]] = n);
+				graph.nodes = nodeUris.map(uri => nodeMap[uri]);
+				//edges are always new
+				graph["edges"] = this.createEdges(edgeTriples, uris.HAS_PART, uris.DYMO, nodeMap);
+				resolve(graph);
+			});
+		});
+	}
+
+	//returns a jsonld representation of an object removed from any hierarchy of objects of the same type
+	private toFlatDymoJsonld(uri): Promise<Object> {
+		let triples = this.find(uri, uris.HAS_FEATURE, null);
+		triples = triples.concat(this.find(uri, uris.HAS_PARAMETER, null));
+		let typesAndValues = _.flatten(triples.map(a => this.find(a.object, uris.TYPE, null)));
+		typesAndValues = typesAndValues.concat(_.flatten(triples.map(a => this.find(a.object, uris.VALUE, null))));
+		triples = triples.concat(typesAndValues);
+		triples = triples.concat(this.find(uri, uris.TYPE, null));
+		return this.triplesToJsonld(triples, uri)
+			.then(result => JSON.parse(result));
 	}
 
 	private createEdges(edgeTriples, edgeProperty, nodeClass, nodeMap): JsonEdge[] {
@@ -493,39 +533,6 @@ export class DymoStore extends EasyStore {
 			}
 		}
 		return edges;
-	}
-
-	private updateLevelAndIndexFeatures(uri, json) {
-		//TODO a hack to insert level feature, maybe put in a better place
-		if (this.findObject(uri, uris.TYPE) == uris.DYMO) {
-			if (!json["features"]) {
-				json["features"] = [];
-			}
-			if (json["features"].constructor !== Array) {
-				json["features"] = [json["features"]];
-			}
-			this.updateFeature(json["features"], "level", "xsd:integer", this.findLevel(uri).toString());
-			let index = this.findPartIndex(uri);
-			let indexString = isNaN(index) ? "" : index.toString();
-			this.updateFeature(json["features"], "index", "xsd:integer", indexString);
-		}
-	}
-
-	private updateFeature(features: Object[], term: string, type: string, value: any) {
-		var feature = features.filter(f => f["@type"] === term);
-		//if feature exists, update
-		if (feature.length > 0) {
-			feature[0]["value"]["@value"] = value;
-		//else add the feature
-		} else {
-			features.push({
-				"@type": term,
-				"value": {
-					"@type": type,
-					"@value": value
-				}
-			});
-		}
 	}
 
 	/*this.toJsonMappingGraph(callback) {
@@ -593,7 +600,7 @@ export class DymoStore extends EasyStore {
 
 	getAttributeInfo(): AttributeInfo[] {
 		let attributeObjects = {};
-		let allDymos = this.findAllSubjects(uris.TYPE, uris.DYMO);
+		let allDymos = this.findSubjects(uris.TYPE, uris.DYMO);
 
 		//add params from store
 		let allParams = _.flatten(allDymos.map(d => this.findAllObjects(d, uris.HAS_PARAMETER)));
@@ -602,10 +609,6 @@ export class DymoStore extends EasyStore {
 		//add features from store
 		let allFeatures = _.flatten(allDymos.map(d => this.findAllObjects(d, uris.HAS_FEATURE)));
 		allFeatures.forEach(f => this.updateAttributeObjectFromUri(attributeObjects, f));
-
-		//add level and index features
-		allDymos.forEach(d => this.updateAttributeObject(attributeObjects, uris.LEVEL_FEATURE, this.findLevel(d)));
-		allDymos.forEach(d => this.updateAttributeObject(attributeObjects, uris.INDEX_FEATURE, this.findPartIndex(d)));
 
 		//convert to array
 		return Object.keys(attributeObjects).map(k => attributeObjects[k]);

@@ -93,6 +93,8 @@
 		"featureType": { "@id": "dy:hasFeatureType", "@type": "@vocab" },
 		"similars": "dy:hasSimilar",
 		"successors": "dy:hasSuccessor",
+		"fst": "dy:hasFirst",
+		"snd": "dy:hasSecond",
 		"Rendering": "mb:Rendering",
 		"MobileControl": "mb:MobileControl",
 		"SensorControl": "mb:SensorControl",

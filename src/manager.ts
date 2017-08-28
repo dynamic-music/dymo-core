@@ -136,7 +136,6 @@ export class DymoManager {
 
 	startPlaying() {
 		for (var i = 0; i < this.topDymos.length; i++) {
-			this.store.updatePartOrder(this.topDymos[i], uris.ONSET); //TODO WHERE TO PUT THIS??
 			this.scheduler.play(this.topDymos[i], this.rendering.getNavigator());
 		}
 	}

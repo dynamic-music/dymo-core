@@ -99,3 +99,9 @@ dy:hasSimilar a owl:ObjectProperty;
 dy:hasSuccessor a owl:ObjectProperty;
     rdfs:domain dy:Dymo;
     rdfs:range dy:Dymo.
+dy:hasFirst a owl:ObjectProperty;
+    rdfs:domain dy:Dymo;
+    rdfs:range dy:Dymo.
+dy:hasSecond a owl:ObjectProperty;
+    rdfs:domain dy:Dymo;
+    rdfs:range dy:Dymo.

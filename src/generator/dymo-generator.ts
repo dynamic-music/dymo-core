@@ -237,7 +237,7 @@ export class DymoGenerator {
 	private getSuitableParent(time, maxLevel, dymoUri) {
 		if (!dymoUri) dymoUri = this.currentTopDymo;
 		var nextCandidate = dymoUri;
-		var currentLevel = this.manager.getStore().findLevel(dymoUri);
+		var currentLevel = this.manager.getStore().findFeatureValue(dymoUri, uris.LEVEL_FEATURE);
 		while (currentLevel < maxLevel) {
 			var parts = this.manager.getStore().findParts(nextCandidate);
 			if (parts.length > 0) {

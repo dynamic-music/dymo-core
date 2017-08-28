@@ -168,17 +168,17 @@ export class Scheduler {
 	}
 
 	private updatePlayingDymos(changedThread: SchedulerThread) {
+		let uris = flattenArray(this.threads.map(t => Array.from(t.getAllSources().keys())));
+		uris = removeDuplicates(uris);
 		if (!GlobalVars.OPTIMIZED_MODE) {
-			let uris = flattenArray(this.threads.map(t => Array.from(t.getAllSources().keys())));
-			uris = removeDuplicates(uris);
 			uris = flattenArray(uris.map(d => this.store.findAllParents(d)));
-			uris = removeDuplicates(uris);
-			uris.sort();
-			uris = uris.map(uri => uri.replace(CONTEXT_URI, ""));
-			setTimeout(() => {
-				this.playingDymoUris.next(uris);
-			}, GlobalVars.SCHEDULE_AHEAD_TIME*1000);
 		}
+		uris = removeDuplicates(uris);
+		uris.sort();
+		uris = uris.map(uri => uri.replace(CONTEXT_URI, ""));
+		setTimeout(() => {
+			this.playingDymoUris.next(uris);
+		}, GlobalVars.SCHEDULE_AHEAD_TIME*1000);
 	}
 
 	getUrisOfPlayingDymos() {

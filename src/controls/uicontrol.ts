@@ -41,8 +41,13 @@ export class UIControl {
 		}
 	}
 
+	//for use outside of ui
+	updateValue(value) {
+		this.value = value;
+		this.update();
+	}
+
 	protected setValue(newValue): boolean {
-		console.log("SET", newValue)
 		if (this.control.setValue(newValue)) {
 			if (this.control.getType() == TOGGLE) {
 				if (newValue == 1) {

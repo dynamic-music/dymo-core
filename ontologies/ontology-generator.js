@@ -180,6 +180,8 @@ function createDymoOntology(path) {
 	addProperty({term:"featureType", iri:"hasFeatureType", type:"@vocab"}, "Feature", "FeatureType", true);
 	addProperty({term:"similars", iri:"hasSimilar"}, "Dymo", "Dymo", true);
 	addProperty({term:"successors", iri:"hasSuccessor"}, "Dymo", "Dymo", true);
+	addProperty({term:"fst", iri:"hasFirst"}, "Dymo", "Dymo", true);
+	addProperty({term:"snd", iri:"hasSecond"}, "Dymo", "Dymo", true);
 
 	writeN3ToFile(path);
 }

@@ -1,7 +1,34 @@
-import { Store, Parser, Writer, Util } from 'n3'
+import * as N3 from 'n3';
+import * as _ from 'lodash';
 import { promises as jsonld } from 'jsonld';
-import { flattenArray, removeDuplicates } from 'arrayutils'
-import { RDFS_URI, TYPE, FIRST, REST, NIL } from '../globals/uris'
+import { flattenArray, removeDuplicates } from 'arrayutils';
+import { RDFS_URI, TYPE, FIRST, REST, NIL, VALUE } from '../globals/uris';
+
+//limited interface to ensure optimal use here!
+export interface N3Store {
+	_id: number,
+	_ids: {},
+	_entities: {},
+	_graphs: {},
+	size: number,
+	addTriple: (subject: string | N3Triple, predicate?: string, object?: string) => void,
+	removeTriple: (subject: string, predicate: string, object: string) => void,
+	createBlankNode: () => string,
+	getTriplesByIRI: (subject: string, predicate: string, object: string) => N3Triple[],
+	getSubjectsByIRI: (predicate: string, object: string) => string[],
+	getObjectsByIRI: (subject: string, predicate: string) => string[]
+}
+
+export interface N3Triple {
+	subject: string,
+	predicate: string,
+	object: string
+}
+
+interface ListElement {
+	index: number,
+	value: any
+}
 
 /**
  * A graph store based on N3 that easily manages lists, value replacing and observing,
@@ -10,9 +37,15 @@ import { RDFS_URI, TYPE, FIRST, REST, NIL } from '../globals/uris'
  */
 export class EasyStore {
 
-	private store = Store(null, null);
+	private store: N3Store = N3.Store();
 	private valueObservers = {};
 	private typeObservers = {};
+	private valueBuffer = {};
+
+
+	size(): number {
+		return this.store.size;
+	}
 
 
 	///////// OBSERVING FUNCTIONS //////////
@@ -108,7 +141,7 @@ export class EasyStore {
 
 	///////// ADDING AND REPLACING FUNCTIONS //////////
 
-	addTriple(subject, predicate, object) {
+	addTriple(subject: string, predicate: string, object: string) {
 		if (subject != null && predicate != null && object != null) {
 			return this.store.addTriple(subject, predicate, object);
 		}
@@ -116,8 +149,9 @@ export class EasyStore {
 
 	/**
 	 * removes the specified triple from the store. if no object specified, removes the first one found
+	 * really slow in n3js, use carefully!
 	 */
-	removeTriple(subject, predicate, object?: string) {
+	removeTriple(subject: string, predicate: string, object?: string) {
 		if (!object) {
 			object = this.findObject(subject, predicate);
 		}
@@ -129,23 +163,49 @@ export class EasyStore {
 	}
 
 	//sets or replaces the object of the given subject and predicate
-	setTriple(subject, predicate, object) {
-		this.removeTriple(subject, predicate);
-		this.addTriple(subject, predicate, object);
+	setTriple(subject: string, predicate: string, object: string) {
+		let oldObject = this.store.getObjectsByIRI(subject, predicate)[0];
+		if (oldObject) {
+			this.replaceObjectInTriple(subject, predicate, oldObject, object);
+		} else {
+			this.addTriple(subject, predicate, object);
+		}
+	}
+
+	private replaceObjectInTriple(subject: string, predicate: string, oldObject: string, newObject: string) {
+		let graph = this.store._graphs[''];
+		var ids = this.store._ids;
+		let subjectId = ids[subject], predicateId = ids[predicate], oldObjectId = ids[oldObject];
+		let newObjectId = ids[newObject] || (ids[this.store._entities[++this.store._id] = newObject] = this.store._id);
+		this.editStoreIndex(graph.subjects, subjectId, predicateId, newObjectId, oldObjectId, 2);
+		this.editStoreIndex(graph.predicates, predicateId, newObjectId, subjectId, oldObjectId, 1);
+		this.editStoreIndex(graph.objects, newObjectId, subjectId, predicateId, oldObjectId, 0);
+	}
+
+	private editStoreIndex(index0: {}, key0: number, key1: number, key2: number, oldKey: number, position: number) {
+		// Create layers as necessary
+		var index1 = index0[key0] || (index0[key0] = {});
+		var index2 = index1[key1] || (index1[key1] = {});
+		// remove old key
+		[index0, index1, index2].forEach((index,i) => i == position ? delete index[oldKey] : 0);
+		// Setting the key to _any_ value signals the presence of the triple
+		index2[key2] = null;
 	}
 
 	//sets or replaces a literal value of the given subject and predicate, value can be a list
-	setValue(subject, predicate, value) {
-		var currentValue = this.findObjectValue(subject, predicate);
-		if (subject && predicate && value != null && value != currentValue && !Number.isNaN(value)) {
-			if (Array.isArray(value)) {
-				value = value.map(v => Util.createLiteral(v));
-				this.removeTriple(subject, predicate);
-				this.addObjectsToList(subject, predicate, value);
-			} else {
-				this.setTriple(subject, predicate, Util.createLiteral(value));
+	setValue(subject: string, predicate: string, value) {
+		if (subject && predicate && value != null) {
+			var currentValue = this.findObjectValue(subject, predicate);
+			if (value != currentValue && !Number.isNaN(value)) {
+				if (Array.isArray(value)) {
+					value = value.map(v => N3.Util.createLiteral(v));
+					this.removeTriple(subject, predicate);
+					value.forEach(v => this.addObjectToList(subject, predicate, v));
+				} else {
+					this.setTriple(subject, predicate, N3.Util.createLiteral(value));
+				}
+				this.notifyObservers(subject, predicate, value);
 			}
-			this.notifyObservers(subject, predicate, value);
 		}
 	}
 
@@ -168,55 +228,59 @@ export class EasyStore {
 			}
 			this.addTriple(objectUri, TYPE, objectType);
 		}
-		this.setValue(objectUri, valuePredicate, value);
+		if (valuePredicate) {
+			this.setValue(objectUri, valuePredicate, value);
+		}
 		return objectUri;
 	}
 
 	//adds the given object to the list the given subject has under the given predicate, creates the list if none yet
-	addObjectToList(subject, predicate, object) {
+	//returns the index at which the element was added
+	addObjectToList(subject: string, predicate: string, object: string): number {
 		var listUri = this.findObject(subject, predicate);
 		var newElement = this.createBlankNode();
+		var index;
 		if (!listUri) {
 			this.addTriple(subject, predicate, newElement);
+			index = 0;
 		} else {
 			var lastElement = this.getLastElement(listUri);
-			this.removeTriple(lastElement, REST, NIL);
-			this.addTriple(lastElement, REST, newElement);
+			index = lastElement.index+1;
+			//replaces NIL with newElement
+			this.setTriple(lastElement.value, REST, newElement);
 		}
 		this.addTriple(newElement, FIRST, object);
 		this.addTriple(newElement, REST, NIL);
+		return index;
 	}
 
-	/** adds all objects in the given array to the list */
-	addObjectsToList(subject, predicate, objects?: string[]) {
-		for (var i = 0, j = objects.length; i < j; i++) {
-			this.addObjectToList(subject, predicate, objects[i]);
-		}
+	addObjectsToList(subject: string, predicate: string, objects: string[]): void {
+		objects.forEach(o => this.addObjectToList(subject, predicate, o));
 	}
 
 	//adds the given object to the list the given subject has under the given predicate, creates the list if none yet
 	//returns the object that was there before
-	replaceObjectInList(subject, predicate, object, index) {
+	replaceObjectInList(subject: string, predicate: string, object, index: number) {
 		var listUri = this.findObject(subject, predicate);
 		var elementAtIndex = this.getElementAt(listUri, index);
-		var previousObject = this.findObject(elementAtIndex, FIRST);
-		this.setTriple(elementAtIndex, FIRST, object);
+		var previousObject = this.findObject(elementAtIndex.value, FIRST);
+		this.setTriple(elementAtIndex.value, FIRST, object);
 		return previousObject;
 	}
 
-	removeObjectFromList(subject, predicate, index) {
+	removeObjectFromList(subject: string, predicate: string, index: number) {
 		var listUri = this.findObject(subject, predicate);
 		var newElement = this.createBlankNode();
 		var elementBeforeIndex = this.getElementAt(listUri, index-1);
-		var elementAtIndex = this.findObject(elementBeforeIndex, REST);
+		var elementAtIndex = this.findObject(elementBeforeIndex.value, REST);
 		var elementAfterIndex = this.findObject(elementAtIndex, REST);
-		this.setTriple(elementBeforeIndex, REST, elementAfterIndex);
+		this.setTriple(elementBeforeIndex.value, REST, elementAfterIndex);
 		this.removeTriple(elementAtIndex, FIRST);
-		this.removeTriple(elementAtIndex, REST);
+		this.removeTriple(elementAtIndex, REST, elementAfterIndex);
 	}
 
 	//deletes the list with the given uri from the store
-	deleteList(subject, predicate) {
+	deleteList(subject: string, predicate: string) {
 		var listUri = this.findObject(subject, predicate);
 		if (listUri) {
 			var currentRest = listUri;
@@ -235,26 +299,21 @@ export class EasyStore {
 
 	//calls regular store.find function
 	find(subject: string, predicate?: string, object?: string) {
-		return this.store.find(subject, predicate, object);
+		return this.store.getTriplesByIRI(subject, predicate, object);
 	}
 
 	//returns the object of the first result found in the store
-	findObject(subject, predicate) {
-		if (subject && predicate) {
-			var results = this.store.find(subject, predicate);
-			if (results.length > 0) {
-				return results[0].object;
-			}
-		}
+	findObject(subject: string, predicate: string): string {
+		return this.store.getObjectsByIRI(subject, predicate)[0];
 	}
 
 	//returns the object of the first result found in the store, or all elements if it is a list
-	findObjectOrList(subject, predicate) {
+	findObjectOrList(subject: string, predicate: string) {
 		return this.getListElementsIfList(this.findObject(subject, predicate));
 	}
 
 	//returns the value of the first object found in the store, or all element values if it is a list
-	findObjectValue(subject, predicate) {
+	findObjectValue(subject: string, predicate: string) {
 		var object = this.findObjectOrList(subject, predicate);
 		if (object) {
 			if (Array.isArray(object)) {
@@ -266,7 +325,7 @@ export class EasyStore {
 
 	/** returns the first object of the given type it can find under the given subject and predicate
 	 * if subject is omitted, just returns the first object of the given type */
-	findObjectOfType(subject, predicate, type) {
+	findObjectOfType(subject: string, predicate: string, type: string) {
 		if (predicate && type) {
 			if (!subject) {
 				return this.findSubject(TYPE, type);
@@ -281,25 +340,27 @@ export class EasyStore {
 		}
 	}
 
-	findObjectValueOfType(subject: string, predicate, type, valuePredicate) {
+	findObjectValueOfType(subject: string, predicate: string, type: string, valuePredicate: string) {
 		var objectUri = this.findObjectOfType(subject, predicate, type);
-		return this.findObjectValue(objectUri, valuePredicate);
+		if (objectUri) {
+			return this.findObjectValue(objectUri, valuePredicate);
+		}
 	}
 
 	//returns the object uris of all results found in the store, including the list elements if they are lists
-	findAllObjects(subject, predicate): string[] {
-		var allObjects = this.store.find(subject, predicate).map(t => t.object);
+	findAllObjects(subject: string, predicate: string): string[] {
+		var allObjects = this.store.getObjectsByIRI(subject, predicate);
 		allObjects = allObjects.map(this.getListElementsIfList, this);
 		return flattenArray(allObjects);
 	}
 
 	//returns the object values of all results found in the store, including the list elements if they are lists
-	findAllObjectValues(subject, predicate): any[] {
-		var values = this.findAllObjects(subject, predicate).filter(Util.isLiteral);
+	findAllObjectValues(subject: string, predicate: string): any[] {
+		var values = this.findAllObjects(subject, predicate).filter(N3.Util.isLiteral);
 		return values.map(this.getLiteralValue, this);
 	}
 
-	findAllObjectValuesOfType(subject, predicate, valuePredicate): any[] {
+	findAllObjectValuesOfType(subject: string, predicate: string, valuePredicate: string): any[] {
 		var objectValues = [];
 		var objectUris = this.findAllObjects(subject, predicate);
 		for (var i = 0, j = objectUris.length; i < j; i++) {
@@ -311,50 +372,44 @@ export class EasyStore {
 		return objectValues;
 	}
 
-	//returns the uri of the subject of the first result found in the store, object doesn't have to be a uri
-	findSubject(predicate, object): string {
-		var subject = this.getSubject(predicate, object);
-		if (!subject) {
+	//returns the first subject uri found in the store, object doesn't have to be a uri
+	findSubject(predicate: string, object: any): string {
+		var subjects = this.findSubjects(predicate, object);
+		if (subjects.length > 0) {
+			return subjects[0];
+		}
+	}
+
+	//returns the uris of all subjects found in the store, object doesn't have to be a uri
+	findSubjects(predicate: string, object: any): string[] {
+		var subjects = this.store.getSubjectsByIRI(predicate, object);
+		if (subjects.length == 0) {
 			//try again with literal
-			subject = this.getSubject(predicate, Util.createLiteral(object));
+			subjects = this.store.getSubjectsByIRI(predicate, N3.Util.createLiteral(object));
 		}
-		return subject;
+		return subjects;
 	}
 
-	private getSubject(predicate, object) {
-		var results = this.store.find(null, predicate, object);
-		if (results.length > 0) {
-			return results[0].subject;
-		}
-	}
-	/** returns the subjects of all results found in the store */
-	findAllSubjects(predicate: string, object?: string): string[] {
-		var results = this.store.find(null, predicate, object);
-		if (results.length == 0) {
-			results = this.store.find(null, predicate, Util.createLiteral(object));
-		}
-		return removeDuplicates(results.map(t => t.subject));
-	}
-
-	findObjectIndexInList(subject, predicate, object) {
+	findObjectIndexInList(subject: string, predicate: string, object) {
 		if (subject && predicate) {
 			return this.getIndexInList(this.findObject(subject, predicate), object);
 		}
 	}
 
-	findObjectInListAt(subject, predicate, index) {
+	findObjectInListAt(subject: string, predicate: string, index: number) {
 		if (subject && predicate) {
 			var element = this.getElementAt(this.findObject(subject, predicate), index);
 			if (element) {
-				return this.findObject(element, FIRST);
+				return this.findObject(element.value, FIRST);
 			}
 		}
 	}
 
-	findContainingLists(object) {
+	//returns the subjects of all lists containing the given object at the given predicate
+	//predicate must be given for optimization
+	findContainingLists(object: string, predicate: string): string[] {
 		var subjectUris = [];
-		var predicateUris = [];
-		var listElements = this.findAllSubjects(FIRST, object);
+		var listElements = this.findSubjects(FIRST, object);
 		for (var i = 0; i < listElements.length; i++) {
 			var currentElement = listElements[i];
 			var currentPredecessor = this.findSubject(REST, currentElement);
@@ -362,31 +417,26 @@ export class EasyStore {
 				currentElement = currentPredecessor;
 				currentPredecessor = this.findSubject(REST, currentElement);
 			}
-			var listOrigin = this.find(null, null, currentElement)[0];
-			if (listOrigin) {
-				subjectUris[i] = listOrigin.subject;
-				predicateUris[i] = listOrigin.predicate;
+			var currentListOwner = this.findSubject(predicate, currentElement);
+			if (currentListOwner) {
+				subjectUris.push(currentListOwner);
 			}
 		}
-		return [subjectUris, predicateUris];
+		return subjectUris;
 	}
 
 	/** return all triples about the given uri and its affiliated objects, stops at objects of the given type, or
 		at the given predicates */
 	recursiveFindAllTriples(uri, type?: string, predicates?: string[]) {
 		//find all triples for given uri
-		var triples = this.store.find(uri, null, null);
-		var subTriples = [];
-		for (var i = triples.length-1; i >= 0; i--) {
-			//remove all triples whose object is of the given type
-			if (predicates && predicates.indexOf(triples[i].predicate) >= 0) {
-				triples.splice(i, 1);
-			} else if (type && this.store.find(triples[i].object, TYPE, type).length > 0) {
-				triples.splice(i, 1);
-			} else {
-				subTriples = subTriples.concat(this.recursiveFindAllTriples(triples[i].object, type, predicates));
-			}
+		let triples = this.store.getTriplesByIRI(uri, null, null);
+		if (predicates) {
+			triples = triples.filter(t => predicates.indexOf(t.predicate) < 0);
 		}
+		if (type) {
+			triples = triples.filter(t => this.store.getTriplesByIRI(t.object, TYPE, type).length == 0);
+		}
+		let subTriples = _.flatMap(triples, t => this.recursiveFindAllTriples(t.object, type, predicates));
 		return triples.concat(subTriples);
 	}
 
@@ -404,7 +454,7 @@ export class EasyStore {
 	}
 
 	recursiveFindAllSubClasses(superclassUri) {
-		var subClasses = this.findAllSubjects(RDFS_URI+"subClassOf", superclassUri);
+		var subClasses = this.findSubjects(RDFS_URI+"subClassOf", superclassUri);
 		for (var i = 0; i < subClasses.length; i++) {
 			var subsubClasses = this.recursiveFindAllSubClasses(subClasses[i]);
 			if (subsubClasses) {
@@ -468,7 +518,7 @@ export class EasyStore {
 		return -1;
 	}
 
-	private getLastElement(listUri) {
+	private getLastElement(listUri: string): ListElement {
 		return this.getElementAt(listUri);
 	}
 
@@ -476,7 +526,7 @@ export class EasyStore {
 	 * returns the uri of the element at the given index in the given list, undefined if not found
 	 * returns uri of last element if no index given
 	 */
-	private getElementAt(listUri, index?: number) {
+	private getElementAt(listUri: string, index?: number): ListElement {
 		if (listUri) {
 			var currentIndex = 0;
 			var currentRest = listUri;
@@ -487,14 +537,14 @@ export class EasyStore {
 				currentIndex++;
 			}
 			if (index == null || currentIndex == index) {
-				return currentRest;
+				return {index: currentIndex, value: currentRest};
 			}
 		}
 	}
 
 	getLiteralValue(uri) {
-		var value = Util.getLiteralValue(uri);
-		var type = Util.getLiteralType(uri);
+		var value = N3.Util.getLiteralValue(uri);
+		var type = N3.Util.getLiteralType(uri);
 		if (type != "http://www.w3.org/2001/XMLSchema#string" && type != "http://www.w3.org/2001/XMLSchema#boolean") {
 			return Number(value);
 		}
@@ -509,7 +559,7 @@ export class EasyStore {
 		return new Promise((resolve, reject) =>
 			this.jsonldToNquads(data)
 			.then(nquads => {
-				Parser(null).parse(nquads, (error, triple, prefixes) => {
+				N3.Parser(null).parse(nquads, (error, triple: N3Triple, prefixes) => {
 					//keep streaming triples
 					if (triple) {
 						this.store.addTriple(triple);
@@ -554,13 +604,13 @@ export class EasyStore {
 	///////// WRITING FUNCTIONS //////////
 
 	toRdf(): Promise<string> {
-		var allTriples = this.store.find(null, null, null);
+		var allTriples = this.store.getTriplesByIRI(null, null, null);
 		return this.triplesToRdf(allTriples);
 	}
 
 	triplesToRdf(triples): Promise<string> {
 		return new Promise(resolve => {
-			var writer = Writer({ format: 'application/nquads' }, null);
+			var writer = N3.Writer({ format: 'application/nquads' }, null);
 			for (var i = 0; i < triples.length; i++) {
 				writer.addTriple(triples[i]);
 			}
@@ -569,7 +619,7 @@ export class EasyStore {
 	}
 
 	logData() {
-		var rows = this.store.find(null).map(t => t.subject + "\t" + t.predicate + "\t" + t.object);
+		var rows = this.store.getTriplesByIRI(null, null, null).map(t => t.subject + "\t" + t.predicate + "\t" + t.object);
 		for (var i in rows) {
 			console.log(rows[i]);
 		}

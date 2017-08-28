@@ -155,7 +155,7 @@ export class DymoLoader {
   private createControls() {
     var controlClasses = this.store.recursiveFindAllSubClasses(uris.MOBILE_CONTROL);
     for (var i = 0; i < controlClasses.length; i++) {
-      var currentControls = this.store.findAllSubjects(uris.TYPE, controlClasses[i]);
+      var currentControls = this.store.findSubjects(uris.TYPE, controlClasses[i]);
       for (var j = 0; j < currentControls.length; j++) {
         var currentName = this.store.findObjectValue(currentControls[j], uris.NAME);
         if (!currentName) {
@@ -206,7 +206,7 @@ export class DymoLoader {
       var init = this.store.findObjectValue(uri, uris.VALUE);
       control = new BrownianControl(uri, init);
     } else if (type == uris.RAMP) {
-      var milisDuration = Math.round(this.store.findObject(uri, uris.HAS_DURATION)*1000);
+      var milisDuration = Math.round(this.store.findObjectValue(uri, uris.HAS_DURATION)*1000);
       var init = this.store.findObjectValue(uri, uris.VALUE);
       control = new RampControl(uri, milisDuration, init);
     } else if (type == uris.DATA_CONTROL) {

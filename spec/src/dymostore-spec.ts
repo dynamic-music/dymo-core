@@ -1,8 +1,8 @@
 import 'isomorphic-fetch';
 import { DymoStore } from '../../src/io/dymostore';
-import { SLIDER, TOGGLE, LEVEL_FEATURE, AMPLITUDE, ONSET_FEATURE, PITCH_FEATURE, DURATION_FEATURE, GRAPH_NAVIGATOR,
-	ONE_SHOT_NAVIGATOR, SEGMENT_LABEL_FEATURE, LISTENER_ORIENTATION, DYMO, HAS_PART, HAS_SUCCESSOR,
-	HAS_SIMILAR, DURATION_RATIO, FILTER, CONTEXT_URI } from '../../src/globals/uris';
+import { SLIDER, TOGGLE, LEVEL_FEATURE, INDEX_FEATURE, AMPLITUDE, ONSET_FEATURE, PITCH_FEATURE, DURATION_FEATURE,
+	GRAPH_NAVIGATOR, ONE_SHOT_NAVIGATOR, SEGMENT_LABEL_FEATURE, LISTENER_ORIENTATION, DYMO, HAS_PART, HAS_SUCCESSOR,
+	HAS_SIMILAR, HAS_FIRST, HAS_SECOND, DURATION_RATIO, FILTER, CONTEXT_URI } from '../../src/globals/uris';
 import { SERVER_ROOT } from './server';
 
 describe("a dymostore", function() {
@@ -52,8 +52,8 @@ describe("a dymostore", function() {
 		expect(dymoStore.findFeatureValue(CU+"d3", ONSET_FEATURE)).toEqual(2);
 		expect(dymoStore.findFeatureValue(CU+"e1", CU+"mfcc")).toEqual([2,4.2,-1,5.3]);
 		expect(dymoStore.findAttributeValue(CU+"d2", ONSET_FEATURE)).toEqual(5.438);
-		expect(dymoStore.findAllFeatureValues(CU+"d2").length).toBe(3);
-		expect(dymoStore.findAllNumericFeatureValues(CU+"d2").length).toBe(2);
+		expect(dymoStore.findAllFeatureValues(CU+"d2").length).toBe(5);
+		expect(dymoStore.findAllNumericFeatureValues(CU+"d2").length).toBe(4);
 		//nan features should not work
 		dymoStore.setFeature(CU+"e2", ONSET_FEATURE, NaN);
 		expect(dymoStore.findFeatureValue(CU+"e2", ONSET_FEATURE)).toBeUndefined();
@@ -144,9 +144,9 @@ describe("a dymostore", function() {
 	});
 
 	it("can find the level of a part in a single hierarchy", function() {
-		expect(dymoStore.findLevel(CU+"d0")).toBe(0);
-		expect(dymoStore.findLevel(CU+"d1")).toBe(1);
-		expect(dymoStore.findLevel(CU+"e2")).toBe(2);
+		expect(dymoStore.findFeatureValue(CU+"d0", LEVEL_FEATURE)).toBe(0);
+		expect(dymoStore.findFeatureValue(CU+"d1", LEVEL_FEATURE)).toBe(1);
+		expect(dymoStore.findFeatureValue(CU+"e2", LEVEL_FEATURE)).toBe(2);
 		expect(dymoStore.findFeatureValue(CU+"d1", LEVEL_FEATURE)).toBe(1);
 	});
 
@@ -155,11 +155,11 @@ describe("a dymostore", function() {
 	});
 
 	it("can find the index of a part and parts at an index", function() {
-		expect(dymoStore.findPartIndex(CU+"d1")).toBe(0);
-		expect(dymoStore.findPartIndex(CU+"d2")).toBe(1);
+		expect(dymoStore.findFeatureValue(CU+"d1", INDEX_FEATURE)).toBe(0);
+		expect(dymoStore.findFeatureValue(CU+"d2", INDEX_FEATURE)).toBe(1);
 		//TODO expect(dymoStore.findPartIndex(CU+"d3")).toBe([1,2]);
-		expect(dymoStore.findPartIndex(CU+"e2")).toBe(0);
-		expect(dymoStore.findPartIndex(CU+"f0")).toBeUndefined();
+		expect(dymoStore.findFeatureValue(CU+"e2", INDEX_FEATURE)).toBe(0);
+		expect(dymoStore.findFeatureValue(CU+"f0", INDEX_FEATURE)).toBeUndefined();
 		expect(dymoStore.findFeatureValue(CU+"d2", LEVEL_FEATURE)).toBe(1);
 
 		expect(dymoStore.findPartAt(CU+"d0", 2)).toBe(CU+"d3");
@@ -175,7 +175,7 @@ describe("a dymostore", function() {
 	});
 
 	it("can find all dymo relations", function() {
-		expect(dymoStore.findDymoRelations()).toEqual([HAS_PART,HAS_SUCCESSOR,HAS_SIMILAR]);
+		expect(dymoStore.findDymoRelations().sort()).toEqual([HAS_PART,HAS_SUCCESSOR,HAS_SIMILAR,HAS_FIRST,HAS_SECOND].sort());
 	});
 
 	it("can create a part graph", function(done) {

@@ -31,7 +31,7 @@ export class TypedVariable extends BoundVariable {
   }
 
   getValues(store: DymoStore): string[] {
-    return store.findAllSubjects(u.TYPE, this.type);
+    return store.findSubjects(u.TYPE, this.type);
   }
 
   toString(): string {

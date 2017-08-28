@@ -1,6 +1,6 @@
 import { GlobalVars } from '../globals/globals'
 import { DymoStore } from '../io/dymostore'
-import { ONSET, LOOP } from '../globals/uris'
+import { ONSET, LOOP, INDEX_FEATURE } from '../globals/uris'
 import { DymoNode } from './node'
 import { DymoSource } from './source'
 import { DymoNavigator } from '../navigators/navigator'
@@ -243,7 +243,7 @@ export class SchedulerThread {
 
 	private logNextIndices(nextParts) {
 		console.log(nextParts.map(s => {
-			var index = this.store.findPartIndex(s);
+			var index = this.store.findFeatureValue(s, INDEX_FEATURE);
 			if (!isNaN(index)) {
 				return index;
 			} else {

@@ -89,18 +89,25 @@ export class Expression {
   private getFunctionalObject(expression: MathjsNode, vars: Object, store: DymoStore): any {
     if (expression.isFunctionNode) {
       let arg = this.getFunctionalObject(expression["args"][0], vars, store);
-      let funcName = u.DYMO_ONTOLOGY_URI+expression["fn"]["name"];
-      //console.log(value, u.DYMO_ONTOLOGY_URI+func["fn"]["name"], u.PITCH_FEATURE, store.findObject(value, u.DYMO_ONTOLOGY_URI+func["fn"]["name"]))
-      let result = store.findObject(arg, funcName);
+      let officialName = u.DYMO_ONTOLOGY_URI+expression["fn"]["name"];
+      let customName = u.CONTEXT_URI+expression["fn"]["name"];
+      //search for a matching predicate
+      let result: string|number = store.findObject(arg, officialName);
+      if (result == null) {
+        result = store.findObject(arg, customName);
+      }
+      //search for a matching control param
       if (result == null) {
         result = store.findObjectOfType(arg, u.HAS_CONTROL_PARAM, u.MOBILE_AUDIO_ONTOLOGY_URI+expression["fn"]["name"]);
       }
+      //search for a matching feature or param
       if (result == null) {
-        result = this.findOrInitFeatureOrParam(arg, funcName, store);
+        result = this.findOrInitFeatureOrParam(arg, officialName, store);
       }
       if (result == null) {
-        result = this.findOrInitFeatureOrParam(arg, u.CONTEXT_URI+expression["fn"]["name"], store);
+        result = this.findOrInitFeatureOrParam(arg, customName, store);
       }
+      //console.log(expression["fn"]["name"], result)
       return result;
     }
     //it's the innermost symbol node
@@ -108,12 +115,6 @@ export class Expression {
   }
 
   private findOrInitFeatureOrParam(owner: string, type: string, store: DymoStore): string|number {
-    //deal with extra-store features
-    if (type === u.LEVEL_FEATURE) {
-      return store.findLevel(owner);
-    } else if (type === u.INDEX_FEATURE) {
-      return store.findPartIndex(owner);
-    }
     //try finding existing attribute
     let attributeUri = store.findAttributeUri(owner, type);
     if (attributeUri) {
