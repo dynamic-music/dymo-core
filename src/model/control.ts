@@ -35,7 +35,7 @@ export class Control {
   }
 
   protected resetValue() {
-    this.value = null;
+    this.value = undefined;
     this.store.setValue(this.uri, VALUE, null);
   }
 

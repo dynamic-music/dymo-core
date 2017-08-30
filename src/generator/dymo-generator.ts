@@ -61,8 +61,8 @@ export class DymoGenerator {
 		return renderingUri;
 	}
 
-	addCustomParameter(uri: string, ownerUri?: string, value?: number): string {
-		uri = this.manager.getStore().addCustomParameter(ownerUri, uri);
+	addCustomParameter(typeUri: string, ownerUri?: string, value?: number): string {
+		let uri = this.manager.getStore().addCustomParameter(ownerUri, typeUri);
 		if (!isNaN(value)) {
 			this.manager.getStore().setValue(uri, uris.VALUE, value);
 		}

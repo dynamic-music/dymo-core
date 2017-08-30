@@ -12,23 +12,62 @@
         "@type": "Dymo",
         "cdt": {
           "@id": "dy:Disjunction"
-        }
+        },
+        "features": [
+          {
+            "@type": "level",
+            "value": {
+              "@type": "xsd:integer",
+              "@value": "1"
+            }
+          },
+          {
+            "@type": "index",
+            "value": {
+              "@type": "xsd:integer",
+              "@value": "0"
+            }
+          }
+        ]
       },
       {
         "@id": "dymo00",
         "@type": "Dymo",
         "cdt": {
           "@id": "dy:Disjunction"
-        }
+        },
+        "features": [
+          {
+            "@type": "level",
+            "value": {
+              "@type": "xsd:integer",
+              "@value": "1"
+            }
+          },
+          {
+            "@type": "index",
+            "value": {
+              "@type": "xsd:integer",
+              "@value": "1"
+            }
+          }
+        ]
       }
     ]
   },
+  "features": {
+    "@type": "level",
+    "value": {
+      "@type": "xsd:integer",
+      "@value": "0"
+    }
+  },
   "parameters": [
     {
-      "@id": "_:b1"
+      "@id": "_:b15"
     },
     {
-      "@id": "_:b0"
+      "@id": "_:b1"
     }
   ],
   "constraint": [
@@ -45,7 +84,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b17"
+              "@id": "_:b5"
             },
             "function": "TimeStretchRatio"
           },
@@ -54,7 +93,7 @@
             "left": {
               "@type": "Division",
               "left": {
-                "@id": "_:b21"
+                "@id": "_:b25"
               },
               "right": {
                 "@type": "Constant",
@@ -67,31 +106,30 @@
             "right": {
               "@type": "FunctionalTerm",
               "args": {
-                "@id": "_:b17"
+                "@id": "_:b5"
               },
               "function": "DurationFeature"
             }
           }
         },
         "vars": {
-          "@id": "_:b21",
+          "@id": "_:b25",
           "@type": "Variable",
           "varName": "t",
           "varValue": {
-            "@id": "_:b1",
+            "@id": "_:b15",
             "@type": "Tempo"
           }
         }
       },
       "vars": {
-        "@id": "_:b17",
         "@type": "Variable",
         "varExpr": {
           "@type": "EqualTo",
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b17"
+              "@id": "_:b5"
             },
             "function": "LevelFeature"
           },
@@ -120,10 +158,9 @@
             "@value": "false"
           },
           "left": {
-            "@id": "_:b2",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b5"
             },
             "function": "Amplitude"
           },
@@ -141,7 +178,7 @@
                   }
                 },
                 "right": {
-                  "@id": "_:b10"
+                  "@id": "_:b6"
                 }
               },
               "right": {
@@ -156,7 +193,7 @@
                 "right": {
                   "@type": "FunctionalTerm",
                   "args": {
-                    "@id": "_:b3"
+                    "@id": "_:b5"
                   },
                   "function": "IndexFeature"
                 }
@@ -165,12 +202,12 @@
             "right": {
               "@type": "Multiplication",
               "left": {
-                "@id": "_:b10"
+                "@id": "_:b6"
               },
               "right": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b3"
+                  "@id": "_:b5"
                 },
                 "function": "IndexFeature"
               }
@@ -178,24 +215,26 @@
           }
         },
         "vars": {
-          "@id": "_:b10",
+          "@id": "_:b6",
           "@type": "Variable",
           "varName": "f",
           "varValue": {
-            "@id": "_:b0",
+            "@id": "_:b1",
             "@type": "Fade"
           }
         }
       },
       "vars": {
-        "@id": "_:b3",
+        "@id": "_:b5",
         "@type": "Variable",
         "varExpr": {
+          "@id": "_:b2",
           "@type": "EqualTo",
           "left": {
+            "@id": "_:b3",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b5"
             },
             "function": "LevelFeature"
           },

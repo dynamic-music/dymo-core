@@ -2,6 +2,9 @@
   "@context": "http://localhost:8181/ontologies/dymo-context.json",
   "@id": "controlRendering",
   "@type": "Rendering",
+  "parameters": {
+    "@type": "ListenerOrientation"
+  },
   "constraint": [
     {
       "@type": "ForAll",
@@ -26,12 +29,12 @@
               }
             },
             "right": {
-              "@id": "_:b14"
+              "@id": "_:b16"
             }
           }
         },
         "vars": {
-          "@id": "_:b14",
+          "@id": "_:b16",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -45,8 +48,9 @@
         "@id": "_:b13",
         "@type": "Variable",
         "varName": "l",
-        "varValue": {
-          "@id": "mb:ListenerOrientation"
+        "varType": {
+          "@id": "mb:ListenerOrientation",
+          "@type": "ParameterType"
         }
       }
     },
@@ -63,16 +67,15 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b7"
+              "@id": "_:b1"
             },
             "function": "PlaybackRate"
           },
           "right": {
-            "@id": "_:b8"
+            "@id": "_:b10"
           }
         },
         "vars": {
-          "@id": "_:b8",
           "@type": "Variable",
           "varName": "c",
           "varValue": {
@@ -81,21 +84,21 @@
         }
       },
       "vars": {
-        "@id": "_:b7",
+        "@id": "_:b3",
         "@type": "Variable",
         "varExpr": {
           "@type": "GreaterThan",
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b7"
+              "@id": "_:b1"
             },
             "function": "DurationRatio"
           },
           "right": {
             "@type": "Constant",
             "value": {
-              "@type": "xsd:decimal",
+              "@type": "xsd:double",
               "@value": "0.7"
             }
           }
@@ -119,16 +122,16 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b0"
+              "@id": "_:b1"
             },
             "function": "Amplitude"
           },
           "right": {
-            "@id": "_:b25"
+            "@id": "_:b10"
           }
         },
         "vars": {
-          "@id": "_:b25",
+          "@id": "_:b10",
           "@type": "Variable",
           "varName": "c",
           "varValue": {
@@ -139,31 +142,7 @@
         }
       },
       "vars": {
-        "@id": "_:b0",
-        "@type": "Variable",
-        "varExpr": {
-          "@id": "_:b1",
-          "@type": "EqualTo",
-          "left": {
-            "@id": "_:b2",
-            "@type": "FunctionalTerm",
-            "args": {
-              "@id": "_:b0"
-            },
-            "function": "LevelFeature"
-          },
-          "right": {
-            "@type": "Constant",
-            "value": {
-              "@type": "xsd:integer",
-              "@value": "1"
-            }
-          }
-        },
-        "varName": "x",
-        "varType": {
-          "@id": "dy:Dymo"
-        }
+        "@id": "_:b1"
       }
     }
   ],
@@ -173,14 +152,36 @@
   "navigators": {
     "@type": "SimilarityNavigator",
     "dymos": {
-      "@id": "_:b20",
       "@type": "Variable",
       "varExpr": {
         "@type": "EqualTo",
         "left": {
           "@type": "FunctionalTerm",
           "args": {
-            "@id": "_:b20"
+            "@id": "_:b1",
+            "@type": "Variable",
+            "varExpr": {
+              "@id": "_:b2",
+              "@type": "EqualTo",
+              "left": {
+                "@type": "FunctionalTerm",
+                "args": {
+                  "@id": "_:b1"
+                },
+                "function": "LevelFeature"
+              },
+              "right": {
+                "@type": "Constant",
+                "value": {
+                  "@type": "xsd:integer",
+                  "@value": "1"
+                }
+              }
+            },
+            "varName": "x",
+            "varType": {
+              "@id": "dy:Dymo"
+            }
           },
           "function": "LevelFeature"
         },

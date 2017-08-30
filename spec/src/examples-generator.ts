@@ -11,7 +11,7 @@ Promise.all([
   createExampleFile('mixdymo-rendering.json', createMixDymoRendering()),
 ])
 .then(() => console.log('done!'))
-//.then(SERVER.close());
+.then(() => process.exit());
 //generateControlRendering()
   //.then(console.log)
   //.then(j => writeFile(j, '../../../files/test.json'));//control-rendering.json'))
@@ -27,6 +27,7 @@ function generateControlRendering(): Promise<string> {
   let dymoGen = new DymoGenerator(SERVER_ROOT+'ontologies/');
   let expressionGen = new ExpressionGenerator(dymoGen.getManager().getStore());
   let renderingUri = dymoGen.addRendering(uris.CONTEXT_URI+"controlRendering", uris.CONTEXT_URI+"dymo0");
+  dymoGen.addCustomParameter(uris.LISTENER_ORIENTATION, renderingUri);
   let slider1Uri = dymoGen.addControl("Slider 1", uris.SLIDER, uris.CONTEXT_URI+"slider1");
   let slider2Uri = dymoGen.addControl("Orientation", uris.SLIDER, uris.CONTEXT_URI+"orientation");
   expressionGen.addConstraint(renderingUri, `
@@ -40,7 +41,7 @@ function generateControlRendering(): Promise<string> {
     => PlaybackRate(x) == c
   `);
   expressionGen.addConstraint(renderingUri, `
-    ∀ l in ["`+uris.LISTENER_ORIENTATION+`"]
+    ∀ l : `+uris.LISTENER_ORIENTATION+`
     => ∀ o in ["`+slider2Uri+`"]
     => l == 360*o
   `);

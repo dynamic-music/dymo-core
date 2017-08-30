@@ -54,9 +54,7 @@ export class Maintainer {
         //all vars defined and changed vars dont contain goal var
         || (undefVars.length === 0 && (!changedVars || changedVars.indexOf(this.allVarNames[0]) < 0)))) {
       let newValue = this.mathjsCompiledExpression.eval(this.currentValues);
-      //console.log(newValue, this.expression.toString(), this.currentValues)
       this.store.setValue(this.varsAndUris.get(this.allVarNames[0]), VALUE, newValue);
-      //console.log(this.varsAndUris, this.allVarNames[0])
     } else if (this.logicjsGoalFunction) {
       let index;
       if (undefVars.length === 1) {

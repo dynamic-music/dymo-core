@@ -1,6 +1,6 @@
 import { GlobalVars } from '../globals/globals'
 import { DymoStore } from '../io/dymostore'
-import { ONSET, LOOP, INDEX_FEATURE } from '../globals/uris'
+import * as uris from '../globals/uris'
 import { DymoNode } from './node'
 import { DymoSource } from './source'
 import { DymoNavigator } from '../navigators/navigator'
@@ -117,7 +117,7 @@ export class SchedulerThread {
 		}
 		//stop automatically looping sources
 		for (var source of previousSources.values()) {
-			if (this.store.findParameterValue(source.getDymoUri(), LOOP)) {
+			if (this.store.findParameterValue(source.getDymoUri(), uris.LOOP)) {
 				source.stop(startTime);
 			}
 		}
@@ -129,7 +129,7 @@ export class SchedulerThread {
 			var longestSource = this.nextEventTime[1];
 			this.nextEventTime = this.nextEventTime[0];
 			//smooth transition in case of a loop
-			if (longestSource && this.store.findParameterValue(longestSource.getDymoUri(), LOOP)) {
+			if (longestSource && this.store.findParameterValue(longestSource.getDymoUri(), uris.LOOP)) {
 				this.nextEventTime -= GlobalVars.FADE_LENGTH;
 			}
 			var wakeupTime = (this.nextEventTime-this.audioContext.currentTime-GlobalVars.SCHEDULE_AHEAD_TIME)*1000;
@@ -194,12 +194,11 @@ export class SchedulerThread {
 		if (this.nextSources) {
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
 			var previousSourceDymoUri = this.currentSources.keys().next().value;
-			var previousOnset = this.store.findParameterValue(previousSourceDymoUri, ONSET);
+			var previousOnset = this.store.findParameterValue(previousSourceDymoUri, uris.ONSET);
 			var nextSourceDymoUri = this.nextSources.keys().next().value;
-			var nextOnset = this.store.findParameterValue(nextSourceDymoUri, ONSET);
-			var timeToNextOnset = Math.max(0, nextOnset-previousOnset);
-			//console.log(nextOnset)
+			var nextOnset = this.store.findParameterValue(nextSourceDymoUri, uris.ONSET);
 			if (!isNaN(nextOnset)) {
+				var timeToNextOnset = Math.max(0, nextOnset-previousOnset);
 				return [startTime+timeToNextOnset];
 			}
 		}
@@ -243,7 +242,7 @@ export class SchedulerThread {
 
 	private logNextIndices(nextParts) {
 		console.log(nextParts.map(s => {
-			var index = this.store.findFeatureValue(s, INDEX_FEATURE);
+			var index = this.store.findFeatureValue(s, uris.INDEX_FEATURE);
 			if (!isNaN(index)) {
 				return index;
 			} else {

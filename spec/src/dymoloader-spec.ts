@@ -1,4 +1,5 @@
 import 'isomorphic-fetch';
+import * as _ from 'lodash';
 import { Scheduler } from '../../src/audio/scheduler';
 import { DymoStore } from '../../src/io/dymostore';
 import { DymoLoader } from '../../src/io/dymoloader';
@@ -73,17 +74,19 @@ describe("a dymoloader", function() {
 				rendering = loadedRendering[0];
 				var controls = loadedRendering[1];
 				var constraintsObj = loader.getConstraints();
-				var constraints = Object.keys(constraintsObj).map(k => constraintsObj[k]);
+				var constraints = _.values(constraintsObj).map(c => c.toString());
 				expect(constraints.length).toEqual(3);
-				expect(constraints[0].toString()).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, DurationRatio(x) > 0.7 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => PlaybackRate(x) == c');
-				expect(constraints[1].toString()).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, LevelFeature(x) == 1 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => Amplitude(x) == c');
-				expect(constraints[2].toString()).toEqual('∀ l in ["http://tiny.cc/mobile-audio-ontology#ListenerOrientation"] => ∀ o in ["http://tiny.cc/dymo-context/orientation"] => l == 360 * o');
+				expect(constraints[0]).toEqual('∀ l : http://tiny.cc/mobile-audio-ontology#ListenerOrientation => ∀ o in ["http://tiny.cc/dymo-context/orientation"] => l == 360 * o');
+				expect(constraints[1]).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, LevelFeature(x) == 1 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => Amplitude(x) == c');
+				expect(constraints[2]).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, DurationRatio(x) > 0.7 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => PlaybackRate(x) == c');
 				//change parameter and see if selection of dymos adjusts!
 				store.setParameter(u.CONTEXT_URI+"dymo1", u.DURATION_RATIO, 0.9);
-				expect(store.findObjectValue(u.LISTENER_ORIENTATION, u.VALUE)).toBeUndefined();
+				expect(store.findParameterValue(null, u.LISTENER_ORIENTATION)).toBeUndefined();
 				controls[u.CONTEXT_URI+"orientation"].updateValue(0.5);
-				expect(store.findObjectValue(u.LISTENER_ORIENTATION, u.VALUE)).toBe(180);
-				done();
+				setTimeout(()=>{
+					expect(store.findParameterValue(null, u.LISTENER_ORIENTATION)).toBe(180);
+					done();
+				}, 350);
 			});
 		});
 	});
