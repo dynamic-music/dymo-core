@@ -9,7 +9,7 @@ export function createAudioContext(): AudioContext {
   return new (
 		audioCtxCtor
 		|| (window as any).AudioContext
-    || (window as any).webkitAudioContext
+		|| (window as any).webkitAudioContext
   )();
 }
 
