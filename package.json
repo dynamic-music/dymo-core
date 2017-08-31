@@ -12,7 +12,9 @@
   "scripts": {
     "pretest": "tsc -p spec/ && node spec/lib/spec/src/examples-generator.js",
     "test": "jasmine",
-    "prepublish": "npm install speaker --mpg123-backend=openal"
+    "postinstall": "npm install speaker --mpg123-backend=openal",
+    "build": "tsc",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -55,8 +57,9 @@
     "gulp-sourcemaps": "^2.4.0",
     "gulp-uglify": "^2.0.0",
     "isomorphic-fetch": "^2.2.1",
+    "jasmine": "^2.8.0",
     "jasmine-core": "^2.4.1",
-    "speaker": "^0.3.0",
+    "speaker": "^0.3.1",
     "tsify": "^3.0.0",
     "typescript": "^2.3.3",
     "vinyl-buffer": "^1.0.0",
