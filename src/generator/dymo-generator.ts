@@ -3,6 +3,16 @@ import { uris, URI_TO_TERM, DymoManager } from '../index';
 import { SUMMARY } from './globals';
 //import { Feature } from './types';
 
+export function createAudioContext(): AudioContext {
+	const audioCtxCtor = typeof AudioContext !== 'undefined' ?
+		AudioContext : null;
+  return new (
+		audioCtxCtor
+		|| (window as any).AudioContext
+		|| (window as any).webkitAudioContext
+  )();
+}
+
 /**
  * Offers basic functions for generating dymos, inserts them into the given store.
  */
@@ -17,9 +27,8 @@ export class DymoGenerator {
 	private dymoCount = 0;
 	private renderingCount = 0;
 
-	constructor(ontogiesPath?: string) {
-		let context = typeof AudioContext !== 'undefined' ? new AudioContext() : null;
-		this.manager = new DymoManager(context);
+	constructor(ontogiesPath?: string, createAudioCtx = createAudioContext) {
+		this.manager = new DymoManager(createAudioCtx());
 		this.ready = this.init(ontogiesPath);
 	}
 
