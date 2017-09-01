@@ -11,8 +11,7 @@ export class ConstraintLoader {
 
   constructor(private store: DymoStore) {}
 
-  loadConstraints(ownerUri: string): Constraint[] {
-    let constraintUris = this.store.findAllObjects(ownerUri, uris.CONSTRAINT);
+  loadConstraints(constraintUris: string[]): Constraint[] {
     let constraints = constraintUris.map(c => this.createConstraint(c));
     return constraints;//_.zipObject(constraintUris, constraints);
   }

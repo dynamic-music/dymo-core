@@ -20,6 +20,13 @@ import { RampControl } from '../controls/auto/rampcontrol'
 import { ConstraintLoader } from './constraintloader';
 import { Constraint } from '../model/constraint';
 
+export interface LoadedStuff {
+  dymoUris: string[],
+  rendering: Rendering,
+  controls: {},
+  constraints: Constraint[]
+}
+
 /**
  * A DymoLoader loads dymos from rdf, jams, or json-ld into the given DymoStore
  * and creates the necessary controls, constraints, and renderings
@@ -29,7 +36,6 @@ import { Constraint } from '../model/constraint';
 export class DymoLoader {
 
   private store: DymoStore;
-  private dymoBasePath = '';
   private controls = {}; //dict with all the controls created
   private constraints: Constraint[] = [];
 
@@ -37,109 +43,73 @@ export class DymoLoader {
     this.store = dymoStore;
   }
 
-  getConstraints() {
-    return this.constraints;
+  loadFromFiles(...fileUris: string[]): Promise<LoadedStuff> {
+    return this.loadIntoStore(...fileUris)
+      .then(() => this.loadFromStore());
   }
 
-  loadDymoFromFile(fileUri): Promise<string[]> {
-    var fileIndex = fileUri.lastIndexOf('/')+1;
-    this.dymoBasePath = fileUri.substring(0, fileIndex);
-    return this.recursiveLoadFile(fileUri, "")
-      .then(loaded => this.store.loadData(loaded))
-      .then(() => this.createDymoFromStore());
+  loadFromString(string: string): Promise<LoadedStuff> {
+    return this.store.loadData(string)
+      .then(() => this.loadFromStore());
   }
 
-  parseDymoFromString(jsonldOrRdf): Promise<string[]> {
-    return this.store.loadData(jsonldOrRdf)
-      .then(() => this.createDymoFromStore());
-  }
-
-  loadRenderingFromFile(fileUri): Promise<Object[]> {
-    return this.recursiveLoadFile(fileUri, "")
-      .then(loaded => this.store.loadData(loaded))
-      .then(() => this.createRenderingFromStore());
-  }
-
-  //recursively load files that may contain references to other files. only if json-ld, otherwise simple.
-  private recursiveLoadFile(fileUri, jsonString): Promise<string> {
-    return fetch(fileUri, { mode:'cors' })
+  loadIntoStore(...fileUris: string[]): Promise<any> {
+    /*return fetch(fileUris[0], { mode:'cors' })
       .then(response => response.text())
-      .then(text => {
-        if (text.indexOf("Cannot GET") >= 0) {
-          return null;
-        }
-        //console.log(this.responseText.substring(0,20), isJsonString(this.responseText))
-        if (this.isJsonString(text)) {
-          if (jsonString) {
-            if (fileUri.indexOf(this.dymoBasePath) >= 0) {
-              fileUri = fileUri.replace(this.dymoBasePath, "");
-            }
-            jsonString = jsonString.replace('"'+fileUri+'"', text);
-          } else {
-            jsonString = text;
-          }
-          var nextUri = this.findNextJsonUri(jsonString);
-          if (nextUri) {
-            if (nextUri.indexOf(this.dymoBasePath) < 0) {
-              nextUri = this.dymoBasePath+nextUri;
-            }
-            return this.recursiveLoadFile(nextUri, jsonString);
-          } else if (jsonString) {
-            return jsonString;
-          }
-        } else {
-          return text;
-        }
-      });
+      .then(jsonld => this.store.loadData(jsonld))*/
+    return Promise.all(
+      fileUris.map(f => fetch(f, { mode:'cors' })
+        .then(response => response.text())
+        .then(jsonld => this.store.loadData(jsonld)))
+    )
   }
 
-  private isJsonString(str) {
-    try {
-      JSON.parse(str);
-    } catch (e) {
-      return false;
+  loadFromStore(...objectUris: string[]): LoadedStuff {
+    let loadedStuff: LoadedStuff = { dymoUris:[], rendering:null, controls:{}, constraints:[] };
+    let controlUris = [], dymoUris, renderingUri, constraintUris = [], navigatorUris = [];
+    if (objectUris.length > 0) {
+      let types = objectUris.map(u => this.store.findObject(u, uris.TYPE));
+      dymoUris = objectUris.filter((u,i) => types[i] === uris.DYMO);
+      renderingUri = objectUris.filter((u,i) => types[i] === uris.RENDERING);
+      controlUris = objectUris.filter((u,i) => this.store.isSubclassOf(types[i], uris.MOBILE_CONTROL));
+      constraintUris = objectUris.filter((u,i) => types[i] === uris.CONSTRAINT);
+    } else {
+      dymoUris = this.store.findTopDymos();
+      renderingUri = this.store.findSubject(uris.TYPE, uris.RENDERING);
     }
-    return true;
+    loadedStuff.dymoUris = this.loadDymos(...dymoUris);
+    loadedStuff.controls = Object.assign(this.controls, this.loadControls(...controlUris));
+    loadedStuff.rendering = this.loadRendering(renderingUri);
+    loadedStuff.constraints = this.constraints.concat(this.loadConstraints(constraintUris));
+    return loadedStuff;
   }
 
-  private findNextJsonUri(jsonString) {
-    var index = jsonString.indexOf(".json");
-    if (index >= 0) {
-      if (index != jsonString.indexOf("context.json")+7) {
-        var before = jsonString.substring(0, index);
-        var beginning = before.lastIndexOf('"');
-        return jsonString.substring(beginning+1, index+5);
-      } else {
-        return this.findNextJsonUri(jsonString.substring(index+1));
-      }
-    }
-  }
-
-  createDymoFromStore(): string[] {
-    var topDymos = [];
-    //first create all dymos and save references in map
-    var topDymoUris = this.store.findTopDymos();
-    topDymoUris.forEach(u => {
-      this.store.addBasePath(u, this.dymoBasePath)
+  private loadDymos(...dymoUris: string[]): string[] {
+    var loadedDymos = [];
+    dymoUris.forEach(u => {
+      //this.store.addBasePath(u, this.dymoBasePath)
       //create all dymo constraints
-      this.loadConstraints(u);
+      this.loadConstraintsOfOwner(u);
     })
-    return topDymoUris;
+    return dymoUris;
   }
 
-  createRenderingFromStore(): Object[] {
-    var renderingUri = this.store.findSubject(uris.TYPE, uris.RENDERING);
+  private loadRendering(renderingUri?: string): Rendering {
     var rendering = new Rendering(this.store.findObject(renderingUri, uris.HAS_DYMO), this.store);
     this.createControls();
-    this.loadConstraints(renderingUri);
+    this.loadConstraintsOfOwner(renderingUri);
     this.loadNavigators(renderingUri, rendering);
-    return [rendering, this.controls];
+    return rendering;
   }
 
-  private loadConstraints(ownerUri: string) {
-    let constraints = new ConstraintLoader(this.store).loadConstraints(ownerUri);
+  private loadConstraintsOfOwner(ownerUri: string) {
+    this.constraints = this.constraints.concat(this.loadConstraints(this.store.findAllObjects(ownerUri, uris.CONSTRAINT)));
+  }
+
+  private loadConstraints(constraintUris: string[]): Constraint[] {
+    let constraints = new ConstraintLoader(this.store).loadConstraints(constraintUris);
     constraints.forEach(c => c.maintain(this.store));
-    this.constraints = this.constraints.concat(constraints);
+    return constraints;
   }
 
   private loadNavigators(renderingUri: string, rendering: Rendering) {
@@ -156,29 +126,30 @@ export class DymoLoader {
     var controlClasses = this.store.recursiveFindAllSubClasses(uris.MOBILE_CONTROL);
     for (var i = 0; i < controlClasses.length; i++) {
       var currentControls = this.store.findSubjects(uris.TYPE, controlClasses[i]);
-      for (var j = 0; j < currentControls.length; j++) {
-        var currentName = this.store.findObjectValue(currentControls[j], uris.NAME);
-        if (!currentName) {
-          currentName = currentControls[j];
+      _.forEach(this.loadControls(...currentControls), (v,k) => {
+        if (!this.controls[k]) {
+          this.controls[k] = v;
         }
-        if (!this.controls[currentControls[j]]) {
-          this.controls[currentControls[j]] = this.getControl(currentControls[j], currentName, controlClasses[i]);
-        }
+      })
+    }
+  }
+
+  private loadControls(...controlUris: string[]): {} {
+    var controls = {};
+    controlUris.forEach(c => {
+      var currentName = this.store.findObjectValue(c, uris.NAME);
+      if (!currentName) {
+        currentName = c;
       }
-    }
+      var controlType = this.store.findObject(c, uris.TYPE);
+      if (!this.controls[c]) {
+        controls[c] = this.getControl(c, currentName, controlType);
+      }
+    });
+    return controls;
   }
 
-
-  private getNavigator(type) {
-    if (type == uris.SIMILARITY_NAVIGATOR) {
-      return new SimilarityNavigator(undefined, this.store);
-    } else if (type == uris.GRAPH_NAVIGATOR) {
-      return new GraphNavigator(undefined, this.store);
-    }
-    return new SequentialNavigator(undefined, this.store);
-  }
-
-  private getControl(uri, name, type) {
+  private getControl(uri: string, name: string, type: string) {
     var control;
     if (type == uris.ACCELEROMETER_X || type == uris.ACCELEROMETER_Y || type == uris.ACCELEROMETER_Z) {
       control = new AccelerometerControl(type, this.store);
@@ -204,11 +175,11 @@ export class DymoLoader {
       control = new RandomControl(uri, this.store);
     } else if (type == uris.BROWNIAN) {
       var init = this.store.findObjectValue(uri, uris.VALUE);
-      control = new BrownianControl(uri, init);
+      control = new BrownianControl(uri, this.store, init);
     } else if (type == uris.RAMP) {
       var milisDuration = Math.round(this.store.findObjectValue(uri, uris.HAS_DURATION)*1000);
       var init = this.store.findObjectValue(uri, uris.VALUE);
-      control = new RampControl(uri, milisDuration, init);
+      control = new RampControl(uri, milisDuration, this.store, init);
     } else if (type == uris.DATA_CONTROL) {
       var url = this.store.findObjectValue(uri, uris.HAS_URL);
       var jsonMapString = String(this.store.findObjectValue(uri, uris.HAS_JSON_MAP));
@@ -225,4 +196,14 @@ export class DymoLoader {
     }
     return control;
   }
+
+  private getNavigator(type) {
+    if (type == uris.SIMILARITY_NAVIGATOR) {
+      return new SimilarityNavigator(undefined, this.store);
+    } else if (type == uris.GRAPH_NAVIGATOR) {
+      return new GraphNavigator(undefined, this.store);
+    }
+    return new SequentialNavigator(undefined, this.store);
+  }
+
 }
