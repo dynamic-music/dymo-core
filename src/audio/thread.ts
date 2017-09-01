@@ -1,6 +1,7 @@
 import { GlobalVars } from '../globals/globals'
 import { DymoStore } from '../io/dymostore'
 import * as uris from '../globals/uris'
+import { AudioBank } from './audio-bank';
 import { DymoNode } from './node'
 import { DymoSource } from './source'
 import { DymoNavigator } from '../navigators/navigator'
@@ -15,7 +16,7 @@ export class SchedulerThread {
 	private dymoUri;
 	private navigator: DymoNavigator;
 	private audioContext;
-	private buffers;
+	private audioBank: AudioBank;
 	private convolverSend;
 	private delaySend;
 	private onChanged;
@@ -28,11 +29,11 @@ export class SchedulerThread {
 	private currentSources = new Map();
 	private nextEventTime;
 
-	constructor(dymoUri, navigator, audioContext, buffers, convolverSend, delaySend, onChanged, onEnded, private store: DymoStore) {
+	constructor(dymoUri, navigator, audioContext, audioBank: AudioBank, convolverSend, delaySend, onChanged, onEnded, private store: DymoStore) {
 		this.dymoUri = dymoUri;
 		this.navigator = navigator;
 		this.audioContext = audioContext;
-		this.buffers = buffers;
+		this.audioBank = audioBank;
 		this.convolverSend = convolverSend;
 		this.delaySend = delaySend;
 		this.onChanged = onChanged;
@@ -230,10 +231,12 @@ export class SchedulerThread {
 			for (var i = 0; i < nextParts.length; i++) {
 				var sourcePath = this.store.getSourcePath(nextParts[i]);
 				if (sourcePath) {
-					var buffer = this.buffers[sourcePath];
-					var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded.bind(this), this.store);
-					this.createAndConnectToNodes(newSource);
-					nextSources.set(nextParts[i], newSource);
+					var buffer = this.audioBank.getBuffer(sourcePath)
+					.then(buffer => {
+						var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded.bind(this), this.store);
+						this.createAndConnectToNodes(newSource);
+						nextSources.set(nextParts[i], newSource)
+					});
 				}
 			}
 			return nextSources;

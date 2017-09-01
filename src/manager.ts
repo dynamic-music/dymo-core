@@ -55,6 +55,10 @@ export class DymoManager {
 		});
 	}
 
+	getAudioBank(): AudioBank {
+		return this.audioBank;
+	}
+
 	getPlayingDymoUris(): Observable<string[]> {
 		return this.scheduler.getPlayingDymoUris();
 	}

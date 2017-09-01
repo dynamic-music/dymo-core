@@ -13,7 +13,6 @@ declare const Buffer;
  */
 export class Scheduler {
 
-	private buffers = {};
 	private threads: SchedulerThread[] = [];
 	private playingDymoUris: BehaviorSubject<string[]> = new BehaviorSubject([]);
 
@@ -21,10 +20,6 @@ export class Scheduler {
 	private delaySend;
 
 	constructor(private audioContext: AudioContext, private audioBank: AudioBank, private store: DymoStore) { }
-
-	getAudioBank(): AudioBank {
-		return this.audioBank;
-	}
 
 	getPlayingDymoUris(): Observable<string[]> {
 		return this.playingDymoUris.asObservable();
@@ -78,7 +73,7 @@ export class Scheduler {
 	}
 
 	getBuffer(dymoUri) {
-		return this.buffers[this.store.getSourcePath(dymoUri)];
+		return this.audioBank.getBuffer(this.store.getSourcePath(dymoUri));
 	}
 
 	updateNavigatorPosition(dymoUri, level, position) {
@@ -116,7 +111,7 @@ export class Scheduler {
 	}
 
 	play(dymoUri, navigator?: Navigator) {
-		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.buffers, this.convolverSend, this.delaySend, this.updatePlayingDymos.bind(this), this.threadEnded.bind(this), this.store);
+		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.audioBank, this.convolverSend, this.delaySend, this.updatePlayingDymos.bind(this), this.threadEnded.bind(this), this.store);
 		this.threads.push(thread);
 	}
 
