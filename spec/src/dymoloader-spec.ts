@@ -37,8 +37,8 @@ describe("a dymoloader", function() {
 	});
 
 	it("loads a dymo from json", function(done) {
-		loader.loadDymoFromFile(dymoPath).then(loadedDymo => {
-			var topDymoUri = loadedDymo[0];
+		loader.loadFromFiles(dymoPath).then(loadedStuff => {
+			var topDymoUri = loadedStuff.dymoUris[0];
 			scheduler.init(null, topDymoUri);
 			//dymoMap = loadedDymo[1];
 			expect(topDymoUri).toEqual(u.CONTEXT_URI+"dymo0");
@@ -54,8 +54,8 @@ describe("a dymoloader", function() {
 	});
 
 	it("loads higher-level parameters from json", function(done) {
-		loader.loadDymoFromFile(mixDymoPath).then(loadedDymo => {
-			var topDymoUri2 = loadedDymo[0];
+		loader.loadFromFiles(mixDymoPath).then(loadedStuff => {
+			var topDymoUri2 = loadedStuff.dymoUris[0];
 			expect(topDymoUri2).toEqual(u.CONTEXT_URI+"mixdymo");
 			expect(store.findParts(u.CONTEXT_URI+"mixdymo").length).toBe(2);
 			expect(store.findAllObjectsInHierarchy(topDymoUri2).length).toBe(3);
@@ -69,25 +69,23 @@ describe("a dymoloader", function() {
 	});
 
 	it("loads a control rendering from json", function(done) {
-		loader.loadDymoFromFile(dymo2Path).then(loadedDymo => {
-			loader.loadRenderingFromFile(controlRenderingPath).then(loadedRendering => {
-				rendering = loadedRendering[0];
-				var controls = loadedRendering[1];
-				var constraintsObj = loader.getConstraints();
-				var constraints = _.values(constraintsObj).map(c => c.toString());
-				expect(constraints.length).toEqual(3);
-				expect(constraints[0]).toEqual('∀ l : http://tiny.cc/mobile-audio-ontology#ListenerOrientation => ∀ o in ["http://tiny.cc/dymo-context/orientation"] => l == 360 * o');
-				expect(constraints[1]).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, LevelFeature(x) == 1 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => Amplitude(x) == c');
-				expect(constraints[2]).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, DurationRatio(x) > 0.7 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => PlaybackRate(x) == c');
-				//change parameter and see if selection of dymos adjusts!
-				store.setParameter(u.CONTEXT_URI+"dymo1", u.DURATION_RATIO, 0.9);
-				expect(store.findParameterValue(null, u.LISTENER_ORIENTATION)).toBeUndefined();
-				controls[u.CONTEXT_URI+"orientation"].updateValue(0.5);
-				setTimeout(()=>{
-					expect(store.findParameterValue(null, u.LISTENER_ORIENTATION)).toBe(180);
-					done();
-				}, 350);
-			});
+		loader.loadFromFiles(dymo2Path, controlRenderingPath).then(loadedStuff => {
+			rendering = loadedStuff.rendering;
+			var controls = loadedStuff.controls;
+			var constraintsObj = loadedStuff.constraints;
+			var constraints = _.values(constraintsObj).map(c => c.toString());
+			expect(constraints.length).toEqual(3);
+			expect(constraints[0]).toEqual('∀ l : http://tiny.cc/mobile-audio-ontology#ListenerOrientation => ∀ o in ["http://tiny.cc/dymo-context/orientation"] => l == 360 * o');
+			expect(constraints[1]).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, LevelFeature(x) == 1 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => Amplitude(x) == c');
+			expect(constraints[2]).toEqual('∀ x : http://tiny.cc/dymo-ontology#Dymo, DurationRatio(x) > 0.7 => ∀ c in ["http://tiny.cc/dymo-context/slider1"] => PlaybackRate(x) == c');
+			//change parameter and see if selection of dymos adjusts!
+			store.setParameter(u.CONTEXT_URI+"dymo1", u.DURATION_RATIO, 0.9);
+			expect(store.findParameterValue(null, u.LISTENER_ORIENTATION)).toBeUndefined();
+			controls[u.CONTEXT_URI+"orientation"].updateValue(0.5);
+			setTimeout(()=>{
+				expect(store.findParameterValue(null, u.LISTENER_ORIENTATION)).toBe(180);
+				done();
+			}, 350);
 		});
 	});
 
@@ -110,9 +108,9 @@ describe("a dymoloader", function() {
 		oReq.send();
 	});*/
 
-	it("loads dymos that have parts in other files", function(done) {
-		loader.loadDymoFromFile(dymo3Path).then(loadedDymo => {
-			var topDymoUri3 = loadedDymo[0];
+	/*it("loads dymos that have parts in other files", function(done) {
+		loader.loadFromFiles(dymo3Path).then(loadedStuff => {
+			var topDymoUri3 = loadedStuff.dymoUris[0];
 			expect(topDymoUri3).toEqual(u.CONTEXT_URI+"dymo");
 			var parts = store.findParts(u.CONTEXT_URI+"dymo");
 			expect(parts.length).toBe(1);
@@ -120,6 +118,6 @@ describe("a dymoloader", function() {
 			expect(store.findAllObjectsInHierarchy(topDymoUri3).length).toBe(5);
 			done();
 		});
-	});
+	});*/
 
 });

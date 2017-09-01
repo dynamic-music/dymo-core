@@ -3,9 +3,10 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 import { GlobalVars } from './globals/globals'
 import * as uris from './globals/uris'
+import { Rendering } from './model/rendering'
 import { Scheduler } from './audio/scheduler'
 import { DymoStore } from './io/dymostore'
-import { DymoLoader } from './io/dymoloader'
+import { DymoLoader, LoadedStuff } from './io/dymoloader'
 import { Control } from './model/control'
 import { UIControl } from './controls/uicontrol'
 import { SensorControl } from './controls/sensorcontrol'
@@ -18,8 +19,9 @@ import { AttributeInfo } from './globals/types';
 export class DymoManager {
 
 	private store: DymoStore;
+	private loader: DymoLoader;
 	private scheduler: Scheduler;
-	private topDymos;
+	private dymoUris: string[] = [];
 	private rendering;
 	private uiControls: UIControl[] = [];
 	private sensorControls = {};
@@ -29,6 +31,7 @@ export class DymoManager {
 
 	constructor(audioContext: AudioContext, scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string) {
 		this.store = new DymoStore();
+		this.loader = new DymoLoader(this.store);
 		this.scheduler = new Scheduler(audioContext, this.store);
 		if (optimizedMode) {
 			GlobalVars.OPTIMIZED_MODE = true;
@@ -53,13 +56,6 @@ export class DymoManager {
 		return this.scheduler.getPlayingDymoUris();
 	}
 
-	reloadFromStore(): Promise<any> {
-		var loader = new DymoLoader(this.store);
-		var dymo = loader.createDymoFromStore();
-		var rendering = loader.createRenderingFromStore();
-		return this.processLoadedDymoAndRendering(loader, dymo, rendering);
-	}
-
 	getJsonGraph(nodeClass, edgeProperty, cacheNodes?: boolean): Observable<JsonGraph> {
 		let newGraph = new JsonGraphSubject(nodeClass, edgeProperty, this.store, cacheNodes);
 		this.graphs.push(newGraph);
@@ -70,42 +66,37 @@ export class DymoManager {
 		return this.attributeInfo.asObservable();
 	}
 
-	loadDymoAndRendering(dymoUri, renderingUri): Promise<any> {
-		let loader = new DymoLoader(this.store);
-		let loadedDymos, loadedRendering;
-		return loader.loadDymoFromFile(dymoUri)
-			.then(res => loadedDymos = res)
-			.then(() => loader.loadRenderingFromFile(renderingUri))
-			.then(res => loadedRendering = res)
-			.then(() => this.processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering))
+	loadDymoAndRendering(dymoFile, renderingFile): Promise<any> {
+		return this.loader.loadIntoStore(dymoFile, renderingFile)
+			.then(() => this.loadFromStore())
 			.catch(err => console.log(err));
 	}
 
-	private processLoadedDymoAndRendering(loader, loadedDymos, loadedRendering): Promise<any> {
-		this.topDymos = loadedDymos;
-		this.rendering = loadedRendering[0];
-		this.uiControls = <UIControl[]>(_.values(loadedRendering[1])).filter(c => c instanceof UIControl);
-		this.sensorControls = <SensorControl[]>_.values(loadedRendering[1]).filter(c => c instanceof SensorControl);
+	loadFromStore(...uris: string[]): Promise<any> {
+		return this.processLoadedStuff(this.loader.loadFromStore(...uris));
+	}
+
+	private processLoadedStuff(loadedStuff: LoadedStuff): Promise<any> {
+		this.dymoUris = this.dymoUris.concat(loadedStuff.dymoUris);
+		this.rendering = loadedStuff.rendering;
+		this.uiControls = <UIControl[]>(_.values(loadedStuff.controls)).filter(c => c instanceof UIControl);
+		this.sensorControls = <SensorControl[]>_.values(loadedStuff.controls).filter(c => c instanceof SensorControl);
+
 		if (!this.reverbFile) {
 			this.reverbFile = 'node_modules/dymo-core/audio/impulse_rev.wav';
 		}
 		this.graphs.forEach(g => g.update());
 		this.attributeInfo.next(this.store.getAttributeInfo());
-		return this.scheduler.init(this.reverbFile, loadedDymos);
+		return this.scheduler.init(this.reverbFile, loadedStuff.dymoUris);
 	}
 
-	loadDymoFromJson(jsonDymo): Promise<string[]> {
-		var loader = new DymoLoader(this.store);
-		return loader.loadDymoFromFile(jsonDymo);
-	}
-
-	parseDymoFromJson(jsonDymo): Promise<string[]> {
-		var loader = new DymoLoader(this.store);
-		return loader.parseDymoFromString(jsonDymo);
+	loadDymoFromJson(fileUri: string): Promise<string[]> {
+		return new DymoLoader(this.store).loadFromFiles(fileUri)
+			.then(loadedStuff => loadedStuff.dymoUris);
 	}
 
 	replacePartOfTopDymo(index, dymoUri) {
-		var oldDymo = this.store.replacePartAt(this.topDymos[0], this.addContext(dymoUri), index);
+		var oldDymo = this.store.replacePartAt(this.dymoUris[0], this.addContext(dymoUri), index);
 		this.scheduler.stop(oldDymo);
 	}
 
@@ -135,15 +126,12 @@ export class DymoManager {
 	}
 
 	startPlaying() {
-		for (var i = 0; i < this.topDymos.length; i++) {
-			this.scheduler.play(this.topDymos[i], this.rendering.getNavigator());
-		}
+		const nav = this.rendering ? this.rendering.getNavigator() : undefined;
+		this.dymoUris.forEach(d => this.scheduler.play(d, nav));
 	}
 
 	stopPlaying() {
-		for (var i = 0; i < this.topDymos.length; i++) {
-			this.scheduler.stop(this.topDymos[i]);
-		}
+		this.dymoUris.forEach(d => this.scheduler.stop(d));
 	}
 
 	getStore() {
@@ -151,7 +139,7 @@ export class DymoManager {
 	}
 
 	getTopDymo() {
-		return this.topDymos[0];
+		return this.dymoUris[0];
 	}
 
 	getRendering() {

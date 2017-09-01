@@ -46,9 +46,7 @@ describe("the expressions unit", function() {
     let vars = [new ExpressionVariable('x', u.DYMO, new Expression(exp1)), new ExpressionVariable('y', u.DYMO, new Expression(exp1.replace('x','y')))];
     let constraint = new Constraint(vars, new Expression(exp2));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
-    let loader = new DymoLoader(store);
-    loader.createRenderingFromStore();
-    let loaded = loader.getConstraints();
+    let loaded = new DymoLoader(store).loadFromStore().constraints;
     let loadedString = Object.keys(loaded).map(k => loaded[k].toString())[0];
     //console.log(loadedString);
     expect(loadedString).toEqual(constraint.toString());
@@ -91,7 +89,7 @@ describe("the expressions unit", function() {
     let vars = [new ExpressionVariable('x', u.DYMO, new Expression(exp1)), new ExpressionVariable('y', u.DYMO, new Expression(exp1.replace('x','y')))];
     let constraint = new Constraint(vars, new Expression(exp2));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
-    new DymoLoader(store).createRenderingFromStore();
+    new DymoLoader(store).loadFromStore();
 
     expect(vars[0].getValues(store)).toEqual([dymo2]);
     expect(constraint.evaluate(store)).toEqual([true]);
@@ -114,8 +112,7 @@ describe("the expressions unit", function() {
     expect(store.findParameterValue(dymo3, u.AMPLITUDE)).toBeUndefined();
 
     //load constraints, start maintaining, and check if it worked
-    let loader = new DymoLoader(store)
-    loader.createRenderingFromStore();
+    new DymoLoader(store).loadFromStore();
     expect([0.5,0.8]).toContain(store.findParameterValue(dymo1, u.AMPLITUDE));
     expect([2,1.25]).toContain(store.findParameterValue(dymo1, u.DURATION_RATIO));
     expect([1,2]).toContain(store.findParameterValue(dymo2, u.AMPLITUDE));
@@ -176,8 +173,7 @@ describe("the expressions unit", function() {
     ];
     let constraint = new Constraint(vars, new Expression(exp, true));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
-    let loader = new DymoLoader(store)
-    let control = loader.createRenderingFromStore()[1][controlUri];
+    let control = new DymoLoader(store).loadFromStore().controls[controlUri];
     expect([0.5,0.8]).toContain(store.findParameterValue(dymo1, u.AMPLITUDE));
     expect([2,1.25]).toContain(store.findParameterValue(dymo1, u.DURATION_RATIO));
     expect([1,2]).toContain(store.findParameterValue(dymo2, u.AMPLITUDE));

@@ -72,10 +72,10 @@ describe("an easyreasoner", function() {
 		.then(() => store = new DymoStore())
 		.then(() => store.loadOntologies(SERVER_ROOT+'ontologies/'))
 		.then(() => loader = new DymoLoader(store))
-		.then(() => loader.parseDymoFromString(result))
-		.then(topDymoUris => {
-			expect(store.findParts(topDymoUris[0]).length).toBe(2);
-			expect(loader.getConstraints().length).toBe(1);
+		.then(() => loader.loadFromString(result))
+		.then(loadedStuff => {
+			expect(store.findParts(loadedStuff.dymoUris[0]).length).toBe(2);
+			expect(loadedStuff.constraints.length).toBe(1);
 			done();
 		});
 	});
