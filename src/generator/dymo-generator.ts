@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import { uris, URI_TO_TERM, DymoManager } from '../index';
 import { SUMMARY } from './globals';
-import { AudioContext } from 'web-audio-api';
 //import { Feature } from './types';
 
 export function createAudioContext(): AudioContext {
