@@ -22,6 +22,10 @@ export class Scheduler {
 
 	constructor(private audioContext: AudioContext, private audioBank: AudioBank, private store: DymoStore) { }
 
+	getAudioBank(): AudioBank {
+		return this.audioBank;
+	}
+
 	getPlayingDymoUris(): Observable<string[]> {
 		return this.playingDymoUris.asObservable();
 	}
