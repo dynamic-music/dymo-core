@@ -2,7 +2,9 @@ import 'isomorphic-fetch';
 import * as fs from 'fs';
 import { DymoGenerator, uris } from '../../src/index';
 import { ExpressionGenerator } from '../../src/generator/expression-generator';
-import { SERVER_ROOT, SERVER } from './server';
+import { SERVER_ROOT, SERVER, AUDIO_CONTEXT } from './server';
+
+const createGenerator = path => new DymoGenerator(path, () => AUDIO_CONTEXT);
 
 Promise.all([
   createExampleFile('control-rendering.json', generateControlRendering()),
@@ -24,7 +26,7 @@ function createExampleFile(name: string, generated: Promise<string>): Promise<an
 }
 
 function generateControlRendering(): Promise<string> {
-  let dymoGen = new DymoGenerator(SERVER_ROOT+'ontologies/');
+  let dymoGen = createGenerator(SERVER_ROOT+'ontologies/');
   let expressionGen = new ExpressionGenerator(dymoGen.getManager().getStore());
   let renderingUri = dymoGen.addRendering(uris.CONTEXT_URI+"controlRendering", uris.CONTEXT_URI+"dymo0");
   dymoGen.addCustomParameter(uris.LISTENER_ORIENTATION, renderingUri);
@@ -51,7 +53,7 @@ function generateControlRendering(): Promise<string> {
 }
 
 function generateSimilarityRendering(): Promise<string> {
-  let dymoGen = new DymoGenerator(SERVER_ROOT+'ontologies/');
+  let dymoGen = createGenerator(SERVER_ROOT+'ontologies/');
   let expressionGen = new ExpressionGenerator(dymoGen.getManager().getStore());
   let renderingUri = dymoGen.addRendering(uris.CONTEXT_URI+"similarityRendering", uris.CONTEXT_URI+"similarityDymo");
   let navVar = expressionGen.addVariable('∀ d : '+uris.DYMO+', LevelFeature(d) == 1');
@@ -60,7 +62,7 @@ function generateSimilarityRendering(): Promise<string> {
 }
 
 function createMixDymo() {
-  let dymoGen = new DymoGenerator(SERVER_ROOT+'ontologies/');
+  let dymoGen = createGenerator(SERVER_ROOT+'ontologies/');
   let expressionGen = new ExpressionGenerator(dymoGen.getManager().getStore());
   let mixDymoUri = dymoGen.addDymo(null, null, uris.CONJUNCTION, uris.CONTEXT_URI+"mixdymo");
   let fadeParam = dymoGen.addCustomParameter(uris.CONTEXT_URI+"Fade", mixDymoUri);
@@ -130,7 +132,7 @@ function createMixDymo() {
 }
 
 function createMixDymoRendering(): Promise<string> {
-  let dymoGen = new DymoGenerator(SERVER_ROOT+'ontologies/');
+  let dymoGen = createGenerator(SERVER_ROOT+'ontologies/');
   let expressionGen = new ExpressionGenerator(dymoGen.getManager().getStore());
   let mixDymoUri = uris.CONTEXT_URI+"mixdymo";
   let fadeRampUri = uris.CONTEXT_URI+"fadeRamp";
