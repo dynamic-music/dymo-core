@@ -4,6 +4,7 @@ import { flattenArray, removeDuplicates } from 'arrayutils';
 import { DymoStore } from '../io/dymostore';
 import { GlobalVars } from '../globals/globals'
 import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER, CONTEXT_URI } from '../globals/uris'
+import { AudioBank } from './audio-bank';
 import { SchedulerThread } from './thread'
 declare const Buffer;
 
@@ -19,7 +20,7 @@ export class Scheduler {
 	private convolverSend;
 	private delaySend;
 
-	constructor(private audioContext, private store: DymoStore) { }
+	constructor(private audioContext: AudioContext, private audioBank: AudioBank, private store: DymoStore) { }
 
 	getPlayingDymoUris(): Observable<string[]> {
 		return this.playingDymoUris.asObservable();
@@ -30,7 +31,7 @@ export class Scheduler {
 			//init horizontal listener orientation in degrees
 			this.store.setParameter(null, LISTENER_ORIENTATION, 0);
 			this.store.addParameterObserver(null, LISTENER_ORIENTATION, this);
-			let loadingPromises = this.loadBuffers(dymoUris);
+			let loadingPromises = [this.loadBuffers(dymoUris)];
 
 			//init reverb if needed
 			if (reverbFile && this.store.find(null, null, REVERB).length > 0) {
@@ -57,15 +58,11 @@ export class Scheduler {
 	}
 
 	private loadReverbFile(reverbFile): Promise<any> {
-		return new Promise(resolve =>
-			this.loadAudio(reverbFile, buffer => {
-				this.convolverSend.buffer = buffer;
-				resolve();
-			})
-		);
+		return this.audioBank.getBuffer(reverbFile)
+			.then(buffer => this.convolverSend.buffer = buffer);
 	}
 
-	private loadBuffers(dymoUris: string[]): Promise<void>[] {
+	private loadBuffers(dymoUris: string[]): Promise<AudioBuffer[]> {
 		//let allPaths = [];
 		//console.log(this.store.find(null, HAS_PART).map(r => r.subject + " " + r.object));
 		let allPaths = flattenArray(dymoUris.map(uri =>
@@ -73,17 +70,7 @@ export class Scheduler {
 		));
 		allPaths = allPaths.filter(p => typeof p === "string");
 		allPaths = removeDuplicates(allPaths);
-		return allPaths.map(path => new Promise(resolve => {
-			//only add if not there yet..
-			if (!this.buffers[path]) {
-				this.loadAudio(path, buffer => {
-					this.buffers[path] = buffer;
-					resolve();
-				});
-			} else {
-				resolve();
-			}
-		}));
+		return this.audioBank.getBuffers(...allPaths);
 	}
 
 	getBuffer(dymoUri) {
@@ -196,51 +183,6 @@ export class Scheduler {
 			} else {
 				this.stop(dymoUri);
 			}
-		}
-	}
-
-	private loadAudio(path, callback) {
-		fetch(path, {
-			//mode:'cors',
-			/*headers: new Headers({
-				'Content-Type': 'arraybuffer'
-			})*/
-		})
-		.then(r => this.toArrayBuffer(r))
-		//.then(r => {return r.body.getReader().read()})
-		//.then(value => this.audioContext.decodeAudioData(value.buffer, buffer => callback(buffer)))
-		.then(r => this.audioContext ? this.audioContext.decodeAudioData(r, buffer => callback(buffer)) : null)
-		.catch(e => console.log(e));
-
-		/*var request = new XMLHttpRequest();
-		request.open('GET', path, true);
-		request.responseType = 'arraybuffer';
-		request.onload = () => this.audioContext.decodeAudioData(request.response, buffer => callback(buffer));
-		request.send();*/
-	}
-
-	private toArrayBuffer(response) {
-		if (response.arrayBuffer) {
-			return response.arrayBuffer();
-		} else {
-			// isomorphic-fetch does not support response.arrayBuffer
-			return new Promise((resolve, reject) => {
-				let chunks = [];
-				let bytes = 0;
-
-				response.body.on('error', err => {
-					reject("invalid audio url");
-				});
-
-				response.body.on('data', chunk => {
-					chunks.push(chunk);
-					bytes += chunk.length;
-				});
-
-				response.body.on('end', () => {
-					resolve(Buffer.concat(chunks));
-				});
-			});
 		}
 	}
 

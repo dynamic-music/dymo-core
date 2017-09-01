@@ -4,6 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import { GlobalVars } from './globals/globals'
 import * as uris from './globals/uris'
 import { Rendering } from './model/rendering'
+import { AudioBank } from './audio/audio-bank';
 import { Scheduler } from './audio/scheduler'
 import { DymoStore } from './io/dymostore'
 import { DymoLoader, LoadedStuff } from './io/dymoloader'
@@ -21,6 +22,7 @@ export class DymoManager {
 	private store: DymoStore;
 	private loader: DymoLoader;
 	private scheduler: Scheduler;
+	private audioBank: AudioBank;
 	private dymoUris: string[] = [];
 	private rendering;
 	private uiControls: UIControl[] = [];
@@ -32,7 +34,8 @@ export class DymoManager {
 	constructor(audioContext: AudioContext, scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string) {
 		this.store = new DymoStore();
 		this.loader = new DymoLoader(this.store);
-		this.scheduler = new Scheduler(audioContext, this.store);
+		this.audioBank = new AudioBank(audioContext);
+		this.scheduler = new Scheduler(audioContext, this.audioBank, this.store);
 		if (optimizedMode) {
 			GlobalVars.OPTIMIZED_MODE = true;
 		}

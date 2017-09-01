@@ -1,5 +1,6 @@
 import 'isomorphic-fetch';
 import * as _ from 'lodash';
+import { AudioBank } from '../../src/audio/audio-bank';
 import { Scheduler } from '../../src/audio/scheduler';
 import { DymoStore } from '../../src/io/dymostore';
 import { DymoLoader } from '../../src/io/dymoloader';
@@ -29,7 +30,7 @@ describe("a dymoloader", function() {
 		store.loadOntologies(SERVER_ROOT+'ontologies/')
 			.then(() => {
 				loader = new DymoLoader(store);
-				scheduler = new Scheduler(null, store);
+				scheduler = new Scheduler(null, new AudioBank(null), store);
 				fadePosition = 0;
 				isPlaying = false;
 				done();

@@ -3,6 +3,7 @@ import { GlobalVars } from '../../src/globals/globals';
 import { CONJUNCTION, AMPLITUDE, LOOP, CDT, SEQUENCE, PLAY } from '../../src/globals/uris';
 import { Scheduler } from '../../src/audio/scheduler';
 import { DymoStore } from '../../src/io/dymostore';
+import { AudioBank } from '../../src/audio/audio-bank';
 import { SERVER_ROOT, AUDIO_CONTEXT, initSpeaker, endSpeaker } from './server';
 
 describe("a scheduler", function() {
@@ -21,7 +22,7 @@ describe("a scheduler", function() {
 	beforeAll(function(done) {
 		initSpeaker();
 		store = new DymoStore();
-		scheduler = new Scheduler(AUDIO_CONTEXT, store);
+		scheduler = new Scheduler(AUDIO_CONTEXT, new AudioBank(AUDIO_CONTEXT), store);
 		store.loadOntologies(SERVER_ROOT+'ontologies/')
 		.then(() => {
 			store.addDymo("dymo1", null, null, null, CONJUNCTION);

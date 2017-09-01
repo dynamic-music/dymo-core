@@ -1,6 +1,7 @@
 import 'isomorphic-fetch';
 import { GlobalVars } from '../../src/globals/globals';
 import { DymoStore } from '../../src/io/dymostore';
+import { AudioBank } from '../../src/audio/audio-bank';
 import { Scheduler } from '../../src/audio/scheduler';
 import { AudioProcessor } from '../../src/audio/processor';
 import { TIME_STRETCH_RATIO } from '../../src/globals/uris';
@@ -16,7 +17,7 @@ describe("a processor", function() {
 	beforeAll(function(done) {
 		initSpeaker();
 		store = new DymoStore();
-		scheduler = new Scheduler(AUDIO_CONTEXT, store);
+		scheduler = new Scheduler(AUDIO_CONTEXT, new AudioBank(AUDIO_CONTEXT), store);
 		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
 			store.addDymo("dymo1", null, null, sourcePath1);
 			store.addBasePath("dymo1", basePath);
