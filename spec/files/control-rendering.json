@@ -17,7 +17,7 @@
             "@value": "false"
           },
           "left": {
-            "@id": "_:b13"
+            "@id": "_:b16"
           },
           "right": {
             "@type": "Multiplication",
@@ -29,12 +29,12 @@
               }
             },
             "right": {
-              "@id": "_:b16"
+              "@id": "_:b17"
             }
           }
         },
         "vars": {
-          "@id": "_:b16",
+          "@id": "_:b17",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -45,12 +45,15 @@
         }
       },
       "vars": {
-        "@id": "_:b13",
+        "@id": "_:b16",
         "@type": "Variable",
         "varName": "l",
         "varType": {
           "@id": "mb:ListenerOrientation",
-          "@type": "ParameterType"
+          "@type": [
+            "GlobalParameter",
+            "ParameterType"
+          ]
         }
       }
     },
@@ -72,7 +75,7 @@
             "function": "PlaybackRate"
           },
           "right": {
-            "@id": "_:b10"
+            "@id": "_:b5"
           }
         },
         "vars": {
@@ -84,7 +87,6 @@
         }
       },
       "vars": {
-        "@id": "_:b3",
         "@type": "Variable",
         "varExpr": {
           "@type": "GreaterThan",
@@ -112,6 +114,7 @@
     {
       "@type": "ForAll",
       "body": {
+        "@id": "_:b3",
         "@type": "ForAll",
         "body": {
           "@type": "EqualTo",
@@ -127,11 +130,11 @@
             "function": "Amplitude"
           },
           "right": {
-            "@id": "_:b10"
+            "@id": "_:b5"
           }
         },
         "vars": {
-          "@id": "_:b10",
+          "@id": "_:b5",
           "@type": "Variable",
           "varName": "c",
           "varValue": {
@@ -195,7 +198,12 @@
       },
       "varName": "x",
       "varType": {
-        "@id": "dy:Dymo"
+        "@id": "dy:Dymo",
+        "@type": "owl:Class",
+        "rdfs:comment": "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters",
+        "rdfs:subClassOf": {
+          "@id": "ch:Constituent"
+        }
       }
     }
   }

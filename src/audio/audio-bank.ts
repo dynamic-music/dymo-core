@@ -4,11 +4,18 @@ export class AudioBank {
 
   private buffers = new Map<string, AudioBuffer>();
 
-  getBuffers(...filePaths: string[]): Promise<AudioBuffer[]> {
-    return Promise.all(filePaths.map(path => this.getBuffer(path)));
+  /** returns a buffer immediately but only if it has been previously loaded */
+  getLoadedBuffer(filePath: string): AudioBuffer {
+    return this.buffers.get(filePath);
   }
 
-  getBuffer(filePath): Promise<AudioBuffer> {
+  /** returns the corresponding array of buffers and loads them if necessary */
+  loadBuffers(...filePaths: string[]): Promise<AudioBuffer[]> {
+    return Promise.all(filePaths.map(path => this.loadBuffer(path)));
+  }
+
+  /** returns the corresponding buffer and loads it if necessary */
+  loadBuffer(filePath: string): Promise<AudioBuffer> {
     return new Promise(resolve => {
       //only add if not there yet..
       if (!this.buffers.get(filePath)) {

@@ -1,13 +1,30 @@
 import { Parser, Store, Util } from 'n3';
+import { N3Store } from '../io/easystore';
+import * as uris from '../globals/uris';
+
+export interface Feature {
+	name: string,
+	data: DataPoint[]
+};
+
+export interface DataPoint {
+	time: Value<number>,
+	label?: Value<string>
+}
+
+export interface Segment extends DataPoint {
+	duration?: Value<number>
+}
+
+export interface Signal extends DataPoint {
+	value: number[]
+}
+
+export interface Value<T> {
+	value: T
+}
 
 export class FeatureLoader {
-
-	private generator;
-	private dymoUri;
-
-	private mobileRdfUri = "rdf/mobile.n3";
-	private multitrackRdfUri = "http://purl.org/ontology/studio/multitrack";
-	private rdfsUri = "http://www.w3.org/2000/01/rdf-schema#";
 
 	private eventOntology = "http://purl.org/NET/c4dm/event.owl#";
 	private timelineOntology = "http://purl.org/NET/c4dm/timeline.owl#";
@@ -15,26 +32,24 @@ export class FeatureLoader {
 	private vampOntology = "http://purl.org/ontology/vamp/";
 	private dublincoreOntology = "http://purl.org/dc/elements/1.1/";
 
-	private features = {}
 
-	constructor(generator, dymoUri) {
-		this.generator = generator;
-		this.dymoUri = dymoUri;
-	}
-
-	loadFeature(uriOrJson, labelCondition, callback) {
+	loadFeature(uriOrJson, labelCondition): Promise<Feature> {
 		if (uriOrJson.constructor == Object) {
 			//it's a json!
-			this.loadFeatureFromJson(uriOrJson, labelCondition, callback);
+			return Promise.resolve(this.loadFeatureFromJson(uriOrJson, labelCondition));
 		} else {
 			//just a uri..
 			var fileExtension = uriOrJson.split('.');
 			fileExtension = fileExtension[fileExtension.length-1];
-			if (fileExtension == 'n3') {
-				this.loadFeatureFromRdf(uriOrJson, labelCondition, callback);
-			} else if (fileExtension == 'json') {
-				this.loadFeatureFromJsonUri(uriOrJson, labelCondition, callback);
-			}
+			return fetch(uriOrJson, { mode: 'cors' })
+				.then(response => response.text())
+				.then(text => {
+					if (fileExtension == 'n3') {
+						//this.loadFeatureFromRdf(uriOrJson, labelCondition);
+					} else if (fileExtension == 'json') {
+						return this.loadFeatureFromJson(JSON.parse(text), labelCondition);
+					}
+				})
 		}
 	}
 
@@ -42,45 +57,35 @@ export class FeatureLoader {
 
 	//////////// RDF //////////////
 
-	private loadFeatureFromRdf(rdfUri, labelCondition, callback) {
-		this.httpGet(rdfUri, data => {
-			this.parseN3(data, function (store) {
-				this.loadSegmentationFeatureFromRdf(store, results => {
-					if (results.length > 0) {
-						this.addSegmentationFromRdf(rdfUri, labelCondition, results);
-						if (callback) {
-							callback();
-						}
-					} else {
-						this.loadSignalFeatureFromRdf(store, results => {
-							var name = results.name;
-							if (!name) {
-								var split = rdfUri.split('_');
-								name = split[split.length-1].split('.')[0];
-							}
-							this.generator.addFeature(name, results.values, this.dymoUri);
-							if (callback) {
-								callback();
-							}
-						});
+	private loadFeatureFromRdf(rdf, labelCondition): Promise<Feature> {
+		return this.parseN3(rdf).then(store => {
+				let results = this.loadSegmentationFeatureFromRdf(store);
+				if (results.data.length > 0) {
+					results.data.sort((a,b) => a.time.value - b.time.value);
+					if (labelCondition) {
+						results.data = results.data.filter(x => x.label.value == labelCondition);
 					}
-				});
+				} else {
+					results = this.loadSignalFeatureFromRdf(store);
+				}
+				return results;
 			});
-		});
 	}
 
-	private parseN3(data, callback) {
+	private parseN3(data): Promise<N3Store> {
 		var store = Store(null, null);
-		Parser(null).parse(data, (error, triple, prefixes) => {
-			if (triple) {
-				store.addTriple(triple);
-			} else {
-				callback(store);
-			}
-		});
+		return new Promise((resolve, reject) =>
+			Parser(null).parse(data, (error, triple, prefixes) => {
+				if (triple) {
+					store.addTriple(triple);
+				} else {
+					resolve(store);
+				}
+			})
+		);
 	}
 
-	private loadSegmentationFeatureFromRdf(store, callback) {
+	private loadSegmentationFeatureFromRdf(store): Feature {
 		//for now looks at anything containing event times
 		var times = [];
 		var events = store.find(null, this.eventOntology+'time', null);
@@ -92,17 +97,20 @@ export class FeatureLoader {
 			var duration = this.findObjectInStore(store, events[i].object, this.timelineOntology+'duration');
 			var timeObject = {
 				time: this.parseXsdNumber(time),
-				label: this.parseXsdString(this.findObjectInStore(store, events[i].subject, this.rdfsUri+'label'))
+				label: this.parseXsdString(this.findObjectInStore(store, events[i].subject, uris.RDFS_URI+'label'))
 			};
 			if (duration) {
 				timeObject["duration"] = this.parseXsdNumber(duration);
 			}
 			times.push(timeObject);
 		}
-		callback(times);
+		return {
+			name: this.parseXsdString(this.findObjectInStore(store, null, this.dublincoreOntology+'title')),
+			data: times
+		}
 	}
 
-	private loadSignalFeatureFromRdf(store, callback) {
+	private loadSignalFeatureFromRdf(store): Feature {
 		var name = this.parseXsdString(this.findObjectInStore(store, null, this.dublincoreOntology+'title'));
 		var signal = this.parseXsdString(this.findObjectInStore(store, null, this.featureOntology+'value'));
 		signal = signal.split(" ").map(v => parseFloat(v));
@@ -126,7 +134,10 @@ export class FeatureLoader {
 			});
 			i += dimensions[0];
 		}
-		callback({name:name, values:values});
+		return {
+			name:name,
+			data:values
+		};
 	}
 
 	private findObjectInStore(store, subject, predicate) {
@@ -151,72 +162,48 @@ export class FeatureLoader {
 		return Number(value);
 	}
 
-	private addSegmentationFromRdf(rdfUri, labelCondition, times) {
-		//save so that file does not have to be read twice
-		this.features[rdfUri] = times.sort((a,b) => a.time.value - b.time.value);
-		var subset = this.features[rdfUri];
-		if (labelCondition && this.features[rdfUri][0].label) {
-			subset = subset.filter(x => x.label.value == labelCondition);
-		}
-		this.generator.addSegmentation(subset, this.dymoUri);
-	}
-
 
 
 	//////////// JSON //////////////
 
-	private loadFeatureFromJsonUri(jsonUri, labelCondition, callback) {
-		this.httpGet(jsonUri, json => {
-			this.loadFeatureFromJson(JSON.parse(json), labelCondition, callback);
-		});
-	}
-
-	private loadFeatureFromJson(json, labelCondition, callback) {
+	private loadFeatureFromJson(json, labelCondition): Feature {
 		if (Object.keys(json)[0] == "file_metadata") {
-			this.loadFeatureFromJams(json, labelCondition, callback);
+			return this.loadFeatureFromJams(json, labelCondition);
 		} else {
-			this.loadFeatureFromJsonLd(json, labelCondition, callback);
+			return this.loadFeatureFromJsonLd(json, labelCondition);
 		}
 	}
 
-	private loadFeatureFromJams(json, labelCondition, callback) {
+	private loadFeatureFromJams(json: {}, labelCondition: string): Feature {
 		var results = json[Object.keys(json)[1]][0];
 		var outputId = results["annotation_metadata"]["annotator"]["output_id"];
+		var data = results.data;
 		if (outputId == "beats" || outputId == "onsets" || outputId == "segmentation") {
-			results = results.data;
-			if (labelCondition && results[0].value) {
-				results = results.filter(x => x.value == labelCondition);
+			if (labelCondition && data[0].label) {
+				data = data.filter(x => x.label.value === labelCondition);
 			}
-			this.generator.addSegmentation(results, this.dymoUri);
-			if (callback) {
-				callback();
-			}
-		} else {
-			this.generator.addFeature(outputId, results.data, this.dymoUri);
-			if (callback) {
-				callback();
-			}
+		}
+		return {
+			name: outputId,
+			data: data
 		}
 	}
 
-	private loadFeatureFromJsonLd(json, labelCondition, callback) {
+	private loadFeatureFromJsonLd(json, labelCondition): Feature {
 		var type = json["@type"];
+		let values;
 		if (type == "afv:BarandBeatTracker" || type == "afv:Onsets") {
 			let values = json["afo:values"];
 			if (labelCondition && values[0]["afo:value"]) {
 				values = values.filter(x => x["afo:value"] == labelCondition);
 			}
 			values = this.convertJsonLdLabelEventsToJson(values);
-			this.generator.addSegmentation(values, this.dymoUri);
-			if (callback) {
-				callback();
-			}
 		} else {
-			let values = this.convertJsonLdValueEventsToJson(json["afo:values"]);
-			this.generator.addFeature(type, values, this.dymoUri);
-			if (callback) {
-				callback();
-			}
+			values = this.convertJsonLdValueEventsToJson(json["afo:values"]);
+		}
+		return {
+			name: type,
+			data: values
 		}
 	}
 
@@ -243,11 +230,5 @@ export class FeatureLoader {
 		}
 		return times;
 	}
-
-	private httpGet(uri, onLoad) {
-    fetch(uri, { mode: 'cors' })
-      .then(response => response.text())
-      .then(text => onLoad(text));
-  }
 
 }

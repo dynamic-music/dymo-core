@@ -14,6 +14,16 @@ import { SensorControl } from './controls/sensorcontrol'
 import { JsonGraphSubject, JsonGraph } from './io/jsongraph'
 import { AttributeInfo } from './globals/types';
 
+function createAudioContext(): AudioContext {
+	const audioCtxCtor = typeof AudioContext !== 'undefined' ?
+		AudioContext : null;
+	return new (
+		audioCtxCtor
+		|| (window as any).AudioContext
+		|| (window as any).webkitAudioContext
+	)();
+}
+
 /**
  * A class for easy access of all dymo core functionality.
  */
@@ -31,7 +41,7 @@ export class DymoManager {
 	private graphs: JsonGraphSubject[] = [];
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
-	constructor(audioContext: AudioContext, scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string) {
+	constructor(audioContext = createAudioContext(), scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string) {
 		this.store = new DymoStore();
 		this.loader = new DymoLoader(this.store);
 		this.audioBank = new AudioBank(audioContext);

@@ -1,24 +1,15 @@
 import * as _ from 'lodash';
-import { uris, URI_TO_TERM, DymoManager } from '../index';
+import { uris, URI_TO_TERM } from '../index';
+import { DymoStore } from '../io/dymostore';
 import { SUMMARY } from './globals';
+import { Segment } from './feature-loader';
 //import { Feature } from './types';
-
-export function createAudioContext(): AudioContext {
-	const audioCtxCtor = typeof AudioContext !== 'undefined' ?
-		AudioContext : null;
-  return new (
-		audioCtxCtor
-		|| (window as any).AudioContext
-		|| (window as any).webkitAudioContext
-  )();
-}
 
 /**
  * Offers basic functions for generating dymos, inserts them into the given store.
  */
 export class DymoGenerator {
 
-	private manager: DymoManager;
 	private ready: Promise<any>;
 	private currentTopDymo; //the top dymo for the current audio file
 	private currentRenderingUri;
@@ -27,27 +18,18 @@ export class DymoGenerator {
 	private dymoCount = 0;
 	private renderingCount = 0;
 
-	constructor(ontogiesPath?: string, createAudioCtx = createAudioContext) {
-		this.manager = new DymoManager(createAudioCtx());
-		this.ready = this.init(ontogiesPath);
+	constructor(private store: DymoStore) {}
+
+	getStore(): DymoStore {
+		return this.store;
 	}
 
-	private init(ontogiesPath?: string): Promise<any> {
-		return new Promise(resolve => {
-			this.manager.init(ontogiesPath)
-			.then(r => {
-				this.resetDymo();
-				resolve();
-			})
-		});
+	getTopDymoJsonld(): Promise<string> {
+		return this.store.uriToJsonld(this.currentTopDymo);
 	}
 
-	getTopDymoJsonld() {
-		return this.getManager().getStore().uriToJsonld(this.currentTopDymo);
-	}
-
-	getRenderingJsonld() {
-		return this.getManager().getStore().uriToJsonld(this.currentRenderingUri);
+	getRenderingJsonld(): Promise<string> {
+		return this.store.uriToJsonld(this.currentRenderingUri);
 	}
 
 	isReady(): Promise<any> {
@@ -60,41 +42,37 @@ export class DymoGenerator {
 		//this.internalAddFeature("random", null, 0, 1);
 	}
 
-	getManager(): DymoManager {
-		return this.manager;
-	}
-
 	addRendering(renderingUri = this.getUniqueRenderingUri(), dymoUri = this.currentTopDymo): string {
 		this.currentRenderingUri = renderingUri;
-		this.manager.getStore().addRendering(renderingUri, dymoUri);
+		this.store.addRendering(renderingUri, dymoUri);
 		return renderingUri;
 	}
 
 	addCustomParameter(typeUri: string, ownerUri?: string, value?: number): string {
-		let uri = this.manager.getStore().addCustomParameter(ownerUri, typeUri);
+		let uri = this.store.addCustomParameter(ownerUri, typeUri);
 		if (!isNaN(value)) {
-			this.manager.getStore().setValue(uri, uris.VALUE, value);
+			this.store.setValue(uri, uris.VALUE, value);
 		}
 		return uri;
 	}
 
 	addControl(name: string, type: string, uri?: string, initialValue?: number): string {
-		uri = this.manager.getStore().addControl(name, type, uri);
+		uri = this.store.addControl(name, type, uri);
 		if (!isNaN(initialValue)) {
-			this.manager.getStore().setValue(uri, uris.VALUE, initialValue);
+			this.store.setValue(uri, uris.VALUE, initialValue);
 		}
 		return uri;
 	}
 
 	addDataControl(url: string, jsonMap: string, uri?: string): string {
 		uri = this.addControl("", uris.DATA_CONTROL, uri);
-		this.manager.getStore().setValue(uri, uris.HAS_URL, url);
-	  this.manager.getStore().setValue(uri, uris.HAS_JSON_MAP, jsonMap);
+		this.store.setValue(uri, uris.HAS_URL, url);
+	  this.store.setValue(uri, uris.HAS_JSON_MAP, jsonMap);
 		return uri;
 	}
 
 	addNavigator(navigatorType, variableUri: string) {
-		this.manager.getStore().addNavigator(this.currentRenderingUri, navigatorType, variableUri);
+		this.store.addNavigator(this.currentRenderingUri, navigatorType, variableUri);
 	}
 
 	getCurrentTopDymo() {
@@ -113,7 +91,7 @@ export class DymoGenerator {
 		if (!dymoUri) {
 			dymoUri = this.getUniqueDymoUri();
 		}
-		this.manager.getStore().addDymo(dymoUri, parentUri, null, sourcePath, dymoType);
+		this.store.addDymo(dymoUri, parentUri, null, sourcePath, dymoType);
 		if (!parentUri) {
 			this.currentTopDymo = dymoUri;
 		}
@@ -140,10 +118,10 @@ export class DymoGenerator {
 		this.initTopDymoIfNecessary();
 		//var feature = this.getFeature(name);
 		//iterate through all levels and add averages
-		var dymos = this.manager.getStore().findAllObjectsInHierarchy(dymoUri);
+		var dymos = this.store.findAllObjectsInHierarchy(dymoUri);
 		for (var i = 0; i < dymos.length; i++) {
-			var currentTime = this.manager.getStore().findFeatureValue(dymos[i], uris.TIME_FEATURE);
-			var currentDuration = this.manager.getStore().findFeatureValue(dymos[i], uris.DURATION_FEATURE);
+			var currentTime = this.store.findFeatureValue(dymos[i], uris.TIME_FEATURE);
+			var currentDuration = this.store.findFeatureValue(dymos[i], uris.DURATION_FEATURE);
 			var currentValues = data;
 			if (!isNaN(currentTime)) {
 				//only filter data id time given
@@ -206,20 +184,20 @@ export class DymoGenerator {
 		return 0;
 	}
 
-	addSegmentation(segments, dymoUri) {
+	addSegmentation(segments: Segment[], dymoUri: string): void {
 		this.initTopDymoIfNecessary();
-		var maxLevel = this.manager.getStore().findMaxLevel(this.currentTopDymo);
+		var maxLevel = this.store.findMaxLevel(this.currentTopDymo);
 		for (var i = 0; i < segments.length; i++) {
-			var parentUri = this.getSuitableParent(segments[i].time, maxLevel, dymoUri);
-			var startTime = segments[i].time;
+			var parentUri = this.getSuitableParent(segments[i].time.value, maxLevel, dymoUri);
+			var startTime = segments[i].time.value;
 			var duration;
 			if (segments[i].duration) {
-				duration = segments[i].duration;
+				duration = segments[i].duration.value;
 			} else if (segments[i+1]) {
-				duration = segments[i+1].time - startTime;
+				duration = segments[i+1].time.value - startTime;
 			} else {
-				var parentTime = this.manager.getStore().findFeatureValue(parentUri, uris.TIME_FEATURE);
-				var parentDuration = this.manager.getStore().findFeatureValue(parentUri, uris.DURATION_FEATURE);
+				var parentTime = this.store.findFeatureValue(parentUri, uris.TIME_FEATURE);
+				var parentDuration = this.store.findFeatureValue(parentUri, uris.DURATION_FEATURE);
 				if (parentTime && parentDuration) {
 					duration = parentTime + parentDuration - startTime;
 				}
@@ -243,14 +221,14 @@ export class DymoGenerator {
 		}
 	}
 
-	private getSuitableParent(time, maxLevel, dymoUri) {
+	private getSuitableParent(time: number, maxLevel: number, dymoUri: string): string {
 		if (!dymoUri) dymoUri = this.currentTopDymo;
 		var nextCandidate = dymoUri;
-		var currentLevel = this.manager.getStore().findFeatureValue(dymoUri, uris.LEVEL_FEATURE);
+		var currentLevel = this.store.findFeatureValue(dymoUri, uris.LEVEL_FEATURE);
 		while (currentLevel < maxLevel) {
-			var parts = this.manager.getStore().findParts(nextCandidate);
+			var parts = this.store.findParts(nextCandidate);
 			if (parts.length > 0) {
-				let times = parts.map(p => this.manager.getStore().findFeatureValue(p, uris.TIME_FEATURE));
+				let times = parts.map(p => this.store.findFeatureValue(p, uris.TIME_FEATURE));
 				let sortedTimesAndParts = _.zip(times, parts).sort((p,q) => p[0]-q[0]);
 				[times, parts] = _.unzip(sortedTimesAndParts);
 				for (var i = 0; i < times.length; i++) {
@@ -271,29 +249,29 @@ export class DymoGenerator {
 	}
 
 	private updateParentDuration(parentUri, newDymoUri) {
-		var parentTime = this.manager.getStore().findFeatureValue(parentUri, uris.TIME_FEATURE);
-		var newDymoTime = this.manager.getStore().findFeatureValue(newDymoUri, uris.TIME_FEATURE);
+		var parentTime = this.store.findFeatureValue(parentUri, uris.TIME_FEATURE);
+		var newDymoTime = this.store.findFeatureValue(newDymoUri, uris.TIME_FEATURE);
 		if (isNaN(parentTime) || Array.isArray(parentTime) || newDymoTime < parentTime) {
 			this.setDymoFeature(parentUri, uris.TIME_FEATURE, newDymoTime);
 			parentTime = newDymoTime;
 		}
-		var parentDuration = this.manager.getStore().findFeatureValue(parentUri, uris.DURATION_FEATURE);
-		var newDymoDuration = this.manager.getStore().findFeatureValue(newDymoUri, uris.DURATION_FEATURE);
+		var parentDuration = this.store.findFeatureValue(parentUri, uris.DURATION_FEATURE);
+		var newDymoDuration = this.store.findFeatureValue(newDymoUri, uris.DURATION_FEATURE);
 		if (isNaN(parentDuration) || Array.isArray(parentDuration) || parentTime+parentDuration < newDymoTime+newDymoDuration) {
 			this.setDymoFeature(parentUri, uris.DURATION_FEATURE, newDymoTime+newDymoDuration - parentTime);
 		}
 	}
 
 	setDymoFeature(dymoUri, featureUri, value) {
-		if (!this.manager.getStore().findObject(featureUri, uris.TYPE)) {
-			this.manager.getStore().addTriple(featureUri, uris.TYPE, uris.FEATURE_TYPE);
+		if (!this.store.findObject(featureUri, uris.TYPE)) {
+			this.store.addTriple(featureUri, uris.TYPE, uris.FEATURE_TYPE);
 		}
-		this.manager.getStore().setFeature(dymoUri, featureUri, value);
+		this.store.setFeature(dymoUri, featureUri, value);
 		//this.updateMinMax(featureUri, value);
 	}
 
 	setDymoParameter(dymoUri, parameterUri, value) {
-		this.manager.getStore().setParameter(dymoUri, parameterUri, value);
+		this.store.setParameter(dymoUri, parameterUri, value);
 		//this.updateMinMax(featureUri, value);
 	}
 
@@ -333,8 +311,8 @@ export class DymoGenerator {
 		let feature = {name:name, uri:uri, min:min, max:max};
 		let features = _.clone(this.features.getValue());
 		features.length < 2 ? features.push(feature) : features.splice(features.length-2, 0, feature);
-		if (!this.manager.getStore().findObject(uri, uris.TYPE)) {
-			this.manager.getStore().addTriple(uri, uris.TYPE, uris.FEATURE_TYPE);
+		if (!this.store.findObject(uri, uris.TYPE)) {
+			this.store.addTriple(uri, uris.TYPE, uris.FEATURE_TYPE);
 		}
 		this.features.next(features);
 		return feature;

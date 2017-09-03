@@ -57,7 +57,7 @@ export class Scheduler {
 	}
 
 	private loadReverbFile(reverbFile): Promise<any> {
-		return this.audioBank.getBuffer(reverbFile)
+		return this.audioBank.loadBuffer(reverbFile)
 			.then(buffer => this.convolverSend.buffer = buffer);
 	}
 
@@ -69,11 +69,11 @@ export class Scheduler {
 		));
 		allPaths = allPaths.filter(p => typeof p === "string");
 		allPaths = removeDuplicates(allPaths);
-		return this.audioBank.getBuffers(...allPaths);
+		return this.audioBank.loadBuffers(...allPaths);
 	}
 
 	getBuffer(dymoUri) {
-		return this.audioBank.getBuffer(this.store.getSourcePath(dymoUri));
+		return this.audioBank.loadBuffer(this.store.getSourcePath(dymoUri));
 	}
 
 	updateNavigatorPosition(dymoUri, level, position) {

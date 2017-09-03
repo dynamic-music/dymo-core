@@ -29,7 +29,12 @@
       },
       "varName": "d",
       "varType": {
-        "@id": "dy:Dymo"
+        "@id": "dy:Dymo",
+        "@type": "owl:Class",
+        "rdfs:comment": "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters",
+        "rdfs:subClassOf": {
+          "@id": "ch:Constituent"
+        }
       }
     }
   }

@@ -3,7 +3,8 @@
   "@id": "mixdymo",
   "@type": "Dymo",
   "cdt": {
-    "@id": "dy:Conjunction"
+    "@id": "dy:Conjunction",
+    "@type": "DymoType"
   },
   "parts": {
     "@list": [
@@ -34,10 +35,12 @@
         "@id": "dymo00",
         "@type": "Dymo",
         "cdt": {
-          "@id": "dy:Disjunction"
+          "@id": "dy:Disjunction",
+          "@type": "DymoType"
         },
         "features": [
           {
+            "@id": "_:b2",
             "@type": "level",
             "value": {
               "@type": "xsd:integer",
@@ -84,7 +87,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b5"
+              "@id": "_:b3"
             },
             "function": "TimeStretchRatio"
           },
@@ -93,7 +96,7 @@
             "left": {
               "@type": "Division",
               "left": {
-                "@id": "_:b25"
+                "@id": "_:b26"
               },
               "right": {
                 "@type": "Constant",
@@ -106,14 +109,14 @@
             "right": {
               "@type": "FunctionalTerm",
               "args": {
-                "@id": "_:b5"
+                "@id": "_:b3"
               },
               "function": "DurationFeature"
             }
           }
         },
         "vars": {
-          "@id": "_:b25",
+          "@id": "_:b26",
           "@type": "Variable",
           "varName": "t",
           "varValue": {
@@ -129,7 +132,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b5"
+              "@id": "_:b3"
             },
             "function": "LevelFeature"
           },
@@ -160,7 +163,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b5"
+              "@id": "_:b3"
             },
             "function": "Amplitude"
           },
@@ -178,7 +181,7 @@
                   }
                 },
                 "right": {
-                  "@id": "_:b6"
+                  "@id": "_:b7"
                 }
               },
               "right": {
@@ -193,7 +196,7 @@
                 "right": {
                   "@type": "FunctionalTerm",
                   "args": {
-                    "@id": "_:b5"
+                    "@id": "_:b3"
                   },
                   "function": "IndexFeature"
                 }
@@ -202,12 +205,12 @@
             "right": {
               "@type": "Multiplication",
               "left": {
-                "@id": "_:b6"
+                "@id": "_:b7"
               },
               "right": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b5"
+                  "@id": "_:b3"
                 },
                 "function": "IndexFeature"
               }
@@ -215,7 +218,7 @@
           }
         },
         "vars": {
-          "@id": "_:b6",
+          "@id": "_:b7",
           "@type": "Variable",
           "varName": "f",
           "varValue": {
@@ -225,16 +228,14 @@
         }
       },
       "vars": {
-        "@id": "_:b5",
+        "@id": "_:b3",
         "@type": "Variable",
         "varExpr": {
-          "@id": "_:b2",
           "@type": "EqualTo",
           "left": {
-            "@id": "_:b3",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b5"
+              "@id": "_:b3"
             },
             "function": "LevelFeature"
           },
@@ -248,7 +249,12 @@
         },
         "varName": "d",
         "varType": {
-          "@id": "dy:Dymo"
+          "@id": "dy:Dymo",
+          "@type": "owl:Class",
+          "rdfs:comment": "A Dynamic Music Object is a hierarchical structure of musical objects with modifiable parameters",
+          "rdfs:subClassOf": {
+            "@id": "ch:Constituent"
+          }
         }
       }
     }

@@ -53,6 +53,7 @@ export class SequentialNavigator extends SubsetNavigator {
 	}
 
 	getNextParts() {
+		this.parts = this.store.findParts(this.dymoUri);
 		if (this.dymoType == uris.CONJUNCTION) {
 			if (!this.currentSubNavs) {
 				this.currentSubNavs = this.parts.map(p=>this.getNavigator(p));

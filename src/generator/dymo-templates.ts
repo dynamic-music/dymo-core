@@ -2,7 +2,7 @@ import { IterativeSmithWatermanResult } from 'siafun';
 import { uris } from '../index';
 import { DymoStructureInducer } from './dymo-structure';
 import { DymoGenerator } from './dymo-generator';
-import { FeatureLoader } from './feature-loader';
+import { FeatureLoader, Segment, Feature } from './feature-loader';
 
 export module DymoTemplates {
 
@@ -54,7 +54,7 @@ export module DymoTemplates {
 
 	export function createSimilaritySuccessorDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
 		var dymoUri = generator.addDymo(undefined, source);
-		this.loadMultipleFeatures(generator, dymoUri, featureUris, conditions, function() {
+		loadMultipleFeatures(generator, dymoUri, featureUris, conditions).then(() => {
 			DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 			DymoStructureInducer.addSuccessionGraphTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 			generator.addRendering();
@@ -65,6 +65,15 @@ export module DymoTemplates {
 	}
 
 	//expects featurePaths to contain a bar and beat tracker file, followed by any other features
+	export function createAnnotatedBarAndBeatDymo2(generator: DymoGenerator, sourcePath: string, barsAndBeats: Segment[]): Promise<string> {
+		let dymoUri = generator.addDymo(null, sourcePath);
+		let bars = barsAndBeats.filter(b => b['label']['value'] === "1");
+		generator.addSegmentation(bars, dymoUri);
+		generator.addSegmentation(barsAndBeats, dymoUri);
+		return Promise.resolve(dymoUri);
+	}
+
+	//expects featurePaths to contain a bar and beat tracker file, followed by any other features
 	export function createAnnotatedBarAndBeatDymo(generator, featureUris, onLoad) {
 		var uris = [featureUris[0], featureUris[0]];
 		var conditions = ['1',''];
@@ -72,7 +81,15 @@ export module DymoTemplates {
 			uris[i+1] = featureUris[i];
 			conditions[i+1] = '';
 		}
-		this.loadMultipleFeatures(generator, null, uris, conditions, onLoad);
+		loadMultipleFeatures(generator, null, uris, conditions).then(() => onLoad());
+	}
+
+	function loadMultipleFeatures(generator: DymoGenerator, dymoUri: string, featureUris: string[], conditions: string[]): Promise<any> {
+		var loader = new FeatureLoader();
+		var loadFeatures = featureUris.map((f,i) =>
+			loader.loadFeature(f, conditions ? conditions[i] : null)
+		);
+		return Promise.all(loadFeatures);
 	}
 
 	/*export function createPitchHelixDmo() {
@@ -172,15 +189,6 @@ export module DymoTemplates {
 		}
 		return [uris, conds];
 	}*/
-
-	function loadMultipleFeatures(generator: DymoGenerator, dymoUri: string, featureUris: string[], conditions: string[]): Promise<any> {
-		//Benchmarker.startTask("loadFeatures")
-		var loader = new FeatureLoader(generator, dymoUri);
-		var loadFeatures = featureUris.map((f,i) => new Promise(resolve =>
-			loader.loadFeature(f, conditions?conditions[i]:null, resolve)
-		));
-		return Promise.all(loadFeatures);
-	}
 
 	/*export function createAreasDemo(generator, areas) {
 		generator.addDymo();

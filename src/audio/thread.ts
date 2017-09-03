@@ -31,16 +31,13 @@ export class SchedulerThread {
 
 	constructor(dymoUri, navigator, audioContext, audioBank: AudioBank, convolverSend, delaySend, onChanged, onEnded, private store: DymoStore) {
 		this.dymoUri = dymoUri;
-		this.navigator = navigator;
+		this.navigator = navigator ? navigator : new DymoNavigator(dymoUri, this.store, new SequentialNavigator(dymoUri, this.store));
 		this.audioContext = audioContext;
 		this.audioBank = audioBank;
 		this.convolverSend = convolverSend;
 		this.delaySend = delaySend;
 		this.onChanged = onChanged;
 		this.onEnded = onEnded;
-		if (!this.navigator) {
-			this.navigator = new DymoNavigator(dymoUri, this.store, new SequentialNavigator(dymoUri, this.store));
-		}
 		//starts automatically
 		this.recursivePlay();
 	}
@@ -103,7 +100,6 @@ export class SchedulerThread {
 	}
 
 	private recursivePlay() {
-		//console.log("PLAY", this.audioContext.currentTime)
 		var previousSources = this.currentSources;
 		//create sources and init
 		this.currentSources = this.getNextSources();
@@ -231,12 +227,10 @@ export class SchedulerThread {
 			for (var i = 0; i < nextParts.length; i++) {
 				var sourcePath = this.store.getSourcePath(nextParts[i]);
 				if (sourcePath) {
-					var buffer = this.audioBank.getBuffer(sourcePath)
-					.then(buffer => {
-						var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded.bind(this), this.store);
-						this.createAndConnectToNodes(newSource);
-						nextSources.set(nextParts[i], newSource)
-					});
+					var buffer = this.audioBank.getLoadedBuffer(sourcePath)
+					var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded.bind(this), this.store);
+					this.createAndConnectToNodes(newSource);
+					nextSources.set(nextParts[i], newSource);
 				}
 			}
 			return nextSources;

@@ -12,12 +12,13 @@ describe("a processor", function() {
 	var store: DymoStore;
 	var basePath = SERVER_ROOT+'spec/files/';
 	var sourcePath1 = 'sark1.m4a'//'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
-	var scheduler;
+	var audioBank: AudioBank, scheduler: Scheduler;
 
 	beforeAll(function(done) {
 		initSpeaker();
 		store = new DymoStore();
-		scheduler = new Scheduler(AUDIO_CONTEXT, new AudioBank(AUDIO_CONTEXT), store);
+		audioBank = new AudioBank(AUDIO_CONTEXT);
+		scheduler = new Scheduler(AUDIO_CONTEXT, audioBank, store);
 		store.loadOntologies(SERVER_ROOT+'ontologies/').then(() => {
 			store.addDymo("dymo1", null, null, sourcePath1);
 			store.addBasePath("dymo1", basePath);
@@ -33,7 +34,7 @@ describe("a processor", function() {
 
 	it("can timestretch", function() {
 		//console.profile("processor")
-		var buffer = scheduler.getBuffer("dymo1");
+		var buffer = audioBank.getLoadedBuffer("dymo1");
 		var stretched = new AudioProcessor(AUDIO_CONTEXT).timeStretch(buffer, 1.25);
 		expect(stretched.getChannelData(0).length/10).toBeCloseTo(Math.round(0.8*buffer.getChannelData(0).length)/10, 0);
 		//console.profileEnd("processor")
