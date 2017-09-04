@@ -198,7 +198,7 @@ export class DymoGenerator {
 		var parentMap = this.recursiveCreateParentMap(dymoUri);
 		//console.log(JSON.stringify(parentMap))
 		for (var i = 0; i < segments.length; i++) {
-			var parent = this.getSuitableParent2(segments[i].time.value, parentMap);
+			var parent = this.getSuitableParent(segments[i].time.value, parentMap);
 			var startTime = segments[i].time.value;
 			var duration;
 			if (segments[i].duration) {
@@ -220,7 +220,7 @@ export class DymoGenerator {
 				/*if (segments[i].label && !isNaN(segments[i].label)) {
 					this.setDymoFeature(newDymoUri, SEGMENT_LABEL_FEATURE, segments[i].label);
 				}*/
-				this.updateParentDuration(parent.uri, newDymoUri);
+				this.updateParentDuration(parent, { uri: newDymoUri, time: startTime, duration: duration, parts:[] });
 			}
 		}
 	}
@@ -244,7 +244,7 @@ export class DymoGenerator {
 		}
 	}
 
-	private getSuitableParent2(time: number, parentMap: TimeDymo): TimeDymo {
+	private getSuitableParent(time: number, parentMap: TimeDymo): TimeDymo {
 		let suitableParent = parentMap;
 		while (suitableParent.parts.length > 0) {
 			suitableParent.parts.every((p,i) => {
@@ -258,43 +258,14 @@ export class DymoGenerator {
 		return suitableParent;
 	}
 
-	private getSuitableParent(time: number, maxLevel: number, dymoUri: string): string {
-		var nextCandidate = dymoUri;
-		var currentLevel = this.store.findFeatureValue(dymoUri, uris.LEVEL_FEATURE);
-		while (currentLevel < maxLevel) {
-			var parts = this.store.findParts(nextCandidate);
-			if (parts.length > 0) {
-				let times = parts.map(p => this.store.findFeatureValue(p, uris.TIME_FEATURE));
-				let sortedTimesAndParts = _.zip(times, parts).sort((p,q) => p[0]-q[0]);
-				[times, parts] = _.unzip(sortedTimesAndParts);
-				for (var i = 0; i < times.length; i++) {
-					if (times[i] <= time) {
-						nextCandidate = parts[i];
-					} else if (i == 0) {
-						nextCandidate = parts[i];
-					} else {
-						break;
-					}
-				}
-				currentLevel++;
-			} else {
-				return nextCandidate;
-			}
+	private updateParentDuration(parent: TimeDymo, newDymo: TimeDymo) {
+		if (isNaN(parent.time) || Array.isArray(parent.time) || newDymo.time < parent.time) {
+			parent.time = newDymo.time;
+			this.setDymoFeature(parent.uri, uris.TIME_FEATURE, parent.time);
 		}
-		return nextCandidate;
-	}
-
-	private updateParentDuration(parentUri, newDymoUri) {
-		var parentTime = this.store.findFeatureValue(parentUri, uris.TIME_FEATURE);
-		var newDymoTime = this.store.findFeatureValue(newDymoUri, uris.TIME_FEATURE);
-		if (isNaN(parentTime) || Array.isArray(parentTime) || newDymoTime < parentTime) {
-			this.setDymoFeature(parentUri, uris.TIME_FEATURE, newDymoTime);
-			parentTime = newDymoTime;
-		}
-		var parentDuration = this.store.findFeatureValue(parentUri, uris.DURATION_FEATURE);
-		var newDymoDuration = this.store.findFeatureValue(newDymoUri, uris.DURATION_FEATURE);
-		if (isNaN(parentDuration) || Array.isArray(parentDuration) || parentTime+parentDuration < newDymoTime+newDymoDuration) {
-			this.setDymoFeature(parentUri, uris.DURATION_FEATURE, newDymoTime+newDymoDuration - parentTime);
+		if (isNaN(parent.duration) || Array.isArray(parent.duration) || parent.time+parent.duration < newDymo.time+newDymo.duration) {
+			parent.duration = newDymo.time + newDymo.duration - parent.time;
+			this.setDymoFeature(parent.uri, uris.DURATION_FEATURE, parent.duration);
 		}
 	}
 
