@@ -17,7 +17,7 @@
             "@value": "false"
           },
           "left": {
-            "@id": "_:b16"
+            "@id": "_:b15"
           },
           "right": {
             "@type": "Multiplication",
@@ -29,12 +29,12 @@
               }
             },
             "right": {
-              "@id": "_:b17"
+              "@id": "_:b16"
             }
           }
         },
         "vars": {
-          "@id": "_:b17",
+          "@id": "_:b16",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -45,7 +45,7 @@
         }
       },
       "vars": {
-        "@id": "_:b16",
+        "@id": "_:b15",
         "@type": "Variable",
         "varName": "l",
         "varType": {
@@ -70,12 +70,12 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b1"
+              "@id": "_:b4"
             },
             "function": "PlaybackRate"
           },
           "right": {
-            "@id": "_:b5"
+            "@id": "_:b2"
           }
         },
         "vars": {
@@ -93,7 +93,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b1"
+              "@id": "_:b4"
             },
             "function": "DurationRatio"
           },
@@ -112,11 +112,12 @@
       }
     },
     {
+      "@id": "_:b3",
       "@type": "ForAll",
       "body": {
-        "@id": "_:b3",
         "@type": "ForAll",
         "body": {
+          "@id": "_:b1",
           "@type": "EqualTo",
           "directed": {
             "@type": "xsd:boolean",
@@ -125,16 +126,16 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b1"
+              "@id": "_:b4"
             },
             "function": "Amplitude"
           },
           "right": {
-            "@id": "_:b5"
+            "@id": "_:b2"
           }
         },
         "vars": {
-          "@id": "_:b5",
+          "@id": "_:b2",
           "@type": "Variable",
           "varName": "c",
           "varValue": {
@@ -145,7 +146,7 @@
         }
       },
       "vars": {
-        "@id": "_:b1"
+        "@id": "_:b4"
       }
     }
   ],
@@ -161,15 +162,14 @@
         "left": {
           "@type": "FunctionalTerm",
           "args": {
-            "@id": "_:b1",
+            "@id": "_:b4",
             "@type": "Variable",
             "varExpr": {
-              "@id": "_:b2",
               "@type": "EqualTo",
               "left": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b1"
+                  "@id": "_:b4"
                 },
                 "function": "LevelFeature"
               },

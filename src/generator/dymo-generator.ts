@@ -5,6 +5,13 @@ import { SUMMARY } from './globals';
 import { Segment } from './feature-loader';
 //import { Feature } from './types';
 
+interface TimeDymo {
+	uri: string,
+	time: number,
+	duration: number,
+	parts: TimeDymo[]
+}
+
 /**
  * Offers basic functions for generating dymos, inserts them into the given store.
  */
@@ -187,8 +194,11 @@ export class DymoGenerator {
 	addSegmentation(segments: Segment[], dymoUri: string): void {
 		this.initTopDymoIfNecessary();
 		var maxLevel = this.store.findMaxLevel(this.currentTopDymo);
+		if (!dymoUri) dymoUri = this.currentTopDymo;
+		var parentMap = this.recursiveCreateParentMap(dymoUri);
+		//console.log(JSON.stringify(parentMap))
 		for (var i = 0; i < segments.length; i++) {
-			var parentUri = this.getSuitableParent(segments[i].time.value, maxLevel, dymoUri);
+			var parent = this.getSuitableParent2(segments[i].time.value, parentMap);
 			var startTime = segments[i].time.value;
 			var duration;
 			if (segments[i].duration) {
@@ -196,22 +206,35 @@ export class DymoGenerator {
 			} else if (segments[i+1]) {
 				duration = segments[i+1].time.value - startTime;
 			} else {
-				var parentTime = this.store.findFeatureValue(parentUri, uris.TIME_FEATURE);
-				var parentDuration = this.store.findFeatureValue(parentUri, uris.DURATION_FEATURE);
+				var parentTime = parent.time;
+				var parentDuration = parent.duration;
 				if (parentTime && parentDuration) {
 					duration = parentTime + parentDuration - startTime;
 				}
 			}
 			//don't want anything with duration 0 (what other feature values would it have?)
 			if (duration > 0) {
-				var newDymoUri = this.addDymo(parentUri);
+				var newDymoUri = this.addDymo(parent.uri);
 				this.setDymoFeature(newDymoUri, uris.TIME_FEATURE, startTime);
 				this.setDymoFeature(newDymoUri, uris.DURATION_FEATURE, duration);
 				/*if (segments[i].label && !isNaN(segments[i].label)) {
 					this.setDymoFeature(newDymoUri, SEGMENT_LABEL_FEATURE, segments[i].label);
 				}*/
-				this.updateParentDuration(parentUri, newDymoUri);
+				this.updateParentDuration(parent.uri, newDymoUri);
 			}
+		}
+	}
+
+	private recursiveCreateParentMap(topDymoUri: string): TimeDymo {
+		const parts = this.store.findParts(topDymoUri);
+		/*TODO SORT?? let times = parts.map(p => this.store.findFeatureValue(p, uris.TIME_FEATURE));
+		let sortedTimesAndParts = _.zip(times, parts).sort((p,q) => p[0]-q[0]);
+		[times, parts] = _.unzip(sortedTimesAndParts);*/
+		return {
+			uri: topDymoUri,
+			time: this.store.findFeatureValue(topDymoUri, uris.TIME_FEATURE),
+			duration: this.store.findFeatureValue(topDymoUri, uris.DURATION_FEATURE),
+			parts: parts.length > 0 ? parts.map(p => this.recursiveCreateParentMap(p)) : []
 		}
 	}
 
@@ -221,8 +244,21 @@ export class DymoGenerator {
 		}
 	}
 
+	private getSuitableParent2(time: number, parentMap: TimeDymo): TimeDymo {
+		let suitableParent = parentMap;
+		while (suitableParent.parts.length > 0) {
+			suitableParent.parts.every((p,i) => {
+				let eligible = p.time <= time || i == 0
+				if (eligible) {
+					suitableParent = p;
+				}
+				return eligible;
+			});
+		}
+		return suitableParent;
+	}
+
 	private getSuitableParent(time: number, maxLevel: number, dymoUri: string): string {
-		if (!dymoUri) dymoUri = this.currentTopDymo;
 		var nextCandidate = dymoUri;
 		var currentLevel = this.store.findFeatureValue(dymoUri, uris.LEVEL_FEATURE);
 		while (currentLevel < maxLevel) {
