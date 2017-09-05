@@ -157,9 +157,9 @@ export class DymoStore extends EasyStore {
 		partUris.forEach(p => this.addPart(dymoUri, p))
 	}
 
-	/**really slow, use sparingly*/
-	removeParts(dymoUri) {
-		this.deleteList(dymoUri, uris.HAS_PART);
+	/**really slow, use sparingly. removes all parts after the given index*/
+	removeParts(dymoUri: string, index?: number): string[] {
+		return this.deleteFromList(dymoUri, uris.HAS_PART, index);
 	}
 
 	replacePartAt(dymoUri, partUri, index) {

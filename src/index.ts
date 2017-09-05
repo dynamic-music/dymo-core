@@ -13,4 +13,3 @@ export { globals };
 export { DymoGenerator } from './generator/dymo-generator';
 export { DymoTemplates } from './generator/dymo-templates';
 export { ExpressionGenerator } from './generator/expression-generator';
-export { MixGenerator } from './generator/mix-generator';

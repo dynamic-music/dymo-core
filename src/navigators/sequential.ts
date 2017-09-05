@@ -13,7 +13,7 @@ export class SequentialNavigator extends SubsetNavigator {
 	private dymoType: string;
 	private backwards: boolean;
 	protected getNavigator: Function;
-	protected partsNavigated;
+	protected partsNavigated: number;
 	private currentSubNavs;
 	private doneSubNavs;
 
@@ -32,11 +32,11 @@ export class SequentialNavigator extends SubsetNavigator {
 		this.currentSubNavs = null;
 	}
 
-	setPartsNavigated(partsNavigated) {
+	setPartsNavigated(partsNavigated: number) {
 		this.partsNavigated = partsNavigated;
 	}
 
-	getPartsNavigated() {
+	getPartsNavigated(): number {
 		return this.partsNavigated;
 	}
 

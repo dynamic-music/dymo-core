@@ -2,6 +2,7 @@ import { DymoStore } from '../io/dymostore';
 import { BoundVariable } from '../model/variable';
 import { SubsetNavigator } from './subsetnav'
 import { OneShotNavigator } from './oneshot'
+import { SequentialNavigator } from './sequential'
 
 /**
  * A navigator that follows the order of parts.
@@ -54,12 +55,18 @@ export class DymoNavigator {
 		return this.subsetNavigators;
 	}
 
-	getPosition(level, currentDymoUri) {
+	getPosition(level: number, currentDymoUri: string): number {
 		if (!currentDymoUri) {
 			currentDymoUri = this.dymoUri;
 		}
 		var i = 0;
 		var position;
+		var subsetNav = this.getNavigator(currentDymoUri);
+		if (subsetNav instanceof SequentialNavigator) {
+			return subsetNav.getPartsNavigated();
+		}
+
+		//TODO: POSITION USED TO BE HIERARCHICAL(LIST OF POSITIONS...)
 		/*while (i < level) {
 			if (!navigators.has(currentDymoUri)) {
 				return;
@@ -83,7 +90,7 @@ export class DymoNavigator {
 		while (i <= level && currentDymoUri) {
 			var currentNav = this.getNavigator(currentDymoUri);
 			//if level reached, set
-			if (i == level && currentNav.setPartsNavigated) {
+			if (i == level && currentNav instanceof SequentialNavigator) {
 				currentNav.setPartsNavigated(position);
 				this.reset(currentDymoUri);
 			}/* else if (currentNav.getCurrentParts()) {
@@ -143,7 +150,7 @@ export class DymoNavigator {
 		}
 	}*/
 
-	private getNavigator(dymoUri: string) {
+	private getNavigator(dymoUri: string): SubsetNavigator {
 		for (var subset of this.subsetNavigators.keys()) {
 			if (subset.getValues(this.store).indexOf(dymoUri) >= 0) {
 				return this.subsetNavigators.get(subset).getCopy(dymoUri, this.getNavigator.bind(this));

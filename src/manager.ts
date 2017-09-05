@@ -121,7 +121,7 @@ export class DymoManager {
 		this.scheduler.updateNavigatorPosition(this.addContext(dymoUri), level, position);
 	}
 
-	getNavigatorPosition(dymoUri, level) {
+	getNavigatorPosition(dymoUri, level): number {
 		return this.scheduler.getNavigatorPosition(this.addContext(dymoUri), level);
 	}
 

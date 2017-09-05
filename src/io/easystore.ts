@@ -151,11 +151,12 @@ export class EasyStore {
 	 * removes the specified triple from the store. if no object specified, removes the first one found
 	 * really slow in n3js, use carefully!
 	 */
-	removeTriple(subject: string, predicate: string, object?: string) {
+	removeTriple(subject: string, predicate: string, object?: string): string {
 		if (!object) {
 			object = this.findObject(subject, predicate);
 		}
-		return this.store.removeTriple(subject, predicate, object);
+		this.store.removeTriple(subject, predicate, object);
+		return object;
 	}
 
 	createBlankNode() {
@@ -279,18 +280,24 @@ export class EasyStore {
 		this.removeTriple(elementAtIndex, REST, elementAfterIndex);
 	}
 
-	//deletes the list with the given uri from the store
-	deleteList(subject: string, predicate: string) {
+	/**deletes all elements from the given list, starting with the one at the given index*/
+	deleteFromList(subject: string, predicate: string, index?: number): string[] {
 		var listUri = this.findObject(subject, predicate);
 		if (listUri) {
+			var removed = [];
 			var currentRest = listUri;
+			var currentIndex = 0;
 			while (currentRest != NIL) {
-				this.removeTriple(currentRest, FIRST);
-				var nextRest = this.findObject(currentRest, REST);
-				this.removeTriple(currentRest, REST);
-				currentRest = nextRest;
+				if (index == null || currentIndex >= index) {
+					removed.push(this.removeTriple(currentRest, FIRST));
+					var nextRest = this.findObject(currentRest, REST);
+					this.removeTriple(currentRest, REST);
+					currentRest = nextRest;
+				}
+				currentIndex++;
 			}
 			this.removeTriple(subject, predicate);
+			return removed;
 		}
 	}
 
