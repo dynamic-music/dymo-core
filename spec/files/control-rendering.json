@@ -17,7 +17,7 @@
             "@value": "false"
           },
           "left": {
-            "@id": "_:b18"
+            "@id": "_:b16"
           },
           "right": {
             "@type": "Multiplication",
@@ -29,12 +29,12 @@
               }
             },
             "right": {
-              "@id": "_:b19"
+              "@id": "_:b17"
             }
           }
         },
         "vars": {
-          "@id": "_:b19",
+          "@id": "_:b17",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -45,7 +45,7 @@
         }
       },
       "vars": {
-        "@id": "_:b18",
+        "@id": "_:b16",
         "@type": "Variable",
         "varName": "l",
         "varType": {

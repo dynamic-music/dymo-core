@@ -84,10 +84,10 @@ export class Scheduler {
 		}
 	}
 
-	getNavigatorPosition(dymoUri: string, level: number): number {
+	getNavigatorPosition(dymoUri: string): number {
 		for (var i = 0, ii = this.threads.length; i < ii; i++) {
 			if (this.threads[i].hasDymo(dymoUri)) {
-				return this.threads[i].getNavigator().getPosition(level, dymoUri);
+				return this.threads[i].getNavigator().getPosition(dymoUri);
 			}
 		}
 	}

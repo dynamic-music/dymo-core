@@ -86,7 +86,7 @@ export class SequentialNavigator extends SubsetNavigator {
 			}
 			//console.log(this.dymoUri, this.parts, this.partsNavigated, this.currentSubNavs);
 			var nextParts = this.currentSubNavs.getNextParts();
-			if (nextParts[1] != MORE) {
+			if (nextParts[1] !== MORE) {
 				this.partsNavigated++;
 				if (this.partsNavigated < this.parts.length) {
 					nextParts[1] = MORE;

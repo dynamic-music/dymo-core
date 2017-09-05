@@ -55,13 +55,13 @@ export class DymoNavigator {
 		return this.subsetNavigators;
 	}
 
-	getPosition(level: number, currentDymoUri: string): number {
+	getPosition(currentDymoUri: string): number {
 		if (!currentDymoUri) {
 			currentDymoUri = this.dymoUri;
 		}
 		var i = 0;
 		var position;
-		var subsetNav = this.getNavigator(currentDymoUri);
+		var subsetNav = this.navigator;
 		if (subsetNav instanceof SequentialNavigator) {
 			return subsetNav.getPartsNavigated();
 		}

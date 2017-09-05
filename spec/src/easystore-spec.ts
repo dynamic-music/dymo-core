@@ -213,9 +213,9 @@ describe("an easystore", function() {
 		expect(easyStore.findContainingLists("troisième", "list")).toEqual(["host", "host2"]);
 
 		//then delete the entire list
-		easyStore.deleteList("host", "list");
+		easyStore.deleteFromList("host", "list");
 		expect(easyStore.size()).toBe(3);
-		easyStore.deleteList("host2", "list");
+		easyStore.deleteFromList("host2", "list");
 		expect(easyStore.size()).toBe(0);
 	});
 

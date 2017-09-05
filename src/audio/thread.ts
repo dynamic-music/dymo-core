@@ -43,6 +43,9 @@ export class SchedulerThread {
 	}
 
 	hasDymo(uri) {
+		if (uri === this.dymoUri) {
+			return true;
+		}
 		var dymos = this.store.findAllObjectsInHierarchy(this.dymoUri);
 		if (dymos.indexOf(uri)) {
 			return true;

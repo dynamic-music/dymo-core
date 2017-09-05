@@ -121,8 +121,8 @@ export class DymoManager {
 		this.scheduler.updateNavigatorPosition(this.addContext(dymoUri), level, position);
 	}
 
-	getNavigatorPosition(dymoUri, level): number {
-		return this.scheduler.getNavigatorPosition(this.addContext(dymoUri), level);
+	getNavigatorPosition(dymoUri): number {
+		return this.scheduler.getNavigatorPosition(this.addContext(dymoUri));
 	}
 
 	//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level

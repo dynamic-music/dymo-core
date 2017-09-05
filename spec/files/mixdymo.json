@@ -40,7 +40,6 @@
         },
         "features": [
           {
-            "@id": "_:b2",
             "@type": "level",
             "value": {
               "@type": "xsd:integer",
@@ -70,7 +69,7 @@
       "@id": "_:b26"
     },
     {
-      "@id": "_:b1"
+      "@id": "_:b6"
     }
   ],
   "constraint": [
@@ -87,7 +86,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
             "function": "TimeStretchRatio"
           },
@@ -109,7 +108,7 @@
             "right": {
               "@type": "FunctionalTerm",
               "args": {
-                "@id": "_:b3"
+                "@id": "_:b1"
               },
               "function": "DurationFeature"
             }
@@ -132,7 +131,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
             "function": "LevelFeature"
           },
@@ -163,7 +162,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
             "function": "Amplitude"
           },
@@ -181,7 +180,7 @@
                   }
                 },
                 "right": {
-                  "@id": "_:b7"
+                  "@id": "_:b5"
                 }
               },
               "right": {
@@ -196,7 +195,7 @@
                 "right": {
                   "@type": "FunctionalTerm",
                   "args": {
-                    "@id": "_:b3"
+                    "@id": "_:b1"
                   },
                   "function": "IndexFeature"
                 }
@@ -205,12 +204,12 @@
             "right": {
               "@type": "Multiplication",
               "left": {
-                "@id": "_:b7"
+                "@id": "_:b5"
               },
               "right": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b3"
+                  "@id": "_:b1"
                 },
                 "function": "IndexFeature"
               }
@@ -218,24 +217,26 @@
           }
         },
         "vars": {
-          "@id": "_:b7",
+          "@id": "_:b5",
           "@type": "Variable",
           "varName": "f",
           "varValue": {
-            "@id": "_:b1",
+            "@id": "_:b6",
             "@type": "Fade"
           }
         }
       },
       "vars": {
-        "@id": "_:b3",
+        "@id": "_:b1",
         "@type": "Variable",
         "varExpr": {
+          "@id": "_:b2",
           "@type": "EqualTo",
           "left": {
+            "@id": "_:b3",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
             "function": "LevelFeature"
           },

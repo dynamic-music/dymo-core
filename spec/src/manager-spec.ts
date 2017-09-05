@@ -69,13 +69,13 @@ describe("a manager", function() {
 					 	.then(loadedDymo => {
 							expect(manager.getTopDymo()).not.toBeUndefined();
 							var parts = manager.getStore().findParts(manager.getTopDymo());
-							var pos = parts.map(p => manager.getNavigatorPosition(p, 0));
+							var pos = parts.map(p => manager.getNavigatorPosition(p));
 							expect(pos[0]).toEqual(pos[1]); //now no longer fails even though nothing changed? //TODO FAILS, IS IT TOO EARLY TO CHECK HERE?
 							manager.updateNavigatorPosition(parts[0], 0, 2);
 							//expect(manager.getNavigatorPosition(parts[0], 0)).toEqual(2);
 							manager.syncNavigators(parts[1], parts[0], 0);
 							//manager.syncNavigators(parts[1-fadePosition], parts[fadePosition], 0);
-							var pos = parts.map(p => manager.getNavigatorPosition(p, 0));
+							var pos = parts.map(p => manager.getNavigatorPosition(p));
 							expect(pos[0]).toEqual(pos[1]);
 							setTimeout(() => {
 								//manager.stopPlaying();
