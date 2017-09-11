@@ -93,7 +93,7 @@ export class Maintainer {
   }
 
   stop() {
-    this.varsAndUris.forEach(o => this.store.removeValueObserver(o, VALUE, this));
+    this.varsAndUris.forEach((u,v) => this.store.removeValueObserver(u, VALUE, this));
   }
 
 }

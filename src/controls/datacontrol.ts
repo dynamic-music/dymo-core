@@ -11,9 +11,9 @@ export class DataControl extends AutoControl {
 	private url;
 	private jsonMap;
 
-	constructor(uri, url, jsonMap, store: DymoStore, frequency?: number) {
-		if (!frequency) frequency = 60000;
-		super(uri, DATA_CONTROL, store, frequency);
+	constructor(uri, url, jsonMap, store: DymoStore) {
+		super(uri, DATA_CONTROL, store);
+		this.frequency = 60000;
 		this.url = url;
 		this.jsonMap = jsonMap;
 		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 1);

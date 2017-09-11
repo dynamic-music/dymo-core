@@ -16,16 +16,16 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b45"
+              "@id": "_:b46"
             },
             "function": "AutoControlTrigger"
           },
           "right": {
-            "@id": "_:b46"
+            "@id": "_:b47"
           }
         },
         "vars": {
-          "@id": "_:b46",
+          "@id": "_:b47",
           "@type": "Variable",
           "varName": "t",
           "varValue": {
@@ -35,7 +35,7 @@
         }
       },
       "vars": {
-        "@id": "_:b45",
+        "@id": "_:b46",
         "@type": "Variable",
         "varName": "r",
         "varValue": {
@@ -61,11 +61,11 @@
             "function": "DurationRatio"
           },
           "right": {
-            "@id": "_:b40"
+            "@id": "_:b41"
           }
         },
         "vars": {
-          "@id": "_:b40",
+          "@id": "_:b41",
           "@type": "Variable",
           "varName": "o",
           "varValue": {

@@ -21,7 +21,7 @@ export class RampControl extends AutoControl {
 
 	update() {
 		//TODO IMPROVE, ONLY CALCULATE WHEN FREQUENCY CHANGES!!!
-		var delta = 1/this.duration*Number(this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY));
+		var delta = 1/this.duration*this.frequency;
 		if (!this.isIncreasing) {
 			delta *= -1;
 		}

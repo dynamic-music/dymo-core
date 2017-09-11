@@ -82,7 +82,7 @@ export class SetBasedVariable extends BoundVariable {
   }
 
   getValues(store: DymoStore): string[] {
-    return this.set.filter(u => store.find(u));
+    return this.set;//.filter(u => store.find(u));
   }
 
   toString(): string {

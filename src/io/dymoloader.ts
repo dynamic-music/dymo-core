@@ -23,7 +23,7 @@ import { Constraint } from '../model/constraint';
 export interface LoadedStuff {
   dymoUris: string[],
   rendering: Rendering,
-  controls: {},
+  controls: (Control|UIControl)[],
   constraints: Constraint[]
 }
 
@@ -36,8 +36,9 @@ export interface LoadedStuff {
 export class DymoLoader {
 
   private store: DymoStore;
-  private controls = {}; //dict with all the controls created
-  private constraints: Constraint[] = [];
+  private controls = new Map<string,Control|UIControl>(); //dict with all the controls created
+  private constraints = new Map<string,Constraint>();
+  private renderings = new Map<string,Rendering>();
 
   constructor(dymoStore) {
     this.store = dymoStore;
@@ -65,22 +66,22 @@ export class DymoLoader {
   }
 
   loadFromStore(...objectUris: string[]): LoadedStuff {
-    let loadedStuff: LoadedStuff = { dymoUris:[], rendering:null, controls:{}, constraints:[] };
+    let loadedStuff: LoadedStuff = { dymoUris:[], rendering:null, controls:[], constraints:[] };
     let controlUris = [], dymoUris, renderingUri, constraintUris = [], navigatorUris = [];
     if (objectUris.length > 0) {
       let types = objectUris.map(u => this.store.findObject(u, uris.TYPE));
       dymoUris = objectUris.filter((u,i) => types[i] === uris.DYMO);
       renderingUri = objectUris.filter((u,i) => types[i] === uris.RENDERING);
       controlUris = objectUris.filter((u,i) => this.store.isSubclassOf(types[i], uris.MOBILE_CONTROL));
-      constraintUris = objectUris.filter((u,i) => types[i] === uris.CONSTRAINT);
+      constraintUris = objectUris.filter((u,i) => types[i] === uris.FOR_ALL); //that's what constraints are currently
     } else {
       dymoUris = this.store.findTopDymos();
       renderingUri = this.store.findSubject(uris.TYPE, uris.RENDERING);
     }
     loadedStuff.dymoUris = this.loadDymos(...dymoUris);
-    loadedStuff.controls = Object.assign(this.controls, this.loadControls(...controlUris));
+    loadedStuff.controls = this.loadControls(...controlUris);
     loadedStuff.rendering = this.loadRendering(renderingUri);
-    loadedStuff.constraints = this.constraints.concat(this.loadConstraints(constraintUris));
+    loadedStuff.constraints = this.loadConstraints(constraintUris);
     return loadedStuff;
   }
 
@@ -95,20 +96,26 @@ export class DymoLoader {
   }
 
   private loadRendering(renderingUri?: string): Rendering {
-    var rendering = new Rendering(this.store.findObject(renderingUri, uris.HAS_DYMO), this.store);
-    this.createControls();
-    this.loadConstraintsOfOwner(renderingUri);
-    this.loadNavigators(renderingUri, rendering);
-    return rendering;
+    renderingUri = this.store.findObject(renderingUri, uris.HAS_DYMO);
+    if (!this.renderings.has(renderingUri)) {
+      var rendering = new Rendering(renderingUri, this.store);
+      this.createControls();
+      this.loadConstraintsOfOwner(renderingUri);
+      this.loadNavigators(renderingUri, rendering);
+      this.renderings.set(renderingUri, rendering);
+    }
+    return this.renderings.get(renderingUri);
   }
 
-  private loadConstraintsOfOwner(ownerUri: string) {
-    this.constraints = this.constraints.concat(this.loadConstraints(this.store.findAllObjects(ownerUri, uris.CONSTRAINT)));
+  private loadConstraintsOfOwner(ownerUri: string): Constraint[] {
+    return this.loadConstraints(this.store.findAllObjects(ownerUri, uris.CONSTRAINT));
   }
 
   private loadConstraints(constraintUris: string[]): Constraint[] {
-    let constraints = new ConstraintLoader(this.store).loadConstraints(constraintUris);
+    let unloadedUris = _.difference(constraintUris, [...this.constraints.keys()]);
+    let constraints = new ConstraintLoader(this.store).loadConstraints(unloadedUris);
     constraints.forEach(c => c.maintain(this.store));
+    unloadedUris.forEach((u,i) => this.constraints.set(u, constraints[i]));
     return constraints;
   }
 
@@ -126,30 +133,22 @@ export class DymoLoader {
     var controlClasses = this.store.recursiveFindAllSubClasses(uris.MOBILE_CONTROL);
     for (var i = 0; i < controlClasses.length; i++) {
       var currentControls = this.store.findSubjects(uris.TYPE, controlClasses[i]);
-      _.forEach(this.loadControls(...currentControls), (v,k) => {
-        if (!this.controls[k]) {
-          this.controls[k] = v;
-        }
-      })
+      this.loadControls(...currentControls);
     }
   }
 
-  private loadControls(...controlUris: string[]): {} {
-    var controls = {};
-    controlUris.forEach(c => {
-      var currentName = this.store.findObjectValue(c, uris.NAME);
-      if (!currentName) {
-        currentName = c;
-      }
-      var controlType = this.store.findObject(c, uris.TYPE);
-      if (!this.controls[c]) {
-        controls[c] = this.getControl(c, currentName, controlType);
-      }
+  private loadControls(...controlUris: string[]): (Control|UIControl)[] {
+    let unloadedControls = _.difference(controlUris, [...this.controls.keys()]);
+    unloadedControls.forEach(u => {
+      var currentName = this.store.findObjectValue(u, uris.NAME);
+      currentName = currentName ? currentName : u;
+      var controlType = this.store.findObject(u, uris.TYPE);
+      this.controls.set(u, this.getControl(u, currentName, controlType));
     });
-    return controls;
+    return controlUris.map(u => this.controls.get(u));
   }
 
-  private getControl(uri: string, name: string, type: string) {
+  private getControl(uri: string, name: string, type: string): Control|UIControl {
     var control;
     if (type == uris.ACCELEROMETER_X || type == uris.ACCELEROMETER_Y || type == uris.ACCELEROMETER_Z) {
       control = new AccelerometerControl(type, this.store);

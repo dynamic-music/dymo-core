@@ -217,7 +217,7 @@ export class SchedulerThread {
 
 	private getSourceDuration(source) {
 		//var playbackRate = source.getDymo().getParameter(PLAYBACK_RATE).getValue();
-		return source.getDuration();// /playbackRate;
+		return source.getDuration()/source.getParameterValue(uris.PLAYBACK_RATE);
 	}
 
 	private createNextSources() {

@@ -11,10 +11,11 @@ describe("an easystore", function() {
 	var easyStore: EasyStore;
 
 	it("hacks the n3 store for efficiency", function() {
+
+		//check how n3js works
 		let store = N3.Store();
 		//no triples in store
 		expect(store.size).toBe(0);
-		//check basic store behavior
 		store.addTriple("var", "val", "1");
 		expect(store.size).toBe(1);
 		expect(store.getObjectsByIRI("var","val")).toEqual(["1"]);
@@ -27,6 +28,16 @@ describe("an easystore", function() {
 			let prevObject = store.getObjectsByIRI(s, p)[0];
 			store._entities[store._ids[prevObject]] = o;
 		}
+
+		//test implementation
+		easyStore = new EasyStore();
+		easyStore.addTriple("f1", "rest", "nil");
+		easyStore.addTriple("g1", "rest", "nil");
+		easyStore.addTriple("f2", "rest", "nil");
+		easyStore.setTriple("f1", "rest", "f2");
+		easyStore.removeTriple("f1", "rest");
+		easyStore.removeTriple("f2", "rest");
+		expect(easyStore.size()).toBe(1);
 	});
 
 	it("can add, remove, and set triples, objects, and values", function() {
@@ -40,6 +51,7 @@ describe("an easystore", function() {
 		expect(easyStore.size()).toBe(2);
 		easyStore.setTriple("mokka", "lives", "forever");
 		expect(easyStore.size()).toBe(2);
+		expect(easyStore.findAllObjects("mokka", null).length).toBe(1);
 		expect(easyStore.findObject("mokka", "lives")).toBe("forever");
 		easyStore.addTriple("nothing", "else", "matters");
 		expect(easyStore.size()).toBe(3);
@@ -68,6 +80,7 @@ describe("an easystore", function() {
 		expect(easyStore.findObjectValue(easyStore.findObjectOfType("thun", "hat", "bar"), "nummer")).toEqual(1);
 		expect(easyStore.findSubject("ist", "scheisse")).toEqual("musik");
 		expect(easyStore.findSubject("number", 1)).toEqual("mokka");
+
 		easyStore.setValue("mokka", "number", "one");
 		expect(easyStore.findSubject("number", "one")).toEqual("mokka");
 		expect(easyStore.findAllObjects("thun", "hat").length).toBe(2);
@@ -213,9 +226,16 @@ describe("an easystore", function() {
 		expect(easyStore.findContainingLists("troisième", "list")).toEqual(["host", "host2"]);
 
 		//then delete the entire list
-		easyStore.deleteFromList("host", "list");
+		easyStore.deleteListFrom("host", "list", 2);
+		expect(easyStore.findObjectOrList("host", "list")).toEqual(["première", "troisième"]);
+		easyStore.addObjectToList("host", "list", "first");
+		expect(easyStore.findObjectOrList("host", "list")).toEqual(["première", "troisième", "first"]);
+		easyStore.deleteListFrom("host", "list", 1);
+		expect(easyStore.findObjectOrList("host", "list")).toEqual(["première"]);
+		easyStore.deleteListFrom("host", "list");
 		expect(easyStore.size()).toBe(3);
-		easyStore.deleteFromList("host2", "list");
+
+		easyStore.deleteListFrom("host2", "list");
 		expect(easyStore.size()).toBe(0);
 	});
 

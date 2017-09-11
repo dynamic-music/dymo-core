@@ -92,7 +92,12 @@ export class DymoStore extends EasyStore {
 	addParameterObserver(dymoUri, parameterType, observer) {
 		if (dymoUri && parameterType) {
 			//add parameter if there is none so far and get uri
+			//console.log(dymoUri, parameterType)
+			//console.log(this.find("_:b4222"), this.find(null,null,"_:b4222"));
+			//console.log(this.findObjectOfType(dymoUri, uris.HAS_PARAMETER, parameterType));
+			//console.log(this.findAllObjects(dymoUri, uris.HAS_PARAMETER));
 			var parameterUri = this.setParameter(dymoUri, parameterType);
+			//console.log(parameterUri)
 			//add observer
 			this.addValueObserver(parameterUri, uris.VALUE, observer);
 			return parameterUri;
@@ -159,7 +164,7 @@ export class DymoStore extends EasyStore {
 
 	/**really slow, use sparingly. removes all parts after the given index*/
 	removeParts(dymoUri: string, index?: number): string[] {
-		return this.deleteFromList(dymoUri, uris.HAS_PART, index);
+		return this.deleteListFrom(dymoUri, uris.HAS_PART, index);
 	}
 
 	replacePartAt(dymoUri, partUri, index) {

@@ -68,6 +68,7 @@ export class Expression {
           varsAndUris.set(v, objectUriOrVal);
         }
       });
+      //console.log(vars, varsAndUris)
       this.currentMaintainers.set(vars, new Maintainer(varsAndUris, featureFreeTree, this.isDirected, store));
     }
   }
@@ -89,8 +90,10 @@ export class Expression {
   private getFunctionalObject(expression: MathjsNode, vars: Object, store: DymoStore): any {
     if (expression.isFunctionNode) {
       let arg = this.getFunctionalObject(expression["args"][0], vars, store);
-      let officialName = u.DYMO_ONTOLOGY_URI+expression["fn"]["name"];
-      let customName = u.CONTEXT_URI+expression["fn"]["name"];
+      let name = expression["fn"]["name"];
+      //TODO IMPROVE THIS!!
+      let officialName = name.indexOf(u.DYMO_ONTOLOGY_URI) >= 0 ? name : u.DYMO_ONTOLOGY_URI+name;
+      let customName = name.indexOf(u.CONTEXT_URI) >= 0 ? name : u.CONTEXT_URI+name;
       //search for a matching predicate
       let result: string|number = store.findObject(arg, officialName);
       if (result == null) {

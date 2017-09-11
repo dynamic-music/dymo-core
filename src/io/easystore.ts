@@ -2,7 +2,7 @@ import * as N3 from 'n3';
 import * as _ from 'lodash';
 import { promises as jsonld } from 'jsonld';
 import { flattenArray, removeDuplicates } from 'arrayutils';
-import { RDFS_URI, TYPE, FIRST, REST, NIL, VALUE } from '../globals/uris';
+import { RDFS_URI, TYPE, FIRST, REST, NIL, VALUE, DYMO, RENDERING } from '../globals/uris';
 
 //limited interface to ensure optimal use here!
 export interface N3Store {
@@ -12,8 +12,9 @@ export interface N3Store {
 	_graphs: {},
 	size: number,
 	addTriple: (subject: string | N3Triple, predicate?: string, object?: string) => void,
-	removeTriple: (subject: string, predicate: string, object: string) => void,
+	removeTriple: (subject: string, predicate: string, object?: string) => void,
 	createBlankNode: () => string,
+	countTriplesByIRI: (subject: string, predicate: string, object: string) => number,
 	getTriplesByIRI: (subject: string, predicate: string, object: string) => N3Triple[],
 	getSubjectsByIRI: (predicate: string, object: string) => string[],
 	getObjectsByIRI: (subject: string, predicate: string) => string[]
@@ -42,7 +43,6 @@ export class EasyStore {
 	private typeObservers = {};
 	private valueBuffer = {};
 
-
 	size(): number {
 		return this.store.size;
 	}
@@ -51,6 +51,7 @@ export class EasyStore {
 	///////// OBSERVING FUNCTIONS //////////
 
 	addValueObserver(subject, predicate, observer) {
+		//console.log("OBS", subject, predicate, [observer])
 		if (observer) {
 			if (!this.valueObservers[subject]) {
 				this.valueObservers[subject] = {};
@@ -99,6 +100,12 @@ export class EasyStore {
 				}
 			}
 		}
+	}
+
+	getValueObserverCount(): number {
+		var observers = [];
+		_.values(this.valueObservers).forEach(os => _.values(os).forEach(olist => observers.push(olist)));
+		return _.flatten(observers).length;
 	}
 
 	getValueObservers(subject, predicate) {
@@ -154,8 +161,12 @@ export class EasyStore {
 	removeTriple(subject: string, predicate: string, object?: string): string {
 		if (!object) {
 			object = this.findObject(subject, predicate);
+			if (object) {
+				this.store.removeTriple(subject, predicate, object);
+			}
+		} else if (this.store.countTriplesByIRI(subject, predicate, object) > 0) {
+			this.store.removeTriple(subject, predicate, object);
 		}
-		this.store.removeTriple(subject, predicate, object);
 		return object;
 	}
 
@@ -165,7 +176,7 @@ export class EasyStore {
 
 	//sets or replaces the object of the given subject and predicate
 	setTriple(subject: string, predicate: string, object: string) {
-		let oldObject = this.store.getObjectsByIRI(subject, predicate)[0];
+		let oldObject = this.findObject(subject, predicate);
 		if (oldObject) {
 			this.replaceObjectInTriple(subject, predicate, oldObject, object);
 		} else {
@@ -187,10 +198,24 @@ export class EasyStore {
 		// Create layers as necessary
 		var index1 = index0[key0] || (index0[key0] = {});
 		var index2 = index1[key1] || (index1[key1] = {});
-		// remove old key
-		[index0, index1, index2].forEach((index,i) => i == position ? delete index[oldKey] : 0);
 		// Setting the key to _any_ value signals the presence of the triple
 		index2[key2] = null;
+
+		if (position == 2) {
+			// remove old key
+			delete index2[oldKey];
+		} else if (position == 1) {
+			let oldIndex2 = index1[oldKey];
+			delete oldIndex2[key2];
+			if (_.size(oldIndex2) == 0) delete index1[oldKey];
+		} else if (position == 0) {
+			let oldIndex1 = index0[oldKey];
+			let oldIndex2 = oldIndex1[key1];
+			delete oldIndex2[key2];
+			if (_.size(oldIndex2) == 0) delete oldIndex1[key1];
+			if (_.size(oldIndex1) == 0) delete index0[oldKey];
+		}
+
 	}
 
 	//sets or replaces a literal value of the given subject and predicate, value can be a list
@@ -224,6 +249,7 @@ export class EasyStore {
 		}
 		if (!objectUri) {
 			objectUri = this.createBlankNode();
+			//console.log(objectUri, subject, predicate, objectType, valuePredicate)
 			if (subject && predicate) {
 				this.addTriple(subject, predicate, objectUri);
 			}
@@ -281,22 +307,26 @@ export class EasyStore {
 	}
 
 	/**deletes all elements from the given list, starting with the one at the given index*/
-	deleteFromList(subject: string, predicate: string, index?: number): string[] {
+	deleteListFrom(subject: string, predicate: string, index?: number): string[] {
 		var listUri = this.findObject(subject, predicate);
 		if (listUri) {
 			var removed = [];
 			var currentRest = listUri;
 			var currentIndex = 0;
 			while (currentRest != NIL) {
-				if (index == null || currentIndex >= index) {
-					removed.push(this.removeTriple(currentRest, FIRST));
-					var nextRest = this.findObject(currentRest, REST);
+				var nextRest = this.findObject(currentRest, REST);
+				if (currentIndex == index-1) {
+					this.setTriple(currentRest, REST, NIL);
+				} else if (!index || currentIndex >= index) {
 					this.removeTriple(currentRest, REST);
-					currentRest = nextRest;
+					removed.push(this.removeTriple(currentRest, FIRST));
 				}
+				currentRest = nextRest;
 				currentIndex++;
 			}
-			this.removeTriple(subject, predicate);
+			if (!index) {
+				this.removeTriple(subject, predicate, listUri);
+			}
 			return removed;
 		}
 	}
@@ -502,8 +532,14 @@ export class EasyStore {
 				objectUris.push(first);
 				var currentRest = this.findObject(listUri, REST);
 				while (currentRest != NIL) {
-					objectUris.push(this.findObject(currentRest, FIRST));
-					currentRest = this.findObject(currentRest, REST);
+					var first = this.findObject(currentRest, FIRST);
+					var rest = this.findObject(currentRest, REST);
+					if (first && rest) {
+						objectUris.push(first);
+						currentRest = rest;
+					} else {
+						throw "Trying to get elements from an illdefined list (with missing first or rest)"
+					}
 				}
 				return objectUris;
 			}

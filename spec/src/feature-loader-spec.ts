@@ -21,7 +21,7 @@ describe("a feature loader", function() {
 			})
 			.then(() => loader.loadFeature(SERVER_ROOT+'spec/files/jams-mfcc.json', ''))
 			.then(feature => {
-				expect(feature.data.length).toEqual(2946);
+				expect(feature.data.length).toEqual(23);
 				expect((<Signal>feature.data[0]).value).not.toBeUndefined();
 				done();
 			})

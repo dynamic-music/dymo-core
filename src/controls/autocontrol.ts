@@ -9,21 +9,22 @@ import { DymoStore } from '../io/dymostore';
 export abstract class AutoControl extends Control {
 
 	private intervalID;
+	protected frequency;
 
-	constructor(uri, name, store: DymoStore, private frequency?: number) {
+	constructor(uri, name, store: DymoStore) {
 		super(uri, name, AUTO_CONTROL, store);
-		if (!frequency) frequency = 100;
+		this.frequency = 100;
 		this.intervalID = null;
 		this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency, this);
 		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0, this);
 	}
 
-	startUpdate(frequency?: number) {
-		if (!frequency) {
-			frequency = Number(this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY));
+	startUpdate() {
+		if (!this.frequency) {
+			this.frequency = Number(this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY));
 		}
 		this.update();
-		this.intervalID = setInterval(() => this.update(), frequency);
+		this.intervalID = setInterval(() => this.update(), this.frequency);
 	}
 
 	abstract update();
@@ -37,7 +38,8 @@ export abstract class AutoControl extends Control {
 		if (paramType == AUTO_CONTROL_FREQUENCY) {
 			if (this.intervalID) {
 				this.reset();
-				this.startUpdate(value);
+				this.frequency = value;
+				this.startUpdate();
 			}
 		} else if (paramType == AUTO_CONTROL_TRIGGER) {
 			if (!this.intervalID && value > 0) {

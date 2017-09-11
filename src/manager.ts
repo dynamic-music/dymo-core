@@ -89,8 +89,9 @@ export class DymoManager {
 			.catch(err => console.log(err));
 	}
 
-	loadFromStore(...uris: string[]): Promise<any> {
-		return this.processLoadedStuff(this.loader.loadFromStore(...uris));
+	loadFromStore(...uris: string[]): Promise<LoadedStuff> {
+		let loadedStuff = this.loader.loadFromStore(...uris);
+		return this.processLoadedStuff(loadedStuff).then(() => loadedStuff);
 	}
 
 	private processLoadedStuff(loadedStuff: LoadedStuff): Promise<any> {

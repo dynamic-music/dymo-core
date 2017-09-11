@@ -71,6 +71,13 @@ export class DymoGenerator {
 		return uri;
 	}
 
+	addRampControl(initialValue: number, duration: number, frequency?: number, name?: string): string {
+		let uri = this.addControl(name, uris.RAMP, null, initialValue);
+		this.getStore().setValue(uri, uris.HAS_DURATION, duration);
+		this.getStore().setValue(uri, uris.AUTO_CONTROL_FREQUENCY, frequency);
+		return uri;
+	}
+
 	addDataControl(url: string, jsonMap: string, uri?: string): string {
 		uri = this.addControl("", uris.DATA_CONTROL, uri);
 		this.store.setValue(uri, uris.HAS_URL, url);
@@ -103,6 +110,12 @@ export class DymoGenerator {
 			this.currentTopDymo = dymoUri;
 		}
 		return dymoUri;
+	}
+
+	addConjunction(parentUri: string, partUris: string[]): string {
+		var uri = this.addDymo(parentUri, null, uris.CONJUNCTION);
+		partUris.forEach(p => this.store.addPart(uri, p));
+		return uri;
 	}
 
 	private getUniqueDymoUri() {
