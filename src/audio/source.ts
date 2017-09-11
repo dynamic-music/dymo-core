@@ -34,7 +34,10 @@ export class DymoSource extends DymoNode {
 		var segment = this.getSegment();
 		this.duration = segment[1];
 		var stretchRatio = this.getStretchRatio();
-		this.source.buffer = this.getProcessedBuffer(segment, stretchRatio);
+		var stretchedBuffer = this.getProcessedBuffer(segment, stretchRatio);
+		if (stretchedBuffer) {
+			this.source.buffer = stretchedBuffer;
+		}
 		//add parameters
 		this.addParameter(PLAYBACK_RATE, this.source.playbackRate);
 		this.addParameter(TIME_STRETCH_RATIO, {value:0});
@@ -81,8 +84,11 @@ export class DymoSource extends DymoNode {
 		}
 		if (!this.buffer && !isNaN(time+duration)) {
 			//buffer doesn't exist, try to get from server
-			this.requestBufferFromAudioServer(this.store.getSourcePath(this.dymoUri), time, time+duration,
-				loadedBuffer => this.getStretchedAndFadedBuffer(loadedBuffer, duration, stretchRatio));
+			let path = this.store.getSourcePath(this.dymoUri);
+			if (path) {
+				this.requestBufferFromAudioServer(path, time, time+duration,
+					loadedBuffer => this.getStretchedAndFadedBuffer(loadedBuffer, duration, stretchRatio));
+			}
 		} else {
 			//trim if buffer too long
 			if (time != 0 || duration < this.buffer.duration) {
@@ -115,22 +121,32 @@ export class DymoSource extends DymoNode {
 	}
 
 	play(startTime?: number) {
-		//console.log(this.dymoUri, this.parameters[AMPLITUDE].value)
-		//this.parameters[AMPLITUDE].setValueAtTime(0.1, this.audioContext.currentTime);
-		this.source.onended = () => {
-			//disconnect all nodes
-			this.source.disconnect();
-			this.removeAndDisconnect();
-			if (this.onEnded) {
-				this.onEnded(this);
+		if (this.source) {
+			//console.log(this.dymoUri, this.parameters[AMPLITUDE].value)
+			//this.parameters[AMPLITUDE].setValueAtTime(0.1, this.audioContext.currentTime);
+			this.source.onended = () => {
+				//disconnect all nodes
+				this.source.disconnect();
+				this.removeAndDisconnect();
+				if (this.onEnded) {
+					this.onEnded(this);
+				}
+			};
+			if (!startTime) {
+				startTime = 0;
 			}
-		};
-		if (!startTime) {
-			startTime = 0;
-		}
-		this.source.start(startTime);
-		if (this.store.findParameterValue(this.dymoUri, LOOP)) {
-			this.source.loop = true;
+			this.source.start(startTime);
+			if (this.store.findParameterValue(this.dymoUri, LOOP)) {
+				this.source.loop = true;
+			}
+		} else {
+			//SILENT SOURCE (TODO MAYBE MAKE SEPARATE CLASS)
+			setTimeout(() => {
+				this.removeAndDisconnect();
+				if (this.onEnded) {
+					this.onEnded(this);
+				}
+			}, this.duration);
 		}
 		//console.log(startTime, audioContext.currentTime, source.loop)
 		//source.start(startTime, currentPausePosition);

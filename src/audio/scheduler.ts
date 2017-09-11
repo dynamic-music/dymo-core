@@ -33,21 +33,23 @@ export class Scheduler {
 			let loadingPromises = [this.loadBuffers(dymoUris)];
 
 			//init reverb if needed
-			if (reverbFile && this.store.find(null, null, REVERB).length > 0) {
+			if (reverbFile && (!GlobalVars.OPTIMIZED_MODE || this.store.find(null, null, REVERB).length > 0)) {
 				this.convolverSend = this.audioContext.createConvolver();
 				this.convolverSend.connect(this.audioContext.destination);
 				loadingPromises.push(this.loadReverbFile(reverbFile));
 			}
 
 			//init delay if needed
-			if (this.store.find(null, null, DELAY).length > 0) {
-				var delaySend = this.audioContext.createDelay();
-				delaySend.delayTime.value = 0.5;
-				delaySend.connect(this.audioContext.destination);
+			console.log("DELAYLINE?")
+			if (!GlobalVars.OPTIMIZED_MODE || this.store.find(null, null, DELAY).length > 0) {
+				console.log("DELAYLINE!!!")
+				this.delaySend = this.audioContext.createDelay();
+				this.delaySend.delayTime.value = 0.5;
+				this.delaySend.connect(this.audioContext.destination);
 				var delayFeedback = this.audioContext.createGain();
 				delayFeedback.gain.value = 0.6;
-				delaySend.connect(delayFeedback);
-				delayFeedback.connect(delaySend);
+				this.delaySend.connect(delayFeedback);
+				delayFeedback.connect(this.delaySend);
 			}
 			//start observing play parameters
 			this.store.addTypeObserver(PLAY, VALUE, this);

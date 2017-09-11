@@ -216,7 +216,6 @@ export class SchedulerThread {
 	}
 
 	private getSourceDuration(source) {
-		//var playbackRate = source.getDymo().getParameter(PLAYBACK_RATE).getValue();
 		return source.getDuration()/source.getParameterValue(uris.PLAYBACK_RATE);
 	}
 
@@ -234,6 +233,8 @@ export class SchedulerThread {
 					var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded.bind(this), this.store);
 					this.createAndConnectToNodes(newSource);
 					nextSources.set(nextParts[i], newSource);
+				} else {
+					nextSources.set(nextParts[i], new DymoSource(nextParts[i], this.audioContext, null, null, null, this.sourceEnded.bind(this), this.store));
 				}
 			}
 			return nextSources;
