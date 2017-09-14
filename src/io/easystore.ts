@@ -295,6 +295,22 @@ export class EasyStore {
 		return previousObject;
 	}
 
+	insertObjectIntoList(subject: string, predicate: string, object, index: number) {
+		var listUri = this.findObject(subject, predicate);
+		var newElement = this.createBlankNode();
+		this.addTriple(newElement, FIRST, object);
+		var nextElement = this.getElementAt(listUri, index);
+		this.addTriple(newElement, REST, nextElement.value);
+		if (index > 0) {
+			//set previous element rest to new element
+			var previousElement = this.getElementAt(listUri, index-1);
+			this.setTriple(previousElement.value, REST, newElement);
+		} else {
+			//set list head to new element
+			this.setTriple(subject, predicate, newElement);
+		}
+	}
+
 	removeObjectFromList(subject: string, predicate: string, index: number) {
 		var listUri = this.findObject(subject, predicate);
 		var newElement = this.createBlankNode();

@@ -32,7 +32,6 @@ export class DymoNode {
 		}
 		//create delay module
 		if (delaySend) {
-			console.log("DELAY INIT")
 			this.delayGain = this.createGain(audioContext, this.dryGain, delaySend);
 			this.addParameter(DELAY, this.delayGain.gain);
 		}
@@ -73,7 +72,6 @@ export class DymoNode {
 		this.parameters[paramType] = webAudioParam;
 		var paramValue = this.store.findParameterValue(this.dymoUri, paramType);
 		if (paramValue != null) {
-			console.log(paramType, paramValue)
 			this.setParameter(paramType, paramValue);
 		}
 	}

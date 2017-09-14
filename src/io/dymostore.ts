@@ -156,6 +156,16 @@ export class DymoStore extends EasyStore {
 		this.setFeature(partUri, uris.LEVEL_FEATURE, parentLevel+1);
 	}
 
+	insertPartAt(dymoUri: string, partUri: string, index: number): void {
+		this.insertObjectIntoList(dymoUri, uris.HAS_PART, partUri, index);
+		let parentLevel = this.findFeatureValue(dymoUri, uris.LEVEL_FEATURE);
+		this.setFeature(partUri, uris.INDEX_FEATURE, index);
+		this.setFeature(partUri, uris.LEVEL_FEATURE, parentLevel+1);
+		//update index feature of all later elements
+		let tail = this.findParts(dymoUri).slice(index+1);
+		tail.forEach((p,i) => this.setFeature(partUri, uris.INDEX_FEATURE, index+i+1));
+	}
+
 	/**really slow, use sparingly*/
 	setParts(dymoUri, partUris) {
 		this.removeParts(dymoUri);

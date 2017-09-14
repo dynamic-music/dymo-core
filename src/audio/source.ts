@@ -89,7 +89,7 @@ export class DymoSource extends DymoNode {
 				this.requestBufferFromAudioServer(path, time, time+duration,
 					loadedBuffer => this.getStretchedAndFadedBuffer(loadedBuffer, duration, stretchRatio));
 			}
-		} else {
+		} else if (this.buffer) {
 			//trim if buffer too long
 			if (time != 0 || duration < this.buffer.duration) {
 				this.buffer = this.getSubBuffer(this.buffer, this.toSamples(time, this.buffer), this.toSamples(duration, this.buffer));

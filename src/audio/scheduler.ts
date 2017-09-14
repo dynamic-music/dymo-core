@@ -40,9 +40,7 @@ export class Scheduler {
 			}
 
 			//init delay if needed
-			console.log("DELAYLINE?")
 			if (!GlobalVars.OPTIMIZED_MODE || this.store.find(null, null, DELAY).length > 0) {
-				console.log("DELAYLINE!!!")
 				this.delaySend = this.audioContext.createDelay();
 				this.delaySend.delayTime.value = 0.5;
 				this.delaySend.connect(this.audioContext.destination);
