@@ -8,18 +8,16 @@ import { SERVER_ROOT, AUDIO_CONTEXT, initSpeaker, endSpeaker } from './server';
 
 describe("a scheduler", function() {
 
-	//window.AudioContext = window.AudioContext || window.webkitAudioContext;
-	//var audioContext = new AudioContext();
-
 	var basePath = SERVER_ROOT+'spec/files/';
 	var sourcePath1 = 'sark1.m4a';
-	var sourcePath2 = 'sark2.m4a';
-	var sourcePath3 = 'Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p031_ne0001_s006221.wav';
+	var sourcePath2 = 'sark1.m4a';
+	var sourcePath3 = 'sark1.m4a';
 	var scheduler, store;
 
 	//jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
 
 	beforeAll(function(done) {
+		GlobalVars.SCHEDULE_AHEAD_TIME = 0;
 		initSpeaker();
 		store = new DymoStore();
 		scheduler = new Scheduler(AUDIO_CONTEXT, new AudioBank(AUDIO_CONTEXT), store);

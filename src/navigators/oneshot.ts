@@ -14,4 +14,8 @@ export class OneShotNavigator extends SubsetNavigator {
 		return [[this.dymoUri], DONE];
 	}
 
+	getType() {
+		return "OneShot";
+	}
+
 }

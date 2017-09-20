@@ -21,8 +21,8 @@ export class GraphNavigator extends SequentialNavigator {
 	}
 
 	getNextParts() {
-		var nextParts = SequentialNavigator.prototype.getNextParts.call(this);
-		this.partsNavigated = this.getNextPosition(nextParts[0]);
+		var nextParts = super.getNextParts();
+		this.setPartsNavigated(this.getNextPosition(nextParts[0]));
 		return nextParts;
 	}
 
@@ -31,9 +31,10 @@ export class GraphNavigator extends SequentialNavigator {
 			var options = this.store.findSuccessors(parts[0]);
 			if (options.length > 0) {
 				var selectedOption = options[Math.floor(Math.random()*options.length)];
-				return this.store.findFeatureValue(selectedOption, uris.LEVEL_FEATURE);
+				return this.store.findFeatureValue(selectedOption, uris.INDEX_FEATURE);
 			}
 		}
+		return 0;
 	}
 
 }

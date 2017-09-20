@@ -59,7 +59,7 @@ describe("an easyreasoner", function() {
 			});
 	});
 
-	it("can infer dymos from a composition", function(done) {
+	/*it("can infer dymos from a composition", function(done) {
 		let comp, rules, result, loader: DymoLoader, store: DymoStore;
 		fetch(SERVER_ROOT+'spec/files/comp.n3')
 		.then(c => c.text())
@@ -78,7 +78,7 @@ describe("an easyreasoner", function() {
 			expect(loadedStuff.constraints.length).toBe(1);
 			done();
 		});
-	});
+	});*/
 
 	function removeSpaces(string) {
 		return string.replace(/\s/g, '');

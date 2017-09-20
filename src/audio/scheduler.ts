@@ -6,6 +6,7 @@ import { GlobalVars } from '../globals/globals'
 import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER, CONTEXT_URI } from '../globals/uris'
 import { AudioBank } from './audio-bank';
 import { SchedulerThread } from './thread'
+import { DymoNavigator } from '../navigators/navigator';
 declare const Buffer;
 
 /**
@@ -33,14 +34,14 @@ export class Scheduler {
 			let loadingPromises = [this.loadBuffers(dymoUris)];
 
 			//init reverb if needed
-			if (reverbFile && (!GlobalVars.OPTIMIZED_MODE || this.store.find(null, null, REVERB).length > 0)) {
+			if (this.audioContext.createConvolver && reverbFile && (!GlobalVars.OPTIMIZED_MODE || this.store.find(null, null, REVERB).length > 0)) {
 				this.convolverSend = this.audioContext.createConvolver();
 				this.convolverSend.connect(this.audioContext.destination);
 				loadingPromises.push(this.loadReverbFile(reverbFile));
 			}
 
 			//init delay if needed
-			if (!GlobalVars.OPTIMIZED_MODE || this.store.find(null, null, DELAY).length > 0) {
+			if (this.audioContext.createDelay && (!GlobalVars.OPTIMIZED_MODE || this.store.find(null, null, DELAY).length > 0)) {
 				this.delaySend = this.audioContext.createDelay();
 				this.delaySend.delayTime.value = 0.5;
 				this.delaySend.connect(this.audioContext.destination);
@@ -110,7 +111,7 @@ export class Scheduler {
 		}
 	}
 
-	play(dymoUri, navigator?: Navigator) {
+	play(dymoUri, navigator?: DymoNavigator) {
 		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.audioBank, this.convolverSend, this.delaySend, this.updatePlayingDymos.bind(this), this.threadEnded.bind(this), this.store);
 		this.threads.push(thread);
 	}

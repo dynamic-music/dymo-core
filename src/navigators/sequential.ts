@@ -13,7 +13,7 @@ export class SequentialNavigator extends SubsetNavigator {
 	private dymoType: string;
 	private backwards: boolean;
 	protected getNavigator: Function;
-	protected partsNavigated: number;
+	private partsNavigated: number;
 	private currentSubNavs;
 	private doneSubNavs;
 
@@ -34,6 +34,7 @@ export class SequentialNavigator extends SubsetNavigator {
 
 	setPartsNavigated(partsNavigated: number) {
 		this.partsNavigated = partsNavigated;
+		this.currentSubNavs = null;
 	}
 
 	getPartsNavigated(): number {
@@ -84,7 +85,6 @@ export class SequentialNavigator extends SubsetNavigator {
 			if (!this.currentSubNavs) {
 				this.currentSubNavs = this.getNextSubNav();
 			}
-			//console.log(this.dymoUri, this.parts, this.partsNavigated, this.currentSubNavs);
 			var nextParts = this.currentSubNavs.getNextParts();
 			if (nextParts[1] !== MORE) {
 				this.partsNavigated++;
@@ -103,14 +103,12 @@ export class SequentialNavigator extends SubsetNavigator {
 		}
 	}
 
-	/** @private */
-	getRandomSubNav() {
+	private getRandomSubNav() {
 		var part = this.parts[Math.floor(Math.random()*this.parts.length)];
 		return this.getNavigator(part);
 	}
 
-	/** @private */
-	getNextSubNav() {
+	private getNextSubNav() {
 		var part;
 		if (this.backwards) {
 			part = this.parts[this.parts.length-1-this.partsNavigated];

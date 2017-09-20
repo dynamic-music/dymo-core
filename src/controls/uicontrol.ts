@@ -22,8 +22,16 @@ export class UIControl {
 	}
 
 	getName() {
-    return this.control.getName();
-  }
+		return this.control.getName();
+	}
+
+	getUri() {
+		return this.control.getUri();
+	}
+
+	getValue() {
+		return this.value;
+	}
 
 	update() {
 		if (this.control.getType() == BUTTON) {

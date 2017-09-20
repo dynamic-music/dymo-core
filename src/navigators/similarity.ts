@@ -42,7 +42,7 @@ export class SimilarityNavigator extends SequentialNavigator {
 							if (this.store.findControlParamValue(null, uris.CONTINUE_AFTER_LEAPING) > 0) {
 								var index = this.store.findParts(this.dymoUri).indexOf(selectedOption);
 								if (index) {
-									this.partsNavigated = index+1;
+									this.setPartsNavigated(index+1);
 								}
 							}
 							parts[i] = selectedOption;

@@ -59,7 +59,7 @@ describe("a manager", function() {
 			});
 	});
 
-	it("can sync and update navigators", function(done) {
+	/*it("can sync and update navigators", function(done) {
 		manager.loadDymoAndRendering(filesDir+'mixdymo.json', filesDir+'mixdymo-rendering.json')
 			.then(() => manager.loadDymoFromJson(filesDir+'dymo4.json'))
 			.then(loadedDymo => {
@@ -84,7 +84,7 @@ describe("a manager", function() {
 						});
 				});
 			});
-	});
+	});*/
 
 	function replace(nextSongDymo, callback) {
 		var currentSongDymo = manager.getStore().findPartAt(manager.getTopDymo(), fadePosition);

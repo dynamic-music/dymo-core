@@ -19,34 +19,40 @@ export class AudioBank {
     return new Promise(resolve => {
       //only add if not there yet..
       if (!this.buffers.get(filePath)) {
-        this.loadAudio(filePath, buffer => {
-          this.buffers.set(filePath, buffer);
-          resolve(this.buffers.get(filePath));
-        });
+        this.loadAudio(filePath)
+          .then(buffer => {
+            this.buffers.set(filePath, buffer);
+            resolve(this.buffers.get(filePath));
+          })
+          .catch(e => console.log(e));
       } else {
         resolve(this.buffers.get(filePath));
       }
     });
   }
 
-  private loadAudio(path, callback) {
-    fetch(path, {
+  private loadAudio(path): Promise<AudioBuffer> {
+    return fetch(path, {
       //mode:'cors',
       /*headers: new Headers({
         'Content-Type': 'arraybuffer'
       })*/
     })
-    .then(r => this.toArrayBuffer(r))
-    //.then(r => {return r.body.getReader().read()})
-    //.then(value => this.audioContext.decodeAudioData(value.buffer, buffer => callback(buffer)))
-    .then(r => this.audioContext ? this.audioContext.decodeAudioData(r, buffer => callback(buffer)) : null)
-    .catch(e => console.log(e));
+    .then(r => {
+      if (r.ok) {
+        return this.toArrayBuffer(r)
+        .then(r => new Promise<AudioBuffer>((resolve, reject) => {
+          if (this.audioContext) {
+            //need to keep this syntax for node web-audio-api (used in tests)
+            this.audioContext.decodeAudioData(r, buffer => resolve(buffer), error => reject(error));
+          }
+        }))
+        .catch(e => Promise.reject(e));
+      } else {
+        return Promise.reject(r.status + " " + r.statusText + " " + path);
+      }
+    });
 
-    /*var request = new XMLHttpRequest();
-    request.open('GET', path, true);
-    request.responseType = 'arraybuffer';
-    request.onload = () => this.audioContext.decodeAudioData(request.response, buffer => callback(buffer));
-    request.send();*/
   }
 
   private toArrayBuffer(response) {

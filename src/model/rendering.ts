@@ -10,10 +10,11 @@ import { BoundVariable } from '../model/variable';
 export class Rendering {
 
 	private dymoUri;
-	private navigator;
+	private navigator: DymoNavigator;
 
 	constructor(dymoUri: string, private store: DymoStore) {
 		this.dymoUri = dymoUri;
+		this.navigator = new DymoNavigator(this.dymoUri, this.store);//, new SequentialNavigator(dymo));
 	}
 
 	play() {
@@ -29,13 +30,10 @@ export class Rendering {
 	}
 
 	addSubsetNavigator(boundVar: BoundVariable, nav: SubsetNavigator) {
-		if (!this.navigator) {
-			this.navigator = new DymoNavigator(this.dymoUri, this.store);//, new SequentialNavigator(dymo));
-		}
 		this.navigator.addSubsetNavigator(boundVar, nav);
 	}
 
-	getNavigator() {
+	getNavigator(): DymoNavigator {
 		return this.navigator;
 	}
 

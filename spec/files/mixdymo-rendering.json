@@ -16,16 +16,16 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b46"
+              "@id": "_:b45"
             },
             "function": "AutoControlTrigger"
           },
           "right": {
-            "@id": "_:b47"
+            "@id": "_:b46"
           }
         },
         "vars": {
-          "@id": "_:b47",
+          "@id": "_:b46",
           "@type": "Variable",
           "varName": "t",
           "varValue": {
@@ -35,7 +35,7 @@
         }
       },
       "vars": {
-        "@id": "_:b46",
+        "@id": "_:b45",
         "@type": "Variable",
         "varName": "r",
         "varValue": {
@@ -56,16 +56,16 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b19"
+              "@id": "_:b18"
             },
             "function": "DurationRatio"
           },
           "right": {
-            "@id": "_:b41"
+            "@id": "_:b39"
           }
         },
         "vars": {
-          "@id": "_:b41",
+          "@id": "_:b39",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -83,7 +83,7 @@
               "left": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b19"
+                  "@id": "_:b18"
                 },
                 "function": "IndexFeature"
               },
@@ -108,7 +108,7 @@
             "left": {
               "@type": "FunctionalTerm",
               "args": {
-                "@id": "_:b19"
+                "@id": "_:b18"
               },
               "function": "LevelFeature"
             },
@@ -140,7 +140,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b19"
+              "@id": "_:b18"
             },
             "function": "PartCount"
           },
@@ -154,12 +154,12 @@
               }
             },
             "right": {
-              "@id": "_:b23"
+              "@id": "_:b22"
             }
           }
         },
         "vars": {
-          "@id": "_:b23",
+          "@id": "_:b22",
           "@type": "Variable",
           "varName": "b",
           "varValue": {
@@ -169,14 +169,14 @@
         }
       },
       "vars": {
-        "@id": "_:b19",
+        "@id": "_:b18",
         "@type": "Variable",
         "varExpr": {
           "@type": "EqualTo",
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b19"
+              "@id": "_:b18"
             },
             "function": "LevelFeature"
           },
@@ -207,20 +207,19 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
             "function": "Fade"
           },
           "right": {
-            "@id": "_:b13"
+            "@id": "_:b11"
           }
         },
         "vars": {
-          "@id": "_:b13",
+          "@id": "_:b11",
           "@type": "Variable",
           "varName": "f",
           "varValue": {
-            "@id": "_:b1",
             "@type": "Slider",
             "name": "fade"
           }
@@ -245,21 +244,20 @@
             "@value": "false"
           },
           "left": {
-            "@id": "_:b2",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
             "function": "Fade"
           },
           "right": {
-            "@id": "_:b4",
+            "@id": "_:b2",
             "@type": "Division",
             "left": {
-              "@id": "_:b5",
+              "@id": "_:b3",
               "@type": "Subtraction",
               "left": {
-                "@id": "_:b7"
+                "@id": "_:b5"
               },
               "right": {
                 "@type": "Constant",
@@ -270,6 +268,7 @@
               }
             },
             "right": {
+              "@id": "_:b4",
               "@type": "Constant",
               "value": {
                 "@type": "xsd:integer",
@@ -279,7 +278,7 @@
           }
         },
         "vars": {
-          "@id": "_:b7",
+          "@id": "_:b5",
           "@type": "Variable",
           "varName": "a",
           "varValue": {
@@ -290,7 +289,7 @@
         }
       },
       "vars": {
-        "@id": "_:b3",
+        "@id": "_:b1",
         "@type": "Variable",
         "varName": "m",
         "varValue": {

@@ -10,4 +10,6 @@ export abstract class SubsetNavigator {
 
   abstract getNextParts();
 
+  abstract getType();
+
 }

@@ -82,7 +82,7 @@ describe("a dymoloader", function() {
 			//change parameter and see if selection of dymos adjusts!
 			store.setParameter(u.CONTEXT_URI+"dymo1", u.DURATION_RATIO, 0.9);
 			expect(store.findParameterValue(null, u.LISTENER_ORIENTATION)).toBeUndefined();
-			controls[u.CONTEXT_URI+"orientation"].updateValue(0.5);
+			controls.filter(c => c.getUri() === u.CONTEXT_URI+"orientation")[0].updateValue(0.5);
 			setTimeout(()=>{
 				expect(store.findParameterValue(null, u.LISTENER_ORIENTATION)).toBe(180);
 				done();

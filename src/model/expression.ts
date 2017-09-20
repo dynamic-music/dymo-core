@@ -42,6 +42,7 @@ export class Expression {
         varsAndVals[v] = value;
       }
     });
+    //console.log(this.toString(), varsAndVals, this.treeWithoutFuncs.eval(varsAndVals))
     if (_.keys(vars).length === _.keys(varsAndVals).length) {
       //all values could be found, so eval function with values
       return this.treeWithoutFuncs.eval(varsAndVals);
@@ -84,7 +85,7 @@ export class Expression {
 
   private getValue(uri: string, store: DymoStore) {
     let value = store.findObjectValue(uri, u.VALUE);
-    return value ? value : uri;
+    return value != null ? value : uri;
   }
 
   private getFunctionalObject(expression: MathjsNode, vars: Object, store: DymoStore): any {
@@ -110,7 +111,6 @@ export class Expression {
       if (result == null) {
         result = this.findOrInitFeatureOrParam(arg, customName, store);
       }
-      //console.log(expression["fn"]["name"], result)
       return result;
     }
     //it's the innermost symbol node

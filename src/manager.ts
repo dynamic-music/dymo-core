@@ -34,10 +34,10 @@ export class DymoManager {
 	private scheduler: Scheduler;
 	private audioBank: AudioBank;
 	private dymoUris: string[] = [];
-	private rendering;
+	private rendering: Rendering;
 	private uiControls: UIControl[] = [];
 	private sensorControls = {};
-	private reverbFile;
+	private reverbFile: string;
 	private graphs: JsonGraphSubject[] = [];
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
@@ -139,7 +139,7 @@ export class DymoManager {
 		this.scheduler.stop(this.addContext(dymoUri));
 	}
 
-	private addContext(uri) {
+	private addContext(uri: string): string {
 		return uri.indexOf(uris.CONTEXT_URI) < 0 ? uris.CONTEXT_URI + uri : uri;
 	}
 
@@ -152,15 +152,15 @@ export class DymoManager {
 		this.dymoUris.forEach(d => this.scheduler.stop(d));
 	}
 
-	getStore() {
+	getStore(): DymoStore {
 		return this.store;
 	}
 
-	getTopDymo() {
+	getTopDymo(): string {
 		return this.dymoUris[0];
 	}
 
-	getRendering() {
+	getRendering(): Rendering {
 		return this.rendering;
 	}
 

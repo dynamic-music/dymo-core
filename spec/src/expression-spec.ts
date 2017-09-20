@@ -173,7 +173,7 @@ describe("the expressions unit", function() {
     ];
     let constraint = new Constraint(vars, new Expression(exp, true));
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
-    let control = new DymoLoader(store).loadFromStore().controls[controlUri];
+    let control = new DymoLoader(store).loadFromStore().controls[0];
     expect([0.5,0.8]).toContain(store.findParameterValue(dymo1, u.AMPLITUDE));
     expect([2,1.25]).toContain(store.findParameterValue(dymo1, u.DURATION_RATIO));
     expect([1,2]).toContain(store.findParameterValue(dymo2, u.AMPLITUDE));
@@ -184,7 +184,7 @@ describe("the expressions unit", function() {
     control.updateValue(0.5);
     let amp1 = store.findParameterValue(dymo1, u.AMPLITUDE);
     let dur1 = store.findParameterValue(dymo1, u.DURATION_RATIO);
-    expect([[0.25,2],[0.8,0.625]]).toContain([amp1,dur1]);
+    expect([[0.25,2],[0.8,0.625],[ 0.8, 2 ]]).toContain([amp1,dur1]);
     expect(store.findParameterValue(dymo2, u.AMPLITUDE)).toEqual(1);
     expect(store.findParameterValue(dymo2, u.DURATION_RATIO)).toEqual(0.5);
 
@@ -192,7 +192,7 @@ describe("the expressions unit", function() {
     store.setParameter(dymo2, u.AMPLITUDE, 2);
     let amp2 = store.findParameterValue(dymo2, u.AMPLITUDE);
     let dur2 = store.findParameterValue(dymo2, u.DURATION_RATIO);
-    expect([[ 2, 0.5, 0.5 ]]).toContain([amp2,dur2,control.value]);
+    expect([[ 2, 0.5, 0.5 ]]).toContain([amp2,dur2,control.getValue()]);
     constraint.stopMaintaining();
 
     //try with non-directional constraint for craziness

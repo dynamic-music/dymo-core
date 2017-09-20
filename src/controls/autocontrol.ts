@@ -19,8 +19,8 @@ export abstract class AutoControl extends Control {
 		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0, this);
 	}
 
-	startUpdate() {
-		if (!this.frequency) {
+	startUpdate(newFrequency?: number) {
+		if (!this.frequency || newFrequency) {
 			this.frequency = Number(this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY));
 		}
 		this.update();
@@ -36,10 +36,10 @@ export abstract class AutoControl extends Control {
 
 	observedValueChanged(paramUri, paramType, value) {
 		if (paramType == AUTO_CONTROL_FREQUENCY) {
+			this.frequency = value;
 			if (this.intervalID) {
 				this.reset();
-				this.frequency = value;
-				this.startUpdate();
+				this.startUpdate(value);
 			}
 		} else if (paramType == AUTO_CONTROL_TRIGGER) {
 			if (!this.intervalID && value > 0) {

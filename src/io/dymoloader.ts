@@ -39,9 +39,12 @@ export class DymoLoader {
   private controls = new Map<string,Control|UIControl>(); //dict with all the controls created
   private constraints = new Map<string,Constraint>();
   private renderings = new Map<string,Rendering>();
+  private currentBasePath = '';
+  private latestLoadedStuff: LoadedStuff;
 
   constructor(dymoStore) {
     this.store = dymoStore;
+    this.resetLatestLoadedStuff();
   }
 
   loadFromFiles(...fileUris: string[]): Promise<LoadedStuff> {
@@ -55,9 +58,8 @@ export class DymoLoader {
   }
 
   loadIntoStore(...fileUris: string[]): Promise<any> {
-    /*return fetch(fileUris[0], { mode:'cors' })
-      .then(response => response.text())
-      .then(jsonld => this.store.loadData(jsonld))*/
+    //TODO now simply takes path of first file as reference, CHANGE!!
+    this.currentBasePath = fileUris[0].substring(0, fileUris[0].lastIndexOf('/')+1);
     return Promise.all(
       fileUris.map(f => fetch(f, { mode:'cors' })
         .then(response => response.text())
@@ -65,8 +67,17 @@ export class DymoLoader {
     )
   }
 
+  private resetLatestLoadedStuff(): LoadedStuff {
+    let latest = this.latestLoadedStuff;
+    this.latestLoadedStuff = { dymoUris:[], rendering:null, controls:[], constraints:[] };
+    return latest;
+  }
+
+  private addLatestLoadedStuff(type: string, stuff: any[]) {
+    this.latestLoadedStuff[type] = this.latestLoadedStuff[type].concat(stuff);
+  }
+
   loadFromStore(...objectUris: string[]): LoadedStuff {
-    let loadedStuff: LoadedStuff = { dymoUris:[], rendering:null, controls:[], constraints:[] };
     let controlUris = [], dymoUris, renderingUri, constraintUris = [], navigatorUris = [];
     if (objectUris.length > 0) {
       let types = objectUris.map(u => this.store.findObject(u, uris.TYPE));
@@ -78,29 +89,29 @@ export class DymoLoader {
       dymoUris = this.store.findTopDymos();
       renderingUri = this.store.findSubject(uris.TYPE, uris.RENDERING);
     }
-    loadedStuff.dymoUris = this.loadDymos(...dymoUris);
-    loadedStuff.controls = this.loadControls(...controlUris);
-    loadedStuff.rendering = this.loadRendering(renderingUri);
-    loadedStuff.constraints = this.loadConstraints(constraintUris);
-    return loadedStuff;
+    this.addLatestLoadedStuff("dymoUris", this.loadDymos(...dymoUris));
+    this.addLatestLoadedStuff("controls", this.loadControls(...controlUris));
+    this.latestLoadedStuff.rendering = this.loadRendering(renderingUri);
+    this.addLatestLoadedStuff("constraints", this.loadConstraints(constraintUris));
+    return this.resetLatestLoadedStuff();
   }
 
   private loadDymos(...dymoUris: string[]): string[] {
     var loadedDymos = [];
     dymoUris.forEach(u => {
-      //this.store.addBasePath(u, this.dymoBasePath)
+      this.store.addBasePath(u, this.currentBasePath);
       //create all dymo constraints
-      this.loadConstraintsOfOwner(u);
+      this.addLatestLoadedStuff("constraints", this.loadConstraintsOfOwner(u));
     })
     return dymoUris;
   }
 
   private loadRendering(renderingUri?: string): Rendering {
-    renderingUri = this.store.findObject(renderingUri, uris.HAS_DYMO);
+    var dymoUri = this.store.findObject(renderingUri, uris.HAS_DYMO);
     if (!this.renderings.has(renderingUri)) {
-      var rendering = new Rendering(renderingUri, this.store);
-      this.createControls();
-      this.loadConstraintsOfOwner(renderingUri);
+      var rendering = new Rendering(dymoUri, this.store);
+      this.addLatestLoadedStuff("controls", this.createControls());
+      this.addLatestLoadedStuff("constraints", this.loadConstraintsOfOwner(renderingUri));
       this.loadNavigators(renderingUri, rendering);
       this.renderings.set(renderingUri, rendering);
     }
@@ -122,8 +133,6 @@ export class DymoLoader {
   private loadNavigators(renderingUri: string, rendering: Rendering) {
     var navigators = this.store.findAllObjects(renderingUri, uris.HAS_NAVIGATOR);
     for (var i = 0; i < navigators.length; i++) {
-      //TODO NEEDS TO BE AN EXPRESSION!!!!!
-      //var dymosFunction = this.createFunction(this.store.findObject(navigators[i], uris.NAV_DYMOS), true);
       var variable = new ConstraintLoader(this.store).loadVariable(this.store.findObject(navigators[i], uris.NAV_DYMOS));
       rendering.addSubsetNavigator(variable, this.getNavigator(this.store.findObject(navigators[i], uris.TYPE)));
     }
@@ -131,10 +140,8 @@ export class DymoLoader {
 
   private createControls() {
     var controlClasses = this.store.recursiveFindAllSubClasses(uris.MOBILE_CONTROL);
-    for (var i = 0; i < controlClasses.length; i++) {
-      var currentControls = this.store.findSubjects(uris.TYPE, controlClasses[i]);
-      this.loadControls(...currentControls);
-    }
+    var controlUris = _.flatMap(controlClasses, c => this.store.findSubjects(uris.TYPE, c));
+    return this.loadControls(...controlUris);
   }
 
   private loadControls(...controlUris: string[]): (Control|UIControl)[] {

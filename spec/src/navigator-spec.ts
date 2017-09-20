@@ -1,4 +1,5 @@
 import 'isomorphic-fetch';
+import { GlobalVars } from '../../src/globals/globals';
 import { CDT, CONJUNCTION, DISJUNCTION, SEQUENCE, LEVEL_FEATURE, FEATURE_TYPE, SIMILARITY_NAVIGATOR,
 	LEAPING_PROBABILITY, CONTINUE_AFTER_LEAPING, DYMO } from '../../src/globals/uris';
 import { DymoStore } from '../../src/io/dymostore';
@@ -17,6 +18,7 @@ describe("a navigator", function() {
 	let store;
 
 	beforeEach(function(done) {
+		GlobalVars.SCHEDULE_AHEAD_TIME = 0;
 		initSpeaker();
 		//(1:(2:5,6),(3:7,(8:11,12),9),(4:10)))
 		store = new DymoStore();
@@ -351,6 +353,7 @@ describe("a navigator", function() {
 		//starts over
 		expect(navigator.getNextParts()[0]).toBe("dymo5");
 		expect(navigator.getNextParts()[0]).toBe("dymo6");
+		//no lower-level navs, simply returns first-level objects
 		var navigator = new DymoNavigator("dymo1", store);
 		navigator.addSubsetNavigator(new ExpressionVariable("d", DYMO, new Expression("LevelFeature(d) == 0")), new SequentialNavigator("dymo1", store));
 		expect(navigator.getNextParts()[0]).toBe("dymo2");
@@ -443,8 +446,11 @@ describe("a navigator", function() {
 			store.addDymo("dymo7", "dymo1");
 			store.addSuccessor("dymo2", "dymo3");
 			store.addSuccessor("dymo3", "dymo2");
+			store.addSuccessor("dymo3", "dymo4");
 			store.addSuccessor("dymo4", "dymo5");
 			store.addSuccessor("dymo4", "dymo6");
+			store.addSuccessor("dymo5", "dymo7");
+			store.addSuccessor("dymo5", "dymo7");
 
 			//test without replacing of objects (probability 0)
 			var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
@@ -454,19 +460,12 @@ describe("a navigator", function() {
 			expect(["dymo3"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo2","dymo4"]).toContain(navigator.getNextParts()[0]);
 			expect(["dymo3","dymo5","dymo6"]).toContain(navigator.getNextParts()[0]);
-			expect(["dymo2","dymo4","dymo6","dymo7"]).toContain(navigator.getNextParts()[0]);
+			expect(["dymo2","dymo4","dymo7"]).toContain(navigator.getNextParts()[0]);
 			done();
 		});
 	});
 
 	it("can be loaded from a rendering", function(done) {
-		/*let store2 = new DymoStore();
-    let var2 = new ExpressionVariable('x', DYMO, new Expression('LevelFeature(x) == 1'))
-    let varUri = new ConstraintWriter(store2).addVariable(var2);
-    store2.uriToJsonld(varUri)
-    //.then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","qBody":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","tArgs":"x","tFunction":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
-    .then(j => console.log(j))*/
-
 		var manager = new DymoManager(AUDIO_CONTEXT);
 		manager.init(SERVER_ROOT+'ontologies/').then(() => {
 			manager.loadDymoAndRendering(SERVER_ROOT+'spec/files/similarity-dymo.json', SERVER_ROOT+'spec/files/similarity-rendering.json')
@@ -477,7 +476,6 @@ describe("a navigator", function() {
 				expect(store.findSimilars(store.findParts(dymoUri)[1]).length).toBe(1);
 				var navigators = manager.getRendering().getNavigator().getSubsetNavigators();
 				expect(navigators.size).toBe(1);
-				//expect(navigators[0][0]).toEqual(REPEATED_NAVIGATOR);
 				expect(navigators.values().next().value.getType()).toEqual(SIMILARITY_NAVIGATOR);
 				manager.startPlaying();
 				setTimeout(function() {

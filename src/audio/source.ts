@@ -224,7 +224,7 @@ export class DymoSource extends DymoNode {
 		this.loadAudio(query, buffer => callback(buffer));
 	}
 
-	//PUT IN AUDIO TOOLS OR SO!!! (duplicate in scheduler)
+	//TODO PUT IN AUDIO TOOLS OR SO!!! (duplicate in scheduler)
 	private loadAudio(path, callback) {
 		var request = new XMLHttpRequest();
 		request.open('GET', path, true);

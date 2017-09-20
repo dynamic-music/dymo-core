@@ -15,6 +15,7 @@ describe("a processor", function() {
 	var audioBank: AudioBank, scheduler: Scheduler;
 
 	beforeAll(function(done) {
+		GlobalVars.SCHEDULE_AHEAD_TIME = 0;
 		initSpeaker();
 		store = new DymoStore();
 		audioBank = new AudioBank(AUDIO_CONTEXT);
@@ -34,7 +35,7 @@ describe("a processor", function() {
 
 	it("can timestretch", function() {
 		//console.profile("processor")
-		var buffer = audioBank.getLoadedBuffer("dymo1");
+		var buffer = audioBank.getLoadedBuffer(store.getSourcePath("dymo1"));
 		var stretched = new AudioProcessor(AUDIO_CONTEXT).timeStretch(buffer, 1.25);
 		expect(stretched.getChannelData(0).length/10).toBeCloseTo(Math.round(0.8*buffer.getChannelData(0).length)/10, 0);
 		//console.profileEnd("processor")

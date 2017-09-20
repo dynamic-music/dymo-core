@@ -7,31 +7,31 @@
 		{
 			"@id": "dymo1",
 			"@type": "Dymo",
-			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav",
+			"source": "sark1.m4a",
 			"similars": ["dymo3"]
 		},
 		{
 			"@id": "dymo2",
 			"@type": "Dymo",
-			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p055_ne0001_s000827.wav",
+			"source": "sark1.m4a",
 			"similars": ["dymo4"]
 		},
 		{
 			"@id": "dymo3",
 			"@type": "Dymo",
-			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p036_ne0001_s000607.wav",
+			"source": "sark1.m4a",
 			"similars": ["dymo1"]
 		},
 		{
 			"@id": "dymo4",
 			"@type": "Dymo",
-			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p055_ne0001_s000827.wav",
+			"source": "sark1.m4a",
 			"similars": ["dymo2"]
 		},
 		{
 			"@id": "dymo5",
 			"@type": "Dymo",
-			"source": "Chopin_Op028-01_003_20100611-SMD/Chopin_Op028-01_003_20100611-SMD_p055_ne0001_s000827.wav"
+			"source": "sark1.m4a"
 		}
 	]}
 }
