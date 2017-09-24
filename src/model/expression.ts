@@ -7,7 +7,7 @@ import { MathjsNode } from '../globals/types';
 
 export class Expression {
 
-  isDirected: boolean;
+  private isDirected: boolean;
   private mathjsTree: MathjsNode;
   private treeWithoutFuncs: MathjsNode;
   private compiledFunction: Object;
@@ -23,6 +23,10 @@ export class Expression {
   private checkIfFunctionPossible(): boolean {
     return this.mathjsTree.isOperatorNode && this.mathjsTree["fn"] === "equal"
       && (this.mathjsTree["args"][0].isSymbolNode || this.mathjsTree["args"][0].isFunctionNode);
+  }
+
+  getIsDirected(): boolean {
+    return this.isDirected;
   }
 
   getFullTree(): MathjsNode {

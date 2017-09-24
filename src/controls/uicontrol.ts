@@ -6,65 +6,61 @@ import { Control } from '../model/control';
 /**
  * A wrapper for dymo-core controls to be used as Angular UI controls.
  */
-export class UIControl {
+export class UIControl extends Control {
 
-	private control: Control;
-	public name;
-	public value;
-	private valueStream: BehaviorSubject<any> = new BehaviorSubject(null);
+	public uiValue;
+	private inValueStream: BehaviorSubject<any> = new BehaviorSubject(null);
+	private outValueStream: BehaviorSubject<any> = new BehaviorSubject(null);
 
 	constructor(uri: string, name: string, type: string, store: DymoStore) {
-		this.control = new Control(uri, name, type, store);
-		this.name = name;
-		this.valueStream
+		super(uri, name, type, store);
+		this.inValueStream
 			.auditTime(300)
 			.subscribe(v => this.setValue(v));
 	}
 
-	getName() {
-		return this.control.getName();
+	private setUIValue(newValue) {
+		this.uiValue = newValue;
+		this.outValueStream.next(newValue);
 	}
 
-	getUri() {
-		return this.control.getUri();
-	}
-
-	getValue() {
-		return this.value;
+	getUIValueObserver(): BehaviorSubject<any> {
+		return this.outValueStream;
 	}
 
 	update() {
-		if (this.control.getType() == BUTTON) {
-			if (isNaN(this.value)) {
-				this.value = 0;
+		if (this.getType() == BUTTON) {
+			if (isNaN(this.uiValue)) {
+				this.setUIValue(0);
 			}
-			this.value = 1-this.value;
+			this.setUIValue(1-this.uiValue);
 		}
-		if (this.value == true) {
-			this.valueStream.next(1);
-		} else if (this.value == false) {
-			this.valueStream.next(0);
+		if (this.uiValue == true) {
+			this.inValueStream.next(1);
+		} else if (this.uiValue == false) {
+			this.inValueStream.next(0);
 		} else {
-			this.valueStream.next(this.value);
+			this.inValueStream.next(this.uiValue);
 		}
 	}
 
-	//for use outside of ui
+	//for use outside of ui (simulation and tests)
 	updateValue(value) {
-		this.value = value;
+		this.uiValue = value;
 		this.update();
 	}
 
+	//called from above when the Control's value changes
 	protected setValue(newValue): boolean {
-		if (this.control.setValue(newValue)) {
-			if (this.control.getType() == TOGGLE) {
+		if (super.setValue(newValue)) {
+			if (this.getType() == TOGGLE) {
 				if (newValue == 1) {
-					this.value = true;
+					this.setUIValue(true);
 				} else {
-					this.value = false;
+					this.setUIValue(false);
 				}
 			} else {
-				this.value = newValue;
+				this.setUIValue(newValue);
 			}
 			return true;
 		}

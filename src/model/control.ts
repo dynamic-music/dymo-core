@@ -39,7 +39,7 @@ export class Control {
     this.store.setValue(this.uri, VALUE, null);
   }
 
-  setValue(newValue): boolean {
+  protected setValue(newValue): boolean {
     if (this.value == undefined || Math.abs(newValue - this.value) > 0.000001) { //deal with floating point errors
       this.value = newValue;
       this.store.setValue(this.uri, VALUE, newValue);

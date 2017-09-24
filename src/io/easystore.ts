@@ -604,7 +604,9 @@ export class EasyStore {
 	getLiteralValue(uri) {
 		var value = N3.Util.getLiteralValue(uri);
 		var type = N3.Util.getLiteralType(uri);
-		if (type != "http://www.w3.org/2001/XMLSchema#string" && type != "http://www.w3.org/2001/XMLSchema#boolean") {
+		if (type === "http://www.w3.org/2001/XMLSchema#boolean") {
+			return value == "true";
+		} else if (type !== "http://www.w3.org/2001/XMLSchema#string") {
 			return Number(value);
 		}
 		return value;

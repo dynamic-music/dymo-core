@@ -48,7 +48,7 @@ export class ConstraintWriter {
 
   private addExpression(expression: Expression): string {
     let rootUri = this.recursiveAddExpression(expression.getFullTree());
-    this.store.setValue(rootUri, u.DIRECTED, expression.isDirected);
+    this.store.setValue(rootUri, u.DIRECTED, expression.getIsDirected());
     return rootUri;
   }
 

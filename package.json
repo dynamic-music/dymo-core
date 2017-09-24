@@ -12,7 +12,6 @@
   "scripts": {
     "pretest": "tsc -p spec/ && node spec/lib/spec/src/examples-generator.js",
     "test": "jasmine",
-    "postinstall": "npm install speaker --mpg123-backend=openal",
     "build": "tsc",
     "prepare": "npm run build"
   },

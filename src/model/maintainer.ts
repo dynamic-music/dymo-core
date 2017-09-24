@@ -18,7 +18,7 @@ export class Maintainer {
   private currentValues: {} = {};
   private featureVars: string[];
 
-  constructor(private varsAndUris: Map<string,string>, private expression: MathjsNode, isDirectional: boolean, private store: DymoStore) {
+  constructor(private varsAndUris: Map<string,string>, private expression: MathjsNode, isDirected: boolean, private store: DymoStore) {
     //console.log(expression.toString())
     varsAndUris.forEach((u,v) => this.setUriAndVar(u,v));
     varsAndUris.forEach((uri,varName) => {
@@ -26,7 +26,7 @@ export class Maintainer {
       this.updateVar(varName, uri);
       this.allVarNames.push(varName);
     });
-    if (isDirectional) {
+    if (isDirected) {
       this.mathjsCompiledExpression = this.expression.args[1].compile();
     } else {
       this.logicjsGoalFunction = LogicTools.createGoalFunction(this.expression);
