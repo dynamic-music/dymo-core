@@ -15,7 +15,7 @@ export class UIControl extends Control {
 	constructor(uri: string, name: string, type: string, store: DymoStore) {
 		super(uri, name, type, store);
 		this.inValueStream
-			.auditTime(300)
+			//.auditTime(300)
 			.subscribe(v => this.setValue(v));
 	}
 

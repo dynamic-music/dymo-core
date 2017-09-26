@@ -44,8 +44,7 @@ export class Maintainer {
   }
 
   private maintain(changedVars?: string[]) {
-    let defVarNames = _.keys(this.currentValues);
-    let values = _.values(this.currentValues);
+    let defVarNames = _.keys(this.currentValues).sort();
     let undefVars = _.difference(this.allVarNames, defVarNames);
     //console.log(this.currentValues, undefVars, this.expression.toString())
     if (this.mathjsCompiledExpression
@@ -56,10 +55,16 @@ export class Maintainer {
       let newValue = this.mathjsCompiledExpression.eval(this.currentValues);
       this.store.setValue(this.varsAndUris.get(this.allVarNames[0]), VALUE, newValue);
     } else if (this.logicjsGoalFunction) {
+      let values = defVarNames.map(n => this.currentValues[n]);
       let index;
-      if (undefVars.length === 1) {
+      if (undefVars.length > 1) {
+        //too many undefined variables, abort
+        return;
+      } else if (undefVars.length == 1) {
         //one variable still undefined, solve for that
         index = this.allVarNames.indexOf(undefVars[0]);
+        //add dummy to value list
+        values.splice(index, 0, null);
       } else {
         //solve for one of the unchanged vars
         index = this.getRandomIndex(this.allVarNames, changedVars);
