@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as math from 'mathjs';
+import * as arrays from 'arrayutils';
 import { VALUE } from '../globals/uris';
 import { DymoStore } from '../io/dymostore';
 import { MathjsNode } from '../globals/types';
@@ -67,10 +68,13 @@ export class Maintainer {
         values.splice(index, 0, null);
       } else {
         //solve for one of the unchanged vars
-        index = this.getRandomIndex(this.allVarNames, changedVars);
+        index = this.getIndexOfLeastObserved(this.allVarNames, changedVars);
       }
-      let newValue = LogicTools.solveConstraint(this.logicjsGoalFunction, values, index);
-      this.store.setValue(this.varsAndUris.get(this.allVarNames[index]), VALUE, newValue);
+      let solutions = LogicTools.solveConstraint(this.logicjsGoalFunction, _.clone(values), index);
+      //only update if changed
+      if (solutions.indexOf(values[index]) < 0) {
+        this.store.setValue(this.varsAndUris.get(this.allVarNames[index]), VALUE, solutions[0]);
+      }
     }
   }
 
@@ -82,6 +86,16 @@ export class Maintainer {
     return _.sample(indices);
   }
 
+  private getIndexOfLeastObserved<T>(array: T[], ignoredElements?: T[]): number {
+    let indices = _.range(0, array.length);
+    if (ignoredElements) {
+      ignoredElements.forEach(e => indices.splice(array.indexOf(e), 1));
+    }
+    let observerCounts = indices.map(i => this.store.getValueObservers(this.varsAndUris.get(this.allVarNames[i]), VALUE).length);
+    let indexOfLeastObserved = arrays.indexOfMax(observerCounts.map(c => -c));
+    return indices[indexOfLeastObserved];
+  }
+
   private updateVar(varName: string, uri: string) {
     let foundValue = this.store.findObjectValue(uri, VALUE);
     if (foundValue != null) {
@@ -91,10 +105,14 @@ export class Maintainer {
 
   observedValueChanged(uri: string, type: string, value: number | string) {
     let changedVars = this.urisAndVars.get(uri);
-    if (changedVars && value !== this.currentValues[changedVars[0]]) {
+    if (changedVars && !this.closeTo(<number>value, this.currentValues[changedVars[0]], 1000000)) {//arbitrarily set precision
       changedVars.forEach(v => this.currentValues[v] = value);
       this.maintain(changedVars);
     }
+  }
+
+  private closeTo(a: number, b: number, precisionFactor: number): boolean {
+    return Math.round(a*precisionFactor) == Math.round(b*precisionFactor);
   }
 
   stop() {

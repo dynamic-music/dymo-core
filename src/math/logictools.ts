@@ -19,13 +19,11 @@ export module LogicTools {
 		return created[body];
 	}
 
-	export function solveConstraint(constraint: Function, args: any[], solveIndex: number) {
+	export function solveConstraint(constraint: Function, args: any[], solveIndex: number): any[] {
 		var solveVar = logic.lvar();
 		args.splice(solveIndex, 1, solveVar);
-		var result = logic.run(constraint.apply(null, args.concat(logic)), solveVar, 1);
-		if (result.length > 0 && !isNaN(result[0])) {
-			return result[0];
-		}
+		var result = logic.run(constraint.apply(null, args.concat(logic)), solveVar);
+		return result.filter(r => isFinite(r));
 	}
 
 	function createGoal(returnValue) {

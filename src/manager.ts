@@ -83,8 +83,8 @@ export class DymoManager {
 		return this.attributeInfo.asObservable();
 	}
 
-	loadDymoAndRendering(dymoFile, renderingFile): Promise<LoadedStuff> {
-		return this.loader.loadIntoStore(dymoFile, renderingFile)
+	loadIntoStore(...fileUris: string[]): Promise<LoadedStuff> {
+		return this.loader.loadIntoStore(...fileUris)
 			.then(() => this.loadFromStore());
 	}
 
