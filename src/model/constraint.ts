@@ -1,6 +1,11 @@
 import * as math from 'mathjs';
 import { DymoStore } from '../io/dymostore';
-import { BoundVariable, SetBasedVariable, TypedVariable } from './variable';
+import { 
+  BoundVariable,
+  SetBasedVariable,
+  TypedVariable,
+  ExpressionVariable
+} from './variable';
 import { Expression } from './expression';
 
 /**
@@ -65,9 +70,9 @@ class IntermediateQuantifier {
 
   constructor(public name: string, private state: BoundVariable[] = []) {}
   
-  in(...validDomain: string[]): ScopedIntermediateQuantifier {
+  in(...domain: string[]): ScopedIntermediateQuantifier {
     return new ScopedIntermediateQuantifier(
-      new SetBasedVariable(this.name, validDomain),
+      new SetBasedVariable(this.name, domain),
       this.state
     );
   }
@@ -78,10 +83,21 @@ class IntermediateQuantifier {
       this.state
     );
   }
+
+  ofTypeWith(typeUri: string, ...withExpression: string[]): ScopedIntermediateQuantifier {
+    return new ScopedIntermediateQuantifier(
+      new ExpressionVariable(
+        this.name,
+        typeUri,
+        ...withExpression.map(e => new Expression(e)) // TODO what about direction?
+      ),
+      this.state
+    )
+  }
 }
 
 class ScopedIntermediateQuantifier {
-  private state: BoundVariable[]; // probably ought to be a tree
+  private state: BoundVariable[];
 
   constructor(domain: BoundVariable, stateSoFar: BoundVariable[] = []) {
     this.state = [
@@ -94,7 +110,7 @@ class ScopedIntermediateQuantifier {
     return forAll(varName, this.state);
   }
 
-  assert(exp: string, isDirected = true): Constraint {
+  assert(exp: string, isDirected = false): Constraint {
     return new Constraint(this.state, new Expression(exp, isDirected));
   }
 }

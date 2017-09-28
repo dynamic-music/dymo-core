@@ -10,11 +10,11 @@ import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } fr
 
 describe('fluent builder syntax', () => {
   it('produces valid string', () => {
-    const expected = `∀ x : FAKE_URI => ∀ c in ["ANOTHER_URI"] => SomeFunction(x) == c`;
+    const expected = `∀ x : FAKE_URI, PRED(x) == 1 => ∀ c in ["A_URI","B_URI"] => SomeFunction(x) == c`;
     const built = forAll('x')
-      .ofType('FAKE_URI')
+      .ofTypeWith('FAKE_URI', 'PRED(x) == 1')
       .forAll('c')
-      .in('ANOTHER_URI')
+      .in('A_URI', 'B_URI')
       .assert('SomeFunction(x) == c');
     expect(built.toString()).toBe(expected);
   });
