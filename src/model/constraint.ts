@@ -1,6 +1,6 @@
 import * as math from 'mathjs';
 import { DymoStore } from '../io/dymostore';
-import { BoundVariable } from './variable';
+import { BoundVariable, SetBasedVariable, TypedVariable } from './variable';
 import { Expression } from './expression';
 
 /**
@@ -52,4 +52,49 @@ export class Constraint {
     return this.vars.map(v => v.toString()).join(' => ') + ' => ' + this.expression.toString();
   }
 
+}
+
+export function forAll(
+  varName: string,
+  state: BoundVariable[] = []
+): IntermediateQuantifier {
+  return new IntermediateQuantifier(varName, state);
+}
+
+class IntermediateQuantifier {
+
+  constructor(public name: string, private state: BoundVariable[] = []) {}
+  
+  in(...validDomain: string[]): ScopedIntermediateQuantifier {
+    return new ScopedIntermediateQuantifier(
+      new SetBasedVariable(this.name, validDomain),
+      this.state
+    );
+  }
+
+  ofType(uri: string): ScopedIntermediateQuantifier {
+    return new ScopedIntermediateQuantifier(
+      new TypedVariable(this.name, uri),
+      this.state
+    );
+  }
+}
+
+class ScopedIntermediateQuantifier {
+  private state: BoundVariable[]; // probably ought to be a tree
+
+  constructor(domain: BoundVariable, stateSoFar: BoundVariable[] = []) {
+    this.state = [
+      ...stateSoFar,
+      domain
+    ];
+  }
+
+  forAll(varName: string): IntermediateQuantifier {
+    return forAll(varName, this.state);
+  }
+
+  assert(exp: string, isDirected = true): Constraint {
+    return new Constraint(this.state, new Expression(exp, isDirected));
+  }
 }
