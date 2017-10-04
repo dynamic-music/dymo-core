@@ -12,6 +12,6 @@ import * as globals from './generator/globals';
 export { globals };
 export { DymoGenerator } from './generator/dymo-generator';
 export { DymoTemplates } from './generator/dymo-templates';
-export { ExpressionGenerator } from './generator/expression-generator';
+export { ExpressionGenerator, forAll } from './generator/expression-generator';
 //TODO SHOULDN'T BE EXPOSED, REMOVE THIS AGAIN ONCE THINGS SETTLE
 export { DymoStore } from './io/dymostore';
