@@ -65,3 +65,59 @@ export class ExpressionGenerator {
   }
 
 }
+
+export function forAll(
+  varName: string,
+  state: BoundVariable[] = []
+): IntermediateQuantifier {
+  return new IntermediateQuantifier(varName, state);
+}
+
+class IntermediateQuantifier {
+
+  constructor(public name: string, private state: BoundVariable[] = []) {}
+  
+  in(...domain: string[]): ScopedIntermediateQuantifier {
+    return new ScopedIntermediateQuantifier(
+      new SetBasedVariable(this.name, domain),
+      this.state
+    );
+  }
+
+  ofType(uri: string): ScopedIntermediateQuantifier {
+    return new ScopedIntermediateQuantifier(
+      new TypedVariable(this.name, uri),
+      this.state
+    );
+  }
+
+  ofTypeWith(typeUri: string, ...withExpression: string[]): ScopedIntermediateQuantifier {
+    return new ScopedIntermediateQuantifier(
+      new ExpressionVariable(
+        this.name,
+        typeUri,
+        ...withExpression.map(e => new Expression(e)) // TODO what about direction?
+      ),
+      this.state
+    )
+  }
+}
+
+class ScopedIntermediateQuantifier {
+  private state: BoundVariable[];
+
+  constructor(domain: BoundVariable, stateSoFar: BoundVariable[] = []) {
+    this.state = [
+      ...stateSoFar,
+      domain
+    ];
+  }
+
+  forAll(varName: string): IntermediateQuantifier {
+    return forAll(varName, this.state);
+  }
+
+  assert(exp: string, isDirected = false): Constraint {
+    return new Constraint(this.state, new Expression(exp, isDirected));
+  }
+}

@@ -8,7 +8,42 @@ import { ConstraintWriter } from '../../src/io/constraintwriter';
 import { SERVER_ROOT } from './server';
 import { Constraint } from '../../src/model/constraint';
 import { Expression } from '../../src/model/expression';
+import { Control } from '../../src/model/control';
 import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../../src/model/variable';
+import { forAll } from '../../src/generator/expression-generator';
+
+describe('fluent builder syntax', () => {
+  it('produces valid string', () => {
+    const expected = `∀ x : FAKE_URI, PRED(x) == 1 => ∀ c in ["A_URI","B_URI"] => SomeFunction(x) == c`;
+    const built = forAll('x')
+      .ofTypeWith('FAKE_URI', 'PRED(x) == 1')
+      .forAll('c')
+      .in('A_URI', 'B_URI')
+      .assert('SomeFunction(x) == c');
+    expect(built.toString()).toBe(expected);
+  });
+
+  it('builds valid expression internally', () => {
+    const store = new DymoStore();
+    let controlUri = store.addControl("control1", u.SLIDER);
+    const control = new Control(controlUri, "control1", u.SLIDER, store);
+    let vars = [
+      new SetBasedVariable('c', [controlUri]),
+      new TypedVariable('d', u.DYMO)
+    ];
+    const c = new Constraint(
+      vars,
+      new Expression('Amplitude(d) == c * OnsetFeature(d)',
+      true)
+    );
+    const exp = forAll('c')
+      .in(controlUri)
+      .forAll('d')
+      .ofType(u.DYMO)
+      .assert('Amplitude(d) == c * OnsetFeature(d)')
+    expect(exp.toString()).toBe(c.toString());
+  })
+});
 
 describe("the expressions unit", function() {
 
