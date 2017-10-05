@@ -73,7 +73,7 @@ export function forAll(
   return new IntermediateQuantifier(varName, state);
 }
 
-class IntermediateQuantifier {
+export class IntermediateQuantifier {
 
   constructor(public name: string, private state: BoundVariable[] = []) {}
   
@@ -103,7 +103,7 @@ class IntermediateQuantifier {
   }
 }
 
-class ScopedIntermediateQuantifier {
+export class ScopedIntermediateQuantifier {
   private state: BoundVariable[];
 
   constructor(domain: BoundVariable, stateSoFar: BoundVariable[] = []) {
