@@ -101,9 +101,19 @@ function createExpressionOntology(path) {
 	addProperty({term:"vars", iri:"vars"}, "Quantifier", "Variable", true);
 	addProperty({term:"body", iri:"body"}, "Quantifier", "Expression", true);
 
+	addClass("Accessor", "Expression");
+	addProperty({term:"object", iri:"object", type:"xsd:string"}, "Variable", prefixes["xsd"]+"string", false, true);
+	addProperty({term:"property", iri:"property", type:"xsd:string"}, "Variable", prefixes["xsd"]+"string", false, true);
+
 	addClass("FunctionalTerm", "Expression");
-	addProperty({term:"function", iri:"function", type:"xsd:string"}, "FunctionalTerm", prefixes["xsd"]+"string", false, true);
-	addProperty({term:"args", iri:"args", type:"xsd:string"}, "FunctionalTerm", prefixes["xsd"]+"string", true);
+	addUnionClass("Function", [prefixes["xsd"]+"string", "Accessor"]);
+	addProperty({term:"func", iri:"func"}, "FunctionalTerm", "Function", false, true);
+	addProperty({term:"args", iri:"args"}, "FunctionalTerm", "Variable", true);
+
+	addClass("Conditional", "Expression");
+	addProperty({term:"condition", iri:"condition"}, "Conditional", "Expression", true, true);
+	addProperty({term:"consequent", iri:"consequent"}, "Conditional", "Expression", true, true);
+	addProperty({term:"alternative", iri:"alternative"}, "Conditional", "Expression", true, true);
 
 	addClass("BinaryOperator", "Expression");
 	addProperty({term:"left", iri:"left"}, "BinaryOperator", "Expression", true, true);
