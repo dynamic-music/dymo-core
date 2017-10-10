@@ -91,7 +91,7 @@ describe("the expressions unit", function() {
     constraint = new Constraint(vars2, new Expression('LevelFeature(x) == 1'));
     new ConstraintWriter(store2).addConstraint(renderingUri, constraint);
     store2.uriToJsonld(renderingUri)
-    .then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","body":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","args":{"@id":"_:b0"},"function":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
+    .then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","body":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","args":{"@id":"_:b0"},"func":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
     //.then(j => console.log(j))
 
 

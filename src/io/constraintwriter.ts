@@ -67,7 +67,7 @@ export class ConstraintWriter {
     } else if (mathjsTree.isFunctionNode) {
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.FUNCTIONAL_TERM);
-      this.store.setValue(currentNodeUri, u.FUNCTION, mathjsTree.fn);
+      this.store.setValue(currentNodeUri, u.FUNC, mathjsTree.fn);
       this.store.setTriple(currentNodeUri, u.ARGS, this.recursiveAddExpression(mathjsTree.args[0]));
     } else if (mathjsTree.isSymbolNode) {
       currentNodeUri = this.store.findSubject(u.VAR_NAME, mathjsTree.name);

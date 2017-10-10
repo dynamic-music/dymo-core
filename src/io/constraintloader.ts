@@ -62,7 +62,7 @@ export class ConstraintLoader {
       let right = this.recursiveLoadExpression(this.store.findObject(expressionUri, uris.RIGHT));
       return ExpressionTools.toOperatorNode(expressionType, [left, right]);
     } else if (expressionType === uris.FUNCTIONAL_TERM) {
-      let name = this.store.findObjectValue(expressionUri, uris.FUNCTION);
+      let name = this.store.findObjectValue(expressionUri, uris.FUNC);
       //console.log(name, this.store.findObject(expressionUri, uris.T_ARGS))
       let args = this.recursiveLoadExpression(this.store.findObject(expressionUri, uris.ARGS));
       return new math.expression.node.FunctionNode(name, [args]);
