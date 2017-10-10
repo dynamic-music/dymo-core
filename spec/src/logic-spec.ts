@@ -45,21 +45,21 @@ describe("the logic unit", function() {
 
   it("can reason over equation constraints", function() {
     var constraint = LogicTools.createConstraint("return a*b;");
-    expect(LogicTools.solveConstraint(constraint, ["",2,3], 0)).toEqual(6);
-    expect(LogicTools.solveConstraint(constraint, [9,"",3], 1)).toEqual(3);
-    expect(LogicTools.solveConstraint(constraint, [9,2,""], 2)).toEqual(4.5);
+    expect(LogicTools.solveConstraint(constraint, ["",2,3], 0)[0]).toEqual(6);
+    expect(LogicTools.solveConstraint(constraint, [9,"",3], 1)[0]).toEqual(3);
+    expect(LogicTools.solveConstraint(constraint, [9,2,""], 2)[0]).toEqual(4.5);
 
     constraint = LogicTools.createConstraint("return a+b*c;");
-    expect(LogicTools.solveConstraint(constraint, ["",2,3,4], 0)).toEqual(14);
-    expect(LogicTools.solveConstraint(constraint, [14,"",3,4], 1)).toEqual(2);
-    expect(LogicTools.solveConstraint(constraint, [14,2,"",4], 2)).toEqual(3);
-    expect(LogicTools.solveConstraint(constraint, [14,2,3,""], 3)).toEqual(4);
+    expect(LogicTools.solveConstraint(constraint, ["",2,3,4], 0)[0]).toEqual(14);
+    expect(LogicTools.solveConstraint(constraint, [14,"",3,4], 1)[0]).toEqual(2);
+    expect(LogicTools.solveConstraint(constraint, [14,2,"",4], 2)[0]).toEqual(3);
+    expect(LogicTools.solveConstraint(constraint, [14,2,3,""], 3)[0]).toEqual(4);
 
     constraint = LogicTools.createConstraint("return (a+b)*c;");
-    expect(LogicTools.solveConstraint(constraint, ["",2,3,4], 0)).toEqual(20);
-    expect(LogicTools.solveConstraint(constraint, [20,"",3,4], 1)).toEqual(2);
-    expect(LogicTools.solveConstraint(constraint, [20,2,"",4], 2)).toEqual(3);
-    expect(LogicTools.solveConstraint(constraint, [20,2,3,""], 3)).toEqual(4);
+    expect(LogicTools.solveConstraint(constraint, ["",2,3,4], 0)[0]).toEqual(20);
+    expect(LogicTools.solveConstraint(constraint, [20,"",3,4], 1)[0]).toEqual(2);
+    expect(LogicTools.solveConstraint(constraint, [20,2,"",4], 2)[0]).toEqual(3);
+    expect(LogicTools.solveConstraint(constraint, [20,2,3,""], 3)[0]).toEqual(4);
   });
 
   it("is used in constraints", function(done) {

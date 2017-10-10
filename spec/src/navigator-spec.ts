@@ -468,7 +468,7 @@ describe("a navigator", function() {
 	it("can be loaded from a rendering", function(done) {
 		var manager = new DymoManager(AUDIO_CONTEXT);
 		manager.init(SERVER_ROOT+'ontologies/').then(() => {
-			manager.loadDymoAndRendering(SERVER_ROOT+'spec/files/similarity-dymo.json', SERVER_ROOT+'spec/files/similarity-rendering.json')
+			manager.loadIntoStore(SERVER_ROOT+'spec/files/similarity-dymo.json', SERVER_ROOT+'spec/files/similarity-rendering.json')
 			.then(() => {
 				store = manager.getStore();
 				var dymoUri = manager.getTopDymo();

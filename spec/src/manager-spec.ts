@@ -29,7 +29,7 @@ describe("a manager", function() {
 
 	it("manages a dymo", function(done) {
 		//console.profile("dymo");
-		manager.loadDymoAndRendering(filesDir+'mixdymo.json', filesDir+'mixdymo-rendering.json')
+		manager.loadIntoStore(filesDir+'mixdymo.json', filesDir+'mixdymo-rendering.json')
 			.then(() => {
 				expect(manager.getStore().findParts(manager.getTopDymo())).toEqual([CONTEXT_URI+"dymo0", CONTEXT_URI+"dymo00"]);
 				return manager.loadDymoFromJson(filesDir+'dymo2.json')

@@ -27,6 +27,7 @@ export class Maintainer {
       this.updateVar(varName, uri);
       this.allVarNames.push(varName);
     });
+    //TODO ADD JS 
     if (isDirected) {
       this.mathjsCompiledExpression = this.expression.args[1].compile();
     } else {
@@ -92,6 +93,7 @@ export class Maintainer {
       ignoredElements.forEach(e => indices.splice(array.indexOf(e), 1));
     }
     let observerCounts = indices.map(i => this.store.getValueObservers(this.varsAndUris.get(this.allVarNames[i]), VALUE).length);
+    //TODO IF SEVERAL ONES EQUAL: CHOOSE AT RANDOM
     let indexOfLeastObserved = arrays.indexOfMax(observerCounts.map(c => -c));
     return indices[indexOfLeastObserved];
   }

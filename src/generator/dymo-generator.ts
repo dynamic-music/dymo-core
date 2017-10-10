@@ -1,6 +1,8 @@
 import * as _ from 'lodash';
 import { uris, URI_TO_TERM } from '../index';
 import { DymoStore } from '../io/dymostore';
+import { ConstraintWriter } from '../io/constraintwriter';
+import { Constraint } from '../model/constraint';
 import { SUMMARY } from './globals';
 import { Segment } from './feature-loader';
 //import { Feature } from './types';
@@ -17,7 +19,7 @@ interface TimeDymo {
  */
 export class DymoGenerator {
 
-	private ready: Promise<any>;
+	private constraintWriter: ConstraintWriter;
 	private currentTopDymo; //the top dymo for the current audio file
 	private currentRenderingUri;
 	private summarizingMode = SUMMARY.MEAN;
@@ -25,7 +27,9 @@ export class DymoGenerator {
 	private dymoCount = 0;
 	private renderingCount = 0;
 
-	constructor(private store: DymoStore) {}
+	constructor(private store: DymoStore) {
+		this.constraintWriter = new ConstraintWriter(store);
+	}
 
 	getStore(): DymoStore {
 		return this.store;
@@ -39,10 +43,6 @@ export class DymoGenerator {
 		return this.store.uriToJsonld(this.currentRenderingUri);
 	}
 
-	isReady(): Promise<any> {
-		return this.ready;
-	}
-
 	resetDymo() {
 		this.currentTopDymo = undefined; //the top dymo for the current audio file
 		//this.internalAddFeature("level", uris.LEVEL_FEATURE, 0, 0);
@@ -53,6 +53,13 @@ export class DymoGenerator {
 		this.currentRenderingUri = renderingUri;
 		this.store.addRendering(renderingUri, dymoUri);
 		return renderingUri;
+	}
+
+	addConstraint(constraint: Constraint): string {
+		if (!this.currentRenderingUri) {
+			this.addRendering();
+		}
+		return this.constraintWriter.addConstraint(this.currentRenderingUri, constraint);
 	}
 
 	addCustomParameter(typeUri: string, ownerUri?: string, value?: number): string {
