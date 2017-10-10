@@ -42,14 +42,35 @@ ex:vars a owl:ObjectProperty;
 ex:body a owl:ObjectProperty;
     rdfs:domain ex:Quantifier;
     rdfs:range ex:Expression.
+ex:Accessor a owl:Class;
+    rdfs:subClassOf ex:Expression.
+ex:object a owl:DatatypeProperty, owl:FunctionalProperty;
+    rdfs:domain ex:Variable;
+    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
+ex:property a owl:DatatypeProperty, owl:FunctionalProperty;
+    rdfs:domain ex:Variable;
+    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
 ex:FunctionalTerm a owl:Class;
     rdfs:subClassOf ex:Expression.
-ex:function a owl:DatatypeProperty, owl:FunctionalProperty;
+ex:Function a owl:Class;
+    owl:unionOf (xsd:string ex:Accessor).
+ex:func a owl:DatatypeProperty, owl:FunctionalProperty;
     rdfs:domain ex:FunctionalTerm;
-    rdfs:range "http://www.w3.org/2001/XMLSchema#string".
+    rdfs:range "http://tiny.cc/expression-ontology#Function".
 ex:args a owl:ObjectProperty;
     rdfs:domain ex:FunctionalTerm;
-    rdfs:range xsd:string.
+    rdfs:range ex:Variable.
+ex:Conditional a owl:Class;
+    rdfs:subClassOf ex:Expression.
+ex:condition a owl:ObjectProperty, owl:FunctionalProperty;
+    rdfs:domain ex:Conditional;
+    rdfs:range ex:Expression.
+ex:consequent a owl:ObjectProperty, owl:FunctionalProperty;
+    rdfs:domain ex:Conditional;
+    rdfs:range ex:Expression.
+ex:alternative a owl:ObjectProperty, owl:FunctionalProperty;
+    rdfs:domain ex:Conditional;
+    rdfs:range ex:Expression.
 ex:BinaryOperator a owl:Class;
     rdfs:subClassOf ex:Expression.
 ex:left a owl:ObjectProperty, owl:FunctionalProperty;

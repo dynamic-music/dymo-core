@@ -94,8 +94,24 @@ describe("the expressions unit", function() {
     .then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","body":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","args":{"@id":"_:b0"},"func":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
     //.then(j => console.log(j))
 
-
   });
+
+
+
+  it("handles conditionals and functions with accessors", function() {
+    let store = new DymoStore();
+    let renderingUri = u.CONTEXT_URI+"rendering1";
+    let constraint = forAll("d1").in(dymo1).forAll("d2").in(dymo2)
+      .assert("Amplitude(d1) == Amplitude(d2) > 0.5 ? Amplitude(d2) : 0");
+    new ConstraintWriter(store).addConstraint(renderingUri, constraint);
+    store.uriToJsonld(renderingUri)
+      .then(j => {
+        expect(JSON.parse(j)["constraint"]["body"]["body"]).not.toBeUndefined();
+        expect(JSON.parse(j)["constraint"]["body"]["body"]["@type"]).toEqual(u.EQUAL_TO);
+        expect(JSON.parse(j)["constraint"]["body"]["body"]["right"]["@type"]).toEqual(u.CONDITIONAL);
+      });
+  });
+  
 
   it("can handle bound variables of different types", function() {
 

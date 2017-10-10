@@ -67,7 +67,7 @@
   },
   "parameters": [
     {
-      "@id": "_:b15"
+      "@id": "_:b11"
     },
     {
       "@id": "_:b1"
@@ -89,7 +89,7 @@
             "args": {
               "@id": "_:b3"
             },
-            "function": "TimeStretchRatio"
+            "func": "TimeStretchRatio"
           },
           "right": {
             "@type": "Multiplication",
@@ -111,7 +111,7 @@
               "args": {
                 "@id": "_:b3"
               },
-              "function": "DurationFeature"
+              "func": "DurationFeature"
             }
           }
         },
@@ -120,7 +120,7 @@
           "@type": "Variable",
           "varName": "t",
           "varValue": {
-            "@id": "_:b15",
+            "@id": "_:b11",
             "@type": "Tempo"
           }
         }
@@ -134,7 +134,7 @@
             "args": {
               "@id": "_:b3"
             },
-            "function": "LevelFeature"
+            "func": "LevelFeature"
           },
           "right": {
             "@type": "Constant",
@@ -165,7 +165,7 @@
             "args": {
               "@id": "_:b3"
             },
-            "function": "Amplitude"
+            "func": "Amplitude"
           },
           "right": {
             "@type": "Addition",
@@ -198,7 +198,7 @@
                   "args": {
                     "@id": "_:b3"
                   },
-                  "function": "IndexFeature"
+                  "func": "IndexFeature"
                 }
               }
             },
@@ -212,7 +212,7 @@
                 "args": {
                   "@id": "_:b3"
                 },
-                "function": "IndexFeature"
+                "func": "IndexFeature"
               }
             }
           }
@@ -237,7 +237,7 @@
             "args": {
               "@id": "_:b3"
             },
-            "function": "LevelFeature"
+            "func": "LevelFeature"
           },
           "right": {
             "@type": "Constant",

@@ -17,7 +17,7 @@
           "args": {
             "@id": "_:b0"
           },
-          "function": "LevelFeature"
+          "func": "LevelFeature"
         },
         "right": {
           "@type": "Constant",
