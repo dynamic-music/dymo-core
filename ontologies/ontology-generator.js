@@ -102,11 +102,14 @@ function createExpressionOntology(path) {
 	addProperty({term:"body", iri:"body"}, "Quantifier", "Expression", true);
 
 	addClass("Accessor", "Expression");
-	addProperty({term:"object", iri:"object", type:"xsd:string"}, "Variable", prefixes["xsd"]+"string", false, true);
-	addProperty({term:"property", iri:"property", type:"xsd:string"}, "Variable", prefixes["xsd"]+"string", false, true);
+	addProperty({term:"object", iri:"object", type:"xsd:string"}, "Accessor", prefixes["xsd"]+"string", false, true);
+	addProperty({term:"property", iri:"property", type:"xsd:string"}, "Accessor", prefixes["xsd"]+"string", false, true);
 
 	addClass("FunctionalTerm", "Expression");
-	addUnionClass("Function", [prefixes["xsd"]+"string", "Accessor"]);
+	addClass("NamedFunction");//has a sch:name property (string)
+	addClass("PropertyFunction");
+	addProperty({term:"prop", iri:"prop", type:"@vocab"}, "PropertyFunction", prefixes["rdf"]+"Property", true);
+	addUnionClass("Function", ["NamedFunction", "Accessor"]);
 	addProperty({term:"func", iri:"func"}, "FunctionalTerm", "Function", false, true);
 	addProperty({term:"args", iri:"args"}, "FunctionalTerm", "Variable", true);
 
