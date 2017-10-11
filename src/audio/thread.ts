@@ -216,7 +216,12 @@ export class SchedulerThread {
 	}
 
 	private getSourceDuration(source) {
-		return source.getDuration()/source.getParameterValue(uris.PLAYBACK_RATE);
+		let duration = source.getDuration();
+		let playbackRate = source.getParameterValue(uris.PLAYBACK_RATE);
+		duration /= playbackRate ? playbackRate : 1;
+		let stretchRatio = source.getParameterValue(uris.TIME_STRETCH_RATIO);
+		duration /= stretchRatio ? stretchRatio : 1;
+		return duration;
 	}
 
 	private createNextSources() {

@@ -27,13 +27,22 @@ export class Maintainer {
       this.updateVar(varName, uri);
       this.allVarNames.push(varName);
     });
-    //TODO ADD JS 
+    //TODO ADD JS
+    console.log(this.expression.toString(), isDirected)
     if (isDirected) {
       this.mathjsCompiledExpression = this.expression.args[1].compile();
     } else {
       this.logicjsGoalFunction = LogicTools.createGoalFunction(this.expression);
+      if (!this.logicjsGoalFunction && this.checkIfFunctionPossible(this.expression)) {
+        this.mathjsCompiledExpression = this.expression.args[1].compile();
+      }
     }
     this.maintain();
+  }
+
+  private checkIfFunctionPossible(mathjsTree: MathjsNode): boolean {
+    return mathjsTree.isOperatorNode && mathjsTree["fn"] === "equal"
+      && (mathjsTree["args"][0].isSymbolNode || mathjsTree["args"][0].isFunctionNode);
   }
 
   private setUriAndVar(uri: string, variable: string) {

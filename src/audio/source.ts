@@ -136,9 +136,6 @@ export class DymoSource extends DymoNode {
 				startTime = 0;
 			}
 			this.source.start(startTime);
-			if (this.store.findParameterValue(this.dymoUri, LOOP)) {
-				this.source.loop = true;
-			}
 		} else {
 			//SILENT SOURCE (TODO MAYBE MAKE SEPARATE CLASS)
 			setTimeout(() => {
