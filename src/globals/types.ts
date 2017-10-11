@@ -5,6 +5,21 @@ export interface AttributeInfo {
   max: number
 }
 
+export interface FunctionNode extends MathjsNode {
+  fn: FunctionDef
+}
+
+export interface FunctionDef extends MathjsNode {}
+
+export interface AccessorNode extends FunctionDef {
+  object: string,
+  index: string
+}
+
+export interface OperatorNode extends MathjsNode {
+  fn: string
+}
+
 export interface MathjsNode {
   compile: Function,
   eval: Function,
@@ -14,10 +29,11 @@ export interface MathjsNode {
   content?: MathjsNode,
 
   isFunctionNode: boolean,
-  fn?: string,
-  args?: MathjsNode[],
+  isAccessorNode: boolean,
+
   isOperatorNode: boolean,
   op?: string,
+  args: MathjsNode[],
 
   isSymbolNode: boolean,
   name: string,

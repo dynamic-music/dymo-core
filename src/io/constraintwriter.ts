@@ -5,7 +5,7 @@ import { Constraint } from '../model/constraint';
 import { Expression } from '../model/expression';
 import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../model/variable';
 import { ExpressionTools } from '../math/expressiontools';
-import { MathjsNode } from '../globals/types';
+import { MathjsNode, OperatorNode, FunctionNode, AccessorNode } from '../globals/types';
 
 export class ConstraintWriter {
 
@@ -60,14 +60,25 @@ export class ConstraintWriter {
       this.addTripleOrSetValue(currentNodeUri, u.LEFT, this.recursiveAddExpression(mathjsTree.args[0]));
       this.addTripleOrSetValue(currentNodeUri, u.RIGHT, this.recursiveAddExpression(mathjsTree.args[1]));
     } else if (mathjsTree.isOperatorNode) {
+      let opNode = <OperatorNode>mathjsTree;
       currentNodeUri = this.store.createBlankNode();
-      this.store.addTriple(currentNodeUri, u.TYPE, ExpressionTools.toUri(mathjsTree.fn));
-      this.addTripleOrSetValue(currentNodeUri, u.LEFT, this.recursiveAddExpression(mathjsTree.args[0]));
-      this.addTripleOrSetValue(currentNodeUri, u.RIGHT, this.recursiveAddExpression(mathjsTree.args[1]));
+      this.store.addTriple(currentNodeUri, u.TYPE, ExpressionTools.toUri(opNode.fn));
+      this.addTripleOrSetValue(currentNodeUri, u.LEFT, this.recursiveAddExpression(opNode.args[0]));
+      this.addTripleOrSetValue(currentNodeUri, u.RIGHT, this.recursiveAddExpression(opNode.args[1]));
     } else if (mathjsTree.isFunctionNode) {
+      let fnNode = <FunctionNode>mathjsTree;
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.FUNCTIONAL_TERM);
-      this.store.setValue(currentNodeUri, u.FUNC, mathjsTree.fn);
+      if (fnNode.fn.isAccessorNode) {
+        let accNode = <AccessorNode>fnNode.fn;
+        let accessor = this.store.createBlankNode();
+        this.store.addTriple(accessor, u.TYPE, u.ACCESSOR);
+        this.store.addTriple(accessor, u.OBJECT, accNode.object);
+        this.store.addTriple(accessor, u.PROPERTY, accNode.index);
+        this.store.addTriple(currentNodeUri, u.FUNC, accessor);
+      } else {
+        this.store.setValue(currentNodeUri, u.FUNC, fnNode.fn.name);
+      }
       this.store.setTriple(currentNodeUri, u.ARGS, this.recursiveAddExpression(mathjsTree.args[0]));
     } else if (mathjsTree.isSymbolNode) {
       currentNodeUri = this.store.findSubject(u.VAR_NAME, mathjsTree.name);
