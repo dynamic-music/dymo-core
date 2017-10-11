@@ -20,6 +20,12 @@ export interface OperatorNode extends MathjsNode {
   fn: string
 }
 
+export interface ConditionalNode extends MathjsNode {
+  condition: MathjsNode;
+  trueExpr: MathjsNode;
+  falseExpr: MathjsNode;
+}
+
 export interface MathjsNode {
   compile: Function,
   eval: Function,
@@ -30,7 +36,7 @@ export interface MathjsNode {
 
   isFunctionNode: boolean,
   isAccessorNode: boolean,
-
+  isConditionalNode: boolean,
   isOperatorNode: boolean,
   op?: string,
   args: MathjsNode[],
