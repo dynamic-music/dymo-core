@@ -102,13 +102,11 @@ describe("the expressions unit", function() {
     let store = new DymoStore();
     let renderingUri = u.CONTEXT_URI+"rendering1";
     let constraint = forAll("d1").in(dymo1).forAll("d2").in(dymo2)
-      .assert("Amplitude(d1) == Amplitude(d2) > 0.5 ? Amplitude(d2) : 0");
+      .assert("Amplitude(d1) == (Amplitude(d2) > 0.5 ? Amplitude(d2) : 0)");
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     store.uriToJsonld(renderingUri)
       .then(j => {
-        expect(JSON.parse(j)["constraint"]["body"]["body"]).not.toBeUndefined();
-        expect(JSON.parse(j)["constraint"]["body"]["body"]["@type"]).toEqual(u.EQUAL_TO);
-        expect(JSON.parse(j)["constraint"]["body"]["body"]["right"]["@type"]).toEqual(u.CONDITIONAL);
+        expect(j).toEqual(`{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","body":{"@type":"ForAll","body":{"@type":"EqualTo","directed":{"@type":"xsd:boolean","@value":"false"},"left":{"@type":"FunctionalTerm","args":{"@id":"_:b0"},"func":"Amplitude"},"right":{"@type":"Conditional","alternative":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"0"}},"antecedent":{"@type":"GreaterThan","left":{"@type":"FunctionalTerm","args":{"@id":"_:b1"},"func":"Amplitude"},"right":{"@type":"Constant","value":{"@type":"xsd:double","@value":"0.5"}}},"consequent":{"@type":"FunctionalTerm","args":{"@id":"_:b1"},"func":"Amplitude"}}},"vars":{"@id":"_:b1","@type":"Variable","varName":"d2","varValue":{"@id":"dymo2"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"d1","varValue":{"@id":"dymo1"}}}}`);
       });
   });
 
