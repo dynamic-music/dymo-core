@@ -17,7 +17,7 @@
             "@value": "false"
           },
           "left": {
-            "@id": "_:b16"
+            "@id": "_:b19"
           },
           "right": {
             "@type": "Multiplication",
@@ -29,12 +29,12 @@
               }
             },
             "right": {
-              "@id": "_:b17"
+              "@id": "_:b20"
             }
           }
         },
         "vars": {
-          "@id": "_:b17",
+          "@id": "_:b20",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -45,7 +45,7 @@
         }
       },
       "vars": {
-        "@id": "_:b16",
+        "@id": "_:b19",
         "@type": "Variable",
         "varName": "l",
         "varType": {
@@ -70,12 +70,15 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
-            "func": "PlaybackRate"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "PlaybackRate"
+            }
           },
           "right": {
-            "@id": "_:b2"
+            "@id": "_:b5"
           }
         },
         "vars": {
@@ -93,9 +96,12 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
-            "func": "DurationRatio"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "DurationRatio"
+            }
           },
           "right": {
             "@type": "Constant",
@@ -114,6 +120,7 @@
     {
       "@type": "ForAll",
       "body": {
+        "@id": "_:b3",
         "@type": "ForAll",
         "body": {
           "@type": "EqualTo",
@@ -122,19 +129,22 @@
             "@value": "false"
           },
           "left": {
-            "@id": "_:b1",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
-            "func": "Amplitude"
+            "func": {
+              "@id": "_:b2",
+              "@type": "NamedFunction",
+              "name": "Amplitude"
+            }
           },
           "right": {
-            "@id": "_:b2"
+            "@id": "_:b5"
           }
         },
         "vars": {
-          "@id": "_:b2",
+          "@id": "_:b5",
           "@type": "Variable",
           "varName": "c",
           "varValue": {
@@ -145,7 +155,7 @@
         }
       },
       "vars": {
-        "@id": "_:b3"
+        "@id": "_:b1"
       }
     }
   ],
@@ -161,16 +171,19 @@
         "left": {
           "@type": "FunctionalTerm",
           "args": {
-            "@id": "_:b3",
+            "@id": "_:b1",
             "@type": "Variable",
             "varExpr": {
               "@type": "EqualTo",
               "left": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b3"
+                  "@id": "_:b1"
                 },
-                "func": "LevelFeature"
+                "func": {
+                  "@type": "NamedFunction",
+                  "name": "LevelFeature"
+                }
               },
               "right": {
                 "@type": "Constant",
@@ -185,7 +198,10 @@
               "@id": "dy:Dymo"
             }
           },
-          "func": "LevelFeature"
+          "func": {
+            "@type": "NamedFunction",
+            "name": "LevelFeature"
+          }
         },
         "right": {
           "@type": "Constant",

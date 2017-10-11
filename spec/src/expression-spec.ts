@@ -91,7 +91,7 @@ describe("the expressions unit", function() {
     constraint = new Constraint(vars2, new Expression('LevelFeature(x) == 1'));
     new ConstraintWriter(store2).addConstraint(renderingUri, constraint);
     store2.uriToJsonld(renderingUri)
-    .then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","body":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","args":{"@id":"_:b0"},"func":"LevelFeature"},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
+    .then(j => expect(j).toEqual('{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","body":{"@type":"EqualTo","left":{"@type":"FunctionalTerm","args":{"@id":"_:b0"},"func":{"@type":"NamedFunction","name":"LevelFeature"}},"right":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"1"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"x","varType":{"@id":"dy:Dymo"}}}}'))
     //.then(j => console.log(j))
 
   });
@@ -106,21 +106,7 @@ describe("the expressions unit", function() {
     new ConstraintWriter(store).addConstraint(renderingUri, constraint);
     store.uriToJsonld(renderingUri)
       .then(j => {
-        expect(j).toEqual(`{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","body":{"@type":"ForAll","body":{"@type":"EqualTo","directed":{"@type":"xsd:boolean","@value":"false"},"left":{"@type":"FunctionalTerm","args":{"@id":"_:b0"},"func":"Amplitude"},"right":{"@type":"Conditional","alternative":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"0"}},"antecedent":{"@type":"GreaterThan","left":{"@type":"FunctionalTerm","args":{"@id":"_:b1"},"func":"Amplitude"},"right":{"@type":"Constant","value":{"@type":"xsd:double","@value":"0.5"}}},"consequent":{"@type":"FunctionalTerm","args":{"@id":"_:b1"},"func":"Amplitude"}}},"vars":{"@id":"_:b1","@type":"Variable","varName":"d2","varValue":{"@id":"dymo2"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"d1","varValue":{"@id":"dymo1"}}}}`);
-      });
-  });
-
-  it("handles conditionals and functions with accessors", function() {
-    let store = new DymoStore();
-    let renderingUri = u.CONTEXT_URI+"rendering1";
-    let constraint = forAll("d1").in(dymo1).forAll("d2").in(dymo2)
-      .assert("Amplitude(d1) == Math.sin(Amplitude(d2))");
-    new ConstraintWriter(store).addConstraint(renderingUri, constraint);
-    store.uriToJsonld(renderingUri)
-      .then(j => {
-        expect(JSON.parse(j)["constraint"]["body"]["body"]).not.toBeUndefined();
-        expect(JSON.parse(j)["constraint"]["body"]["body"]["@type"]).toEqual(u.EQUAL_TO);
-        expect(JSON.parse(j)["constraint"]["body"]["body"]["right"]["@type"]).toEqual(u.FUNCTIONAL_TERM);
+        expect(j).toEqual(`{"@context":"http://tiny.cc/dymo-context","@id":"rendering1","constraint":{"@type":"ForAll","body":{"@type":"ForAll","body":{"@type":"EqualTo","directed":{"@type":"xsd:boolean","@value":"false"},"left":{"@type":"FunctionalTerm","args":{"@id":"_:b0"},"func":{"@type":"NamedFunction","name":"Amplitude"}},"right":{"@type":"Conditional","alternative":{"@type":"Constant","value":{"@type":"xsd:integer","@value":"0"}},"antecedent":{"@type":"GreaterThan","left":{"@type":"FunctionalTerm","args":{"@id":"_:b1"},"func":{"@type":"NamedFunction","name":"Amplitude"}},"right":{"@type":"Constant","value":{"@type":"xsd:double","@value":"0.5"}}},"consequent":{"@type":"FunctionalTerm","args":{"@id":"_:b1"},"func":{"@type":"NamedFunction","name":"Amplitude"}}}},"vars":{"@id":"_:b1","@type":"Variable","varName":"d2","varValue":{"@id":"dymo2"}}},"vars":{"@id":"_:b0","@type":"Variable","varName":"d1","varValue":{"@id":"dymo1"}}}}`);
       });
   });
 

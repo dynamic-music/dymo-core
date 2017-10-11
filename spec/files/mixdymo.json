@@ -67,7 +67,7 @@
   },
   "parameters": [
     {
-      "@id": "_:b11"
+      "@id": "_:b12"
     },
     {
       "@id": "_:b1"
@@ -89,14 +89,17 @@
             "args": {
               "@id": "_:b3"
             },
-            "func": "TimeStretchRatio"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "TimeStretchRatio"
+            }
           },
           "right": {
             "@type": "Multiplication",
             "left": {
               "@type": "Division",
               "left": {
-                "@id": "_:b26"
+                "@id": "_:b32"
               },
               "right": {
                 "@type": "Constant",
@@ -111,16 +114,19 @@
               "args": {
                 "@id": "_:b3"
               },
-              "func": "DurationFeature"
+              "func": {
+                "@type": "NamedFunction",
+                "name": "DurationFeature"
+              }
             }
           }
         },
         "vars": {
-          "@id": "_:b26",
+          "@id": "_:b32",
           "@type": "Variable",
           "varName": "t",
           "varValue": {
-            "@id": "_:b11",
+            "@id": "_:b12",
             "@type": "Tempo"
           }
         }
@@ -134,7 +140,10 @@
             "args": {
               "@id": "_:b3"
             },
-            "func": "LevelFeature"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "LevelFeature"
+            }
           },
           "right": {
             "@type": "Constant",
@@ -165,7 +174,10 @@
             "args": {
               "@id": "_:b3"
             },
-            "func": "Amplitude"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "Amplitude"
+            }
           },
           "right": {
             "@type": "Addition",
@@ -181,7 +193,7 @@
                   }
                 },
                 "right": {
-                  "@id": "_:b7"
+                  "@id": "_:b8"
                 }
               },
               "right": {
@@ -198,27 +210,33 @@
                   "args": {
                     "@id": "_:b3"
                   },
-                  "func": "IndexFeature"
+                  "func": {
+                    "@type": "NamedFunction",
+                    "name": "IndexFeature"
+                  }
                 }
               }
             },
             "right": {
               "@type": "Multiplication",
               "left": {
-                "@id": "_:b7"
+                "@id": "_:b8"
               },
               "right": {
                 "@type": "FunctionalTerm",
                 "args": {
                   "@id": "_:b3"
                 },
-                "func": "IndexFeature"
+                "func": {
+                  "@type": "NamedFunction",
+                  "name": "IndexFeature"
+                }
               }
             }
           }
         },
         "vars": {
-          "@id": "_:b7",
+          "@id": "_:b8",
           "@type": "Variable",
           "varName": "f",
           "varValue": {
@@ -231,13 +249,17 @@
         "@id": "_:b3",
         "@type": "Variable",
         "varExpr": {
+          "@id": "_:b4",
           "@type": "EqualTo",
           "left": {
             "@type": "FunctionalTerm",
             "args": {
               "@id": "_:b3"
             },
-            "func": "LevelFeature"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "LevelFeature"
+            }
           },
           "right": {
             "@type": "Constant",
