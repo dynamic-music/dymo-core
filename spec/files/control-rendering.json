@@ -70,12 +70,12 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b1"
+              "@id": "_:b3"
             },
             "func": "PlaybackRate"
           },
           "right": {
-            "@id": "_:b5"
+            "@id": "_:b2"
           }
         },
         "vars": {
@@ -93,7 +93,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b1"
+              "@id": "_:b3"
             },
             "func": "DurationRatio"
           },
@@ -114,7 +114,6 @@
     {
       "@type": "ForAll",
       "body": {
-        "@id": "_:b3",
         "@type": "ForAll",
         "body": {
           "@type": "EqualTo",
@@ -123,18 +122,19 @@
             "@value": "false"
           },
           "left": {
+            "@id": "_:b1",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b1"
+              "@id": "_:b3"
             },
             "func": "Amplitude"
           },
           "right": {
-            "@id": "_:b5"
+            "@id": "_:b2"
           }
         },
         "vars": {
-          "@id": "_:b5",
+          "@id": "_:b2",
           "@type": "Variable",
           "varName": "c",
           "varValue": {
@@ -145,7 +145,7 @@
         }
       },
       "vars": {
-        "@id": "_:b1"
+        "@id": "_:b3"
       }
     }
   ],
@@ -161,15 +161,14 @@
         "left": {
           "@type": "FunctionalTerm",
           "args": {
-            "@id": "_:b1",
+            "@id": "_:b3",
             "@type": "Variable",
             "varExpr": {
-              "@id": "_:b2",
               "@type": "EqualTo",
               "left": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b1"
+                  "@id": "_:b3"
                 },
                 "func": "LevelFeature"
               },

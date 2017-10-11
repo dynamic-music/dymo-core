@@ -111,7 +111,20 @@ describe("the expressions unit", function() {
         expect(JSON.parse(j)["constraint"]["body"]["body"]["right"]["@type"]).toEqual(u.CONDITIONAL);
       });
   });
-  
+
+  it("handles conditionals and functions with accessors", function() {
+    let store = new DymoStore();
+    let renderingUri = u.CONTEXT_URI+"rendering1";
+    let constraint = forAll("d1").in(dymo1).forAll("d2").in(dymo2)
+      .assert("Amplitude(d1) == Math.sin(Amplitude(d2))");
+    new ConstraintWriter(store).addConstraint(renderingUri, constraint);
+    store.uriToJsonld(renderingUri)
+      .then(j => {
+        expect(JSON.parse(j)["constraint"]["body"]["body"]).not.toBeUndefined();
+        expect(JSON.parse(j)["constraint"]["body"]["body"]["@type"]).toEqual(u.EQUAL_TO);
+        expect(JSON.parse(j)["constraint"]["body"]["body"]["right"]["@type"]).toEqual(u.FUNCTIONAL_TERM);
+      });
+  });
 
   it("can handle bound variables of different types", function() {
 
