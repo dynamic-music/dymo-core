@@ -69,6 +69,20 @@ export class ConstraintLoader {
     } else if (expressionType === uris.VARIABLE) {
       let name = this.store.findObjectValue(expressionUri, uris.VAR_NAME);
       return new math.expression.node.SymbolNode(name);
+    } else if (expressionType === uris.CONDITIONAL) {
+      const { ConditionalNode } = math.expression.node;
+      const [
+        condition,
+        trueExpr,
+        falseExpr
+      ] = [
+        uris.ANTECEDENT,
+        uris.CONSEQUENT,
+        uris.ALTERNATIVE
+      ].map(uri => this.recursiveLoadExpression(
+        this.store.findObject(expressionUri, uri)
+      ));
+      return new ConditionalNode(condition, trueExpr, falseExpr);
     } else {
       let value = this.store.findObjectValue(expressionUri, uris.VALUE);
       return new math.expression.node.ConstantNode(value);

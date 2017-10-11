@@ -5,6 +5,7 @@ import * as u from '../../src/globals/uris';
 import { DymoStore } from '../../src/io/dymostore';
 import { DymoLoader } from '../../src/io/dymoloader';
 import { ConstraintWriter } from '../../src/io/constraintwriter';
+import { ConstraintLoader } from '../../src/io/constraintloader';
 import { SERVER_ROOT } from './server';
 import { Constraint } from '../../src/model/constraint';
 import { Expression } from '../../src/model/expression';
@@ -110,18 +111,14 @@ describe("the expressions unit", function() {
       });
   });
 
-  it("handles conditionals and functions with accessors", function() {
-    let store = new DymoStore();
+  it("loads ontological representations", () => {
     let renderingUri = u.CONTEXT_URI+"rendering1";
     let constraint = forAll("d1").in(dymo1).forAll("d2").in(dymo2)
-      .assert("Amplitude(d1) == Math.sin(Amplitude(d2))");
-    new ConstraintWriter(store).addConstraint(renderingUri, constraint);
-    store.uriToJsonld(renderingUri)
-      .then(j => {
-        expect(JSON.parse(j)["constraint"]["body"]["body"]).not.toBeUndefined();
-        expect(JSON.parse(j)["constraint"]["body"]["body"]["@type"]).toEqual(u.EQUAL_TO);
-        expect(JSON.parse(j)["constraint"]["body"]["body"]["right"]["@type"]).toEqual(u.FUNCTIONAL_TERM);
-      });
+      .assert("Amplitude(d1) == (Amplitude(d2) > 0.5 ? Amplitude(d2) : 0)");
+    const constraintUri = new ConstraintWriter(store).addConstraint(renderingUri, constraint);
+    const loader = new ConstraintLoader(store);
+    const [storedConstraint] = loader.loadConstraints([constraintUri]);
+    expect(storedConstraint.toString()).toEqual(constraint.toString());
   });
 
   it("can handle bound variables of different types", function() {
