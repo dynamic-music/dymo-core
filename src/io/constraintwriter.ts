@@ -5,7 +5,7 @@ import { Constraint } from '../model/constraint';
 import { Expression } from '../model/expression';
 import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../model/variable';
 import { ExpressionTools } from '../math/expressiontools';
-import { MathjsNode, OperatorNode, FunctionNode, AccessorNode } from '../globals/types';
+import { MathjsNode, OperatorNode, FunctionNode, AccessorNode, ConditionalNode } from '../globals/types';
 
 export class ConstraintWriter {
 
@@ -80,6 +80,19 @@ export class ConstraintWriter {
         this.store.setValue(currentNodeUri, u.FUNC, fnNode.fn.name);
       }
       this.store.setTriple(currentNodeUri, u.ARGS, this.recursiveAddExpression(mathjsTree.args[0]));
+    } else if (isConditionalNode(mathjsTree)) {
+      currentNodeUri = this.store.createBlankNode();
+      this.store.addTriple(currentNodeUri, u.TYPE, u.CONDITIONAL);
+      const {condition, trueExpr, falseExpr} = mathjsTree;
+      const add = (predicate: string, node: MathjsNode) => 
+        this.addTripleOrSetValue(
+          currentNodeUri,
+          predicate,
+          this.recursiveAddExpression(node)
+        );
+      add(u.ANTECEDENT, condition);
+      add(u.CONSEQUENT, trueExpr);
+      add(u.ALTERNATIVE, falseExpr);
     } else if (mathjsTree.isSymbolNode) {
       currentNodeUri = this.store.findSubject(u.VAR_NAME, mathjsTree.name);
     } else if (mathjsTree.isConstantNode) {
@@ -108,4 +121,8 @@ export class ConstraintWriter {
     this.store.setValue(subject, predicate, object);
   }
 
+}
+
+function isConditionalNode(node: MathjsNode): node is ConditionalNode {
+  return node.isConditionalNode;
 }
