@@ -111,7 +111,7 @@ function createExpressionOntology(path) {
 	addProperty({term:"args", iri:"args"}, "FunctionalTerm", "Variable", true);
 
 	addClass("Conditional", "Expression");
-	addProperty({term:"condition", iri:"condition"}, "Conditional", "Expression", true, true);
+	addProperty({term:"antecedent", iri:"antecedent"}, "Conditional", "Expression", true, true);
 	addProperty({term:"consequent", iri:"consequent"}, "Conditional", "Expression", true, true);
 	addProperty({term:"alternative", iri:"alternative"}, "Conditional", "Expression", true, true);
 
