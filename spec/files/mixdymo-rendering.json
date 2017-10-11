@@ -16,16 +16,19 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b46"
+              "@id": "_:b52"
             },
-            "func": "AutoControlTrigger"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "AutoControlTrigger"
+            }
           },
           "right": {
-            "@id": "_:b47"
+            "@id": "_:b53"
           }
         },
         "vars": {
-          "@id": "_:b47",
+          "@id": "_:b53",
           "@type": "Variable",
           "varName": "t",
           "varValue": {
@@ -35,7 +38,7 @@
         }
       },
       "vars": {
-        "@id": "_:b46",
+        "@id": "_:b52",
         "@type": "Variable",
         "varName": "r",
         "varValue": {
@@ -56,16 +59,19 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b19"
+              "@id": "_:b21"
             },
-            "func": "DurationRatio"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "DurationRatio"
+            }
           },
           "right": {
-            "@id": "_:b41"
+            "@id": "_:b46"
           }
         },
         "vars": {
-          "@id": "_:b41",
+          "@id": "_:b46",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -83,9 +89,12 @@
               "left": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b19"
+                  "@id": "_:b21"
                 },
-                "func": "IndexFeature"
+                "func": {
+                  "@type": "NamedFunction",
+                  "name": "IndexFeature"
+                }
               },
               "right": {
                 "@type": "Constant",
@@ -108,9 +117,12 @@
             "left": {
               "@type": "FunctionalTerm",
               "args": {
-                "@id": "_:b19"
+                "@id": "_:b21"
               },
-              "func": "LevelFeature"
+              "func": {
+                "@type": "NamedFunction",
+                "name": "LevelFeature"
+              }
             },
             "right": {
               "@type": "Constant",
@@ -140,9 +152,12 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b19"
+              "@id": "_:b21"
             },
-            "func": "PartCount"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "PartCount"
+            }
           },
           "right": {
             "@type": "Multiplication",
@@ -154,12 +169,12 @@
               }
             },
             "right": {
-              "@id": "_:b23"
+              "@id": "_:b27"
             }
           }
         },
         "vars": {
-          "@id": "_:b23",
+          "@id": "_:b27",
           "@type": "Variable",
           "varName": "b",
           "varValue": {
@@ -169,16 +184,19 @@
         }
       },
       "vars": {
-        "@id": "_:b19",
+        "@id": "_:b21",
         "@type": "Variable",
         "varExpr": {
           "@type": "EqualTo",
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b19"
+              "@id": "_:b21"
             },
-            "func": "LevelFeature"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "LevelFeature"
+            }
           },
           "right": {
             "@type": "Constant",
@@ -207,16 +225,19 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b6"
             },
-            "func": "Fade"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "Fade"
+            }
           },
           "right": {
-            "@id": "_:b14"
+            "@id": "_:b15"
           }
         },
         "vars": {
-          "@id": "_:b14",
+          "@id": "_:b15",
           "@type": "Variable",
           "varName": "f",
           "varValue": {
@@ -239,27 +260,30 @@
       "body": {
         "@type": "ForAll",
         "body": {
+          "@id": "_:b3",
           "@type": "EqualTo",
           "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
-            "@id": "_:b2",
+            "@id": "_:b4",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b6"
             },
-            "func": "Fade"
+            "func": {
+              "@type": "NamedFunction",
+              "name": "Fade"
+            }
           },
           "right": {
-            "@id": "_:b4",
+            "@id": "_:b5",
             "@type": "Division",
             "left": {
-              "@id": "_:b5",
               "@type": "Subtraction",
               "left": {
-                "@id": "_:b7"
+                "@id": "_:b2"
               },
               "right": {
                 "@type": "Constant",
@@ -279,7 +303,7 @@
           }
         },
         "vars": {
-          "@id": "_:b7",
+          "@id": "_:b2",
           "@type": "Variable",
           "varName": "a",
           "varValue": {
@@ -290,7 +314,7 @@
         }
       },
       "vars": {
-        "@id": "_:b3",
+        "@id": "_:b6",
         "@type": "Variable",
         "varName": "m",
         "varValue": {
@@ -305,16 +329,19 @@
   "navigators": {
     "@type": "SimilarityNavigator",
     "dymos": {
-      "@id": "_:b52",
+      "@id": "_:b60",
       "@type": "Variable",
       "varExpr": {
         "@type": "EqualTo",
         "left": {
           "@type": "FunctionalTerm",
           "args": {
-            "@id": "_:b52"
+            "@id": "_:b60"
           },
-          "func": "LevelFeature"
+          "func": {
+            "@type": "NamedFunction",
+            "name": "LevelFeature"
+          }
         },
         "right": {
           "@type": "Constant",

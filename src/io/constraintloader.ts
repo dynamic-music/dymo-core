@@ -62,10 +62,19 @@ export class ConstraintLoader {
       let right = this.recursiveLoadExpression(this.store.findObject(expressionUri, uris.RIGHT));
       return ExpressionTools.toOperatorNode(expressionType, [left, right]);
     } else if (expressionType === uris.FUNCTIONAL_TERM) {
-      let name = this.store.findObjectValue(expressionUri, uris.FUNC);
-      //console.log(name, this.store.findObject(expressionUri, uris.T_ARGS))
+      let funcObj = this.store.findObject(expressionUri, uris.FUNC);
+      let fn;
+      if (this.store.findObject(funcObj, uris.TYPE) === uris.NAMED_FUNCTION) {
+        fn = this.store.findObjectValue(funcObj, uris.NAME);
+      } else {
+        fn = this.recursiveLoadExpression(funcObj);
+      }
       let args = this.recursiveLoadExpression(this.store.findObject(expressionUri, uris.ARGS));
-      return new math.expression.node.FunctionNode(name, [args]);
+      return new math.expression.node.FunctionNode(fn, [args]);
+    } else if (expressionType === uris.ACCESSOR) {
+      let object = this.store.findObjectValue(expressionUri, uris.OBJECT);
+      let property = this.store.findObjectValue(expressionUri, uris.PROPERTY);
+      return new math.expression.node.AccessorNode(object, property);
     } else if (expressionType === uris.VARIABLE) {
       let name = this.store.findObjectValue(expressionUri, uris.VAR_NAME);
       return new math.expression.node.SymbolNode(name);

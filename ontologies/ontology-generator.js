@@ -109,7 +109,7 @@ function createExpressionOntology(path) {
 	addClass("NamedFunction");//has a sch:name property (string)
 	addClass("PropertyFunction");
 	addProperty({term:"prop", iri:"prop", type:"@vocab"}, "PropertyFunction", prefixes["rdf"]+"Property", true);
-	addUnionClass("Function", ["NamedFunction", "Accessor"]);
+	addUnionClass("Function", ["PropertyFunction", "NamedFunction", "Accessor"]);
 	addProperty({term:"func", iri:"func"}, "FunctionalTerm", "Function", false, true);
 	addProperty({term:"args", iri:"args"}, "FunctionalTerm", "Variable", true);
 

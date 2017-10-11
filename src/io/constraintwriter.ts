@@ -69,22 +69,22 @@ export class ConstraintWriter {
       let fnNode = <FunctionNode>mathjsTree;
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.FUNCTIONAL_TERM);
-      if (fnNode.fn.isAccessorNode) {
-        let accNode = <AccessorNode>fnNode.fn;
-        let accessor = this.store.createBlankNode();
-        this.store.addTriple(accessor, u.TYPE, u.ACCESSOR);
-        this.store.addTriple(accessor, u.OBJECT, accNode.object);
-        this.store.addTriple(accessor, u.PROPERTY, accNode.index);
-        this.store.addTriple(currentNodeUri, u.FUNC, accessor);
+      let func;
+      if (fnNode.fn.name) {
+        func = this.store.createBlankNode();
+        this.store.addTriple(currentNodeUri, u.FUNC, func);
+        this.store.addTriple(func, u.TYPE, u.NAMED_FUNCTION);
+        this.store.setValue(func, u.NAME, fnNode.fn.name);
       } else {
-        this.store.setValue(currentNodeUri, u.FUNC, fnNode.fn.name);
+        func = this.recursiveAddExpression(fnNode.fn);
       }
+      this.store.addTriple(currentNodeUri, u.FUNC, func);
       this.store.setTriple(currentNodeUri, u.ARGS, this.recursiveAddExpression(mathjsTree.args[0]));
     } else if (isConditionalNode(mathjsTree)) {
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.CONDITIONAL);
       const {condition, trueExpr, falseExpr} = mathjsTree;
-      const add = (predicate: string, node: MathjsNode) => 
+      const add = (predicate: string, node: MathjsNode) =>
         this.addTripleOrSetValue(
           currentNodeUri,
           predicate,
@@ -93,6 +93,12 @@ export class ConstraintWriter {
       add(u.ANTECEDENT, condition);
       add(u.CONSEQUENT, trueExpr);
       add(u.ALTERNATIVE, falseExpr);
+    } else if (mathjsTree.isAccessorNode) {
+      let accNode = <AccessorNode>mathjsTree;
+      currentNodeUri = this.store.createBlankNode();
+      this.store.addTriple(currentNodeUri, u.TYPE, u.ACCESSOR);
+      this.store.addTriple(currentNodeUri, u.OBJECT, accNode.object);
+      this.store.addTriple(currentNodeUri, u.PROPERTY, accNode.index);
     } else if (mathjsTree.isSymbolNode) {
       currentNodeUri = this.store.findSubject(u.VAR_NAME, mathjsTree.name);
     } else if (mathjsTree.isConstantNode) {
