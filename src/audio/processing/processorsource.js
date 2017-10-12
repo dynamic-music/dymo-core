@@ -2,7 +2,7 @@
  * A source that allows realtime time stretching.
  * @constructor
  */
-function AudioProcessorSource(audioContext, buffer, destination) {
+function TimestretcherSource(audioContext, buffer, destination) {
 	
 	var self = this;
 	

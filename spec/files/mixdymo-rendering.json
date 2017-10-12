@@ -16,7 +16,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b52"
+              "@id": "_:b53"
             },
             "func": {
               "@type": "NamedFunction",
@@ -24,11 +24,11 @@
             }
           },
           "right": {
-            "@id": "_:b53"
+            "@id": "_:b54"
           }
         },
         "vars": {
-          "@id": "_:b53",
+          "@id": "_:b54",
           "@type": "Variable",
           "varName": "t",
           "varValue": {
@@ -38,7 +38,7 @@
         }
       },
       "vars": {
-        "@id": "_:b52",
+        "@id": "_:b53",
         "@type": "Variable",
         "varName": "r",
         "varValue": {
@@ -67,11 +67,11 @@
             }
           },
           "right": {
-            "@id": "_:b46"
+            "@id": "_:b47"
           }
         },
         "vars": {
-          "@id": "_:b46",
+          "@id": "_:b47",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -225,7 +225,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b6"
+              "@id": "_:b3"
             },
             "func": {
               "@type": "NamedFunction",
@@ -260,19 +260,19 @@
       "body": {
         "@type": "ForAll",
         "body": {
-          "@id": "_:b3",
           "@type": "EqualTo",
           "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
-            "@id": "_:b4",
+            "@id": "_:b2",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b6"
+              "@id": "_:b3"
             },
             "func": {
+              "@id": "_:b4",
               "@type": "NamedFunction",
               "name": "Fade"
             }
@@ -281,9 +281,10 @@
             "@id": "_:b5",
             "@type": "Division",
             "left": {
+              "@id": "_:b6",
               "@type": "Subtraction",
               "left": {
-                "@id": "_:b2"
+                "@id": "_:b8"
               },
               "right": {
                 "@type": "Constant",
@@ -303,7 +304,7 @@
           }
         },
         "vars": {
-          "@id": "_:b2",
+          "@id": "_:b8",
           "@type": "Variable",
           "varName": "a",
           "varValue": {
@@ -314,7 +315,7 @@
         }
       },
       "vars": {
-        "@id": "_:b6",
+        "@id": "_:b3",
         "@type": "Variable",
         "varName": "m",
         "varValue": {

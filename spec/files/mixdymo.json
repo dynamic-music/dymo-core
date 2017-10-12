@@ -99,7 +99,7 @@
             "left": {
               "@type": "Division",
               "left": {
-                "@id": "_:b32"
+                "@id": "_:b31"
               },
               "right": {
                 "@type": "Constant",
@@ -122,7 +122,7 @@
           }
         },
         "vars": {
-          "@id": "_:b32",
+          "@id": "_:b31",
           "@type": "Variable",
           "varName": "t",
           "varValue": {

@@ -70,7 +70,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b1"
+              "@id": "_:b3"
             },
             "func": {
               "@type": "NamedFunction",
@@ -78,7 +78,7 @@
             }
           },
           "right": {
-            "@id": "_:b5"
+            "@id": "_:b0"
           }
         },
         "vars": {
@@ -96,7 +96,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b1"
+              "@id": "_:b3"
             },
             "func": {
               "@type": "NamedFunction",
@@ -120,31 +120,31 @@
     {
       "@type": "ForAll",
       "body": {
-        "@id": "_:b3",
         "@type": "ForAll",
         "body": {
+          "@id": "_:b1",
           "@type": "EqualTo",
           "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
+            "@id": "_:b2",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b1"
+              "@id": "_:b3"
             },
             "func": {
-              "@id": "_:b2",
               "@type": "NamedFunction",
               "name": "Amplitude"
             }
           },
           "right": {
-            "@id": "_:b5"
+            "@id": "_:b0"
           }
         },
         "vars": {
-          "@id": "_:b5",
+          "@id": "_:b0",
           "@type": "Variable",
           "varName": "c",
           "varValue": {
@@ -155,7 +155,7 @@
         }
       },
       "vars": {
-        "@id": "_:b1"
+        "@id": "_:b3"
       }
     }
   ],
@@ -171,14 +171,14 @@
         "left": {
           "@type": "FunctionalTerm",
           "args": {
-            "@id": "_:b1",
+            "@id": "_:b3",
             "@type": "Variable",
             "varExpr": {
               "@type": "EqualTo",
               "left": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b1"
+                  "@id": "_:b3"
                 },
                 "func": {
                   "@type": "NamedFunction",
