@@ -1,4 +1,5 @@
 import { SoundTouchStretcher } from './processing/soundtouch-stretcher';
+import { TimeStretcher } from './processing/time-stretcher';
 
 /**
  * Offers some audio processing functions such as time stretching.
@@ -8,9 +9,12 @@ export class AudioProcessor {
 	private audioContext;
 	private timeStretcher;
 
-	constructor(audioContext) {
+	constructor(
+		audioContext: AudioContext,
+		stretcher: TimeStretcher = new SoundTouchStretcher()
+	) {
 		this.audioContext = audioContext;
-		this.timeStretcher = new SoundTouchStretcher(audioContext);
+		this.timeStretcher = stretcher
 	}
 
 	timeStretch(buffer, ratio) {

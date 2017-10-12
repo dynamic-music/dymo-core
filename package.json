@@ -36,6 +36,7 @@
   "dependencies": {
     "arrayutils": "*",
     "jsonld": "^0.4.12",
+    "kali": "github:LucasThompson/Kali#b8c0f3f57d7e4d54117fe25ef862edbee9417a81",
     "lodash": "^4.17.4",
     "logicjs": "git://github.com/florianthalmann/LogicJS.git",
     "mathjs": "*",
