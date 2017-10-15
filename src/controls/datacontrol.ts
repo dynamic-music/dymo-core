@@ -2,6 +2,7 @@ import { DATA_CONTROL, AUTO_CONTROL_TRIGGER } from '../globals/uris';
 import { GlobalVars } from '../globals/globals';
 import { DymoStore } from '../io/dymostore';
 import { AutoControl } from './autocontrol';
+import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 /**
  * Data controls that fetch data online to set their values.
@@ -11,7 +12,7 @@ export class DataControl extends AutoControl {
 	private url;
 	private jsonMap;
 
-	constructor(uri, url, jsonMap, store: DymoStore) {
+	constructor(uri, url, jsonMap, store: DymoStore, private fetcher: Fetcher = new FetchFetcher()) {
 		super(uri, DATA_CONTROL, store);
 		this.frequency = 60000;
 		this.url = url;
@@ -20,8 +21,7 @@ export class DataControl extends AutoControl {
 	}
 
 	update() {
-		fetch(this.url)
-		.then(res => res.json())
+		this.fetcher.fetchJson(this.url)
 		.then(json => this.jsonMap(json))
 		.then(mapped => {
 			if (GlobalVars.LOGGING_ON) {

@@ -8,6 +8,7 @@ import { DYMO_CONTEXT, DYMO_SIMPLE_CONTEXT } from '../globals/contexts'
 import { URI_TO_TERM } from '../globals/terms'
 import { JsonGraph, JsonEdge } from './jsongraph'
 import { AttributeInfo } from '../globals/types'
+import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 /**
  * A graph store for dymos based on EasyStore.
@@ -23,8 +24,8 @@ export class DymoStore extends EasyStore {
 	private dymoBasePaths = {};
 
 	//creates the store
-	constructor() {
-		super();
+	constructor(fetcher: Fetcher = new FetchFetcher()) {
+		super(fetcher);
 	}
 
 	//loads some basic ontology files

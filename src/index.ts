@@ -6,6 +6,7 @@ export { GlobalVars } from './globals/globals';
 export { DymoManager } from './manager';
 export { JsonGraph, JsonEdge } from './io/jsongraph';
 export { UIControl } from './controls/uicontrol';
+export { Fetcher } from './util/fetcher';
 
 //generator
 import * as globals from './generator/globals';

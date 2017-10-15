@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import { promises as jsonld } from 'jsonld';
 import { flattenArray, removeDuplicates } from 'arrayutils';
 import { RDFS_URI, TYPE, FIRST, REST, NIL, VALUE, DYMO, RENDERING } from '../globals/uris';
+import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 //limited interface to ensure optimal use here!
 export interface N3Store {
@@ -42,6 +43,8 @@ export class EasyStore {
 	private valueObservers = {};
 	private typeObservers = {};
 	private valueBuffer = {};
+  
+  constructor(private fetcher: Fetcher = new FetchFetcher()) {}
 
 	size(): number {
 		return this.store.size;
@@ -638,8 +641,7 @@ export class EasyStore {
 	}
 
 	loadFileIntoStore(path): Promise<any> {
-		return fetch(path, { mode:'cors' })
-			.then(response => response.text())
+		return this.fetcher.fetchText(path)
 			.then(data => this.loadData(data))
 			.catch(err => console.log(err));
 	}

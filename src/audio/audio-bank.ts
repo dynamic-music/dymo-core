@@ -1,6 +1,8 @@
+import { Fetcher, FetchFetcher } from '../util/fetcher';
+
 export class AudioBank {
 
-  constructor(private audioContext: AudioContext) {}
+  constructor(private audioContext: AudioContext, private fetcher: Fetcher = new FetchFetcher()) {}
 
   private buffers = new Map<string, AudioBuffer>();
 
@@ -19,7 +21,13 @@ export class AudioBank {
     return new Promise(resolve => {
       //only add if not there yet..
       if (!this.buffers.get(filePath)) {
-        this.loadAudio(filePath)
+        this.fetcher.fetchArrayBuffer(filePath)
+          .then(r => new Promise<AudioBuffer>((resolve, reject) => {
+            if (this.audioContext) {
+              //need to keep this syntax for node web-audio-api (used in tests)
+              this.audioContext.decodeAudioData(r, buffer => resolve(buffer), error => reject(error));
+            }
+          }))
           .then(buffer => {
             this.buffers.set(filePath, buffer);
             resolve(this.buffers.get(filePath));
@@ -29,55 +37,6 @@ export class AudioBank {
         resolve(this.buffers.get(filePath));
       }
     });
-  }
-
-  private loadAudio(path): Promise<AudioBuffer> {
-    return fetch(path, {
-      //mode:'cors',
-      /*headers: new Headers({
-        'Content-Type': 'arraybuffer'
-      })*/
-    })
-    .then(r => {
-      if (r.ok) {
-        return this.toArrayBuffer(r)
-        .then(r => new Promise<AudioBuffer>((resolve, reject) => {
-          if (this.audioContext) {
-            //need to keep this syntax for node web-audio-api (used in tests)
-            this.audioContext.decodeAudioData(r, buffer => resolve(buffer), error => reject(error));
-          }
-        }))
-        .catch(e => Promise.reject(e));
-      } else {
-        return Promise.reject(r.status + " " + r.statusText + " " + path);
-      }
-    });
-
-  }
-
-  private toArrayBuffer(response) {
-    if (response.arrayBuffer) {
-      return response.arrayBuffer();
-    } else {
-      // isomorphic-fetch does not support response.arrayBuffer
-      return new Promise((resolve, reject) => {
-        let chunks = [];
-        let bytes = 0;
-
-        response.body.on('error', err => {
-          reject("invalid audio url");
-        });
-
-        response.body.on('data', chunk => {
-          chunks.push(chunk);
-          bytes += chunk.length;
-        });
-
-        response.body.on('end', () => {
-          resolve(Buffer.concat(chunks));
-        });
-      });
-    }
   }
 
 }

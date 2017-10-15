@@ -1,7 +1,7 @@
 import { Kali } from 'kali';
 import { TimeStretcher } from './time-stretcher';
 
-class KaliStretcher extends TimeStretcher {
+export class KaliStretcher extends TimeStretcher {
   timeStretch(
     sourceBuffer: AudioBuffer,
     goalBuffer: AudioBuffer,

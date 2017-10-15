@@ -1,4 +1,5 @@
 import { SoundTouchStretcher } from './processing/soundtouch-stretcher';
+import { KaliStretcher } from './processing/kali-stretcher';
 import { TimeStretcher } from './processing/time-stretcher';
 
 /**
@@ -11,7 +12,7 @@ export class AudioProcessor {
 
 	constructor(
 		audioContext: AudioContext,
-		stretcher: TimeStretcher = new SoundTouchStretcher()
+		stretcher: TimeStretcher = new KaliStretcher()
 	) {
 		this.audioContext = audioContext;
 		this.timeStretcher = stretcher

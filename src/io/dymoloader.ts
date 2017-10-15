@@ -19,6 +19,7 @@ import { BrownianControl } from '../controls/auto/browniancontrol'
 import { RampControl } from '../controls/auto/rampcontrol'
 import { ConstraintLoader } from './constraintloader';
 import { Constraint } from '../model/constraint';
+import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 export interface LoadedStuff {
   dymoUris: string[],
@@ -42,7 +43,7 @@ export class DymoLoader {
   private currentBasePath = '';
   private latestLoadedStuff: LoadedStuff;
 
-  constructor(dymoStore) {
+  constructor(dymoStore: DymoStore, private fetcher: Fetcher = new FetchFetcher()) {
     this.store = dymoStore;
     this.resetLatestLoadedStuff();
   }
@@ -61,8 +62,7 @@ export class DymoLoader {
     //TODO now simply takes path of first file as reference, CHANGE!!
     this.currentBasePath = fileUris[0].substring(0, fileUris[0].lastIndexOf('/')+1);
     return Promise.all(
-      fileUris.map(f => fetch(f, { mode:'cors' })
-        .then(response => response.text())
+      fileUris.map(f => this.fetcher.fetchText(f)
         .then(jsonld => this.store.loadData(jsonld)))
     )
   }
@@ -190,7 +190,7 @@ export class DymoLoader {
       var url = this.store.findObjectValue(uri, uris.HAS_URL);
       var jsonMapString = String(this.store.findObjectValue(uri, uris.HAS_JSON_MAP));
       var jsonMap = new Function("json", jsonMapString);
-      control = new DataControl(uri, url, jsonMap, this.store);
+      control = new DataControl(uri, url, jsonMap, this.store, this.fetcher);
     }
     //TODO implement in better way (only works for sensor controls)
     if (this.store.findObjectValue(uri, uris.IS_SMOOTH) && control.setSmooth) {

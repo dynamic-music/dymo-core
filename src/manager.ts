@@ -3,6 +3,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 import { GlobalVars } from './globals/globals'
 import * as uris from './globals/uris'
+import { Fetcher, FetchFetcher } from './util/fetcher'
 import { Rendering } from './model/rendering'
 import { AudioBank } from './audio/audio-bank';
 import { Scheduler } from './audio/scheduler'
@@ -41,10 +42,10 @@ export class DymoManager {
 	private graphs: JsonGraphSubject[] = [];
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
-	constructor(audioContext = createAudioContext(), scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string) {
-		this.store = new DymoStore();
-		this.loader = new DymoLoader(this.store);
-		this.audioBank = new AudioBank(audioContext);
+	constructor(audioContext = createAudioContext(), scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string, fetcher: Fetcher = new FetchFetcher()) {
+		this.store = new DymoStore(fetcher);
+		this.loader = new DymoLoader(this.store, fetcher);
+		this.audioBank = new AudioBank(audioContext, fetcher);
 		this.scheduler = new Scheduler(audioContext, this.audioBank, this.store);
 		if (optimizedMode) {
 			GlobalVars.OPTIMIZED_MODE = true;
@@ -108,7 +109,7 @@ export class DymoManager {
 	}
 
 	loadDymoFromJson(fileUri: string): Promise<string[]> {
-		return new DymoLoader(this.store).loadFromFiles(fileUri)
+		return this.loader.loadFromFiles(fileUri)
 			.then(loadedStuff => loadedStuff.dymoUris);
 	}
 
