@@ -12,15 +12,15 @@ export class AccelerometerControl extends SensorControl {
 			"$cordovaDeviceMotion",
 			"watchAcceleration",
 			acceleration => {
-				var newValue;
+				/*var newValue;
 				if (dimension == ACCELEROMETER_X) {
 					newValue = acceleration.x;
 				} else if (dimension == ACCELEROMETER_Y) {
 					newValue = acceleration.y;
 				} else {
 					newValue = acceleration.z;
-				}
-				this.updateValue(this.normalizeAcceleration(newValue));
+				}*/
+				this.updateValue(this.normalizeAcceleration(acceleration));
 			},
 			store
 		);
