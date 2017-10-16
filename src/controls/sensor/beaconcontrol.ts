@@ -24,7 +24,7 @@ export class BeaconControl extends SensorControl {
 	}
 
 	startUpdate() {
-		let region = this.getSensor().createBeaconRegion("smpBeacons", this.uuid)
+		/*let region = this.getSensor().createBeaconRegion("smpBeacons", this.uuid)
 		this.getSensor().startRangingBeaconsInRegion(region);
 		this.getScope().$on("$cordovaBeacon:didRangeBeaconsInRegion", (event, region) => {
 			for (let b in region.beacons) {
@@ -33,7 +33,7 @@ export class BeaconControl extends SensorControl {
 					this.updateValue(currentB.accuracy);
 				}
 			}
-		});
+		});*/
 	}
 
 }

@@ -1,4 +1,3 @@
-import { Observable } from 'rxjs/Rx';
 import { AUTO_CONTROL_FREQUENCY } from '../globals/uris';
 import { DymoStore } from '../io/dymostore';
 import { Control } from '../model/control';
@@ -7,17 +6,15 @@ import { Ramp } from '../util/ramp';
 export var UNAVAILABLE = "unavailable";
 export var CALIBRATING = "calibrating";
 
-export interface Sensor {
-	watch: Observable<number>;
-}
-
 /**
  * Sensor controls that read their values from sensors.
  */
 export class SensorControl extends Control {
 
-	private sensor: Sensor;
-	private subscription;
+	private $scope;
+	private $ngSensor;
+	private sensorName;
+	private watchFunctionName;
 	private updateFunction;
 	private resetFunction;
 	private options;
@@ -31,19 +28,12 @@ export class SensorControl extends Control {
 
 	private watch;
 
-	constructor(typeUri: string, sensorName, watchFunctionName, updateFunction, store: DymoStore, resetFunction?: Function, options?: Object) {
-		super(typeUri, typeUri, typeUri, store);
+	constructor(uri, sensorName, watchFunctionName, updateFunction, store: DymoStore, resetFunction?: Function, options?: Object) {
+		super(uri, uri, uri, store);
+		this.watchFunctionName = watchFunctionName;
 		this.updateFunction = updateFunction;
 		this.resetFunction = resetFunction;
 		this.options = options;
-	}
-
-	setSensor(sensor: Sensor) {
-		this.sensor = sensor;
-	}
-
-	getSensor() {
-		return this.sensor;
 	}
 
 	getStatus() {
@@ -84,9 +74,16 @@ export class SensorControl extends Control {
 			var freq = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 			this.options = { frequency: freq? freq: 100 };
 		}
-		if (this.sensor) {
-			this.subscription = this.sensor.watch.subscribe(data => {
-				this.updateFunction(data);
+		if (this.$ngSensor) {
+			this.watch = this.$ngSensor[this.watchFunctionName](this.options);
+			this.watch.then(null, this.onError, result => {
+				this.updateFunction(result);
+				/*if (this.$scope) {
+					//scope apply here whenever something changes
+					setTimeout(function() {
+						this.$scope.$apply();
+					}, 10);
+				}*/
 			});
 		} else {
 			console.log(this.uri + " " + UNAVAILABLE);
@@ -152,10 +149,29 @@ export class SensorControl extends Control {
 		});
 	}
 
+	getSensorName() {
+		return this.sensorName;
+	}
+
+	getSensor() {
+		return this.$ngSensor;
+	}
+
+	getScope() {
+		return this.$scope;
+	}
+
+	setScopeNgSensorAndStart(scope, ngSensor) {
+		this.$scope = scope;
+		this.$ngSensor = ngSensor;
+		// Wait for device API libraries to load (Cordova needs this)
+		document.addEventListener("deviceready", this.startUpdate, false);
+	}
+
 	reset() {
-		if (this.subscription) {
-			this.subscription.unsubscribe();
-			this.subscription = null;
+		if (this.watch) {
+			this.$ngSensor.clearWatch(this.watch);
+			this.watch = null;
 			if (this.resetFunction) {
 				this.resetFunction();
 			}

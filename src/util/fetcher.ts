@@ -7,29 +7,29 @@ export interface Fetcher {
 }
 
 export class FetchFetcher implements Fetcher {
-  
+
   fetchText(url: string): Promise<string> {
     return this.fetch(url)
       .then(r => r.text());
   }
-  
+
   fetchJson(url: string): Promise<{}> {
     return this.fetch(url)
       .then(r => r.json());
   }
-  
+
   fetchArrayBuffer(url: string): Promise<ArrayBuffer> {
     return this.fetch(url)
     .then(r => {
       if (r.ok) {
         return this.toArrayBuffer(r)
-        .catch(e => Promise.reject(e));
+          .catch(e => Promise.reject(e));
       } else {
         return Promise.reject(r.status + " " + r.statusText + " " + url);
       }
     });
   }
-  
+
   private fetch(url: string): Promise<Response> {
     return fetch(url, { mode:'cors' });
   }
@@ -58,5 +58,5 @@ export class FetchFetcher implements Fetcher {
       });
     }
   }
-  
+
 }
