@@ -37,7 +37,7 @@ export class DymoManager {
 	private dymoUris: string[] = [];
 	private rendering: Rendering;
 	private uiControls: UIControl[] = [];
-	private sensorControls = {};
+	private sensorControls: SensorControl[] = [];
 	private reverbFile: string;
 	private graphs: JsonGraphSubject[] = [];
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
