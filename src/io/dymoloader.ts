@@ -60,11 +60,14 @@ export class DymoLoader {
 
   loadIntoStore(...fileUris: string[]): Promise<any> {
     //TODO now simply takes path of first file as reference, CHANGE!!
-    this.currentBasePath = fileUris[0].substring(0, fileUris[0].lastIndexOf('/')+1);
-    return Promise.all(
-      fileUris.map(f => this.fetcher.fetchText(f)
-        .then(jsonld => this.store.loadData(jsonld)))
-    )
+    const shouldLoad = fileUris.length > 0;
+    if (shouldLoad) {
+        this.currentBasePath = fileUris[0].substring(0, fileUris[0].lastIndexOf('/') + 1);
+        return Promise.all(fileUris.map(f => this.fetcher.fetchText(f)
+            .then(jsonld => this.store.loadData(jsonld))));
+    } else {
+        return Promise.resolve();
+    }
   }
 
   private resetLatestLoadedStuff(): LoadedStuff {
