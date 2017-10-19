@@ -12,7 +12,7 @@ export class BeaconControl extends SensorControl {
 	private minor;
 
 	constructor(uuid, major, minor, store: DymoStore) {
-		super(BEACON,
+		super(null, BEACON,
 			"$cordovaBeacon",
 			null,
 			function() {},

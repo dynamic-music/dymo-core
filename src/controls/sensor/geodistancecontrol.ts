@@ -10,7 +10,7 @@ export class DistanceControl extends SensorControl {
 	private reference;
 
 	constructor(store: DymoStore) {
-		super(GEOLOCATION_DISTANCE,
+		super(null, GEOLOCATION_DISTANCE,
 			"$cordovaGeolocation",
 			"watchPosition",
 			position => {

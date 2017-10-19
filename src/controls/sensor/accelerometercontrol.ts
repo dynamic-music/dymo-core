@@ -7,8 +7,8 @@ import { DymoStore } from '../../io/dymostore';
  */
 export class AccelerometerControl extends SensorControl {
 
-	constructor(dimension, store: DymoStore) {
-		super(dimension,
+	constructor(uri: string, dimension: string, store: DymoStore) {
+		super(uri, dimension,
 			"$cordovaDeviceMotion",
 			"watchAcceleration",
 			acceleration => {

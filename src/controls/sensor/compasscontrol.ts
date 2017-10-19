@@ -8,7 +8,7 @@ import { DymoStore } from '../../io/dymostore';
 export class CompassControl extends SensorControl {
 
 	constructor(store: DymoStore) {
-		super(COMPASS_HEADING,
+		super(null, COMPASS_HEADING,
 			"$cordovaDeviceOrientation",
 			"watchHeading",
 			heading => this.updateValue(heading.trueHeading),

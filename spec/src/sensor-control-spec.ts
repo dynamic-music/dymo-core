@@ -49,6 +49,9 @@ describe('SensorControl Integration (Manager downwards)', () => {
     expect(accX.getValue()).toBe(10);
     expect(store.findObjectValue(accX.getUri(), Uri.VALUE)).toBe(10);
     const slider = sliders[0];
+    expect(store.getValueObservers(slider.getUri(), Uri.VALUE).length).toBe(2);
+    const hmm = store.getValueObservers(slider.getUri(), Uri.VALUE);
+    expect(store.getValueObservers(accX.getUri(), Uri.VALUE).length).toBe(2);
     expect(slider.getValue()).toBe(10);
     expect(store.findParameterValue('dymo1', Uri.AMPLITUDE)).toBe(10);
   });

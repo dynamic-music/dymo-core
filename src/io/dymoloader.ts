@@ -161,7 +161,7 @@ export class DymoLoader {
   private getControl(uri: string, name: string, type: string): Control|UIControl {
     var control;
     if (type == uris.ACCELEROMETER_X || type == uris.ACCELEROMETER_Y || type == uris.ACCELEROMETER_Z) {
-      control = new AccelerometerControl(type, this.store);
+      control = new AccelerometerControl(uri, type, this.store);
     } else if (type == uris.TILT_X || type == uris.TILT_Y) {
       control = new TiltControl(type, this.store);
     } else if (type == uris.GEOLOCATION_LATITUDE || type == uris.GEOLOCATION_LONGITUDE) {
