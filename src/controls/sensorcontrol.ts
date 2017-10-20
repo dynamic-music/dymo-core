@@ -18,9 +18,6 @@ export class SensorControl extends Control {
 
 	private sensor: Sensor;
 	private subscription;
-	private updateFunction;
-	private resetFunction;
-	private options;
 	private referenceValue;
 	private referenceAverageOf;
 	private averageOf;
@@ -31,11 +28,8 @@ export class SensorControl extends Control {
 
 	private watch;
 
-	constructor(uri: string, typeUri: string, sensorName, watchFunctionName, updateFunction, store: DymoStore, resetFunction?: Function, options?: Object) {
+	constructor(uri: string, typeUri: string, store: DymoStore) {
 		super(uri, typeUri, typeUri, store);
-		this.updateFunction = updateFunction;
-		this.resetFunction = resetFunction;
-		this.options = options;
 	}
 
 	setSensor(sensor: Sensor) {
@@ -80,14 +74,10 @@ export class SensorControl extends Control {
 	}
 
 	startUpdate() {
-		if (!this.options) {
-			var freq = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
-			this.options = { frequency: freq? freq: 100 };
-		}
+		var freq = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
+		var options = { frequency: freq? freq: 100 };
 		if (this.sensor) {
-			this.subscription = this.sensor.watch.subscribe(data => {
-				this.updateFunction(data);
-			});
+			this.subscription = this.sensor.watch.subscribe(data => this.setValue(data));
 		} else {
 			console.log(this.uri + " " + UNAVAILABLE);
 		}
@@ -156,9 +146,10 @@ export class SensorControl extends Control {
 		if (this.subscription) {
 			this.subscription.unsubscribe();
 			this.subscription = null;
-			if (this.resetFunction) {
+			this.resetReferenceValueAndAverage();
+			/*if (this.resetFunction) {
 				this.resetFunction();
-			}
+			}*/
 		}
 	}
 

@@ -13,12 +13,13 @@ export module DymoTemplates {
 			.then(r => dymoUri);
 	}
 
-	export function createMultiSourceDymo(generator, parentDymo, dymoType, sources, featureUris): Promise<string> {
+	export function createMultiSourceDymo(generator: DymoGenerator, parentDymo, dymoType, sources, featureUris): Promise<string> {
 		var conjunctionDymo = generator.addDymo(parentDymo, null, dymoType);
-		var loadSources = sources.map((s,i) => new Promise(resolve => {
+		var loadSources = sources.map((s,i) => {
 			var dymoUri = generator.addDymo(conjunctionDymo, s);
-			return loadMultipleFeatures(generator, dymoUri, featureUris[i], null);
-		}));
+			return loadMultipleFeatures(generator, dymoUri, featureUris[i], null)
+				.then(fs => fs.forEach(f => generator.addFeature(f.name, f.data, dymoUri)));
+		});
 		return Promise.all(loadSources)
 			.then(r => conjunctionDymo);
 	}
@@ -84,7 +85,7 @@ export module DymoTemplates {
 		loadMultipleFeatures(generator, null, uris, conditions).then(() => onLoad());
 	}
 
-	function loadMultipleFeatures(generator: DymoGenerator, dymoUri: string, featureUris: string[], conditions: string[]): Promise<any> {
+	function loadMultipleFeatures(generator: DymoGenerator, dymoUri: string, featureUris: string[], conditions: string[]): Promise<Feature[]> {
 		var loader = new FeatureLoader();
 		var loadFeatures = featureUris.map((f,i) =>
 			loader.loadFeature(f, conditions ? conditions[i] : null)

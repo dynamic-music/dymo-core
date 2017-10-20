@@ -1,6 +1,7 @@
 import { Parser, Store, Util } from 'n3';
 import { N3Store } from '../io/easystore';
 import * as uris from '../globals/uris';
+import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 export interface Feature {
 	name: string,
@@ -32,6 +33,8 @@ export class FeatureLoader {
 	private vampOntology = "http://purl.org/ontology/vamp/";
 	private dublincoreOntology = "http://purl.org/dc/elements/1.1/";
 
+	constructor(private fetcher: Fetcher = new FetchFetcher()) {}
+
 
 	loadFeature(uriOrJson, labelCondition): Promise<Feature> {
 		if (uriOrJson.constructor == Object) {
@@ -41,8 +44,7 @@ export class FeatureLoader {
 			//just a uri..
 			var fileExtension = uriOrJson.split('.');
 			fileExtension = fileExtension[fileExtension.length-1];
-			return fetch(uriOrJson, { mode: 'cors' })
-				.then(response => response.text())
+			return this.fetcher.fetchText(uriOrJson)
 				.then(text => {
 					if (fileExtension == 'n3') {
 						//this.loadFeatureFromRdf(uriOrJson, labelCondition);

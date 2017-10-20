@@ -4,10 +4,10 @@ import { RandomControl } from '../../src/controls/auto/randomcontrol';
 import { BrownianControl } from '../../src/controls/auto/browniancontrol';
 import { RampControl } from '../../src/controls/auto/rampcontrol';
 import { WeatherControl } from '../../src/controls/data/weathercontrol';
-import { CompassControl } from '../../src/controls/sensor/compasscontrol';
+import { SensorControl } from '../../src/controls/sensorcontrol';
 import { UNAVAILABLE, CALIBRATING } from '../../src/controls/sensorcontrol';
 import { GlobalVars } from '../../src/globals/globals';
-import { AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER } from '../../src/globals/uris';
+import { AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER, COMPASS_HEADING } from '../../src/globals/uris';
 
 describe("a control", function() {
 
@@ -123,7 +123,7 @@ describe("a control", function() {
 
 	// TODO MOVE TO SENSOR CONTROL SPEC
 	it("can create a reference value from the average input", function() {
-		var control = new CompassControl(store);
+		var control = new SensorControl("", COMPASS_HEADING, store);
 		control.setReferenceAverageOf(3);
 		expect(control.getReferenceValue()).toBeUndefined();
 		expect(control.getValue()).toBeUndefined();

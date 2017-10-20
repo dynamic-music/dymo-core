@@ -31,7 +31,8 @@ export class FetchFetcher implements Fetcher {
   }
 
   private fetch(url: string): Promise<Response> {
-    return fetch(url, { mode:'cors' });
+    return fetch(url, { mode:'cors' })
+      .catch(e => Promise.reject(e));
   }
 
   private toArrayBuffer(response): Promise<any> {

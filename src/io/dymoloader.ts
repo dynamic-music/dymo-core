@@ -8,12 +8,7 @@ import { GraphNavigator } from '../navigators/graph'
 import { Control } from '../model/control'
 import { UIControl } from '../controls/uicontrol'
 import { DataControl } from '../controls/datacontrol'
-import { AccelerometerControl } from '../controls/sensor/accelerometercontrol'
-import { TiltControl } from '../controls/sensor/tiltcontrol'
-import { GeolocationControl } from '../controls/sensor/geolocationcontrol'
-import { DistanceControl } from '../controls/sensor/geodistancecontrol'
-import { CompassControl } from '../controls/sensor/compasscontrol'
-import { BeaconControl } from '../controls/sensor/beaconcontrol'
+import { SensorControl } from '../controls/sensorcontrol'
 import { RandomControl } from '../controls/auto/randomcontrol'
 import { BrownianControl } from '../controls/auto/browniancontrol'
 import { RampControl } from '../controls/auto/rampcontrol'
@@ -160,22 +155,17 @@ export class DymoLoader {
 
   private getControl(uri: string, name: string, type: string): Control|UIControl {
     var control;
-    if (type == uris.ACCELEROMETER_X || type == uris.ACCELEROMETER_Y || type == uris.ACCELEROMETER_Z) {
-      control = new AccelerometerControl(uri, type, this.store);
-    } else if (type == uris.TILT_X || type == uris.TILT_Y) {
-      control = new TiltControl(type, this.store);
-    } else if (type == uris.GEOLOCATION_LATITUDE || type == uris.GEOLOCATION_LONGITUDE) {
-      control = new GeolocationControl(type, this.store);
-    }  else if (type == uris.GEOLOCATION_DISTANCE) {
-      control = new DistanceControl(this.store);
-    }  else if (type == uris.COMPASS_HEADING) {
-      control = new CompassControl(this.store);
-    }  else if (type == uris.BEACON) {
+    if (type == uris.ACCELEROMETER_X || type == uris.ACCELEROMETER_Y || type == uris.ACCELEROMETER_Z
+      || type == uris.TILT_X || type == uris.TILT_Y
+      || type == uris.GEOLOCATION_LATITUDE || type == uris.GEOLOCATION_LONGITUDE
+      || type == uris.GEOLOCATION_DISTANCE || type == uris.COMPASS_HEADING) {
+      control = new SensorControl(uri, type, this.store);
+    } /* else if (type == uris.BEACON) {
       var uuid = this.store.findObjectValue(uri, uris.HAS_UUID);
       var major = this.store.findObjectValue(uri, uris.HAS_MAJOR);
       var minor = this.store.findObjectValue(uri, uris.HAS_MINOR);
       control = new BeaconControl(uuid, major, minor, this.store);
-    }  else if (type == uris.SLIDER || type == uris.TOGGLE || type == uris.BUTTON || type == uris.CUSTOM_CONTROL) {
+    }*/ else if (type == uris.SLIDER || type == uris.TOGGLE || type == uris.BUTTON || type == uris.CUSTOM_CONTROL) {
       control = new UIControl(uri, name, type, this.store);
       var init = this.store.findObjectValue(uri, uris.VALUE);
       control.value = init;

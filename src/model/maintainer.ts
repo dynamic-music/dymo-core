@@ -115,6 +115,7 @@ export class Maintainer {
   }
 
   observedValueChanged(uri: string, type: string, value: number | string) {
+    console.log(this.expression.toString(), uri, type, value)
     let changedVars = this.urisAndVars.get(uri);
     if (changedVars && !this.closeTo(<number>value, this.currentValues[changedVars[0]], 1000000)) {//arbitrarily set precision
       changedVars.forEach(v => this.currentValues[v] = value);
