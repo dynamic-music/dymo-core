@@ -75,9 +75,10 @@ export class SensorControl extends Control {
 
 	startUpdate() {
 		var freq = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
-		var options = { frequency: freq? freq: 100 };
 		if (this.sensor) {
-			this.subscription = this.sensor.watch.subscribe(data => this.setValue(data));
+			this.subscription = this.sensor.watch
+				.auditTime(freq)
+				.subscribe(data => this.setValue(data));
 		} else {
 			console.log(this.uri + " " + UNAVAILABLE);
 		}
