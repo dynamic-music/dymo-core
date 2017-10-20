@@ -8,7 +8,7 @@ import { DymoStore } from '../../io/dymostore';
 export class GeolocationControl extends SensorControl {
 
 	constructor(controlName: string, store: DymoStore) {
-		super(controlName,
+		super(null, controlName,
 			"$cordovaGeolocation",
 			"watchPosition",
 			position => {

@@ -10,7 +10,7 @@ export class TiltControl extends SensorControl {
 	private readonly TILT_SENSITIVITY = 0.1;
 
 	constructor(dimension, store: DymoStore) {
-		super(dimension,
+		super(null, dimension,
 			"$cordovaDeviceMotion",
 			"watchAcceleration",
 			acceleration => {

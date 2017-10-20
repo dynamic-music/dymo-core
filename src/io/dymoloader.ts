@@ -60,11 +60,14 @@ export class DymoLoader {
 
   loadIntoStore(...fileUris: string[]): Promise<any> {
     //TODO now simply takes path of first file as reference, CHANGE!!
-    this.currentBasePath = fileUris[0].substring(0, fileUris[0].lastIndexOf('/')+1);
-    return Promise.all(
-      fileUris.map(f => this.fetcher.fetchText(f)
-        .then(jsonld => this.store.loadData(jsonld)))
-    )
+    const shouldLoad = fileUris.length > 0;
+    if (shouldLoad) {
+        this.currentBasePath = fileUris[0].substring(0, fileUris[0].lastIndexOf('/') + 1);
+        return Promise.all(fileUris.map(f => this.fetcher.fetchText(f)
+            .then(jsonld => this.store.loadData(jsonld))));
+    } else {
+        return Promise.resolve();
+    }
   }
 
   private resetLatestLoadedStuff(): LoadedStuff {
@@ -158,7 +161,7 @@ export class DymoLoader {
   private getControl(uri: string, name: string, type: string): Control|UIControl {
     var control;
     if (type == uris.ACCELEROMETER_X || type == uris.ACCELEROMETER_Y || type == uris.ACCELEROMETER_Z) {
-      control = new AccelerometerControl(type, this.store);
+      control = new AccelerometerControl(uri, type, this.store);
     } else if (type == uris.TILT_X || type == uris.TILT_Y) {
       control = new TiltControl(type, this.store);
     } else if (type == uris.GEOLOCATION_LATITUDE || type == uris.GEOLOCATION_LONGITUDE) {

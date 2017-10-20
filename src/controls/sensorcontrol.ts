@@ -31,8 +31,8 @@ export class SensorControl extends Control {
 
 	private watch;
 
-	constructor(typeUri: string, sensorName, watchFunctionName, updateFunction, store: DymoStore, resetFunction?: Function, options?: Object) {
-		super(typeUri, typeUri, typeUri, store);
+	constructor(uri: string, typeUri: string, sensorName, watchFunctionName, updateFunction, store: DymoStore, resetFunction?: Function, options?: Object) {
+		super(uri, typeUri, typeUri, store);
 		this.updateFunction = updateFunction;
 		this.resetFunction = resetFunction;
 		this.options = options;
