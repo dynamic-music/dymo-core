@@ -28,7 +28,6 @@ export class Maintainer {
       this.allVarNames.push(varName);
     });
     //TODO ADD JS
-    console.log(this.expression.toString(), isDirected)
     if (isDirected) {
       this.mathjsCompiledExpression = this.expression.args[1].compile();
     } else {

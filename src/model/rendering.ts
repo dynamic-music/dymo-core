@@ -2,6 +2,7 @@ import { DymoStore } from '../io/dymostore'
 import { PLAY } from '../globals/uris'
 import { DymoNavigator } from '../navigators/navigator'
 import { SubsetNavigator } from '../navigators/subsetnav'
+import { SequentialNavigator } from '../navigators/sequential'
 import { BoundVariable } from '../model/variable';
 
 /**
@@ -14,7 +15,7 @@ export class Rendering {
 
 	constructor(dymoUri: string, private store: DymoStore) {
 		this.dymoUri = dymoUri;
-		this.navigator = new DymoNavigator(this.dymoUri, this.store);//, new SequentialNavigator(dymo));
+		this.navigator = new DymoNavigator(this.dymoUri, this.store, new SequentialNavigator(this.dymoUri, this.store));
 	}
 
 	play() {

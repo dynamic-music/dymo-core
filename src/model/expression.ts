@@ -73,7 +73,7 @@ export class Expression {
           varsAndUris.set(v, objectUriOrVal);
         }
       });
-      console.log(vars, varsAndUris)
+      //console.log(vars, varsAndUris)
       this.currentMaintainers.set(vars, new Maintainer(varsAndUris, featureFreeTree, this.isDirected, store));
     }
   }

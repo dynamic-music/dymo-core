@@ -144,12 +144,19 @@ export class DymoManager {
 	}
 
 	startPlaying() {
-		const nav = this.rendering ? this.rendering.getNavigator() : undefined;
-		this.dymoUris.forEach(d => this.scheduler.play(d, nav));
+		if (this.rendering) {
+			this.rendering.play();
+		} else {
+			this.dymoUris.forEach(d => this.scheduler.play(d));
+		}
 	}
 
 	stopPlaying() {
-		this.dymoUris.forEach(d => this.scheduler.stop(d));
+		if (this.rendering) {
+			this.rendering.stop();
+		} else {
+			this.dymoUris.forEach(d => this.scheduler.stop(d));
+		}
 	}
 
 	getStore(): DymoStore {
