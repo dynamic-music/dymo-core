@@ -1,11 +1,12 @@
-import { GlobalVars } from '../globals/globals'
-import { DymoStore } from '../io/dymostore'
-import * as uris from '../globals/uris'
+import { GlobalVars } from '../globals/globals';
+import { DymoStore } from '../io/dymostore';
+import * as uris from '../globals/uris';
 import { AudioBank } from './audio-bank';
-import { DymoNode } from './node'
-import { DymoSource } from './source'
-import { DymoNavigator } from '../navigators/navigator'
-import { SequentialNavigator } from '../navigators/sequential'
+import { DymoNode } from './node';
+import { DymoSource } from './source';
+import { DymoNavigator } from '../navigators/navigator';
+import { SequentialNavigator } from '../navigators/sequential';
+import { reduce, forEach } from '../util/es5-iter';
 
 /**
  * Plays back a dymo using a navigator.
@@ -111,16 +112,13 @@ export class SchedulerThread {
 		var delay = this.nextEventTime ? this.nextEventTime-this.audioContext.currentTime : GlobalVars.SCHEDULE_AHEAD_TIME;
 		var startTime = this.audioContext.currentTime+delay;
 		//console.log("START", startTime)
-		for (var source of this.currentSources.values()) {
-			//console.log(this.audioContext.currentTime, currentEndTime, startTime)
-			source.play(startTime);
-		}
+		forEach(this.currentSources.values(), source => source.play(startTime));
 		//stop automatically looping sources
-		for (var source of previousSources.values()) {
+		forEach(previousSources.values(), source => {
 			if (this.store.findParameterValue(source.getDymoUri(), uris.LOOP)) {
 				source.stop(startTime);
 			}
-		}
+		});
 		setTimeout(() => this.onChanged(this), delay+50);
 		//create next sources and wait or end and reset
 		this.nextSources = this.createNextSources();
@@ -202,15 +200,25 @@ export class SchedulerThread {
 				return [startTime+timeToNextOnset];
 			}
 		}
-		var maxDuration = 0;
-		var longestSource;
-		for (var source of this.currentSources.values()) {
-			var currentDuration = this.getSourceDuration(source);
-			if (currentDuration > maxDuration) {
-				maxDuration = currentDuration;
-				longestSource = source;
+
+		const {maxDuration, longestSource} = reduce(
+			this.currentSources.values(),
+			(currentLargest, source) => {
+				const currentDuration = this.getSourceDuration(source);
+				if (currentDuration > maxDuration) {
+					return {
+						maxDuration: currentDuration,
+						longestSource: source
+					};
+				}
+				return currentLargest;
+			},
+			{
+				maxDuration: 0,
+				longestSource: null as any
 			}
-		}
+		);
+
 		//console.log(startTime, maxDuration)
 		return [startTime+maxDuration, longestSource];
 	}

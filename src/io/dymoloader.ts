@@ -121,7 +121,7 @@ export class DymoLoader {
   }
 
   private loadConstraints(constraintUris: string[]): Constraint[] {
-    let unloadedUris = _.difference(constraintUris, [...this.constraints.keys()]);
+    let unloadedUris = _.difference(constraintUris, Array.from(this.constraints.keys()));
     let constraints = new ConstraintLoader(this.store).loadConstraints(unloadedUris);
     constraints.forEach(c => c.maintain(this.store));
     unloadedUris.forEach((u,i) => this.constraints.set(u, constraints[i]));
@@ -143,7 +143,7 @@ export class DymoLoader {
   }
 
   private loadControls(...controlUris: string[]): (Control|UIControl)[] {
-    let unloadedControls = _.difference(controlUris, [...this.controls.keys()]);
+    let unloadedControls = _.difference(controlUris, Array.from(this.controls.keys()));
     unloadedControls.forEach(u => {
       var currentName = this.store.findObjectValue(u, uris.NAME);
       currentName = currentName ? currentName : u;

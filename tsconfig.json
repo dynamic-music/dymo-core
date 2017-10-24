@@ -4,7 +4,8 @@
         "allowJs": false,
         "declaration": true,
         "module": "commonjs",
-        "target": "es2015",
+        "target": "es5",
+        "lib": ["es6", "dom"],
         "moduleResolution": "node",
         "noImplicitAny": false
     },

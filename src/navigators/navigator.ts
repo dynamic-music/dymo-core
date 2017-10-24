@@ -1,8 +1,9 @@
 import { DymoStore } from '../io/dymostore';
 import { BoundVariable } from '../model/variable';
-import { SubsetNavigator } from './subsetnav'
-import { OneShotNavigator } from './oneshot'
-import { SequentialNavigator } from './sequential'
+import { SubsetNavigator } from './subsetnav';
+import { OneShotNavigator } from './oneshot';
+import { SequentialNavigator } from './sequential';
+import { find } from '../util/es5-iter';
 
 /**
  * A navigator that follows the order of parts.
@@ -151,10 +152,14 @@ export class DymoNavigator {
 	}*/
 
 	private getNavigator(dymoUri: string): SubsetNavigator {
-		for (var subset of this.subsetNavigators.keys()) {
-			if (subset.getValues(this.store).indexOf(dymoUri) >= 0) {
-				return this.subsetNavigators.get(subset).getCopy(dymoUri, this.getNavigator.bind(this));
-			}
+		const subNavigatorKey = find(this.subsetNavigators.keys(), subset => {
+			return subset.getValues(this.store).indexOf(dymoUri) >= 0;
+		});
+		
+		if (subNavigatorKey) {
+			return this.subsetNavigators.get(
+				subNavigatorKey
+			).getCopy(dymoUri, this.getNavigator.bind(this));
 		}
 		if (dymoUri && this.defaultSubsetNavigator) { //&& DYMO_STORE.findParts(dymoUri).length > 0) {
 			return this.defaultSubsetNavigator.getCopy(dymoUri, this.getNavigator.bind(this));
