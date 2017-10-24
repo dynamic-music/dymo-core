@@ -13,15 +13,16 @@ export abstract class AutoControl extends Control {
 
 	constructor(uri, name, store: DymoStore) {
 		super(uri, name, AUTO_CONTROL, store);
-		this.frequency = 100;
 		this.intervalID = null;
+		this.frequency = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
+		if (!this.frequency) this.frequency = 100;
 		this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency, this);
 		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0, this);
 	}
 
 	startUpdate(newFrequency?: number) {
-		if (!this.frequency || newFrequency) {
-			this.frequency = Number(this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY));
+		if (newFrequency) {
+			this.frequency = newFrequency;
 		}
 		this.update();
 		this.intervalID = setInterval(() => this.update(), this.frequency);
