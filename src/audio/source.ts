@@ -1,5 +1,5 @@
 import { AMPLITUDE, PLAYBACK_RATE, TIME_STRETCH_RATIO, DURATION_RATIO, DURATION, LOOP,
-		TIME_FEATURE, DURATION_FEATURE } from '../globals/uris';
+		TIME_FEATURE, DURATION_FEATURE, PLAY } from '../globals/uris';
 import { GlobalVars } from '../globals/globals';
 import { DymoStore } from '../io/dymostore';
 import { DymoNode } from './node';

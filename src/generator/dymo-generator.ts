@@ -49,10 +49,10 @@ export class DymoGenerator {
 		//this.internalAddFeature("random", null, 0, 1);
 	}
 
-	addRendering(renderingUri = this.getUniqueRenderingUri(), dymoUri = this.currentTopDymo): string {
-		this.currentRenderingUri = renderingUri;
-		this.store.addRendering(renderingUri, dymoUri);
-		return renderingUri;
+	addRendering(dymoUri = this.currentTopDymo): string {
+		this.currentRenderingUri = this.getUniqueRenderingUri();
+		this.store.addRendering(this.currentRenderingUri, dymoUri);
+		return this.currentRenderingUri;
 	}
 
 	addConstraint(constraint: Constraint): string {
