@@ -207,8 +207,8 @@ export module DymoStructureInducer {
 	}
 
   //TODO ADD TO QUANTIZER? or other tool i guess.. its against float errors
-  function getRoundedSum(a, b) {
-    return _.zipWith(a, b, (a,b) => _.round(a+b), 1);
+  function getRoundedSum(a: number[], b: number[]) {
+    return _.zipWith(a, b, (a,b) => _.round(a+b));
     //a.map((ai,i) => _.round(ai + b[i]), 1);
     //_.zipWith(a, b, _.flow([_.add, _.round.curryRight(1)]);
   }
