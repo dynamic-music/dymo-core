@@ -7,6 +7,7 @@ import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER, CONTEX
 import { AudioBank } from './audio-bank';
 import { SchedulerThread } from './thread'
 import { DymoNavigator } from '../navigators/navigator';
+import { Schedulo } from 'schedulo';
 declare const Buffer;
 
 /**
@@ -14,6 +15,7 @@ declare const Buffer;
  */
 export class Scheduler {
 
+	private schedulo = new Schedulo();
 	private threads: SchedulerThread[] = [];
 	private playingDymoUris: BehaviorSubject<string[]> = new BehaviorSubject([]);
 
@@ -112,7 +114,7 @@ export class Scheduler {
 	}
 
 	play(dymoUri, navigator?: DymoNavigator) {
-		var thread = new SchedulerThread(dymoUri, navigator, this.audioContext, this.audioBank, this.convolverSend, this.delaySend, this.updatePlayingDymos.bind(this), this.threadEnded.bind(this), this.store);
+		var thread = new SchedulerThread(dymoUri, this.schedulo, this.updatePlayingDymos.bind(this), this.threadEnded.bind(this), this.store, navigator);
 		this.threads.push(thread);
 	}
 
@@ -134,20 +136,6 @@ export class Scheduler {
 		} else {
 
 		}
-	}
-
-	//returns all sources correponding to the given dymo
-	private getSources(dymoUri) {
-		var sources = [];
-		for (var i = 0; i < this.threads.length; i++) {
-			var currentSources = this.threads[i].getSources(dymoUri);
-			if (currentSources) {
-				for (var j = 0; j < currentSources.length; j++) {
-					sources = sources.concat(currentSources);
-				}
-			}
-		}
-		return sources;
 	}
 
 	private threadEnded(thread) {

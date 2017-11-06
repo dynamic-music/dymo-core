@@ -6,6 +6,14 @@ import { DymoNode } from './node'
 import { DymoSource } from './source'
 import { DymoNavigator } from '../navigators/navigator'
 import { SequentialNavigator } from '../navigators/sequential'
+import { Schedulo, Time, Playback } from 'schedulo';
+import { ScheduloObjectWrapper } from './wrapper';
+
+interface PlayParams {
+	uri: string,
+	sourcePath: string,
+	segment: [number,number]
+}
 
 /**
  * Plays back a dymo using a navigator.
@@ -15,27 +23,18 @@ export class SchedulerThread {
 
 	private dymoUri;
 	private navigator: DymoNavigator;
-	private audioContext;
-	private audioBank: AudioBank;
-	private convolverSend;
-	private delaySend;
 	private onChanged;
 	private onEnded;
 
-	private sources = new Map(); //dymo->list<source>
-	private nodes = new Map(); //dymo->list<nodes>
-	private nextSources;
+	private playingObjects: ScheduloObjectWrapper[] = [];
+	private nextObjects: Map<string, PlayParams>;
 	private timeoutID;
-	private currentSources = new Map();
+	private currentObjects = new Map<string, PlayParams>();
 	private nextEventTime;
 
-	constructor(dymoUri, navigator, audioContext, audioBank: AudioBank, convolverSend, delaySend, onChanged, onEnded, private store: DymoStore) {
+	constructor(dymoUri: string, private schedulo: Schedulo, onChanged: ()=>any, onEnded: ()=>any, private store: DymoStore, navigator?: DymoNavigator) {
 		this.dymoUri = dymoUri;
 		this.navigator = navigator ? navigator : new DymoNavigator(dymoUri, this.store, new SequentialNavigator(dymoUri, this.store));
-		this.audioContext = audioContext;
-		this.audioBank = audioBank;
-		this.convolverSend = convolverSend;
-		this.delaySend = delaySend;
 		this.onChanged = onChanged;
 		this.onEnded = onEnded;
 		//starts automatically
@@ -56,75 +55,52 @@ export class SchedulerThread {
 		return this.navigator;
 	}
 
-	/*this.pause(dymo) {
-		var dymos = dymo.getAllDymosInHierarchy();
-		for (var i = 0, ii = dymos.length; i < ii; i++) {
-			var currentSources = sources.get(dymos[i]);
-			if (currentSources) {
-				for (var j = 0; j < currentSources.length; j++) {
-					currentSources[j].pause();
-				}
-			}
-		}
-	}*/
-
 	stop(dymoUri) {
 		if (dymoUri === this.dymoUri) {
 			clearTimeout(this.timeoutID);
 		}
 		var subDymoUris = this.store.findAllObjectsInHierarchy(dymoUri);
-		for (var i = 0, ii = subDymoUris.length; i < ii; i++) {
-			if (this.nextSources) {
-				var currentNextSource = this.nextSources.get(subDymoUris[i])
-				if (currentNextSource) {
-					currentNextSource.removeAndDisconnect();
-					this.nextSources.delete(subDymoUris[i]);
+		subDymoUris.forEach(uri => {
+			if (this.nextObjects) {
+				if (this.nextObjects.has(uri)) {
+					this.nextObjects.delete(uri);
 				}
-				if (this.nextSources.size <= 0) {
-					this.nextSources = undefined;
+				if (this.nextObjects.size <= 0) {
+					this.nextObjects = undefined;
 				}
 			}
-			var currentSources = this.sources.get(subDymoUris[i]);
-			if (currentSources) {
-				for (var j = 0; j < currentSources.length; j++) {
-					currentSources[j].stop();
-				}
-			}
-		}
+			this.playingObjects.filter(o => o.getUri() === uri).forEach(o => o.stop());
+		})
 	}
 
-	getAllSources() {
-		return this.sources;
-	}
-
-	/** returns the sources correponding to the given dymo */
-	getSources(dymo) {
-		return this.sources.get(dymo);
+	getAllSources(): string[] {
+		return this.playingObjects.map(o => o.getUri());
 	}
 
 	private recursivePlay() {
-		var previousSources = this.currentSources;
+		var previousSources = this.currentObjects;
 		//create sources and init
-		this.currentSources = this.getNextSources();
-		this.registerSources(this.currentSources);
+		this.currentObjects = this.nextObjects ? this.nextObjects : this.getNextPlayParams();
 		//calculate delay and schedule
-		var delay = this.nextEventTime ? this.nextEventTime-this.audioContext.currentTime : GlobalVars.SCHEDULE_AHEAD_TIME;
-		var startTime = this.audioContext.currentTime+delay;
+		var currentTime = this.schedulo.getCurrentTime();
+		var delay = this.nextEventTime ? this.nextEventTime-currentTime : GlobalVars.SCHEDULE_AHEAD_TIME;
+		var startTime = currentTime+delay;
 		//console.log("START", startTime)
-		for (var source of this.currentSources.values()) {
+		for (var source of this.currentObjects.values()) {
 			//console.log(this.audioContext.currentTime, currentEndTime, startTime)
-			source.play(startTime);
-		}
-		//stop automatically looping sources
-		for (var source of previousSources.values()) {
-			if (this.store.findParameterValue(source.getDymoUri(), uris.LOOP)) {
-				source.stop(startTime);
-			}
+			this.schedulo.scheduleAudio(
+				[source.sourcePath],
+				Time.At(startTime),
+				Playback.Oneshot(source.segment[0], source.segment[1])
+			).then(audioObject =>
+				this.playingObjects.push(new ScheduloObjectWrapper(source.uri, audioObject[0], this.store, this.objectEnded.bind(this)))
+			);
+			//source.play(startTime);
 		}
 		setTimeout(() => this.onChanged(this), delay+50);
 		//create next sources and wait or end and reset
-		this.nextSources = this.createNextSources();
-		if (this.nextSources && this.nextSources.size > 0) {
+		this.nextObjects = this.getNextPlayParams();
+		if (this.nextObjects && this.nextObjects.size > 0) {
 			this.nextEventTime = this.getNextEventTime(startTime);
 			var longestSource = this.nextEventTime[1];
 			this.nextEventTime = this.nextEventTime[0];
@@ -132,58 +108,32 @@ export class SchedulerThread {
 			if (longestSource && this.store.findParameterValue(longestSource.getDymoUri(), uris.LOOP)) {
 				this.nextEventTime -= GlobalVars.FADE_LENGTH;
 			}
-			var wakeupTime = (this.nextEventTime-this.audioContext.currentTime-GlobalVars.SCHEDULE_AHEAD_TIME)*1000;
+			var wakeupTime = (this.nextEventTime-currentTime-GlobalVars.SCHEDULE_AHEAD_TIME)*1000;
 			this.timeoutID = setTimeout(() => this.recursivePlay(), wakeupTime);
 		} else {
 			this.nextEventTime = this.getNextEventTime(startTime);
-			var wakeupTime = (this.nextEventTime-this.audioContext.currentTime)*1000;
+			var wakeupTime = (this.nextEventTime-currentTime)*1000;
 			setTimeout(() => {
 				this.endThreadIfNoMoreSources();
 			}, wakeupTime+100);
 		}
 	}
 
-	private getNextSources() {
-		if (!this.nextSources) {
-			//create first sources
-			return this.createNextSources();
-		} else {
-			//switch to next sources
-			return this.nextSources;
-		}
-	}
-
-	private registerSources(newSources) {
-		for (var dymoKey of newSources.keys()) {
-			if (!this.sources.get(dymoKey)) {
-				this.sources.set(dymoKey, []);
-			}
-			this.sources.get(dymoKey).push(newSources.get(dymoKey));
-		}
-	}
-
-	private sourceEnded(source) {
-		var sourceList = this.sources.get(source.getDymoUri());
-		if (sourceList) {
-			sourceList.splice(sourceList.indexOf(source), 1);
-			if (sourceList.length <= 0) {
-				source.removeAndDisconnect();
-				this.sources.delete(source.getDymoUri());
-			}
+	private objectEnded(object: ScheduloObjectWrapper) {
+		let index = this.playingObjects.indexOf(object);
+		if (index >= 0) {
+			this.playingObjects.splice(index, 1);
 			setTimeout(() => this.onChanged(this), 50);
 		}
 		this.endThreadIfNoMoreSources();
 	}
 
 	private endThreadIfNoMoreSources() {
-		if (this.sources.size == 0 && (!this.nextSources || this.nextSources.size == 0)) {
+		if (this.playingObjects.length == 0 && (!this.nextObjects || this.nextObjects.size == 0)) {
 			clearTimeout(this.timeoutID);
 			this.navigator.reset();
 			//remove all nodes (TODO works well but COULD BE DONE SOMEWHERE ELSE FOR EVERY NODE THAT HAS NO LONGER ANYTHING ATTACHED TO INPUT..)
 			var subDymoUris = this.store.findAllObjectsInHierarchy(this.dymoUri);
-			subDymoUris.forEach(uri => {
-				this.nodes.get(uri) ? this.nodes.get(uri).removeAndDisconnect() : null;
-			});
 			if (this.onEnded) {
 				this.onEnded();
 			}
@@ -191,11 +141,11 @@ export class SchedulerThread {
 	}
 
 	private getNextEventTime(startTime) {
-		if (this.nextSources) {
+		if (this.nextObjects) {
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
-			var previousSourceDymoUri = this.currentSources.keys().next().value;
+			var previousSourceDymoUri = this.currentObjects.keys().next().value;
 			var previousOnset = this.store.findParameterValue(previousSourceDymoUri, uris.ONSET);
-			var nextSourceDymoUri = this.nextSources.keys().next().value;
+			var nextSourceDymoUri = this.nextObjects.keys().next().value;
 			var nextOnset = this.store.findParameterValue(nextSourceDymoUri, uris.ONSET);
 			if (!isNaN(nextOnset)) {
 				var timeToNextOnset = Math.max(0, nextOnset-previousOnset);
@@ -204,7 +154,7 @@ export class SchedulerThread {
 		}
 		var maxDuration = 0;
 		var longestSource;
-		for (var source of this.currentSources.values()) {
+		for (var source of this.currentObjects.values()) {
 			var currentDuration = this.getSourceDuration(source);
 			if (currentDuration > maxDuration) {
 				maxDuration = currentDuration;
@@ -224,26 +174,39 @@ export class SchedulerThread {
 		return duration;
 	}
 
-	private createNextSources() {
+	private getNextPlayParams(): Map<string,PlayParams> {
 		var nextParts = this.navigator.getNextParts();
+		var nextObjects = new Map<string,PlayParams>();
 		if (nextParts) {
 			if (GlobalVars.LOGGING_ON) {
 				this.logNextIndices(nextParts);
 			}
-			var nextSources = new Map();
-			for (var i = 0; i < nextParts.length; i++) {
-				var sourcePath = this.store.getSourcePath(nextParts[i]);
+			nextParts.forEach(p => {
+				let sourcePath = this.store.getSourcePath(p);
 				if (sourcePath) {
-					var buffer = this.audioBank.getLoadedBuffer(sourcePath)
-					var newSource = new DymoSource(nextParts[i], this.audioContext, buffer, this.convolverSend, this.delaySend, this.sourceEnded.bind(this), this.store);
-					this.createAndConnectToNodes(newSource);
-					nextSources.set(nextParts[i], newSource);
-				} else {
-					nextSources.set(nextParts[i], new DymoSource(nextParts[i], this.audioContext, null, null, null, this.sourceEnded.bind(this), this.store));
+					nextObjects.set(p, {
+						uri: p,
+						sourcePath: sourcePath,
+						segment: this.calculateSegment(p)
+					});
 				}
-			}
-			return nextSources;
+			})
 		}
+		return nextObjects;
+	}
+
+	private calculateSegment(dymoUri: string): [number, number] {
+		let start = this.store.findFeatureValue(this.dymoUri, uris.TIME_FEATURE);
+		start = start ? start : 0;
+		let durationF = this.store.findFeatureValue(this.dymoUri, uris.DURATION_FEATURE);
+		let durationP = this.store.findParameterValue(this.dymoUri, uris.DURATION);
+		let duration = durationP ? durationP : durationF;
+		//TODO ONLY WORKS IF DURATION PARAM OR FEATURE GIVEN (DELEGATE TO SCHEDULO!!!!!)
+		let durationRatio = this.store.findParameterValue(this.dymoUri, uris.DURATION_RATIO);
+		if (durationRatio && duration) {
+			duration *= durationRatio;
+		}
+		return [start, duration];
 	}
 
 	private logNextIndices(nextParts) {
@@ -255,26 +218,6 @@ export class SchedulerThread {
 				return "top";
 			}
 		}));
-	}
-
-	private createAndConnectToNodes(source) {
-		var currentNode = source;
-		var currentParentDymo = this.store.findParents(source.getDymoUri())[0];
-		while (currentParentDymo) {
-			//parent node already defined, so just connect and exit
-			if (this.nodes.has(currentParentDymo)) {
-				currentNode.connect(this.nodes.get(currentParentDymo).getInput());
-				return;
-			}
-			//parent node doesn't exist, so create entire missing parent hierarchy
-			var parentNode = new DymoNode(currentParentDymo, this.audioContext, this.convolverSend, this.delaySend, this.store);
-			currentNode.connect(parentNode.getInput());
-			this.nodes.set(currentParentDymo, parentNode);
-			currentParentDymo = this.store.findParents(currentParentDymo)[0];
-			currentNode = parentNode;
-		}
-		//no more parent, top dymo reached, connect to main output
-		currentNode.connect(this.audioContext.destination);
 	}
 
 }
