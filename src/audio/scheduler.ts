@@ -22,7 +22,9 @@ export class Scheduler {
 	private convolverSend;
 	private delaySend;
 
-	constructor(private audioContext: AudioContext, private audioBank: AudioBank, private store: DymoStore) { }
+	constructor(private audioContext: AudioContext, private audioBank: AudioBank, private store: DymoStore) {
+		this.schedulo.start();
+	}
 
 	getPlayingDymoUris(): Observable<string[]> {
 		return this.playingDymoUris.asObservable();
@@ -143,7 +145,7 @@ export class Scheduler {
 	}
 
 	private updatePlayingDymos(changedThread: SchedulerThread) {
-		let uris = flattenArray(this.threads.map(t => Array.from(t.getAllSources().keys())));
+		/*let uris = flattenArray(this.threads.map(t => Array.from(t.getAllSources().keys())));
 		uris = removeDuplicates(uris);
 		if (!GlobalVars.OPTIMIZED_MODE) {
 			uris = flattenArray(uris.map(d => this.store.findAllParents(d)));
@@ -153,7 +155,7 @@ export class Scheduler {
 		uris = uris.map(uri => uri.replace(CONTEXT_URI, ""));
 		setTimeout(() => {
 			this.playingDymoUris.next(uris);
-		}, GlobalVars.SCHEDULE_AHEAD_TIME*1000);
+		}, GlobalVars.SCHEDULE_AHEAD_TIME*1000);*/
 	}
 
 	getUrisOfPlayingDymos() {

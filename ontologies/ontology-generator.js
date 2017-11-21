@@ -87,13 +87,13 @@ function createExpressionOntology(path) {
 	//control this better! (not any expression can be directed, only equations)
 	addProperty({term:"directed", iri:"directed", type:"xsd:boolean"}, "Expression", prefixes["xsd"]+"boolean", false);
 
-	addClass("Variable");
+	addClass("Variable", "Expression");
 	addProperty({term:"varName", iri:"varName", type:"xsd:string"}, "Variable", prefixes["xsd"]+"string", false, true);
-	addProperty({term:"varType", iri:"varType", type:"@vocab"}, "Variable", rdfPrefix+"Resource", true, true);
+	addProperty({term:"varType", iri:"varType", type:"@vocab"}, "Variable", prefixes["rdf"]+"Resource", true, true);
 	addProperty({term:"varExpr", iri:"varExpr", type:"@vocab"}, "Variable", "Expression", true, true);
-	addProperty({term:"varValue", iri:"varValue", type:"@vocab"}, "Variable", rdfPrefix+"Resource", true);
+	addProperty({term:"varValue", iri:"varValue", type:"@vocab"}, "Variable", prefixes["rdf"]+"Resource", true);
 
-	addClass("Constant");
+	addClass("Constant", "Expression");
 
 	addClass("Quantifier", "Expression");
 	addClass("ForAll", "Quantifier");
@@ -110,7 +110,7 @@ function createExpressionOntology(path) {
 	addClass("PropertyFunction");
 	addProperty({term:"prop", iri:"prop", type:"@vocab"}, "PropertyFunction", prefixes["rdf"]+"Property", true);
 	addUnionClass("Function", ["PropertyFunction", "NamedFunction", "Accessor"]);
-	addProperty({term:"func", iri:"func"}, "FunctionalTerm", "Function", false, true);
+	addProperty({term:"func", iri:"func"}, "FunctionalTerm", "Function", true, true);
 	addProperty({term:"args", iri:"args"}, "FunctionalTerm", "Variable", true);
 
 	addClass("Conditional", "Expression");
@@ -154,13 +154,20 @@ function createDymoOntology(path) {
 	addClass("Parameter", prefixes["ch"]+"Attribute", "A parameter is a mutable attribute of a Dymo");
 	addClass("FeatureType", prefixes["ch"]+"AttributeType");
 	addClass("ParameterType", prefixes["ch"]+"AttributeType");
+	addProperty({term:"paramType", iri:"hasParameterType", type:"@vocab"}, "Parameter", "ParameterType", true);
+	addProperty({term:"featureType", iri:"hasFeatureType", type:"@vocab"}, "Feature", "FeatureType", true);
+	addClass("ParameterBehavior");
+	addClass("Independent", "ParameterBehavior");
+	addClass("Additive", "ParameterBehavior");
+	addClass("Multiplicative", "ParameterBehavior");
+	addProperty({term:"semantics", iri:"hasSemantics", type:"@vocab"}, "Parameter", "ParameterBehavior", true);
 	//features
 	addIndividual({term:"level", iri:"LevelFeature"}, "FeatureType");
 	addIndividual({term:"index", iri:"IndexFeature"}, "FeatureType");
 	addIndividual({term:"onset", iri:"OnsetFeature"}, "FeatureType");
 	addIndividual({term:"pitch", iri:"PitchFeature"}, "FeatureType");
 	addIndividual({term:"duration", iri:"DurationFeature"}, "FeatureType");
-	addIndividual({term:"time", iri:"TimeFeature"}, "FeatureType");
+	addIndividual({term:"time", iri:"TimeFeature"}, "FeatureType"); //offset
 	addIndividual({term:"segmentLabel", iri:"SegmentLabelFeature"}, "FeatureType");
 	//audio parameters
 	addClass("AudioParameter", "ParameterType");
@@ -185,12 +192,10 @@ function createDymoOntology(path) {
 	addIndividual("PartCount", "StructuralParameter");
 	addIndividual("PartDurationRatio", "StructuralParameter");
 	addIndividual("PartProportion", "StructuralParameter");
-	//properties
+	//dymo properties
 	addProperty({term:"source", iri:"hasSource", type:"xsd:string"}, "Dymo", prefixes["xsd"]+"string", false);
 	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
 	addProperty({term:"features", iri:"hasFeature", type:"@vocab"}, "Dymo", "Feature", true);
-	addProperty({term:"paramType", iri:"hasParameterType", type:"@vocab"}, "Parameter", "ParameterType", true);
-	addProperty({term:"featureType", iri:"hasFeatureType", type:"@vocab"}, "Feature", "FeatureType", true);
 	addProperty({term:"similars", iri:"hasSimilar"}, "Dymo", "Dymo", true);
 	addProperty({term:"successors", iri:"hasSuccessor"}, "Dymo", "Dymo", true);
 	addProperty({term:"fst", iri:"hasFirst"}, "Dymo", "Dymo", true);
@@ -291,6 +296,7 @@ function addUnionClass(name, classes, comment) {
 	addComment(fullName, comment);
 }
 
+/** definition, domain, range, isObjectProperty, isFunctional, comment */
 function addProperty(definition, domain, range, isObjectProperty, isFunctional, comment) {
 	var fullName = addToTermsContextAndUris(definition);
 	domain = getFromTerms(domain);

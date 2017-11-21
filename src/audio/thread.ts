@@ -12,7 +12,8 @@ import { ScheduloObjectWrapper } from './wrapper';
 interface PlayParams {
 	uri: string,
 	sourcePath: string,
-	segment: [number,number]
+	start: number,
+	duration: number
 }
 
 /**
@@ -27,10 +28,6 @@ export class SchedulerThread {
 	private onEnded;
 
 	private playingObjects: ScheduloObjectWrapper[] = [];
-	private nextObjects: Map<string, PlayParams>;
-	private timeoutID;
-	private currentObjects = new Map<string, PlayParams>();
-	private nextEventTime;
 
 	constructor(dymoUri: string, private schedulo: Schedulo, onChanged: ()=>any, onEnded: ()=>any, private store: DymoStore, navigator?: DymoNavigator) {
 		this.dymoUri = dymoUri;
@@ -56,20 +53,11 @@ export class SchedulerThread {
 	}
 
 	stop(dymoUri) {
-		if (dymoUri === this.dymoUri) {
-			clearTimeout(this.timeoutID);
-		}
 		var subDymoUris = this.store.findAllObjectsInHierarchy(dymoUri);
 		subDymoUris.forEach(uri => {
-			if (this.nextObjects) {
-				if (this.nextObjects.has(uri)) {
-					this.nextObjects.delete(uri);
-				}
-				if (this.nextObjects.size <= 0) {
-					this.nextObjects = undefined;
-				}
-			}
-			this.playingObjects.filter(o => o.getUri() === uri).forEach(o => o.stop());
+			this.playingObjects
+				.filter(o => o.getUri() === uri)
+				.forEach(o => o.stop());
 		})
 	}
 
@@ -78,45 +66,66 @@ export class SchedulerThread {
 	}
 
 	private recursivePlay() {
-		var previousSources = this.currentObjects;
-		//create sources and init
-		this.currentObjects = this.nextObjects ? this.nextObjects : this.getNextPlayParams();
+		let scheduleTime = this.schedulo.getCurrentTime()+1;
+		let currentObjects = this.getNextPlayParams();
+		while (currentObjects.size > 0) {
+			currentObjects.forEach(o => {
+				let onset = this.store.findParameterValue(o.uri, uris.ONSET);
+				//TODO IMPLEMENT TIME AFTER!!!!!
+				let startTime = onset ? Time.At(scheduleTime+onset) : Time.At(scheduleTime);
+				let loop = this.store.findParameterValue(o.uri, uris.LOOP);
+				let playbackMode = loop ? Playback.Loop(0, o.start, o.duration) : Playback.Oneshot(o.start, o.duration);
+				this.schedulo.scheduleAudio(
+					[o.sourcePath],
+					startTime,
+					playbackMode,
+				).then(audioObject =>
+					this.playingObjects.push(new ScheduloObjectWrapper(o.uri, scheduleTime, audioObject[0], this.store, this.objectEnded.bind(this)))
+				);
+			});
+			currentObjects = this.getNextPlayParams();
+		}
+
+
+		/*this.currentObjects = this.nextObjects ? this.nextObjects : this.getNextPlayParams();
 		//calculate delay and schedule
 		var currentTime = this.schedulo.getCurrentTime();
 		var delay = this.nextEventTime ? this.nextEventTime-currentTime : GlobalVars.SCHEDULE_AHEAD_TIME;
 		var startTime = currentTime+delay;
 		//console.log("START", startTime)
+		console.log(currentTime, startTime)
 		for (var source of this.currentObjects.values()) {
-			//console.log(this.audioContext.currentTime, currentEndTime, startTime)
+			let onset = this.store.findParameterValue(source.uri, uris.ONSET);
+			let loop = this.store.findParameterValue(source.uri, uris.LOOP);
+			let playbackMode = loop ? Playback.Loop(0, source.start, source.duration) : Playback.Oneshot(source.start, source.duration);
 			this.schedulo.scheduleAudio(
 				[source.sourcePath],
 				Time.At(startTime),
-				Playback.Oneshot(source.segment[0], source.segment[1])
+				playbackMode,
 			).then(audioObject =>
 				this.playingObjects.push(new ScheduloObjectWrapper(source.uri, audioObject[0], this.store, this.objectEnded.bind(this)))
 			);
-			//source.play(startTime);
 		}
-		setTimeout(() => this.onChanged(this), delay+50);
+		/*setTimeout(() => this.onChanged(this), delay+50);
 		//create next sources and wait or end and reset
 		this.nextObjects = this.getNextPlayParams();
 		if (this.nextObjects && this.nextObjects.size > 0) {
-			this.nextEventTime = this.getNextEventTime(startTime);
-			var longestSource = this.nextEventTime[1];
-			this.nextEventTime = this.nextEventTime[0];
+			var eventAndParams = this.getNextEventTime(startTime);
+			var longestSource = eventAndParams[1];
+			this.nextEventTime = eventAndParams[0];
 			//smooth transition in case of a loop
-			if (longestSource && this.store.findParameterValue(longestSource.getDymoUri(), uris.LOOP)) {
+			if (longestSource && this.store.findParameterValue(longestSource.uri, uris.LOOP)) {
 				this.nextEventTime -= GlobalVars.FADE_LENGTH;
 			}
 			var wakeupTime = (this.nextEventTime-currentTime-GlobalVars.SCHEDULE_AHEAD_TIME)*1000;
 			this.timeoutID = setTimeout(() => this.recursivePlay(), wakeupTime);
 		} else {
-			this.nextEventTime = this.getNextEventTime(startTime);
+			this.nextEventTime = this.getNextEventTime(startTime)[0];
 			var wakeupTime = (this.nextEventTime-currentTime)*1000;
 			setTimeout(() => {
 				this.endThreadIfNoMoreSources();
 			}, wakeupTime+100);
-		}
+		}*/
 	}
 
 	private objectEnded(object: ScheduloObjectWrapper) {
@@ -125,10 +134,10 @@ export class SchedulerThread {
 			this.playingObjects.splice(index, 1);
 			setTimeout(() => this.onChanged(this), 50);
 		}
-		this.endThreadIfNoMoreSources();
+		//this.endThreadIfNoMoreSources();
 	}
 
-	private endThreadIfNoMoreSources() {
+	/*private endThreadIfNoMoreSources() {
 		if (this.playingObjects.length == 0 && (!this.nextObjects || this.nextObjects.size == 0)) {
 			clearTimeout(this.timeoutID);
 			this.navigator.reset();
@@ -138,9 +147,9 @@ export class SchedulerThread {
 				this.onEnded();
 			}
 		}
-	}
+	}*/
 
-	private getNextEventTime(startTime) {
+	/*private getNextEventTime(startTime: number): [number, PlayParams] {
 		if (this.nextObjects) {
 			//TODO CURRENTLY ASSUMING ALL PARALLEL SOURCES HAVE SAME ONSET AND DURATION
 			var previousSourceDymoUri = this.currentObjects.keys().next().value;
@@ -149,7 +158,7 @@ export class SchedulerThread {
 			var nextOnset = this.store.findParameterValue(nextSourceDymoUri, uris.ONSET);
 			if (!isNaN(nextOnset)) {
 				var timeToNextOnset = Math.max(0, nextOnset-previousOnset);
-				return [startTime+timeToNextOnset];
+				return [startTime+timeToNextOnset, null];
 			}
 		}
 		var maxDuration = 0;
@@ -163,13 +172,13 @@ export class SchedulerThread {
 		}
 		//console.log(startTime, maxDuration)
 		return [startTime+maxDuration, longestSource];
-	}
+	}*/
 
-	private getSourceDuration(source) {
-		let duration = source.getDuration();
-		let playbackRate = source.getParameterValue(uris.PLAYBACK_RATE);
+	private getSourceDuration(params: PlayParams) {
+		let duration = params.duration;
+		let playbackRate = this.store.findParameterValue(params.uri, uris.PLAYBACK_RATE);
 		duration /= playbackRate ? playbackRate : 1;
-		let stretchRatio = source.getParameterValue(uris.TIME_STRETCH_RATIO);
+		let stretchRatio = this.store.findParameterValue(params.uri, uris.TIME_STRETCH_RATIO);
 		duration /= stretchRatio ? stretchRatio : 1;
 		return duration;
 	}
@@ -183,11 +192,13 @@ export class SchedulerThread {
 			}
 			nextParts.forEach(p => {
 				let sourcePath = this.store.getSourcePath(p);
+				let segment = this.calculateSegment(p);
 				if (sourcePath) {
 					nextObjects.set(p, {
 						uri: p,
 						sourcePath: sourcePath,
-						segment: this.calculateSegment(p)
+						start: segment[0],
+						duration: segment[1]
 					});
 				}
 			})

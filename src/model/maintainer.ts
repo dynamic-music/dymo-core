@@ -64,6 +64,7 @@ export class Maintainer {
         || (undefVars.length === 0 && (!changedVars || changedVars.indexOf(this.allVarNames[0]) < 0)))) {
       let newValue = this.mathjsCompiledExpression.eval(this.currentValues);
       this.store.setValue(this.varsAndUris.get(this.allVarNames[0]), VALUE, newValue);
+      //console.log("SET", this.varsAndUris.get(this.allVarNames[0]), VALUE, newValue)
     } else if (this.logicjsGoalFunction) {
       let values = defVarNames.map(n => this.currentValues[n]);
       let index;

@@ -30,6 +30,22 @@ dy:FeatureType a owl:Class;
     rdfs:subClassOf ch:AttributeType.
 dy:ParameterType a owl:Class;
     rdfs:subClassOf ch:AttributeType.
+dy:hasParameterType a owl:ObjectProperty;
+    rdfs:domain dy:Parameter;
+    rdfs:range dy:ParameterType.
+dy:hasFeatureType a owl:ObjectProperty;
+    rdfs:domain dy:Feature;
+    rdfs:range dy:FeatureType.
+dy:ParameterBehavior a owl:Class.
+dy:Independent a owl:Class;
+    rdfs:subClassOf dy:ParameterBehavior.
+dy:Additive a owl:Class;
+    rdfs:subClassOf dy:ParameterBehavior.
+dy:Multiplicative a owl:Class;
+    rdfs:subClassOf dy:ParameterBehavior.
+dy:hasSemantics a owl:ObjectProperty;
+    rdfs:domain dy:Parameter;
+    rdfs:range dy:ParameterBehavior.
 dy:LevelFeature a dy:FeatureType.
 dy:IndexFeature a dy:FeatureType.
 dy:OnsetFeature a dy:FeatureType.
@@ -87,12 +103,6 @@ dy:hasParameter a owl:ObjectProperty;
 dy:hasFeature a owl:ObjectProperty;
     rdfs:domain dy:Dymo;
     rdfs:range dy:Feature.
-dy:hasParameterType a owl:ObjectProperty;
-    rdfs:domain dy:Parameter;
-    rdfs:range dy:ParameterType.
-dy:hasFeatureType a owl:ObjectProperty;
-    rdfs:domain dy:Feature;
-    rdfs:range dy:FeatureType.
 dy:hasSimilar a owl:ObjectProperty;
     rdfs:domain dy:Dymo;
     rdfs:range dy:Dymo.

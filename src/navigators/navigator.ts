@@ -3,6 +3,7 @@ import { BoundVariable } from '../model/variable';
 import { SubsetNavigator } from './subsetnav'
 import { OneShotNavigator } from './oneshot'
 import { SequentialNavigator } from './sequential'
+import { MORE, DONE } from '../globals/globals'
 
 /**
  * A navigator that follows the order of parts.
@@ -11,6 +12,7 @@ import { SequentialNavigator } from './sequential'
 export class DymoNavigator {
 
 	private dymoUri: string;
+	private status: string;
 	private defaultSubsetNavigator;
 	private defaultLeafNavigator;
 	private subsetNavigators: Map<BoundVariable,SubsetNavigator> = new Map<BoundVariable,SubsetNavigator>();
@@ -107,7 +109,11 @@ export class DymoNavigator {
 		if (!this.navigator) {
 			this.navigator = this.getNavigator(this.dymoUri);
 		}
-		return this.navigator.getNextParts()[0];
+		if (this.status !== DONE) {
+			let nextParts = this.navigator.getNextParts();
+			this.status = nextParts[1];
+			return nextParts[0];
+		}
 	}
 
 	/*function recursiveGetNextParts(currentDymoUri) {

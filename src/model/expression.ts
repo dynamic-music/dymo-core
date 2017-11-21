@@ -96,23 +96,25 @@ export class Expression {
     if (expression.isFunctionNode) {
       let arg = this.getFunctionalObject(expression["args"][0], vars, store);
       let name = expression["fn"]["name"];
-      //TODO IMPROVE THIS!!
-      let officialName = name.indexOf(u.DYMO_ONTOLOGY_URI) >= 0 ? name : u.DYMO_ONTOLOGY_URI+name;
-      let customName = name.indexOf(u.CONTEXT_URI) >= 0 ? name : u.CONTEXT_URI+name;
+      let officialName, customName;
+      if (name) {
+        officialName = name.indexOf(u.DYMO_ONTOLOGY_URI) >= 0 ? name : u.DYMO_ONTOLOGY_URI+name;
+        customName = name.indexOf(u.CONTEXT_URI) >= 0 ? name : u.CONTEXT_URI+name;
+      }
       //search for a matching predicate
       let result: string|number = store.findObject(arg, officialName);
-      if (result == null) {
+      if (result == null && customName) {
         result = store.findObject(arg, customName);
       }
       //search for a matching control param
-      if (result == null) {
-        result = store.findObjectOfType(arg, u.HAS_CONTROL_PARAM, u.MOBILE_AUDIO_ONTOLOGY_URI+expression["fn"]["name"]);
+      if (result == null && name) {
+        result = store.findObjectOfType(arg, u.HAS_CONTROL_PARAM, u.MOBILE_AUDIO_ONTOLOGY_URI+name);
       }
       //search for a matching feature or param
-      if (result == null) {
+      if (result == null && officialName) {
         result = this.findOrInitFeatureOrParam(arg, officialName, store);
       }
-      if (result == null) {
+      if (result == null && customName) {
         result = this.findOrInitFeatureOrParam(arg, customName, store);
       }
       return result;

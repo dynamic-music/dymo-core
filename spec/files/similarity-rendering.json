@@ -1,6 +1,6 @@
 {
   "@context": "http://localhost:8181/ontologies/dymo-context.json",
-  "@id": "similarityRendering",
+  "@id": "rendering0",
   "@type": "Rendering",
   "dymo": {
     "@id": "similarityDymo"

@@ -42,7 +42,7 @@ function createExampleFile(name: string, generated: Promise<string>): Promise<an
 
 function generateControlRendering(): Promise<string> {
   return createStoreAndGens().then(sg => {
-    let renderingUri = sg.dymoGen.addRendering(uris.CONTEXT_URI+"controlRendering", uris.CONTEXT_URI+"dymo0");
+    let renderingUri = sg.dymoGen.addRendering(uris.CONTEXT_URI+"dymo0");
     sg.dymoGen.addCustomParameter(uris.LISTENER_ORIENTATION, renderingUri);
     let slider1Uri = sg.dymoGen.addControl("Slider 1", uris.SLIDER, uris.CONTEXT_URI+"slider1");
     let slider2Uri = sg.dymoGen.addControl("Orientation", uris.SLIDER, uris.CONTEXT_URI+"orientation");
@@ -69,7 +69,7 @@ function generateControlRendering(): Promise<string> {
 
 function generateSimilarityRendering(): Promise<string> {
   return createStoreAndGens().then(sg => {
-    let renderingUri = sg.dymoGen.addRendering(uris.CONTEXT_URI+"similarityRendering", uris.CONTEXT_URI+"similarityDymo");
+    let renderingUri = sg.dymoGen.addRendering(uris.CONTEXT_URI+"similarityDymo");
     let navVar = sg.expressionGen.addVariable('∀ d : '+uris.DYMO+', LevelFeature(d) == 1');
     sg.dymoGen.addNavigator(uris.SIMILARITY_NAVIGATOR, navVar);
     return sg.store.uriToJsonld(renderingUri);
@@ -101,7 +101,7 @@ function createMixDymoRendering(): Promise<string> {
   return createStoreAndGens().then(sg => {
     let mixDymoUri = uris.CONTEXT_URI+"mixdymo";
     let fadeRampUri = uris.CONTEXT_URI+"fadeRamp";
-    let renderingUri = sg.dymoGen.addRendering(uris.CONTEXT_URI+"mixdymoRendering", uris.CONTEXT_URI+"mixdymo");
+    let renderingUri = sg.dymoGen.addRendering(uris.CONTEXT_URI+"mixdymo");
     let dataUri = sg.dymoGen.addDataControl("http://api.openweathermap.org/data/2.5/weather?appid=3d77879a046ee9e970e66bb2f5c5200d&q=london", "return json['main']['temp']");
     let fadeSliderUri = sg.dymoGen.addControl("fade", uris.SLIDER);
     let bpbSliderUri = sg.dymoGen.addControl("beats per bar", uris.SLIDER);
