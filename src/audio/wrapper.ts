@@ -11,13 +11,33 @@ PARAM_PAIRINGS.set(uris.PLAYBACK_RATE, Parameter.PlaybackRate);
 
 export class ScheduloObjectWrapper {
 
+  private parentUris: string[];
+  private typeToBehavior = new Map<string,string>();
+  private dymoToParam = new Map<string,string>();
+  private paramToType = new Map<string,string>();
+  private paramToValue = new Map<string,number>();
+
   constructor(public dymoUri: string, private scheduleTime: number, private object: AudioObject,
       private store: DymoStore, private onEnded: (o:ScheduloObjectWrapper) => any) {
+    this.parentUris = this.store.findAllParents(this.dymoUri);
+    console.log(dymoUri, this.parentUris);
     PARAM_PAIRINGS.forEach((param, typeUri) => {
-      this.store.addParameterObserver(this.dymoUri, typeUri, this);
-      //TODO ADD OBSERVERS FOR ALL PARENTS!!!!!!
-      this.updateParam(typeUri);
+      this.initParam(dymoUri, typeUri);
+      //if behavior not independent, observe parents
+      let behavior = this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
+      this.typeToBehavior.set(typeUri, behavior);
+      //if (behavior && behavior !== uris.INDEPENDENT) {
+        this.parentUris.forEach(p => this.initParam(p, typeUri));
+      //}
+      this.store.findParameterValue(this.dymoUri, typeUri);
     })
+  }
+
+  private initParam(dymoUri: string, typeUri: string) {
+    let paramUri = this.store.addParameterObserver(dymoUri, typeUri, this);
+    this.dymoToParam.set(dymoUri, paramUri);
+    this.paramToType.set(paramUri, typeUri);
+    this.paramToValue.set(paramUri, this.store.findParameterValue(this.dymoUri, typeUri));
   }
 
   getUri(): string {
@@ -32,13 +52,28 @@ export class ScheduloObjectWrapper {
     })
   }
 
-  private updateParam(typeUri: string, value?: number) {
+  private updateParam(typeUri: string) {
     //TODO GO THROUGH ALL PARENTS AND PROCESS (* or +...)
-    //TODO LATER KEEP A CACHE OF ALL VALUES!! AND PASS IN THE CHANGED ONE
-    value = !isNaN(value) ? value : this.store.findParameterValue(this.dymoUri, typeUri);
+    let paramsOfType = [...this.paramToType.keys()].filter(p => this.paramToType.get(p) === typeUri);
+    let allValues = paramsOfType.map(p => this.paramToValue.get(p)).filter(v => !isNaN(v));
+    console.log(this.dymoUri, typeUri, allValues)
+
+    //calculate value based on behavior
+    let value;
+    if (this.typeToBehavior.get(typeUri) === uris.ADDITIVE) {
+      value = allValues.reduce((a,b) => a+b);
+    } else if (this.typeToBehavior.get(typeUri) === uris.MULTIPLICATIVE) {
+      value = allValues.reduce((a,b) => a*b);
+    } else {
+      value = allValues.reduce((a,b) => a*b);//allValues[0]; //only one value since parents not added...
+    }
+
+    //deal with onset specifically
     if (typeUri === uris.ONSET) {
       value = this.scheduleTime+value;
     }
+
+    //update the schedulo object
     if (value != null) {
       this.object.set(PARAM_PAIRINGS.get(typeUri), value);
     }
@@ -48,7 +83,8 @@ export class ScheduloObjectWrapper {
   //.then(() => this.onEnded(this));
 
   observedValueChanged(paramUri: string, paramType: string, value: number) {
-    this.updateParam(paramType, value);
+    this.paramToValue.set(paramUri, value);
+    this.updateParam(paramType);
   }
 
 }

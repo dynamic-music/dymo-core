@@ -43,7 +43,7 @@ dy:Additive a owl:Class;
     rdfs:subClassOf dy:ParameterBehavior.
 dy:Multiplicative a owl:Class;
     rdfs:subClassOf dy:ParameterBehavior.
-dy:hasSemantics a owl:ObjectProperty;
+dy:hasBehavior a owl:ObjectProperty;
     rdfs:domain dy:Parameter;
     rdfs:range dy:ParameterBehavior.
 dy:LevelFeature a dy:FeatureType.

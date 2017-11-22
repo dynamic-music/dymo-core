@@ -20,7 +20,7 @@ describe("a dymostore", function() {
 			dymoStore.addDymo(CU+"e0");
 			dymoStore.addDymo(CU+"e1", CU+"e0");
 			dymoStore.addDymo(CU+"e2", CU+"e1");
-			dymoStore.addDymo(CU+"d3", CU+"e1");
+			dymoStore.addDymo(CU+"d3", CU+"e1");//d3 is in two hierarchies
 			dymoStore.addDymo(CU+"f0");
 			dymoStore.addSimilar(CU+"d2", CU+"e2");
 			dymoStore.addSimilar(CU+"f0", CU+"d0");
@@ -130,12 +130,15 @@ describe("a dymostore", function() {
 	});
 
 	it("can find parent lists", function() {
+		//test finding immediate parents
 		var parents = dymoStore.findParents(CU+"d3");
-		expect(parents.length).toBe(2);
-		expect(parents).toContain(CU+"d0");
-		expect(parents).toContain(CU+"e1");
+		expect(parents).toEqual([CU+"d0",CU+"e1"]);
+		//test with a root object
 		parents = dymoStore.findParents(CU+"d0");
-		expect(parents.length).toBe(0);
+		expect(parents).toEqual([]);
+		//test finding all parents in multiple hierarchies
+		parents = dymoStore.findAllParents(CU+"d3");
+		expect(parents).toEqual([CU+"d0",CU+"e1",CU+"e0"]);
 	});
 
 	it("can find all objects in a hierarchy", function() {

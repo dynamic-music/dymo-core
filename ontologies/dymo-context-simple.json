@@ -75,7 +75,7 @@
 		"Independent": "dy:Independent",
 		"Additive": "dy:Additive",
 		"Multiplicative": "dy:Multiplicative",
-		"semantics": "dy:hasSemantics",
+		"behavior": "dy:hasBehavior",
 		"level": "dy:LevelFeature",
 		"index": "dy:IndexFeature",
 		"onset": "dy:OnsetFeature",

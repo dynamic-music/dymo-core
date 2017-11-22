@@ -303,17 +303,12 @@ export class DymoStore extends EasyStore {
 		return this.findAllObjects(dymoUri, uris.HAS_SUCCESSOR);
 	}
 
-	//TODO currently only works for single hierarchy (implement and test)
-	findAllParents(dymoUri) {
-		var parents = [];
-		while (dymoUri != null) {
-			parents.push(dymoUri);
-			dymoUri = this.findParents(dymoUri)[0];
-		}
-		return parents;
+	findAllParents(dymoUri: string): string[] {
+		let parents = this.findParents(dymoUri);
+		return parents.concat(_.flatMap(parents, p => this.findAllParents(p)));
 	}
 
-	findParents(dymoUri) {
+	findParents(dymoUri: string): string[] {
 		return this.findContainingLists(dymoUri, uris.HAS_PART);
 	}
 

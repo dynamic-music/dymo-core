@@ -17,7 +17,7 @@
             "@value": "false"
           },
           "left": {
-            "@id": "_:b19"
+            "@id": "_:b18"
           },
           "right": {
             "@type": "Multiplication",
@@ -29,12 +29,12 @@
               }
             },
             "right": {
-              "@id": "_:b20"
+              "@id": "_:b19"
             }
           }
         },
         "vars": {
-          "@id": "_:b20",
+          "@id": "_:b19",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -45,7 +45,7 @@
         }
       },
       "vars": {
-        "@id": "_:b19",
+        "@id": "_:b18",
         "@type": "Variable",
         "varName": "l",
         "varType": {
@@ -78,7 +78,7 @@
             }
           },
           "right": {
-            "@id": "_:b0"
+            "@id": "_:b2"
           }
         },
         "vars": {
@@ -122,14 +122,13 @@
       "body": {
         "@type": "ForAll",
         "body": {
-          "@id": "_:b1",
           "@type": "EqualTo",
           "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
-            "@id": "_:b2",
+            "@id": "_:b1",
             "@type": "FunctionalTerm",
             "args": {
               "@id": "_:b3"
@@ -140,11 +139,11 @@
             }
           },
           "right": {
-            "@id": "_:b0"
+            "@id": "_:b2"
           }
         },
         "vars": {
-          "@id": "_:b0",
+          "@id": "_:b2",
           "@type": "Variable",
           "varName": "c",
           "varValue": {

@@ -160,7 +160,8 @@ function createDymoOntology(path) {
 	addClass("Independent", "ParameterBehavior");
 	addClass("Additive", "ParameterBehavior");
 	addClass("Multiplicative", "ParameterBehavior");
-	addProperty({term:"semantics", iri:"hasSemantics", type:"@vocab"}, "Parameter", "ParameterBehavior", true);
+	addClass("ArithmeticMean", "ParameterBehavior");
+	addProperty({term:"behavior", iri:"hasBehavior", type:"@vocab"}, "ParameterType", "ParameterBehavior", true);
 	//features
 	addIndividual({term:"level", iri:"LevelFeature"}, "FeatureType");
 	addIndividual({term:"index", iri:"IndexFeature"}, "FeatureType");

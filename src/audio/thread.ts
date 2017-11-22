@@ -66,21 +66,22 @@ export class SchedulerThread {
 	}
 
 	private recursivePlay() {
-		let scheduleTime = this.schedulo.getCurrentTime()+1;
+		let schedulerTime = this.schedulo.getCurrentTime()+1;
 		let currentObjects = this.getNextPlayParams();
 		while (currentObjects.size > 0) {
 			currentObjects.forEach(o => {
 				let onset = this.store.findParameterValue(o.uri, uris.ONSET);
-				//TODO IMPLEMENT TIME AFTER!!!!!
-				let startTime = onset ? Time.At(scheduleTime+onset) : Time.At(scheduleTime);
+				//TODO IMPLEMENT TIME.AFTER!!!!!
+				let startTime = onset ? Time.At(schedulerTime+onset) : Time.At(schedulerTime);
 				let loop = this.store.findParameterValue(o.uri, uris.LOOP);
+				console.log("LOOP", loop)
 				let playbackMode = loop ? Playback.Loop(0, o.start, o.duration) : Playback.Oneshot(o.start, o.duration);
 				this.schedulo.scheduleAudio(
 					[o.sourcePath],
 					startTime,
 					playbackMode,
 				).then(audioObject =>
-					this.playingObjects.push(new ScheduloObjectWrapper(o.uri, scheduleTime, audioObject[0], this.store, this.objectEnded.bind(this)))
+					this.playingObjects.push(new ScheduloObjectWrapper(o.uri, schedulerTime, audioObject[0], this.store, this.objectEnded.bind(this)))
 				);
 			});
 			currentObjects = this.getNextPlayParams();

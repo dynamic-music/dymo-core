@@ -75,7 +75,7 @@
 		"Independent": "dy:Independent",
 		"Additive": "dy:Additive",
 		"Multiplicative": "dy:Multiplicative",
-		"semantics": { "@id": "dy:hasSemantics", "@type": "@vocab" },
+		"behavior": { "@id": "dy:hasBehavior", "@type": "@vocab" },
 		"level": "dy:LevelFeature",
 		"index": "dy:IndexFeature",
 		"onset": "dy:OnsetFeature",

@@ -25,7 +25,7 @@ export class EasyReasoner {
 	private postRequest(path, data, callback) {
 		fetch(path, {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			//headers: { 'Content-Type': 'application/x-www-form-urlencoded' },TODO DOESNT COMPILE
 			body: data
 		})
 		.then(r => r.text())
