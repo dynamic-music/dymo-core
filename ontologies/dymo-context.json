@@ -75,6 +75,7 @@
 		"Independent": "dy:Independent",
 		"Additive": "dy:Additive",
 		"Multiplicative": "dy:Multiplicative",
+		"ArithmeticMean": "dy:ArithmeticMean",
 		"behavior": { "@id": "dy:hasBehavior", "@type": "@vocab" },
 		"level": "dy:LevelFeature",
 		"index": "dy:IndexFeature",

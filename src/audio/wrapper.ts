@@ -26,9 +26,10 @@ export class ScheduloObjectWrapper {
       //if behavior not independent, observe parents
       let behavior = this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
       this.typeToBehavior.set(typeUri, behavior);
-      //if (behavior && behavior !== uris.INDEPENDENT) {
+      console.log(behavior);
+      if (behavior && behavior !== uris.INDEPENDENT) {
         this.parentUris.forEach(p => this.initParam(p, typeUri));
-      //}
+      }
       this.store.findParameterValue(this.dymoUri, typeUri);
     })
   }
@@ -65,7 +66,7 @@ export class ScheduloObjectWrapper {
     } else if (this.typeToBehavior.get(typeUri) === uris.MULTIPLICATIVE) {
       value = allValues.reduce((a,b) => a*b);
     } else {
-      value = allValues.reduce((a,b) => a*b);//allValues[0]; //only one value since parents not added...
+      value = allValues[0]; //only one value since parents not added...
     }
 
     //deal with onset specifically

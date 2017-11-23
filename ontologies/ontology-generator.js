@@ -177,16 +177,26 @@ function createDymoOntology(path) {
 	addIndividual("Play", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
 	addIndividual("Loop", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
 	addIndividual("Onset", "AudioParameter");
+	setProperty("Onset", "hasBehavior", "Additive");
 	addIndividual("Duration", "AudioParameter");
 	addIndividual("DurationRatio", "AudioParameter", {"hasStandardValue": 1});
+	setProperty("DurationRatio", "hasBehavior", "Multiplicative");
 	addIndividual("Amplitude", "AudioParameter", {"hasStandardValue": 1});
+	setProperty("Amplitude", "hasBehavior", "Multiplicative");
 	addIndividual("PlaybackRate", "AudioParameter", {"hasStandardValue": 1});
+	setProperty("PlaybackRate", "hasBehavior", "Multiplicative");
 	addIndividual("TimeStretchRatio", "AudioParameter", {"hasStandardValue": 1});
+	setProperty("TimeStretchRatio", "hasBehavior", "Multiplicative");
 	addIndividual("Pan", "AudioParameter", {"hasStandardValue": 0});
+	setProperty("Pan", "hasBehavior", "Additive");
 	addIndividual("Distance", "AudioParameter", {"hasStandardValue": 0});
+	setProperty("Distance", "hasBehavior", "Additive");
 	addIndividual("Height", "AudioParameter", {"hasStandardValue": 0});
+	setProperty("Height", "hasBehavior", "Additive");
 	addIndividual("Reverb", "AudioParameter", {"hasStandardValue": 0});
+	setProperty("Reverb", "hasBehavior", "Multiplicative");
 	addIndividual("Delay", "AudioParameter", {"hasStandardValue": 0});
+	setProperty("Delay", "hasBehavior", "Multiplicative");
 	addIndividual("Filter", "AudioParameter", {"hasStandardValue": 20000});
 	//structural parameters
 	addClass("StructuralParameter", "ParameterType");
@@ -326,7 +336,7 @@ function addIndividual(name, type, properties, comment) {
 }
 
 function setProperty(subject, property, value) {
-	addTriple(subject, getFromTerms(property), value);
+	addTriple(getFromTerms(subject), getFromTerms(property), getFromTerms(value));
 }
 
 function addComment(subject, comment) {

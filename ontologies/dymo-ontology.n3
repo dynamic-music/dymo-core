@@ -43,8 +43,10 @@ dy:Additive a owl:Class;
     rdfs:subClassOf dy:ParameterBehavior.
 dy:Multiplicative a owl:Class;
     rdfs:subClassOf dy:ParameterBehavior.
+dy:ArithmeticMean a owl:Class;
+    rdfs:subClassOf dy:ParameterBehavior.
 dy:hasBehavior a owl:ObjectProperty;
-    rdfs:domain dy:Parameter;
+    rdfs:domain dy:ParameterType;
     rdfs:range dy:ParameterBehavior.
 dy:LevelFeature a dy:FeatureType.
 dy:IndexFeature a dy:FeatureType.
@@ -67,26 +69,36 @@ dy:Play a dy:AudioParameter;
 dy:Loop a dy:AudioParameter;
     dy:hasStandardValue "0"^^xsd:integer;
     dy:isInteger "true"^^xsd:boolean.
-dy:Onset a dy:AudioParameter.
+dy:Onset a dy:AudioParameter;
+    dy:hasBehavior dy:Additive.
 dy:Duration a dy:AudioParameter.
 dy:DurationRatio a dy:AudioParameter;
-    dy:hasStandardValue "1"^^xsd:integer.
+    dy:hasStandardValue "1"^^xsd:integer;
+    dy:hasBehavior dy:Multiplicative.
 dy:Amplitude a dy:AudioParameter;
-    dy:hasStandardValue "1"^^xsd:integer.
+    dy:hasStandardValue "1"^^xsd:integer;
+    dy:hasBehavior dy:Multiplicative.
 dy:PlaybackRate a dy:AudioParameter;
-    dy:hasStandardValue "1"^^xsd:integer.
+    dy:hasStandardValue "1"^^xsd:integer;
+    dy:hasBehavior dy:Multiplicative.
 dy:TimeStretchRatio a dy:AudioParameter;
-    dy:hasStandardValue "1"^^xsd:integer.
+    dy:hasStandardValue "1"^^xsd:integer;
+    dy:hasBehavior dy:Multiplicative.
 dy:Pan a dy:AudioParameter;
-    dy:hasStandardValue "0"^^xsd:integer.
+    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasBehavior dy:Additive.
 dy:Distance a dy:AudioParameter;
-    dy:hasStandardValue "0"^^xsd:integer.
+    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasBehavior dy:Additive.
 dy:Height a dy:AudioParameter;
-    dy:hasStandardValue "0"^^xsd:integer.
+    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasBehavior dy:Additive.
 dy:Reverb a dy:AudioParameter;
-    dy:hasStandardValue "0"^^xsd:integer.
+    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasBehavior dy:Multiplicative.
 dy:Delay a dy:AudioParameter;
-    dy:hasStandardValue "0"^^xsd:integer.
+    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasBehavior dy:Multiplicative.
 dy:Filter a dy:AudioParameter;
     dy:hasStandardValue "20000"^^xsd:integer.
 dy:StructuralParameter a owl:Class;
