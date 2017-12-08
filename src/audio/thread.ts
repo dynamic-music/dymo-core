@@ -1,13 +1,12 @@
 import { GlobalVars } from '../globals/globals'
 import { DymoStore } from '../io/dymostore'
 import * as uris from '../globals/uris'
-import { AudioBank } from './audio-bank';
-import { DymoNode } from './node'
-import { DymoSource } from './source'
 import { DymoNavigator } from '../navigators/navigator'
-import { SequentialNavigator } from '../navigators/sequential'
+import { SequentialNavigator } from '../navigators/sequential';
+import { Scheduler } from './scheduler';
 import { Schedulo, Time, Playback } from 'schedulo';
 import { ScheduloObjectWrapper } from './wrapper';
+import { flattenArray } from 'arrayutils';
 
 interface PlayParams {
 	uri: string,
@@ -24,16 +23,15 @@ export class SchedulerThread {
 
 	private dymoUri;
 	private navigator: DymoNavigator;
-	private onChanged;
-	private onEnded;
+	private store: DymoStore;
 
+	private scheduledObjects: ScheduloObjectWrapper[] = [];
 	private playingObjects: ScheduloObjectWrapper[] = [];
 
-	constructor(dymoUri: string, private schedulo: Schedulo, onChanged: ()=>any, onEnded: ()=>any, private store: DymoStore, navigator?: DymoNavigator) {
+	constructor(dymoUri: string, private scheduler: Scheduler, navigator?: DymoNavigator) {
 		this.dymoUri = dymoUri;
+		this.store = scheduler.getStore();
 		this.navigator = navigator ? navigator : new DymoNavigator(dymoUri, this.store, new SequentialNavigator(dymoUri, this.store));
-		this.onChanged = onChanged;
-		this.onEnded = onEnded;
 		//starts automatically
 		this.recursivePlay();
 	}
@@ -55,18 +53,18 @@ export class SchedulerThread {
 	stop(dymoUri) {
 		var subDymoUris = this.store.findAllObjectsInHierarchy(dymoUri);
 		subDymoUris.forEach(uri => {
-			this.playingObjects
+			this.scheduledObjects
 				.filter(o => o.getUri() === uri)
 				.forEach(o => o.stop());
 		})
 	}
 
-	getAllSources(): string[] {
-		return this.playingObjects.map(o => o.getUri());
+	getPlayingDymoUris(): string[] {
+		return flattenArray(this.playingObjects.map(o => o.getUris()));
 	}
 
 	private recursivePlay() {
-		let schedulerTime = this.schedulo.getCurrentTime()+1;
+		let schedulerTime = this.scheduler.getSchedulo().getCurrentTime()+1;
 		let currentObjects = this.getNextPlayParams();
 		while (currentObjects.size > 0) {
 			currentObjects.forEach(o => {
@@ -74,14 +72,14 @@ export class SchedulerThread {
 				//TODO IMPLEMENT TIME.AFTER!!!!!
 				let startTime = onset ? Time.At(schedulerTime+onset) : Time.At(schedulerTime);
 				let loop = this.store.findParameterValue(o.uri, uris.LOOP);
-				console.log("LOOP", loop)
+				//console.log("LOOP", loop)
 				let playbackMode = loop ? Playback.Loop(0, o.start, o.duration) : Playback.Oneshot(o.start, o.duration);
-				this.schedulo.scheduleAudio(
+				this.scheduler.getSchedulo().scheduleAudio(
 					[o.sourcePath],
 					startTime,
 					playbackMode,
 				).then(audioObject =>
-					this.playingObjects.push(new ScheduloObjectWrapper(o.uri, schedulerTime, audioObject[0], this.store, this.objectEnded.bind(this)))
+					this.scheduledObjects.push(new ScheduloObjectWrapper(o.uri, schedulerTime, audioObject[0], this.store, this))
 				);
 			});
 			currentObjects = this.getNextPlayParams();
@@ -129,26 +127,34 @@ export class SchedulerThread {
 		}*/
 	}
 
-	private objectEnded(object: ScheduloObjectWrapper) {
-		let index = this.playingObjects.indexOf(object);
-		if (index >= 0) {
-			this.playingObjects.splice(index, 1);
-			setTimeout(() => this.onChanged(this), 50);
-		}
-		//this.endThreadIfNoMoreSources();
+	objectStarted(object: ScheduloObjectWrapper) {
+		this.playingObjects.push(object);
+		this.scheduler.objectStarted(object.getUris());
 	}
 
-	/*private endThreadIfNoMoreSources() {
-		if (this.playingObjects.length == 0 && (!this.nextObjects || this.nextObjects.size == 0)) {
-			clearTimeout(this.timeoutID);
-			this.navigator.reset();
-			//remove all nodes (TODO works well but COULD BE DONE SOMEWHERE ELSE FOR EVERY NODE THAT HAS NO LONGER ANYTHING ATTACHED TO INPUT..)
-			var subDymoUris = this.store.findAllObjectsInHierarchy(this.dymoUri);
-			if (this.onEnded) {
-				this.onEnded();
-			}
+	objectEnded(object: ScheduloObjectWrapper) {
+		this.removeFrom(object, this.scheduledObjects);
+		if (this.removeFrom(object, this.playingObjects)) {
+			this.scheduler.objectStopped();
 		}
-	}*/
+		this.endThreadIfNoMoreObjects();
+	}
+
+	private removeFrom<T>(element: T, list: T[]): boolean {
+		let index = list.indexOf(element);
+		if (index >= 0) {
+			list.splice(index, 1);
+			return true;
+		}
+		return false;
+	}
+
+	private endThreadIfNoMoreObjects() {
+		if (this.scheduledObjects.length == 0) {
+			this.navigator.reset();
+			this.scheduler.threadEnded(this);
+		}
+	}
 
 	/*private getNextEventTime(startTime: number): [number, PlayParams] {
 		if (this.nextObjects) {

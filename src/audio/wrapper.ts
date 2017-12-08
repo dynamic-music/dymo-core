@@ -1,6 +1,7 @@
 import { AudioObject, Parameter, Time, Stop } from 'schedulo';
 import * as uris from '../globals/uris';
 import { DymoStore } from '../io/dymostore';
+import { SchedulerThread } from './thread';
 
 const PARAM_PAIRINGS = new Map<string,number>();
 PARAM_PAIRINGS.set(uris.ONSET, Parameter.StartTime);
@@ -18,20 +19,20 @@ export class ScheduloObjectWrapper {
   private paramToValue = new Map<string,number>();
 
   constructor(public dymoUri: string, private scheduleTime: number, private object: AudioObject,
-      private store: DymoStore, private onEnded: (o:ScheduloObjectWrapper) => any) {
+      private store: DymoStore, private thread: SchedulerThread) {
     this.parentUris = this.store.findAllParents(this.dymoUri);
-    console.log(dymoUri, this.parentUris);
     PARAM_PAIRINGS.forEach((param, typeUri) => {
       this.initParam(dymoUri, typeUri);
       //if behavior not independent, observe parents
       let behavior = this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
       this.typeToBehavior.set(typeUri, behavior);
-      console.log(behavior);
       if (behavior && behavior !== uris.INDEPENDENT) {
         this.parentUris.forEach(p => this.initParam(p, typeUri));
       }
       this.store.findParameterValue(this.dymoUri, typeUri);
-    })
+    });
+    this.object.on('playing', ()=>this.thread.objectStarted(this))
+    this.object.on('stopped', ()=>this.thread.objectEnded(this))
   }
 
   private initParam(dymoUri: string, typeUri: string) {
@@ -43,6 +44,10 @@ export class ScheduloObjectWrapper {
 
   getUri(): string {
     return this.dymoUri;
+  }
+
+  getUris(): string[] {
+    return [this.dymoUri].concat(this.parentUris);
   }
 
   stop() {
@@ -79,9 +84,6 @@ export class ScheduloObjectWrapper {
       this.object.set(PARAM_PAIRINGS.get(typeUri), value);
     }
   }
-
-  //TODO OBSERVE SCHEDULO OBJECT TO FIND OUT WHEN IT ENDS
-  //.then(() => this.onEnded(this));
 
   observedValueChanged(paramUri: string, paramType: string, value: number) {
     this.paramToValue.set(paramUri, value);

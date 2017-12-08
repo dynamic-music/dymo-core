@@ -26,6 +26,14 @@ export class Scheduler {
 		this.schedulo.start();
 	}
 
+	getStore(): DymoStore {
+		return this.store;
+	}
+
+	getSchedulo(): Schedulo {
+		return this.schedulo;
+	}
+
 	getPlayingDymoUris(): Observable<string[]> {
 		return this.playingDymoUris.asObservable();
 	}
@@ -116,7 +124,7 @@ export class Scheduler {
 	}
 
 	play(dymoUri, navigator?: DymoNavigator) {
-		var thread = new SchedulerThread(dymoUri, this.schedulo, this.updatePlayingDymos.bind(this), this.threadEnded.bind(this), this.store, navigator);
+		var thread = new SchedulerThread(dymoUri, this, navigator);
 		this.threads.push(thread);
 	}
 
@@ -140,26 +148,30 @@ export class Scheduler {
 		}
 	}
 
-	private threadEnded(thread) {
+	threadEnded(thread: SchedulerThread) {
 		this.threads.splice(this.threads.indexOf(thread), 1);
 	}
 
-	private updatePlayingDymos(changedThread: SchedulerThread) {
-		/*let uris = flattenArray(this.threads.map(t => Array.from(t.getAllSources().keys())));
-		uris = removeDuplicates(uris);
-		if (!GlobalVars.OPTIMIZED_MODE) {
-			uris = flattenArray(uris.map(d => this.store.findAllParents(d)));
-		}
+	objectStarted(objectAndParentUris: string[]) {
+		let uris = this.playingDymoUris.getValue();
+		uris.concat(objectAndParentUris);
+		this.updatePlayingDymos(uris);
+	}
+
+	objectStopped() {
+		let uris = flattenArray(this.threads.map(t => t.getPlayingDymoUris()));
+		this.updatePlayingDymos(uris);
+	}
+
+	private updatePlayingDymos(uris: string[]) {
 		uris = removeDuplicates(uris);
 		uris.sort();
 		uris = uris.map(uri => uri.replace(CONTEXT_URI, ""));
-		setTimeout(() => {
-			this.playingDymoUris.next(uris);
-		}, GlobalVars.SCHEDULE_AHEAD_TIME*1000);*/
+		this.playingDymoUris.next(uris);
 	}
 
-	getUrisOfPlayingDymos() {
-		return this.playingDymoUris;
+	getUrisOfPlayingDymos(): string[] {
+		return this.playingDymoUris.getValue();
 	}
 
 	observedValueChanged(paramUri, paramType, value) {
