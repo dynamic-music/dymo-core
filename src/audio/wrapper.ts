@@ -6,7 +6,11 @@ import { SchedulerThread } from './thread';
 const PARAM_PAIRINGS = new Map<string,number>();
 PARAM_PAIRINGS.set(uris.ONSET, Parameter.StartTime);
 PARAM_PAIRINGS.set(uris.AMPLITUDE, Parameter.Amplitude);
+PARAM_PAIRINGS.set(uris.PAN, Parameter.Panning);
+PARAM_PAIRINGS.set(uris.DISTANCE, Parameter.Panning);
+PARAM_PAIRINGS.set(uris.HEIGHT, Parameter.Panning);
 PARAM_PAIRINGS.set(uris.REVERB, Parameter.Reverb);
+PARAM_PAIRINGS.set(uris.DELAY, Parameter.Delay);
 PARAM_PAIRINGS.set(uris.LOOP, Parameter.Loop);
 PARAM_PAIRINGS.set(uris.PLAYBACK_RATE, Parameter.PlaybackRate);
 
@@ -29,7 +33,7 @@ export class ScheduloObjectWrapper {
       if (behavior && behavior !== uris.INDEPENDENT) {
         this.parentUris.forEach(p => this.initParam(p, typeUri));
       }
-      this.store.findParameterValue(this.dymoUri, typeUri);
+      //this.store.findParameterValue(this.dymoUri, typeUri);
     });
     this.object.on('playing', ()=>this.thread.objectStarted(this))
     this.object.on('stopped', ()=>this.thread.objectEnded(this))
@@ -39,7 +43,7 @@ export class ScheduloObjectWrapper {
     let paramUri = this.store.addParameterObserver(dymoUri, typeUri, this);
     this.dymoToParam.set(dymoUri, paramUri);
     this.paramToType.set(paramUri, typeUri);
-    this.paramToValue.set(paramUri, this.store.findParameterValue(this.dymoUri, typeUri));
+    this.paramToValue.set(paramUri, this.store.findParameterValue(dymoUri, typeUri));
   }
 
   getUri(): string {
@@ -62,7 +66,6 @@ export class ScheduloObjectWrapper {
     //TODO GO THROUGH ALL PARENTS AND PROCESS (* or +...)
     let paramsOfType = [...this.paramToType.keys()].filter(p => this.paramToType.get(p) === typeUri);
     let allValues = paramsOfType.map(p => this.paramToValue.get(p)).filter(v => !isNaN(v));
-    console.log(this.dymoUri, typeUri, allValues)
 
     //calculate value based on behavior
     let value;
@@ -77,6 +80,9 @@ export class ScheduloObjectWrapper {
     //deal with onset specifically
     if (typeUri === uris.ONSET) {
       value = this.scheduleTime+value;
+    }
+    if (typeUri === uris.PAN || typeUri === uris.DISTANCE || typeUri === uris.HEIGHT) {
+      value = [this.paramToValue.get(uris.PAN), this.paramToValue.get(uris.DISTANCE), this.paramToValue.get(uris.HEIGHT)];
     }
 
     //update the schedulo object
