@@ -22,7 +22,7 @@ export class ScheduloObjectWrapper {
   private paramToType = new Map<string,string>();
   private paramToValue = new Map<string,number>();
 
-  constructor(public dymoUri: string, private scheduleTime: number, private object: AudioObject,
+  constructor(public dymoUri: string, private referenceTime: number, private object: AudioObject,
       private store: DymoStore, private thread: SchedulerThread) {
     this.parentUris = this.store.findAllParents(this.dymoUri);
     PARAM_PAIRINGS.forEach((param, typeUri) => {
@@ -54,6 +54,14 @@ export class ScheduloObjectWrapper {
     return [this.dymoUri].concat(this.parentUris);
   }
 
+  getScheduloObject(): AudioObject {
+    return this.object;
+  }
+
+  getReferenceTime(): number {
+    return this.referenceTime;
+  }
+
   stop() {
     this.object.stop(Time.Immediately, Stop.Immediately);
     PARAM_PAIRINGS.forEach((param, typeUri) => {
@@ -79,7 +87,7 @@ export class ScheduloObjectWrapper {
 
     //deal with onset specifically
     if (typeUri === uris.ONSET) {
-      value = this.scheduleTime+value;
+      value = this.referenceTime+value;
     }
     if (typeUri === uris.PAN || typeUri === uris.DISTANCE || typeUri === uris.HEIGHT) {
       value = [this.paramToValue.get(uris.PAN), this.paramToValue.get(uris.DISTANCE), this.paramToValue.get(uris.HEIGHT)];

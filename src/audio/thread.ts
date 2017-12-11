@@ -1,7 +1,8 @@
-import { GlobalVars } from '../globals/globals'
-import { DymoStore } from '../io/dymostore'
-import * as uris from '../globals/uris'
-import { DymoNavigator } from '../navigators/navigator'
+import * as _ from 'lodash';
+import { GlobalVars } from '../globals/globals';
+import { DymoStore } from '../io/dymostore';
+import * as uris from '../globals/uris';
+import { DymoNavigator } from '../navigators/navigator';
 import { SequentialNavigator } from '../navigators/sequential';
 import { Scheduler } from './scheduler';
 import { Schedulo, Time, Playback } from 'schedulo';
@@ -64,67 +65,36 @@ export class SchedulerThread {
 	}
 
 	private recursivePlay() {
-		let schedulerTime = this.scheduler.getSchedulo().getCurrentTime()+1;
+		let previousObject = _.last(this.scheduledObjects);
+		let referenceTime = previousObject ? previousObject.getReferenceTime()
+			: this.scheduler.getSchedulo().getCurrentTime()+1;
 		let currentObjects = this.getNextPlayParams();
-		while (currentObjects.size > 0) {
-			currentObjects.forEach(o => {
-				let onset = this.store.findParameterValue(o.uri, uris.ONSET);
-				//TODO IMPLEMENT TIME.AFTER!!!!!
-				let startTime = onset ? Time.At(schedulerTime+onset) : Time.At(schedulerTime);
-				let loop = this.store.findParameterValue(o.uri, uris.LOOP);
-				//console.log("LOOP", loop)
-				let playbackMode = loop ? Playback.Loop(0, o.start, o.duration) : Playback.Oneshot(o.start, o.duration);
-				this.scheduler.getSchedulo().scheduleAudio(
-					[o.sourcePath],
-					startTime,
-					playbackMode,
-				).then(audioObject =>
-					this.scheduledObjects.push(new ScheduloObjectWrapper(o.uri, schedulerTime, audioObject[0], this.store, this))
-				);
-			});
-			currentObjects = this.getNextPlayParams();
-		}
-
-
-		/*this.currentObjects = this.nextObjects ? this.nextObjects : this.getNextPlayParams();
-		//calculate delay and schedule
-		var currentTime = this.schedulo.getCurrentTime();
-		var delay = this.nextEventTime ? this.nextEventTime-currentTime : GlobalVars.SCHEDULE_AHEAD_TIME;
-		var startTime = currentTime+delay;
-		//console.log("START", startTime)
-		console.log(currentTime, startTime)
-		for (var source of this.currentObjects.values()) {
-			let onset = this.store.findParameterValue(source.uri, uris.ONSET);
-			let loop = this.store.findParameterValue(source.uri, uris.LOOP);
-			let playbackMode = loop ? Playback.Loop(0, source.start, source.duration) : Playback.Oneshot(source.start, source.duration);
-			this.schedulo.scheduleAudio(
-				[source.sourcePath],
-				Time.At(startTime),
-				playbackMode,
-			).then(audioObject =>
-				this.playingObjects.push(new ScheduloObjectWrapper(source.uri, audioObject[0], this.store, this.objectEnded.bind(this)))
-			);
-		}
-		/*setTimeout(() => this.onChanged(this), delay+50);
-		//create next sources and wait or end and reset
-		this.nextObjects = this.getNextPlayParams();
-		if (this.nextObjects && this.nextObjects.size > 0) {
-			var eventAndParams = this.getNextEventTime(startTime);
-			var longestSource = eventAndParams[1];
-			this.nextEventTime = eventAndParams[0];
-			//smooth transition in case of a loop
-			if (longestSource && this.store.findParameterValue(longestSource.uri, uris.LOOP)) {
-				this.nextEventTime -= GlobalVars.FADE_LENGTH;
+		currentObjects.forEach(o => {
+			let onset = this.store.findParameterValue(o.uri, uris.ONSET);
+			let startTime;
+			if (!isNaN(onset)) {
+				startTime = Time.At(referenceTime+onset);
+			} else if (previousObject) {
+				startTime = Time.After([previousObject.getScheduloObject()]);
+			} else {
+				startTime = Time.At(referenceTime);
 			}
-			var wakeupTime = (this.nextEventTime-currentTime-GlobalVars.SCHEDULE_AHEAD_TIME)*1000;
-			this.timeoutID = setTimeout(() => this.recursivePlay(), wakeupTime);
-		} else {
-			this.nextEventTime = this.getNextEventTime(startTime)[0];
-			var wakeupTime = (this.nextEventTime-currentTime)*1000;
-			setTimeout(() => {
-				this.endThreadIfNoMoreSources();
-			}, wakeupTime+100);
-		}*/
+			let loop = this.store.findParameterValue(o.uri, uris.LOOP);
+			//console.log("LOOP", loop)
+			let playbackMode = loop ? Playback.Loop(0, o.start, o.duration) : Playback.Oneshot(o.start, o.duration);
+			this.scheduler.getSchedulo().scheduleAudio(
+				[o.sourcePath],
+				startTime,
+				playbackMode,
+			).then(audioObject => {
+				this.scheduledObjects.push(new ScheduloObjectWrapper(o.uri, referenceTime, audioObject[0], this.store, this))
+				if (previousObject) {
+					previousObject.getScheduloObject().on('playing', this.recursivePlay.bind(this));
+				} else {
+					this.recursivePlay();
+				}
+			});
+		});
 	}
 
 	objectStarted(object: ScheduloObjectWrapper) {
