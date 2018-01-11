@@ -176,6 +176,7 @@ function createDymoOntology(path) {
 	addProperty("isInteger", "ParameterType", prefixes["xsd"]+"boolean", true);
 	addIndividual("Play", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
 	addIndividual("Loop", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
+	addIndividual("Repeat", "AudioParameter", {"hasStandardValue": 0, "isInteger": true});
 	addIndividual("Onset", "AudioParameter");
 	setProperty("Onset", "hasBehavior", "Additive");
 	addIndividual("Duration", "AudioParameter");

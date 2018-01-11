@@ -11,7 +11,7 @@ PARAM_PAIRINGS.set(uris.DISTANCE, Parameter.Panning);
 PARAM_PAIRINGS.set(uris.HEIGHT, Parameter.Panning);
 PARAM_PAIRINGS.set(uris.REVERB, Parameter.Reverb);
 PARAM_PAIRINGS.set(uris.DELAY, Parameter.Delay);
-PARAM_PAIRINGS.set(uris.LOOP, Parameter.Loop);
+//PARAM_PAIRINGS.set(uris.LOOP, Parameter.Loop);
 PARAM_PAIRINGS.set(uris.PLAYBACK_RATE, Parameter.PlaybackRate);
 
 export class ScheduloObjectWrapper {
@@ -35,8 +35,10 @@ export class ScheduloObjectWrapper {
       }
       //this.store.findParameterValue(this.dymoUri, typeUri);
     });
-    this.object.on('playing', ()=>this.thread.objectStarted(this))
-    this.object.on('stopped', ()=>this.thread.objectEnded(this))
+    if (this.object) {
+      this.object.on('playing', ()=>this.thread.objectStarted(this))
+      this.object.on('stopped', ()=>this.thread.objectEnded(this))
+    }
   }
 
   private initParam(dymoUri: string, typeUri: string) {
@@ -60,6 +62,10 @@ export class ScheduloObjectWrapper {
 
   getReferenceTime(): number {
     return this.referenceTime;
+  }
+
+  getParam(paramUri: string): number {
+    return this.paramToValue.get(paramUri);
   }
 
   stop() {

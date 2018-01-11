@@ -69,6 +69,9 @@ dy:Play a dy:AudioParameter;
 dy:Loop a dy:AudioParameter;
     dy:hasStandardValue "0"^^xsd:integer;
     dy:isInteger "true"^^xsd:boolean.
+dy:Repeat a dy:AudioParameter;
+    dy:hasStandardValue "0"^^xsd:integer;
+    dy:isInteger "true"^^xsd:boolean.
 dy:Onset a dy:AudioParameter;
     dy:hasBehavior dy:Additive.
 dy:Duration a dy:AudioParameter.

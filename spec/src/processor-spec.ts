@@ -45,7 +45,7 @@ describe("a processor", function() {
 		store.setParameter("dymo1", TIME_STRETCH_RATIO, 2);
 		scheduler.play("dymo1");
 		setTimeout(function() {
-			expect(scheduler.getUrisOfPlayingDymos().getValue()).toEqual(["dymo1"]);
+			expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1"]);
 			//expect(audioContext.activeSourceCount).toBe(1);
 			scheduler.stop("dymo1");
 			done();

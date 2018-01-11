@@ -89,6 +89,7 @@
 		"isInteger": "dy:isInteger",
 		"Play": "dy:Play",
 		"Loop": "dy:Loop",
+		"Repeat": "dy:Repeat",
 		"Onset": "dy:Onset",
 		"Duration": "dy:Duration",
 		"DurationRatio": "dy:DurationRatio",
