@@ -55,6 +55,8 @@ export abstract class DymoScheduler {
     this.store = player.getStore();
   }
 
+  abstract setListenerOrientation(posX, posY, posZ, forwX, forwY, forwZ);
+
   abstract schedule(dymoUri: string, previousObject: ScheduledObject): Promise<ScheduledObject>;
 
   protected calculateSegment(dymoUri: string): [number, number] {
@@ -76,6 +78,8 @@ export abstract class DymoScheduler {
 export class DummyScheduler extends DymoScheduler {
 
   constructor(private delay: number) { super() }
+
+  setListenerOrientation(posX, posY, posZ, forwX, forwY, forwZ) { }
 
   schedule(dymoUri: string, previousObject: ScheduledObject): Promise<ScheduledObject> {
     return new Promise(resolve =>

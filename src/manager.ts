@@ -1,12 +1,12 @@
 import * as _ from 'lodash';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
+import { ScheduloScheduler } from './audio/schedulo';
 import { GlobalVars } from './globals/globals'
 import * as uris from './globals/uris'
 import { Fetcher, FetchFetcher } from './util/fetcher'
+import { DymoPlayer } from './audio/player';
 import { Rendering } from './model/rendering'
-import { AudioBank } from './audio/audio-bank';
-import { Scheduler } from './audio/scheduler-old'
 import { DymoStore } from './io/dymostore'
 import { DymoLoader, LoadedStuff } from './io/dymoloader'
 import { Control } from './model/control'
@@ -32,8 +32,7 @@ export class DymoManager {
 
 	private store: DymoStore;
 	private loader: DymoLoader;
-	private scheduler: Scheduler;
-	private audioBank: AudioBank;
+	private player: DymoPlayer;
 	private dymoUris: string[] = [];
 	private rendering: Rendering;
 	private uiControls: UIControl[] = [];
@@ -45,8 +44,7 @@ export class DymoManager {
 	constructor(audioContext = createAudioContext(), scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string, fetcher: Fetcher = new FetchFetcher()) {
 		this.store = new DymoStore(fetcher);
 		this.loader = new DymoLoader(this.store, fetcher);
-		this.audioBank = new AudioBank(audioContext, fetcher);
-		this.scheduler = new Scheduler(audioContext, this.audioBank, this.store);
+		this.player = new DymoPlayer(this.store, new ScheduloScheduler());
 		if (optimizedMode) {
 			GlobalVars.OPTIMIZED_MODE = true;
 		}
@@ -66,12 +64,8 @@ export class DymoManager {
 		});
 	}
 
-	getAudioBank(): AudioBank {
-		return this.audioBank;
-	}
-
 	getPlayingDymoUris(): Observable<string[]> {
-		return this.scheduler.getPlayingDymoUris();
+		return this.player.getPlayingDymoUris();
 	}
 
 	getJsonGraph(nodeClass, edgeProperty, cacheNodes?: boolean): Observable<JsonGraph> {
@@ -105,7 +99,8 @@ export class DymoManager {
 		}
 		this.graphs.forEach(g => g.update());
 		this.attributeInfo.next(this.store.getAttributeInfo());
-		return this.scheduler.init(this.reverbFile, loadedStuff.dymoUris);
+		//return this.player.init(this.reverbFile, loadedStuff.dymoUris);
+		return Promise.resolve();
 	}
 
 	loadDymoFromJson(fileUri: string): Promise<string[]> {
@@ -115,11 +110,11 @@ export class DymoManager {
 
 	replacePartOfTopDymo(index, dymoUri) {
 		var oldDymo = this.store.replacePartAt(this.dymoUris[0], this.addContext(dymoUri), index);
-		this.scheduler.stop(oldDymo);
+		this.player.stop(oldDymo);
 	}
 
-	updateNavigatorPosition(dymoUri, level, position) {
-		this.scheduler.updateNavigatorPosition(this.addContext(dymoUri), level, position);
+	/*updateNavigatorPosition(dymoUri, level, position) {
+		this.player.updateNavigatorPosition(this.addContext(dymoUri), level, position);
 	}
 
 	getNavigatorPosition(dymoUri): number {
@@ -129,14 +124,14 @@ export class DymoManager {
 	//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
 	syncNavigators(syncDymo, goalDymo, level) {
 		this.scheduler.syncNavigators(this.addContext(syncDymo), this.addContext(goalDymo), level);
-	}
+	}*/
 
 	startPlayingUri(dymoUri) {
-		this.scheduler.play(this.addContext(dymoUri));
+		this.player.play(this.addContext(dymoUri));
 	}
 
 	stopPlayingUri(dymoUri) {
-		this.scheduler.stop(this.addContext(dymoUri));
+		this.player.stop(this.addContext(dymoUri));
 	}
 
 	private addContext(uri: string): string {
@@ -147,7 +142,7 @@ export class DymoManager {
 		if (this.rendering) {
 			this.rendering.play();
 		} else {
-			this.dymoUris.forEach(d => this.scheduler.play(d));
+			this.dymoUris.forEach(d => this.player.play(d));
 		}
 	}
 
@@ -155,7 +150,7 @@ export class DymoManager {
 		if (this.rendering) {
 			this.rendering.stop();
 		} else {
-			this.dymoUris.forEach(d => this.scheduler.stop(d));
+			this.dymoUris.forEach(d => this.player.stop(d));
 		}
 	}
 

@@ -1,5 +1,7 @@
 import * as _ from 'lodash';
 import * as natsort from 'natsort';
+import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import * as uris from '../globals/uris';
 import { Navigator, getNavigator } from '../navigators/nav';
 import { DymoStore } from '../io/dymostore';
@@ -9,9 +11,12 @@ export class DymoPlayer {
 
   private currentPlayers = new Map<string,HierarchicalPlayer>();
   private playingObjects: ScheduledObject[] = [];
+  private playingDymoUris: BehaviorSubject<string[]> = new BehaviorSubject([]);
 
   constructor(private store: DymoStore, private scheduler: DymoScheduler) {
     scheduler.setPlayer(this);
+    this.store.setParameter(null, uris.LISTENER_ORIENTATION, 0);
+    this.store.addParameterObserver(null, uris.LISTENER_ORIENTATION, this);
   }
 
   getStore(): DymoStore {
@@ -34,20 +39,32 @@ export class DymoPlayer {
     }
   }
 
-  getPlayingDymoUris(): string[] {
-    let uris = _.uniq(_.flatten(this.playingObjects.map(o => o.getUris())));
-    uris.sort(natsort());
-    return uris;
+  getPlayingDymoUrisArray(): string[] {
+    return this.playingDymoUris.getValue();
+  }
+
+  getPlayingDymoUris(): Observable<string[]> {
+    return this.playingDymoUris.asObservable();
+  }
+
+  private updatePlayingDymoUris(dymoUris: string[]) {
+    dymoUris = _.uniq(dymoUris);
+    dymoUris.sort(natsort());
+    dymoUris = dymoUris.map(uri => uri.replace(uris.CONTEXT_URI, ""));
+    this.playingDymoUris.next(dymoUris);
   }
 
   objectStarted(object: ScheduledObject) {
     this.playingObjects.push(object);
-    //TODO this.scheduler.objectStarted(object.getUris());
+    let uris = this.playingDymoUris.getValue();
+    uris = uris.concat(object.getUris());
+    this.updatePlayingDymoUris(uris);
   }
 
   objectEnded(object: ScheduledObject) {
     if (this.removeFrom(object, this.playingObjects)) {
-      //TODO this.scheduler.objectStopped();
+      let uris = _.flatten(this.playingObjects.map(o => o.getUris()));
+      this.updatePlayingDymoUris(uris);
     }
   }
 
@@ -58,6 +75,20 @@ export class DymoPlayer {
       return true;
     }
     return false;
+  }
+
+  observedValueChanged(paramUri, paramType, value) {
+    if (paramType == uris.LISTENER_ORIENTATION) {
+      var angleInRadians = value / 180 * Math.PI;
+      this.scheduler.setListenerOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
+    } else if (paramType == uris.PLAY) {
+      var dymoUri = this.store.findSubject(uris.HAS_PARAMETER, paramUri);
+      if (value > 0) {
+        this.play(dymoUri);
+      } else {
+        this.stop(dymoUri);
+      }
+    }
   }
 
 }

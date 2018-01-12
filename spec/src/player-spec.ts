@@ -76,38 +76,11 @@ describe("a player", function() {
 
     function checkPlayingDymos(uris: string[], timeout: number): Promise<any> {
       return new Promise(resolve => setTimeout(
-        () => resolve(expect(player.getPlayingDymoUris()).toEqual(uris)),
+        () => resolve(expect(player.getPlayingDymoUrisArray()).toEqual(uris)),
         timeout
       ));
     }
 
-    /*var navigator = new DymoNavigator("dymo1", store, new SequentialNavigator("dymo1", store));
-    expect(navigator.getPosition("dymo1")).toBeUndefined();
-    expect(navigator.getNextParts()[0]).toBe("dymo5");
-    expect(navigator.getPosition("dymo1")).toBe(0);
-    //expect(navigator.getPosition("dymo2")).toBe(1);
-    expect(navigator.getNextParts()[0]).toBe("dymo6");
-    expect(navigator.getPosition("dymo1")).toBe(1);
-    //expect(navigator.getPosition("dymo2")).toBe(0);
-    expect(navigator.getNextParts()[0]).toBe("dymo7");
-    expect(navigator.getNextParts()[0]).toBe("dymo11");
-    expect(navigator.getNextParts()[0]).toBe("dymo12");
-    expect(navigator.getNextParts()[0]).toBe("dymo9");
-    expect(navigator.getPosition("dymo1")).toBe(2);
-    expect(navigator.getNextParts()[0]).toBe("dymo10");
-    expect(navigator.getPosition("dymo1")).toBe(0);
-    //and keeps looping
-    expect(navigator.getNextParts()[0]).toBe("dymo5");
-    expect(navigator.getNextParts()[0]).toBe("dymo6");
-    navigator.reset();
-    //starts over
-    expect(navigator.getNextParts()[0]).toBe("dymo5");
-    expect(navigator.getNextParts()[0]).toBe("dymo6");
-    expect(navigator.getNextParts()[0]).toBe("dymo7");
-    expect(navigator.getNextParts()[0]).toBe("dymo11");
-    expect(navigator.getNextParts()[0]).toBe("dymo12");
-    expect(navigator.getNextParts()[0]).toBe("dymo9");
-    expect(navigator.getNextParts()[0]).toBe("dymo10");*/
   });
 
 });

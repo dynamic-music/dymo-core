@@ -95,6 +95,16 @@ export class ScheduloScheduledObject extends ScheduledObject {
     }
   }
 
+  getDuration(): number {
+    //TODO USE BUFFER DURATION FROM SCHEDULO OBJECT
+    let duration = this.paramToValue.get(uris.DURATION);
+    let playbackRate = this.paramToValue.get(uris.PLAYBACK_RATE);
+    duration /= playbackRate ? playbackRate : 1;
+    let stretchRatio = this.paramToValue.get(uris.TIME_STRETCH_RATIO);
+    duration /= stretchRatio ? stretchRatio : 1;
+    return duration;
+  }
+
   observedValueChanged(paramUri: string, paramType: string, value: number) {
     this.paramToValue.set(paramUri, value);
     this.updateParam(paramType);

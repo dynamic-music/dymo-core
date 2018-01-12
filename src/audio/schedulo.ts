@@ -5,7 +5,17 @@ import { ScheduloScheduledObject } from './wrapper';
 
 export class ScheduloScheduler extends DymoScheduler {
 
-  private schedulo = new Schedulo();
+  private schedulo: Schedulo;
+
+  constructor() {
+    super();
+    this.schedulo = new Schedulo();
+    this.schedulo.start();
+  }
+
+  setListenerOrientation(posX, posY, posZ, forwX, forwY, forwZ) {
+    //TODO SET ON SCHEDULO!!!
+  }
 
   schedule(dymoUri: string, previousObject: ScheduloScheduledObject): Promise<ScheduloScheduledObject> {
 
