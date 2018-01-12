@@ -1,191 +1,89 @@
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Observable } from 'rxjs/Observable';
-import { flattenArray, removeDuplicates } from 'arrayutils';
+import * as uris from '../globals/uris';
 import { DymoStore } from '../io/dymostore';
-import { GlobalVars } from '../globals/globals'
-import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER, CONTEXT_URI } from '../globals/uris'
-import { AudioBank } from './audio-bank';
-import { SchedulerThread } from './thread'
-import { DymoNavigator } from '../navigators/navigator';
-import { Schedulo } from 'schedulo';
-declare const Buffer;
+import { DymoPlayer } from './player';
 
-/**
- * Manages playing back any number of dymos.
- */
-export class Scheduler {
 
-	private schedulo = new Schedulo();
-	private threads: SchedulerThread[] = [];
-	private playingDymoUris: BehaviorSubject<string[]> = new BehaviorSubject([]);
+export abstract class ScheduledObject {
 
-	private convolverSend;
-	private delaySend;
+  protected parentUris;
 
-	constructor(private audioContext: AudioContext, private audioBank: AudioBank, private store: DymoStore) {
-		this.schedulo.start();
-	}
+  constructor(protected dymoUri: string, protected store: DymoStore,
+      protected player: DymoPlayer) {
+    this.parentUris = store.findAllParents(this.dymoUri);
+  }
 
-	getStore(): DymoStore {
-		return this.store;
-	}
+  getUri(): string {
+    return this.dymoUri;
+  }
 
-	getSchedulo(): Schedulo {
-		return this.schedulo;
-	}
+  getUris(): string[] {
+    return [this.dymoUri].concat(this.parentUris);
+  }
 
-	getPlayingDymoUris(): Observable<string[]> {
-		return this.playingDymoUris.asObservable();
-	}
+  abstract getParam(paramUri: string): number;
 
-	init(reverbFile, dymoUris): Promise<any> {
-		if (this.audioContext) {
-			//init horizontal listener orientation in degrees
-			this.store.setParameter(null, LISTENER_ORIENTATION, 0);
-			this.store.addParameterObserver(null, LISTENER_ORIENTATION, this);
-			let loadingPromises = [this.loadBuffers(dymoUris)];
+  abstract stop(): void;
 
-			//init reverb if needed
-			if (this.audioContext.createConvolver && reverbFile && (!GlobalVars.OPTIMIZED_MODE || this.store.find(null, null, REVERB).length > 0)) {
-				this.convolverSend = this.audioContext.createConvolver();
-				this.convolverSend.connect(this.audioContext.destination);
-				loadingPromises.push(this.loadReverbFile(reverbFile));
-			}
+}
 
-			//init delay if needed
-			if (this.audioContext.createDelay && (!GlobalVars.OPTIMIZED_MODE || this.store.find(null, null, DELAY).length > 0)) {
-				this.delaySend = this.audioContext.createDelay();
-				this.delaySend.delayTime.value = 0.5;
-				this.delaySend.connect(this.audioContext.destination);
-				var delayFeedback = this.audioContext.createGain();
-				delayFeedback.gain.value = 0.6;
-				this.delaySend.connect(delayFeedback);
-				delayFeedback.connect(this.delaySend);
-			}
-			//start observing play parameters
-			this.store.addTypeObserver(PLAY, VALUE, this);
-			return Promise.all(loadingPromises);
-		}
-		return Promise.resolve();
-	}
+export class DummyScheduledObject extends ScheduledObject {
 
-	private loadReverbFile(reverbFile): Promise<any> {
-		return this.audioBank.loadBuffer(reverbFile)
-			.then(buffer => this.convolverSend.buffer = buffer);
-	}
+  constructor(dymoUri: string, store: DymoStore, player: DymoPlayer,
+      delay: number) {
+    super(dymoUri, store, player);
+    this.player.objectStarted(this);
+    setTimeout(() => this.player.objectEnded(this), delay);
+  }
 
-	private loadBuffers(dymoUris: string[]): Promise<AudioBuffer[]> {
-		//let allPaths = [];
-		//console.log(this.store.find(null, HAS_PART).map(r => r.subject + " " + r.object));
-		let allPaths = flattenArray(dymoUris.map(uri =>
-			this.store.findAllObjectsInHierarchy(uri).map(suburi => this.store.getSourcePath(suburi))
-		));
-		allPaths = allPaths.filter(p => typeof p === "string");
-		allPaths = removeDuplicates(allPaths);
-		return this.audioBank.loadBuffers(...allPaths);
-	}
+  getParam(paramUri: string): number {
+    return this.store.findParameterValue(this.dymoUri, paramUri);
+  }
 
-	getBuffer(dymoUri) {
-		return this.audioBank.loadBuffer(this.store.getSourcePath(dymoUri));
-	}
+  stop() {
+    this.player.objectEnded(this);
+  }
 
-	updateNavigatorPosition(dymoUri, level, position) {
-		for (var i = 0, ii = this.threads.length; i < ii; i++) {
-			if (this.threads[i].hasDymo(dymoUri)) {
-				this.threads[i].getNavigator().setPosition(position, level, dymoUri);
-			}
-		}
-	}
+}
 
-	getNavigatorPosition(dymoUri: string): number {
-		for (var i = 0, ii = this.threads.length; i < ii; i++) {
-			if (this.threads[i].hasDymo(dymoUri)) {
-				return this.threads[i].getNavigator().getPosition(dymoUri);
-			}
-		}
-	}
+export abstract class DymoScheduler {
 
-	//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
-	syncNavigators(syncDymo, goalDymo, level) {
-		var syncNav, goalNav;
-		for (var i = 0, ii = this.threads.length; i < ii; i++) {
-			if (this.threads[i].hasDymo(syncDymo)) {
-				syncNav = this.threads[i].getNavigator();
-			}
-			if (this.threads[i].hasDymo(goalDymo)) {
-				goalNav = this.threads[i].getNavigator();
-			}
-		}
-		//only sync if goalNav already exists..
-		if (goalNav) {
-			var position = goalNav.getPosition(level, goalDymo);
-			syncNav.setPosition(position, level, syncDymo);
-		}
-	}
+  protected player: DymoPlayer;
+  protected store: DymoStore;
 
-	play(dymoUri, navigator?: DymoNavigator) {
-		var thread = new SchedulerThread(dymoUri, this, navigator);
-		this.threads.push(thread);
-	}
+  setPlayer(player: DymoPlayer) {
+    this.player = player;
+    this.store = player.getStore();
+  }
 
-	/*pause(dymoUri) {
-		if (dymoUri) {
-			for (var i = 0; i < this.threads.length; i++) {
-				this.threads[i].pause(dymoUri);
-			}
-		} else {
+  abstract schedule(dymoUri: string, previousObject: ScheduledObject): Promise<ScheduledObject>;
 
-		}
-	}*/
+  protected calculateSegment(dymoUri: string): [number, number] {
+    let start = this.store.findFeatureValue(dymoUri, uris.TIME_FEATURE);
+    start = start ? start : 0;
+    let durationF = this.store.findFeatureValue(dymoUri, uris.DURATION_FEATURE);
+    let durationP = this.store.findParameterValue(dymoUri, uris.DURATION);
+    let duration = durationP ? durationP : durationF;
+    //TODO ONLY WORKS IF DURATION PARAM OR FEATURE GIVEN (DELEGATE TO SCHEDULO!!!!!)
+    let durationRatio = this.store.findParameterValue(dymoUri, uris.DURATION_RATIO);
+    if (durationRatio && duration) {
+      duration *= durationRatio;
+    }
+    return [start, duration];
+  }
 
-	stop(dymoUri) {
-		if (dymoUri) {
-			for (var i = 0; i < this.threads.length; i++) {
-				this.threads[i].stop(dymoUri);
-			}
-		} else {
+}
 
-		}
-	}
+export class DummyScheduler extends DymoScheduler {
 
-	threadEnded(thread: SchedulerThread) {
-		this.threads.splice(this.threads.indexOf(thread), 1);
-	}
+  constructor(private delay: number) { super() }
 
-	objectStarted(objectAndParentUris: string[]) {
-		let uris = this.playingDymoUris.getValue();
-		uris.concat(objectAndParentUris);
-		this.updatePlayingDymos(uris);
-	}
-
-	objectStopped() {
-		let uris = flattenArray(this.threads.map(t => t.getPlayingDymoUris()));
-		this.updatePlayingDymos(uris);
-	}
-
-	private updatePlayingDymos(uris: string[]) {
-		uris = removeDuplicates(uris);
-		uris.sort();
-		uris = uris.map(uri => uri.replace(CONTEXT_URI, ""));
-		this.playingDymoUris.next(uris);
-	}
-
-	getUrisOfPlayingDymos(): string[] {
-		return this.playingDymoUris.getValue();
-	}
-
-	observedValueChanged(paramUri, paramType, value) {
-		if (paramType == LISTENER_ORIENTATION) {
-			var angleInRadians = value / 180 * Math.PI;
-			this.audioContext.listener.setOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
-		} else if (paramType == PLAY) {
-			var dymoUri = this.store.findSubject(HAS_PARAMETER, paramUri);
-			if (value > 0) {
-				this.play(dymoUri);
-			} else {
-				this.stop(dymoUri);
-			}
-		}
-	}
+  schedule(dymoUri: string, previousObject: ScheduledObject): Promise<ScheduledObject> {
+    return new Promise(resolve =>
+      setTimeout(() => {
+        console.log("scheduled", dymoUri);
+        resolve(new DummyScheduledObject(dymoUri, this.store, this.player, this.delay));
+      }, this.delay)
+    );
+  }
 
 }

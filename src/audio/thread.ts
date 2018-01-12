@@ -4,9 +4,9 @@ import { DymoStore } from '../io/dymostore';
 import * as uris from '../globals/uris';
 import { DymoNavigator } from '../navigators/navigator';
 import { SequentialNavigator } from '../navigators/sequential';
-import { Scheduler } from './scheduler';
+import { Scheduler } from './scheduler-old';
 import { Schedulo, Time, Playback } from 'schedulo';
-import { ScheduloObjectWrapper } from './wrapper';
+import { ScheduloScheduledObject } from './wrapper';
 import { flattenArray } from 'arrayutils';
 
 interface PlayParams {
@@ -26,8 +26,8 @@ export class SchedulerThread {
 	private navigator: DymoNavigator;
 	private store: DymoStore;
 
-	private scheduledObjects: ScheduloObjectWrapper[] = [];
-	private playingObjects: ScheduloObjectWrapper[] = [];
+	private scheduledObjects: ScheduloScheduledObject[] = [];
+	private playingObjects: ScheduloScheduledObject[] = [];
 
 	constructor(dymoUri: string, private scheduler: Scheduler, navigator?: DymoNavigator) {
 		this.dymoUri = dymoUri;
@@ -96,7 +96,7 @@ export class SchedulerThread {
 				}
 			}).then(audioObject => {
 				console.log("GOT AUDIOOBJ")
-				let newObject = new ScheduloObjectWrapper(o.uri, referenceTime, audioObject[0], this.store, this);
+				let newObject = new ScheduloScheduledObject(o.uri, referenceTime, audioObject[0], this.store, null);
 				this.scheduledObjects.push(newObject);
 				newObject.getScheduloObject().on('scheduled', ()=>{
 					console.log("SCHEDULED")
@@ -107,12 +107,12 @@ export class SchedulerThread {
 		});
 	}
 
-	objectStarted(object: ScheduloObjectWrapper) {
+	objectStarted(object: ScheduloScheduledObject) {
 		this.playingObjects.push(object);
 		this.scheduler.objectStarted(object.getUris());
 	}
 
-	objectEnded(object: ScheduloObjectWrapper) {
+	objectEnded(object: ScheduloScheduledObject) {
 		this.removeFrom(object, this.scheduledObjects);
 		if (this.removeFrom(object, this.playingObjects)) {
 			this.scheduler.objectStopped();

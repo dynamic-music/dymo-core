@@ -16,7 +16,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b53"
+              "@id": "_:b52"
             },
             "func": {
               "@type": "NamedFunction",
@@ -24,11 +24,11 @@
             }
           },
           "right": {
-            "@id": "_:b54"
+            "@id": "_:b53"
           }
         },
         "vars": {
-          "@id": "_:b54",
+          "@id": "_:b53",
           "@type": "Variable",
           "varName": "t",
           "varValue": {
@@ -38,7 +38,7 @@
         }
       },
       "vars": {
-        "@id": "_:b53",
+        "@id": "_:b52",
         "@type": "Variable",
         "varName": "r",
         "varValue": {
@@ -59,7 +59,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b21"
+              "@id": "_:b20"
             },
             "func": {
               "@type": "NamedFunction",
@@ -67,11 +67,11 @@
             }
           },
           "right": {
-            "@id": "_:b47"
+            "@id": "_:b46"
           }
         },
         "vars": {
-          "@id": "_:b47",
+          "@id": "_:b46",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -89,7 +89,7 @@
               "left": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b21"
+                  "@id": "_:b20"
                 },
                 "func": {
                   "@type": "NamedFunction",
@@ -117,7 +117,7 @@
             "left": {
               "@type": "FunctionalTerm",
               "args": {
-                "@id": "_:b21"
+                "@id": "_:b20"
               },
               "func": {
                 "@type": "NamedFunction",
@@ -152,7 +152,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b21"
+              "@id": "_:b20"
             },
             "func": {
               "@type": "NamedFunction",
@@ -169,12 +169,12 @@
               }
             },
             "right": {
-              "@id": "_:b27"
+              "@id": "_:b26"
             }
           }
         },
         "vars": {
-          "@id": "_:b27",
+          "@id": "_:b26",
           "@type": "Variable",
           "varName": "b",
           "varValue": {
@@ -184,14 +184,14 @@
         }
       },
       "vars": {
-        "@id": "_:b21",
+        "@id": "_:b20",
         "@type": "Variable",
         "varExpr": {
           "@type": "EqualTo",
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b21"
+              "@id": "_:b20"
             },
             "func": {
               "@type": "NamedFunction",
@@ -225,7 +225,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b5"
+              "@id": "_:b12"
             },
             "func": {
               "@type": "NamedFunction",
@@ -233,11 +233,11 @@
             }
           },
           "right": {
-            "@id": "_:b15"
+            "@id": "_:b14"
           }
         },
         "vars": {
-          "@id": "_:b15",
+          "@id": "_:b14",
           "@type": "Variable",
           "varName": "f",
           "varValue": {
@@ -260,31 +260,30 @@
       "body": {
         "@type": "ForAll",
         "body": {
-          "@id": "_:b2",
           "@type": "EqualTo",
           "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
-            "@id": "_:b3",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b5"
+              "@id": "_:b12"
             },
             "func": {
-              "@id": "_:b6",
+              "@id": "_:b2",
               "@type": "NamedFunction",
               "name": "Fade"
             }
           },
           "right": {
-            "@id": "_:b4",
+            "@id": "_:b3",
             "@type": "Division",
             "left": {
+              "@id": "_:b4",
               "@type": "Subtraction",
               "left": {
-                "@id": "_:b9"
+                "@id": "_:b6"
               },
               "right": {
                 "@type": "Constant",
@@ -295,6 +294,7 @@
               }
             },
             "right": {
+              "@id": "_:b5",
               "@type": "Constant",
               "value": {
                 "@type": "xsd:integer",
@@ -304,7 +304,7 @@
           }
         },
         "vars": {
-          "@id": "_:b9",
+          "@id": "_:b6",
           "@type": "Variable",
           "varName": "a",
           "varValue": {
@@ -315,7 +315,7 @@
         }
       },
       "vars": {
-        "@id": "_:b5",
+        "@id": "_:b12",
         "@type": "Variable",
         "varName": "m",
         "varValue": {
@@ -330,14 +330,14 @@
   "navigators": {
     "@type": "SimilarityNavigator",
     "dymos": {
-      "@id": "_:b60",
+      "@id": "_:b59",
       "@type": "Variable",
       "varExpr": {
         "@type": "EqualTo",
         "left": {
           "@type": "FunctionalTerm",
           "args": {
-            "@id": "_:b60"
+            "@id": "_:b59"
           },
           "func": {
             "@type": "NamedFunction",

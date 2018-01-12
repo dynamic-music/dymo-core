@@ -2,7 +2,7 @@ import 'isomorphic-fetch';
 import { GlobalVars } from '../../src/globals/globals';
 import { DymoStore } from '../../src/io/dymostore';
 import { AudioBank } from '../../src/audio/audio-bank';
-import { Scheduler } from '../../src/audio/scheduler';
+import { Scheduler } from '../../src/audio/scheduler-old';
 import { AudioProcessor } from '../../src/audio/processor';
 import { TIME_STRETCH_RATIO } from '../../src/globals/uris';
 import { SERVER_ROOT, AUDIO_CONTEXT, initSpeaker, endSpeaker } from './server';

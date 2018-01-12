@@ -17,7 +17,7 @@
             "@value": "false"
           },
           "left": {
-            "@id": "_:b18"
+            "@id": "_:b22"
           },
           "right": {
             "@type": "Multiplication",
@@ -29,12 +29,12 @@
               }
             },
             "right": {
-              "@id": "_:b19"
+              "@id": "_:b23"
             }
           }
         },
         "vars": {
-          "@id": "_:b19",
+          "@id": "_:b23",
           "@type": "Variable",
           "varName": "o",
           "varValue": {
@@ -45,7 +45,7 @@
         }
       },
       "vars": {
-        "@id": "_:b18",
+        "@id": "_:b22",
         "@type": "Variable",
         "varName": "l",
         "varType": {
@@ -70,7 +70,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
             "func": {
               "@type": "NamedFunction",
@@ -78,7 +78,7 @@
             }
           },
           "right": {
-            "@id": "_:b2"
+            "@id": "_:b5"
           }
         },
         "vars": {
@@ -96,7 +96,7 @@
           "left": {
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
             "func": {
               "@type": "NamedFunction",
@@ -122,16 +122,16 @@
       "body": {
         "@type": "ForAll",
         "body": {
+          "@id": "_:b3",
           "@type": "EqualTo",
           "directed": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
           "left": {
-            "@id": "_:b1",
             "@type": "FunctionalTerm",
             "args": {
-              "@id": "_:b3"
+              "@id": "_:b1"
             },
             "func": {
               "@type": "NamedFunction",
@@ -139,11 +139,11 @@
             }
           },
           "right": {
-            "@id": "_:b2"
+            "@id": "_:b5"
           }
         },
         "vars": {
-          "@id": "_:b2",
+          "@id": "_:b5",
           "@type": "Variable",
           "varName": "c",
           "varValue": {
@@ -154,7 +154,7 @@
         }
       },
       "vars": {
-        "@id": "_:b3"
+        "@id": "_:b1"
       }
     }
   ],
@@ -170,14 +170,15 @@
         "left": {
           "@type": "FunctionalTerm",
           "args": {
-            "@id": "_:b3",
+            "@id": "_:b1",
             "@type": "Variable",
             "varExpr": {
+              "@id": "_:b2",
               "@type": "EqualTo",
               "left": {
                 "@type": "FunctionalTerm",
                 "args": {
-                  "@id": "_:b3"
+                  "@id": "_:b1"
                 },
                 "func": {
                   "@type": "NamedFunction",

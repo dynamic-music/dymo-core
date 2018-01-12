@@ -1,7 +1,8 @@
 import { AudioObject, Parameter, Time, Stop } from 'schedulo';
 import * as uris from '../globals/uris';
 import { DymoStore } from '../io/dymostore';
-import { SchedulerThread } from './thread';
+import { DymoPlayer } from './player';
+import { ScheduledObject } from './scheduler';
 
 const PARAM_PAIRINGS = new Map<string,number>();
 PARAM_PAIRINGS.set(uris.ONSET, Parameter.StartTime);
@@ -14,17 +15,16 @@ PARAM_PAIRINGS.set(uris.DELAY, Parameter.Delay);
 //PARAM_PAIRINGS.set(uris.LOOP, Parameter.Loop);
 PARAM_PAIRINGS.set(uris.PLAYBACK_RATE, Parameter.PlaybackRate);
 
-export class ScheduloObjectWrapper {
+export class ScheduloScheduledObject extends ScheduledObject {
 
-  private parentUris: string[];
   private typeToBehavior = new Map<string,string>();
   private dymoToParam = new Map<string,string>();
   private paramToType = new Map<string,string>();
   private paramToValue = new Map<string,number>();
 
-  constructor(public dymoUri: string, private referenceTime: number, private object: AudioObject,
-      private store: DymoStore, private thread: SchedulerThread) {
-    this.parentUris = this.store.findAllParents(this.dymoUri);
+  constructor(dymoUri: string, private referenceTime: number, private object: AudioObject,
+      store: DymoStore, player: DymoPlayer) {
+    super(dymoUri, store, player);
     PARAM_PAIRINGS.forEach((param, typeUri) => {
       this.initParam(dymoUri, typeUri);
       //if behavior not independent, observe parents
@@ -35,10 +35,8 @@ export class ScheduloObjectWrapper {
       }
       //this.store.findParameterValue(this.dymoUri, typeUri);
     });
-    if (this.object) {
-      this.object.on('playing', ()=>this.thread.objectStarted(this))
-      this.object.on('stopped', ()=>this.thread.objectEnded(this))
-    }
+    this.object.on('playing', ()=>this.player.objectStarted(this))
+    this.object.on('stopped', ()=>this.player.objectEnded(this))
   }
 
   private initParam(dymoUri: string, typeUri: string) {
@@ -46,14 +44,6 @@ export class ScheduloObjectWrapper {
     this.dymoToParam.set(dymoUri, paramUri);
     this.paramToType.set(paramUri, typeUri);
     this.paramToValue.set(paramUri, this.store.findParameterValue(dymoUri, typeUri));
-  }
-
-  getUri(): string {
-    return this.dymoUri;
-  }
-
-  getUris(): string[] {
-    return [this.dymoUri].concat(this.parentUris);
   }
 
   getScheduloObject(): AudioObject {

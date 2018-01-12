@@ -6,7 +6,7 @@ import * as uris from './globals/uris'
 import { Fetcher, FetchFetcher } from './util/fetcher'
 import { Rendering } from './model/rendering'
 import { AudioBank } from './audio/audio-bank';
-import { Scheduler } from './audio/scheduler'
+import { Scheduler } from './audio/scheduler-old'
 import { DymoStore } from './io/dymostore'
 import { DymoLoader, LoadedStuff } from './io/dymoloader'
 import { Control } from './model/control'

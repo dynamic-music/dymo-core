@@ -152,7 +152,6 @@ export function getNavigator(dymoUri: string, store: DymoStore): Navigator {
   }*/
   let dymoType = store.findObject(dymoUri, uris.TYPE);
   if (dymoType === uris.CONJUNCTION) {
-    console.log("CONJ", dymoUri)
     return new ConjunctionNavigator(dymoUri, store);
   } else if (dymoType === uris.DISJUNCTION) {
     return new DisjunctionNavigator(dymoUri, store);
