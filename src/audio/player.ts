@@ -17,6 +17,7 @@ export class DymoPlayer {
     scheduler.setPlayer(this);
     this.store.setParameter(null, uris.LISTENER_ORIENTATION, 0);
     this.store.addParameterObserver(null, uris.LISTENER_ORIENTATION, this);
+    this.store.addTypeObserver(uris.PLAY, uris.VALUE, this);
   }
 
   getStore(): DymoStore {
