@@ -99,6 +99,7 @@ export class HierarchicalPlayer {
   private navigator: Navigator;
   private scheduledObjects: ScheduledObject[] = [];
   private partPlayers: HierarchicalPlayer[] = [];
+  private isPlaying: boolean = false;
 
   constructor(private dymoUri: string, private store: DymoStore,
     private scheduler: DymoScheduler
@@ -110,14 +111,19 @@ export class HierarchicalPlayer {
 
   /** returns the last object scheduled before this player is done */
   play(): Promise<ScheduledObject> {
+    this.isPlaying = true;
     return this.recursivePlay();
   }
 
   stop() {
+    this.isPlaying = false;
     this.scheduledObjects.forEach(o => o.stop());
   }
 
   private recursivePlay(): Promise<ScheduledObject> {
+    if (!this.isPlaying) {
+      return Promise.resolve(_.last(this.scheduledObjects));
+    }
     //TODO PLAY AND OBSERVE MAIN DURATION ... should override part players...
     //THEN MAKE PLAYER FOR NAVIGATED PART IF THERE IS ONE
     if (!this.navigator) {
