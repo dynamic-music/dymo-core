@@ -25,7 +25,7 @@ export class DymoPlayer {
   }
 
   play(dymoUri: string): Promise<any> {
-    let newPlayer = new HierarchicalPlayer(dymoUri, this.store, this.scheduler);
+    let newPlayer = new HierarchicalPlayer(dymoUri, this.store, null, this.scheduler);
     this.currentPlayers.set(dymoUri, newPlayer);
     return newPlayer.play();
   }
@@ -102,7 +102,7 @@ export class HierarchicalPlayer {
   private isPlaying: boolean = false;
 
   constructor(private dymoUri: string, private store: DymoStore,
-    private scheduler: DymoScheduler
+    private referenceObject: ScheduledObject, private scheduler: DymoScheduler
   ) {}
 
   getLastScheduledObject() {
@@ -120,7 +120,7 @@ export class HierarchicalPlayer {
     this.scheduledObjects.forEach(o => o.stop());
   }
 
-  private recursivePlay(): Promise<ScheduledObject> {
+  private async recursivePlay(): Promise<ScheduledObject> {
     if (!this.isPlaying) {
       return Promise.resolve(_.last(this.scheduledObjects));
     }
@@ -134,10 +134,14 @@ export class HierarchicalPlayer {
 
     if (this.navigator.hasParts()) {
       if (next) {
-        this.partPlayers = next
-          .map(p => new HierarchicalPlayer(p, this.store, this.scheduler));
-        return Promise.all(this.partPlayers.map(p => p.play()))
-          .then(() => this.recursivePlay())
+        this.partPlayers = next.map(p => new HierarchicalPlayer(
+          p, this.store, this.getLastScheduledObject(), this.scheduler
+        ));
+        //TODO COMBINE THE ELSE BELOW WITH THIS!!!!
+        this.addScheduledObjects(await Promise.all(
+          this.partPlayers.map(p => p.play())
+        ));
+        return this.recursivePlay();
       } else {
         //for now return the currently longest of the last scheduled objects
         /*TODO could be improved once schedulo permits scheduling after group
@@ -150,17 +154,23 @@ export class HierarchicalPlayer {
       }
     } else {
       if (next) {
-        //only schedule audio if this has no parts
-        return Promise.all(next.map(p =>
-            this.scheduler.schedule(p, _.last(this.scheduledObjects)))
-          )
-          .then(os => this.scheduledObjects = this.scheduledObjects.concat(os))
-          .then(() => this.recursivePlay())
-          .catch(); //DONE
+        try {
+          //for now, only schedule audio if this has no parts
+          this.addScheduledObjects(await Promise.all(next.map(p =>
+            this.scheduler.schedule(p, this.referenceObject))
+          ));
+          return this.recursivePlay();
+        } catch(err) {
+          //DONE
+        }
       } else {
         return Promise.resolve(_.last(this.scheduledObjects));
       }
     }
+  }
+
+  private addScheduledObjects(objects: ScheduledObject[]) {
+    this.scheduledObjects = this.scheduledObjects.concat(objects);
   }
 
 }
