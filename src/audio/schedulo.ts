@@ -46,10 +46,8 @@ export class ScheduloScheduler extends DymoScheduler {
         }
       }
     ).then(audioObject => new Promise<ScheduloScheduledObject>(resolve => {
-      console.log("GOT AUDIOOBJ")
       let newObject = new ScheduloScheduledObject(dymoUri, referenceTime, audioObject[0], this.store, this.player);
-      newObject.getScheduloObject().on('scheduled', ()=>{
-        console.log("SCHEDULED")
+      newObject.getScheduloObject().on('loaded', ()=>{
         resolve(newObject);
       });
       //resolve(newObject);
