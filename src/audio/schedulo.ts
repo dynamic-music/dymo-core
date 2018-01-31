@@ -17,16 +17,26 @@ export class ScheduloScheduler extends DymoScheduler {
     //TODO SET ON SCHEDULO!!!
   }
 
-  schedule(dymoUri: string, previousObject: ScheduloScheduledObject): Promise<ScheduloScheduledObject> {
+  schedule(dymoUri: string, previousObject: ScheduloScheduledObject,
+      initRefTime: boolean): Promise<ScheduloScheduledObject> {
 
     if (!dymoUri) return Promise.reject('no dymoUri given');
 
-    let referenceTime = previousObject ? previousObject.getReferenceTime()
-      : this.schedulo.getCurrentTime()+0.5;
-    let onset = this.store.findParameterValue(dymoUri, uris.ONSET);
+    let referenceTime;
+    if (previousObject && initRefTime) {
+      referenceTime = previousObject.getEndTime();
+    } else if (previousObject) {
+      referenceTime = previousObject.getReferenceTime();
+    } else {
+      referenceTime = this.schedulo.getCurrentTime()+0.5;
+    }
+
+    let newObject = new ScheduloScheduledObject(dymoUri, referenceTime, this.store, this.player);
+
     let startTime;
+    let onset = newObject.getParam(uris.ONSET);
     if (!isNaN(onset)) {
-      startTime = Time.At(referenceTime+onset);
+      startTime = Time.At(onset); //this onset includes ref time!
     } else if (previousObject) {
       startTime = Time.After([previousObject.getScheduloObject()]);
     } else {
@@ -46,7 +56,7 @@ export class ScheduloScheduler extends DymoScheduler {
         }
       }
     ).then(audioObject => new Promise<ScheduloScheduledObject>(resolve => {
-      let newObject = new ScheduloScheduledObject(dymoUri, referenceTime, audioObject[0], this.store, this.player);
+      newObject.setScheduloObject(audioObject[0]);
       newObject.getScheduloObject().on('loaded', ()=>{
         resolve(newObject);
       });

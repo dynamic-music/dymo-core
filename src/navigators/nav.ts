@@ -1,6 +1,13 @@
 import * as _ from 'lodash';
+import { Time } from 'schedulo';
 import * as uris from '../globals/uris';
 import { DymoStore } from '../io/dymostore';
+
+export interface SchedulingInstructions {
+  uris: string[],
+  initRefTime?: boolean,
+  time?: Time
+}
 
 export abstract class Navigator {
 
@@ -9,6 +16,7 @@ export abstract class Navigator {
 
   constructor(protected dymoUri: string, protected store: DymoStore) {
     //TODO MAKE PARTS REALTIME TOO, GET THEM EVERYTIME NEXT IS CALLED....
+    // (in case they change dynamically as in fast dj)
     this.parts = this.store.findParts(this.dymoUri);
   }
 
@@ -16,7 +24,7 @@ export abstract class Navigator {
     return this.parts.length > 0;
   }
 
-  abstract next(): string[];
+  abstract next(): SchedulingInstructions;
 
   protected keepPlaying(): boolean {
     let keepPlaying = !this.playCount || this.isLoop()
@@ -42,7 +50,7 @@ export abstract class IndexedNavigator extends Navigator {
 
   protected currentIndex;
 
-  constructor(protected dymoUri: string, protected store: DymoStore) {
+  constructor(dymoUri: string, store: DymoStore) {
     super(dymoUri, store);
     this.reset();
   }
@@ -64,14 +72,14 @@ export abstract class IndexedNavigator extends Navigator {
     this.currentIndex = 0;
   }
 
-  protected abstract get(): string[];
+  protected abstract get(): SchedulingInstructions;
 
 }
 
 export class SequentialNavigator extends IndexedNavigator {
 
   get() {
-    return this.toArray(this.parts[this.currentIndex++]);
+    return { uris: this.toArray(this.parts[this.currentIndex++]) };
   }
 
 }
@@ -80,7 +88,7 @@ export class ReverseSequentialNavigator extends IndexedNavigator {
 
   get() {
     let reverseIndex = this.parts.length-1 - this.currentIndex++;
-    return this.toArray(this.parts[reverseIndex]);
+    return { uris: this.toArray(this.parts[reverseIndex]) };
   }
 
 }
@@ -95,7 +103,19 @@ export class PermutationNavigator extends IndexedNavigator {
   }
 
   get() {
-    return this.toArray(this.parts[this.permutedIndices[this.currentIndex++]]);
+    return {
+      uris: this.toArray(this.parts[this.permutedIndices[this.currentIndex++]])
+    };
+  }
+
+}
+
+export class OnsetNavigator extends SequentialNavigator {
+
+  get() {
+    const init = this.currentIndex === 0;
+    const superget = super.get();
+    return { uris : superget.uris, initRefTime: init }
   }
 
 }
@@ -109,14 +129,14 @@ export abstract class OneshotNavigator extends Navigator {
     }
   }
 
-  abstract get(): string[];
+  abstract get(): SchedulingInstructions;
 
 }
 
 export class LeafNavigator extends OneshotNavigator {
 
   get() {
-    return this.toArray(this.dymoUri);
+    return { uris: this.toArray(this.dymoUri) };
   }
 
 }
@@ -124,7 +144,7 @@ export class LeafNavigator extends OneshotNavigator {
 export class ConjunctionNavigator extends OneshotNavigator {
 
   get() {
-    return this.parts;
+    return { uris: this.parts };
   }
 
 }
@@ -132,7 +152,7 @@ export class ConjunctionNavigator extends OneshotNavigator {
 export class DisjunctionNavigator extends OneshotNavigator {
 
   get() {
-    return this.toArray(this.parts[_.random(this.parts.length)]);
+    return { uris: this.toArray(this.parts[_.random(this.parts.length)]) };
   }
 
 }
@@ -151,11 +171,15 @@ export function getNavigator(dymoUri: string, store: DymoStore): Navigator {
     return new OneShotNavigator(dymoUri);
   }*/
   let dymoType = store.findObject(dymoUri, uris.TYPE);
+  let parts = store.findParts(dymoUri);
   if (dymoType === uris.CONJUNCTION) {
     return new ConjunctionNavigator(dymoUri, store);
   } else if (dymoType === uris.DISJUNCTION) {
     return new DisjunctionNavigator(dymoUri, store);
-  } else if (store.findParts(dymoUri).length > 0) {
+  } else if (parts.length > 0) {
+    if (store.findParameterValue(parts[0], uris.ONSET) != null) {
+      return new OnsetNavigator(dymoUri, store);
+    }
     return new SequentialNavigator(dymoUri, store);
   } else {
     return new LeafNavigator(dymoUri, store);

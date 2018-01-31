@@ -25,13 +25,14 @@ export class DymoPlayer {
   }
 
   play(dymoUri: string): Promise<any> {
-    let newPlayer = new HierarchicalPlayer(dymoUri, this.store, null, this.scheduler);
+    let newPlayer = new HierarchicalPlayer(dymoUri, this.store, null,
+      this.scheduler, true);
     this.currentPlayers.set(dymoUri, newPlayer);
     return newPlayer.play();
   }
 
   stop(dymoUri?: string) {
-    if (dymoUri) {
+    if (dymoUri && this.currentPlayers.has(dymoUri)) {
       this.currentPlayers.get(dymoUri).stop();
       this.currentPlayers.delete(dymoUri);
     } else {
@@ -102,7 +103,8 @@ export class HierarchicalPlayer {
   private isPlaying: boolean = false;
 
   constructor(private dymoUri: string, private store: DymoStore,
-    private referenceObject: ScheduledObject, private scheduler: DymoScheduler
+    private referenceObject: ScheduledObject, private scheduler: DymoScheduler,
+    private initRefTime: boolean
   ) {}
 
   getLastScheduledObject() {
@@ -130,12 +132,12 @@ export class HierarchicalPlayer {
       this.navigator = getNavigator(this.dymoUri, this.store);
     }
     let next = this.navigator.next();
-    //console.log(next);
 
     if (this.navigator.hasParts()) {
       if (next) {
-        this.partPlayers = next.map(p => new HierarchicalPlayer(
-          p, this.store, this.getLastScheduledObject(), this.scheduler
+        this.partPlayers = next.uris.map(p => new HierarchicalPlayer(
+          p, this.store, this.getLastScheduledObject(), this.scheduler,
+          next.initRefTime
         ));
         //TODO COMBINE THE ELSE BELOW WITH THIS!!!!
         this.addScheduledObjects(await Promise.all(
@@ -156,8 +158,8 @@ export class HierarchicalPlayer {
       if (next) {
         try {
           //for now, only schedule audio if this has no parts
-          this.addScheduledObjects(await Promise.all(next.map(p =>
-            this.scheduler.schedule(p, this.referenceObject))
+          this.addScheduledObjects(await Promise.all(next.uris.map(p =>
+            this.scheduler.schedule(p, this.referenceObject, this.initRefTime))
           ));
           return this.recursivePlay();
         } catch(err) {

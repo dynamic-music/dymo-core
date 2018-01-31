@@ -4,7 +4,6 @@ import { flattenArray, removeDuplicates } from 'arrayutils';
 import { DymoStore } from '../io/dymostore';
 import { GlobalVars } from '../globals/globals'
 import { LISTENER_ORIENTATION, REVERB, DELAY, PLAY, VALUE, HAS_PARAMETER, CONTEXT_URI } from '../globals/uris'
-import { AudioBank } from './audio-bank';
 import { SchedulerThread } from './thread'
 import { DymoNavigator } from '../navigators/navigator';
 import { Schedulo } from 'schedulo';
@@ -15,7 +14,7 @@ declare const Buffer;
  */
 export class Scheduler {
 
-	private schedulo = new Schedulo();
+/*	private schedulo = new Schedulo();
 	private threads: SchedulerThread[] = [];
 	private playingDymoUris: BehaviorSubject<string[]> = new BehaviorSubject([]);
 
@@ -136,7 +135,7 @@ export class Scheduler {
 		} else {
 
 		}
-	}*/
+	}*
 
 	stop(dymoUri) {
 		if (dymoUri) {
@@ -186,6 +185,6 @@ export class Scheduler {
 				this.stop(dymoUri);
 			}
 		}
-	}
+	}*/
 
 }

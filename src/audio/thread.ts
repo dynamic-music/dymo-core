@@ -22,7 +22,7 @@ interface PlayParams {
  */
 export class SchedulerThread {
 
-	private dymoUri;
+/*	private dymoUri;
 	private navigator: DymoNavigator;
 	private store: DymoStore;
 
@@ -159,7 +159,7 @@ export class SchedulerThread {
 		}
 		//console.log(startTime, maxDuration)
 		return [startTime+maxDuration, longestSource];
-	}*/
+	}*
 
 	private getSourceDuration(params: PlayParams) {
 		let duration = params.duration;
@@ -216,6 +216,6 @@ export class SchedulerThread {
 				return "top";
 			}
 		}));
-	}
+	}*/
 
 }

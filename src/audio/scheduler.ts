@@ -57,7 +57,8 @@ export abstract class DymoScheduler {
 
   abstract setListenerOrientation(posX, posY, posZ, forwX, forwY, forwZ);
 
-  abstract schedule(dymoUri: string, previousObject: ScheduledObject): Promise<ScheduledObject>;
+  abstract schedule(dymoUri: string, previousObject: ScheduledObject,
+    initRefTime: boolean): Promise<ScheduledObject>;
 
   protected calculateSegment(dymoUri: string): [number, number] {
     let start = this.store.findFeatureValue(dymoUri, uris.TIME_FEATURE);
