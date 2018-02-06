@@ -118,6 +118,7 @@ export class HierarchicalPlayer {
   }
 
   stop() {
+    this.partPlayers.forEach(p => p.stop());
     this.isPlaying = false;
     this.scheduledObjects.forEach(o => o.stop());
   }

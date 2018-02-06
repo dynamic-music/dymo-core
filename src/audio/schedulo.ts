@@ -47,14 +47,7 @@ export class ScheduloScheduler extends DymoScheduler {
     return this.schedulo.scheduleAudio(
       [this.store.getSourcePath(dymoUri)],
       startTime,
-      Playback.Oneshot(segment[0], segment[1]),
-      {
-        bufferScheme: 'dynamic',
-        timings: {
-          connectToGraph: {countIn: 2, countOut: 2},
-          loadBuffer: {countIn: 5, countOut: 5}
-        }
-      }
+      Playback.Oneshot(segment[0], segment[1])
     ).then(audioObject => new Promise<ScheduloScheduledObject>(resolve => {
       newObject.setScheduloObject(audioObject[0]);
       newObject.getScheduloObject().on('loaded', ()=>{
