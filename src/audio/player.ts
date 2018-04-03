@@ -41,6 +41,10 @@ export class DymoPlayer {
     }
   }
 
+  getPosition(dymoUri: string) {
+    return this.currentPlayers.get(dymoUri).getPosition();
+  }
+
   getPlayingDymoUrisArray(): string[] {
     return this.playingDymoUris.getValue();
   }
@@ -121,6 +125,10 @@ export class HierarchicalPlayer {
     this.partPlayers.forEach(p => p.stop());
     this.isPlaying = false;
     this.scheduledObjects.forEach(o => o.stop());
+  }
+
+  getPosition() {
+    return this.navigator.getPosition();
   }
 
   private async recursivePlay(): Promise<ScheduledObject> {

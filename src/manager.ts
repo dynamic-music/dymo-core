@@ -33,6 +33,7 @@ export class DymoManager {
 	private store: DymoStore;
 	private loader: DymoLoader;
 	private player: DymoPlayer;
+	private scheduler: ScheduloScheduler;
 	private dymoUris: string[] = [];
 	private rendering: Rendering;
 	private uiControls: UIControl[] = [];
@@ -44,7 +45,8 @@ export class DymoManager {
 	constructor(audioContext = createAudioContext(), scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string, fetcher: Fetcher = new FetchFetcher()) {
 		this.store = new DymoStore(fetcher);
 		this.loader = new DymoLoader(this.store, fetcher);
-		this.player = new DymoPlayer(this.store, new ScheduloScheduler());
+		this.scheduler = new ScheduloScheduler();
+		this.player = new DymoPlayer(this.store, this.scheduler);
 		if (optimizedMode) {
 			GlobalVars.OPTIMIZED_MODE = true;
 		}
@@ -113,15 +115,23 @@ export class DymoManager {
 		this.player.stop(oldDymo);
 	}
 
+	getAudioBank() {
+		return this.scheduler.getAudioBank();
+	}
+
+	getPosition(dymoUri: string) {
+		return this.player.getPosition(dymoUri);
+	}
+
 	/*updateNavigatorPosition(dymoUri, level, position) {
 		this.player.updateNavigatorPosition(this.addContext(dymoUri), level, position);
-	}
+	}*/
 
-	getNavigatorPosition(dymoUri): number {
-		return this.scheduler.getNavigatorPosition(this.addContext(dymoUri));
-	}
+	/*getNavigatorPosition(dymoUri): number {
+		return this.player.getNavigatorPosition(this.addContext(dymoUri));
+	}*/
 
-	//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
+	/*//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
 	syncNavigators(syncDymo, goalDymo, level) {
 		this.scheduler.syncNavigators(this.addContext(syncDymo), this.addContext(goalDymo), level);
 	}*/

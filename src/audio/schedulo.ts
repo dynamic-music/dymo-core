@@ -1,4 +1,4 @@
-import { Schedulo, Time, Playback } from 'schedulo';
+import { Schedulo, Time, Playback, AudioBank } from 'schedulo';
 import * as uris from '../globals/uris';
 import { DymoScheduler } from './scheduler';
 import { ScheduloScheduledObject } from './wrapper';
@@ -15,6 +15,10 @@ export class ScheduloScheduler extends DymoScheduler {
 
   setListenerOrientation(posX, posY, posZ, forwX, forwY, forwZ) {
     //TODO SET ON SCHEDULO!!!
+  }
+
+  getAudioBank(): any {
+    return this.schedulo.getAudioBank();
   }
 
   schedule(dymoUri: string, previousObject: ScheduloScheduledObject,

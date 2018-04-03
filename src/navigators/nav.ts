@@ -26,6 +26,8 @@ export abstract class Navigator {
 
   abstract next(): SchedulingInstructions;
 
+  abstract getPosition(): number;
+
   protected keepPlaying(): boolean {
     let keepPlaying = !this.playCount || this.isLoop()
         || this.repetitions() > this.playCount;
@@ -65,6 +67,10 @@ export abstract class IndexedNavigator extends Navigator {
       this.playCount++;
     }
     return this.get();
+  }
+
+  getPosition(): number {
+    return this.currentIndex;
   }
 
   /** override for any non-index-based reset operation */
@@ -139,6 +145,10 @@ export class LeafNavigator extends OneshotNavigator {
     return { uris: this.toArray(this.dymoUri) };
   }
 
+  getPosition() {
+    return 0;
+  }
+
 }
 
 export class ConjunctionNavigator extends OneshotNavigator {
@@ -147,12 +157,20 @@ export class ConjunctionNavigator extends OneshotNavigator {
     return { uris: this.parts };
   }
 
+  getPosition() {
+    return 0;
+  }
+
 }
 
 export class DisjunctionNavigator extends OneshotNavigator {
 
   get() {
     return { uris: this.toArray(this.parts[_.random(this.parts.length)]) };
+  }
+
+  getPosition() {
+    return 0;
   }
 
 }
