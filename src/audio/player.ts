@@ -142,10 +142,13 @@ export class HierarchicalPlayer {
     }
     let next = this.navigator.next();
 
+    let currentReference = this.getLastScheduledObject();
+    currentReference = currentReference ? currentReference : this.referenceObject;
+
     if (this.navigator.hasParts()) {
-      if (next) {
+      if (next && next.uris) {
         this.partPlayers = next.uris.map(p => new HierarchicalPlayer(
-          p, this.store, this.getLastScheduledObject(), this.scheduler,
+          p, this.store, currentReference, this.scheduler,
           next.initRefTime
         ));
         //TODO COMBINE THE ELSE BELOW WITH THIS!!!!
@@ -168,7 +171,7 @@ export class HierarchicalPlayer {
         try {
           //for now, only schedule audio if this has no parts
           this.addScheduledObjects(await Promise.all(next.uris.map(p =>
-            this.scheduler.schedule(p, this.referenceObject, this.initRefTime))
+            this.scheduler.schedule(p, currentReference, this.initRefTime))
           ));
           return this.recursivePlay();
         } catch(err) {
