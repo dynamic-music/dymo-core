@@ -43,7 +43,7 @@ export class EasyStore {
 	private valueObservers = {};
 	private typeObservers = {};
 	private valueBuffer = {};
-  
+
   constructor(private fetcher: Fetcher = new FetchFetcher()) {}
 
 	size(): number {

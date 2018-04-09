@@ -4,8 +4,14 @@ import { DymoStore } from '../io/dymostore';
 import { DymoPlayer } from './player';
 import { ScheduledObject } from './scheduler';
 
+const FEATURE_PAIRINGS = new Map<string,number>();
+FEATURE_PAIRINGS.set(uris.TIME_FEATURE, Parameter.Offset);
+FEATURE_PAIRINGS.set(uris.DURATION_FEATURE, Parameter.Duration);
+
 const PARAM_PAIRINGS = new Map<string,number>();
 PARAM_PAIRINGS.set(uris.ONSET, Parameter.StartTime);
+PARAM_PAIRINGS.set(uris.DURATION, Parameter.Duration);
+PARAM_PAIRINGS.set(uris.DURATION_RATIO, Parameter.DurationRatio);
 PARAM_PAIRINGS.set(uris.AMPLITUDE, Parameter.Amplitude);
 PARAM_PAIRINGS.set(uris.PAN, Parameter.Panning);
 PARAM_PAIRINGS.set(uris.DISTANCE, Parameter.Panning);
@@ -19,14 +25,25 @@ export class ScheduloScheduledObject extends ScheduledObject {
 
   private typeToBehavior = new Map<string,string>();
   private dymoToParam = new Map<string,string>();
-  private paramToType = new Map<string,string>();
-  private paramToValue = new Map<string,number>();
-  private paramToBValue = new Map<string,number>();
+  private attributeToType = new Map<string,string>();
+  private attributeToValue = new Map<string,number>();
+  private attributeToValueAfterBehavior = new Map<string,number>();
   private object: AudioObject;
 
   constructor(dymoUri: string, private referenceTime: number,
       store: DymoStore, player: DymoPlayer) {
     super(dymoUri, store, player);
+    //TODO SIMPLIFY!!
+    FEATURE_PAIRINGS.forEach((feature, typeUri) => {
+      this.initFeature(dymoUri, typeUri);
+      //if behavior not independent, observe parents
+      let behavior = this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
+      this.typeToBehavior.set(typeUri, behavior);
+      if (behavior && behavior !== uris.INDEPENDENT) {
+        this.parentUris.forEach(p => this.initFeature(p, typeUri));
+      }
+    });
+    FEATURE_PAIRINGS.forEach((feature, typeUri) => this.updateObjectParam(typeUri));
     PARAM_PAIRINGS.forEach((param, typeUri) => {
       this.initParam(dymoUri, typeUri);
       //if behavior not independent, observe parents
@@ -35,29 +52,35 @@ export class ScheduloScheduledObject extends ScheduledObject {
       if (behavior && behavior !== uris.INDEPENDENT) {
         this.parentUris.forEach(p => this.initParam(p, typeUri));
       }
-      this.updateParam(typeUri);
-      //this.store.findParameterValue(this.dymoUri, typeUri);
     });
+    PARAM_PAIRINGS.forEach((param, typeUri) => this.updateObjectParam(typeUri));
   }
+
+  private initFeature(dymoUri: string, typeUri: string) {
+    let featureUri = this.store.setFeature(dymoUri, typeUri);
+    let value = this.store.findFeatureValue(dymoUri, typeUri);
+    this.dymoToParam.set(dymoUri, featureUri);
+    this.attributeToType.set(featureUri, typeUri);
+    this.attributeToValue.set(featureUri, value);
+  }
+
 
   private initParam(dymoUri: string, typeUri: string) {
     let paramUri = this.store.addParameterObserver(dymoUri, typeUri, this);
     let value = this.store.findParameterValue(dymoUri, typeUri);
+    //console.log(dymoUri, typeUri, paramUri, value);
     //TODO ONLY IF PARAM EXISTS AND VALUE NOT NULL!!!!!!
     this.dymoToParam.set(dymoUri, paramUri);
-    this.paramToType.set(paramUri, typeUri);
-    this.paramToValue.set(paramUri, value);
+    this.attributeToType.set(paramUri, typeUri);
+    this.attributeToValue.set(paramUri, value);
   }
 
   setScheduloObject(object: AudioObject) {
     this.object = object;
     this.object.on('playing', () => this.player.objectStarted(this));
     this.object.on('stopped', () => this.player.objectEnded(this));
-    if (this.dymoUri === 'http://tiny.cc/dymo-ontology/dymo5') {
-      console.log(this.paramToBValue.get(uris.AMPLITUDE));
-    }
-    this.paramToBValue.forEach((value, typeUri) =>
-      this.object.set(PARAM_PAIRINGS.get(typeUri), value));
+    this.attributeToValueAfterBehavior.forEach((value, typeUri) =>
+      this.setObjectParam(typeUri, value));
   }
 
   getScheduloObject(): AudioObject {
@@ -69,7 +92,7 @@ export class ScheduloScheduledObject extends ScheduledObject {
   }
 
   getParam(paramUri: string): number {
-    return this.paramToBValue.get(paramUri);
+    return this.attributeToValueAfterBehavior.get(paramUri);
   }
 
   stop() {
@@ -82,29 +105,34 @@ export class ScheduloScheduledObject extends ScheduledObject {
     })
   }
 
-  private updateParam(typeUri: string) {
+  private updateObjectParam(typeUri: string) {
+    //console.log("UPDATE", typeUri)
     //TODO GO THROUGH ALL PARENTS AND PROCESS (* or +...)
-    let paramsOfType = [...this.paramToType.keys()].filter(p => this.paramToType.get(p) === typeUri);
-    let allValues = paramsOfType.map(p => this.paramToValue.get(p)).filter(v => !isNaN(v));
+    let paramsOfType = [...this.attributeToType.keys()].filter(p => this.attributeToType.get(p) === typeUri);
+    let allValues = paramsOfType.map(p => this.attributeToValue.get(p)).filter(v => !isNaN(v));
 
     //calculate value based on behavior
     let value;
-    if (this.typeToBehavior.get(typeUri) === uris.ADDITIVE) {
-      value = allValues.reduce((a,b) => a+b);
-    } else if (this.typeToBehavior.get(typeUri) === uris.MULTIPLICATIVE) {
-      value = allValues.reduce((a,b) => a*b);
-    } else {
-      value = allValues[0]; //only one value since parents not added...
+    if (allValues.length > 0) {
+      if (this.typeToBehavior.get(typeUri) === uris.ADDITIVE) {
+        value = allValues.reduce((a,b) => a+b);
+      } else if (this.typeToBehavior.get(typeUri) === uris.MULTIPLICATIVE) {
+        value = allValues.reduce((a,b) => a*b);
+      } else {
+        value = allValues[0]; //only one value since parents not added...
+      }
     }
 
     //deal with onset specifically
-    if (typeUri === uris.ONSET) {
+    if (typeUri === uris.ONSET && value != null) {
       value = this.referenceTime+value;
     }
+
+    //merge panning into list
     if (typeUri === uris.PAN || typeUri === uris.DISTANCE || typeUri === uris.HEIGHT) {
-      let pan = this.paramToValue.get(uris.PAN);
-      let dist = this.paramToValue.get(uris.DISTANCE);
-      let heig = this.paramToValue.get(uris.HEIGHT);
+      let pan = this.attributeToValue.get(uris.PAN);
+      let dist = this.attributeToValue.get(uris.DISTANCE);
+      let heig = this.attributeToValue.get(uris.HEIGHT);
       if (pan != null && dist != null && heig != null) {
         value = [pan, dist, heig];
       } else {
@@ -112,33 +140,29 @@ export class ScheduloScheduledObject extends ScheduledObject {
       }
     }
 
+    //console.log("UPDATE2", typeUri, value, allValues)
     //update the schedulo object
     if (value != null) {
       //console.log(typeUri, value)
-      this.paramToBValue.set(typeUri, value);
-      if (this.object) {
-        this.object.set(PARAM_PAIRINGS.get(typeUri), value);
-      }
+      this.attributeToValueAfterBehavior.set(typeUri, value);
+      this.setObjectParam(typeUri, value);
     }
   }
 
-  getDuration(): number {
-    //TODO USE BUFFER DURATION FROM SCHEDULO OBJECT
-    let duration = this.paramToValue.get(uris.DURATION);
-    let playbackRate = this.paramToValue.get(uris.PLAYBACK_RATE);
-    duration /= playbackRate ? playbackRate : 1;
-    let stretchRatio = this.paramToValue.get(uris.TIME_STRETCH_RATIO);
-    duration /= stretchRatio ? stretchRatio : 1;
-    return duration;
+  private setObjectParam(typeUri: string, value) {
+    if (this.object) {
+      const target = PARAM_PAIRINGS.get(typeUri) || FEATURE_PAIRINGS.get(typeUri);
+      this.object.set(target, value);
+    }
   }
 
   getEndTime(): number {
-    return this.object.startTime+this.object.duration;
+    return this.object.getStartTime()+this.object.getDuration();
   }
 
   observedValueChanged(paramUri: string, paramType: string, value: number) {
-    this.paramToValue.set(paramUri, value);
-    this.updateParam(paramType);
+    this.attributeToValue.set(paramUri, value);
+    this.updateObjectParam(paramType);
   }
 
 }

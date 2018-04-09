@@ -60,20 +60,6 @@ export abstract class DymoScheduler {
   abstract schedule(dymoUri: string, previousObject: ScheduledObject,
     initRefTime: boolean): Promise<ScheduledObject>;
 
-  protected calculateSegment(dymoUri: string): [number, number] {
-    let start = this.store.findFeatureValue(dymoUri, uris.TIME_FEATURE);
-    start = start ? start : 0;
-    let durationF = this.store.findFeatureValue(dymoUri, uris.DURATION_FEATURE);
-    let durationP = this.store.findParameterValue(dymoUri, uris.DURATION);
-    let duration = durationP ? durationP : durationF;
-    //TODO ONLY WORKS IF DURATION PARAM OR FEATURE GIVEN (DELEGATE TO SCHEDULO!!!!!)
-    let durationRatio = this.store.findParameterValue(dymoUri, uris.DURATION_RATIO);
-    if (durationRatio && duration) {
-      duration *= durationRatio;
-    }
-    return [start, duration];
-  }
-
 }
 
 export class DummyScheduler extends DymoScheduler {

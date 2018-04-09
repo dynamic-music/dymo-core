@@ -72,7 +72,7 @@ export class DymoLoader {
   }
 
   private addLatestLoadedStuff(type: string, stuff: any[]) {
-    this.latestLoadedStuff[type] = this.latestLoadedStuff[type].concat(stuff);
+    this.latestLoadedStuff[type] = _.uniq(this.latestLoadedStuff[type].concat(stuff));
   }
 
   loadFromStore(...objectUris: string[]): LoadedStuff {

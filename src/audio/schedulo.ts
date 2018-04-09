@@ -46,15 +46,14 @@ export class ScheduloScheduler extends DymoScheduler {
     } else {
       startTime = Time.At(referenceTime);
     }
-    let segment = this.calculateSegment(dymoUri);
 
     return this.schedulo.scheduleAudio(
       [this.store.getSourcePath(dymoUri)],
       startTime,
-      Playback.Oneshot(segment[0], segment[1])
+      Playback.Oneshot()
     ).then(audioObject => new Promise<ScheduloScheduledObject>(resolve => {
       newObject.setScheduloObject(audioObject[0]);
-      newObject.getScheduloObject().on('loaded', ()=>{
+      newObject.getScheduloObject().on('scheduled', ()=>{
         resolve(newObject);
       });
       //resolve(newObject);

@@ -93,12 +93,7 @@ export class DymoStore extends EasyStore {
 	addParameterObserver(dymoUri, parameterType, observer) {
 		if (dymoUri && parameterType) {
 			//add parameter if there is none so far and get uri
-			//console.log(dymoUri, parameterType)
-			//console.log(this.find("_:b4222"), this.find(null,null,"_:b4222"));
-			//console.log(this.findObjectOfType(dymoUri, uris.HAS_PARAMETER, parameterType));
-			//console.log(this.findAllObjects(dymoUri, uris.HAS_PARAMETER));
 			var parameterUri = this.setParameter(dymoUri, parameterType);
-			//console.log(parameterUri)
 			//add observer
 			this.addValueObserver(parameterUri, uris.VALUE, observer);
 			return parameterUri;
@@ -345,9 +340,9 @@ export class DymoStore extends EasyStore {
 	}
 
 	findAttributeValue(dymoUri: string, attributeType: string) {
-		var value = this.findParameterValue(dymoUri, attributeType);
+		var value = this.findFeatureValue(dymoUri, attributeType);
 		if (value == null) {
-			value = this.findFeatureValue(dymoUri, attributeType);
+			value = this.findParameterValue(dymoUri, attributeType);
 		}
 		return value;
 	}

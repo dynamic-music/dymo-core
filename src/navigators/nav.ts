@@ -24,7 +24,10 @@ export abstract class Navigator {
     return this.parts.length > 0;
   }
 
-  abstract next(): SchedulingInstructions;
+  next(): SchedulingInstructions {
+    this.parts = this.store.findParts(this.dymoUri);
+    return undefined;
+  }
 
   abstract getPosition(): number;
 
@@ -58,6 +61,7 @@ export abstract class IndexedNavigator extends Navigator {
   }
 
   next() {
+    super.next();
     //check if another pass appropriate
     if (this.currentIndex == this.parts.length && this.keepPlaying()) {
       this.reset();
@@ -129,6 +133,7 @@ export class OnsetNavigator extends SequentialNavigator {
 export abstract class OneshotNavigator extends Navigator {
 
   next() {
+    super.next();
     if (this.keepPlaying()) {
       this.playCount++;
       return this.get();
@@ -188,7 +193,7 @@ export function getNavigator(dymoUri: string, store: DymoStore): Navigator {
   } else {
     return new OneShotNavigator(dymoUri);
   }*/
-  let dymoType = store.findObject(dymoUri, uris.TYPE);
+  let dymoType = store.findObject(dymoUri, uris.CDT);
   let parts = store.findParts(dymoUri);
   if (dymoType === uris.CONJUNCTION) {
     return new ConjunctionNavigator(dymoUri, store);

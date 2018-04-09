@@ -147,6 +147,7 @@ export class HierarchicalPlayer {
 
     if (this.navigator.hasParts()) {
       if (next && next.uris) {
+        //console.log(next.uris)
         this.partPlayers = next.uris.map(p => new HierarchicalPlayer(
           p, this.store, currentReference, this.scheduler,
           next.initRefTime
@@ -175,7 +176,7 @@ export class HierarchicalPlayer {
           ));
           return this.recursivePlay();
         } catch(err) {
-          //DONE
+          console.log(err)
         }
       } else {
         return Promise.resolve(_.last(this.scheduledObjects));

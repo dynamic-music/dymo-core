@@ -21,6 +21,9 @@ export abstract class AutoControl extends Control {
 	}
 
 	startUpdate(newFrequency?: number) {
+		if (this.intervalID) {
+			this.reset();
+		}
 		if (newFrequency) {
 			this.frequency = newFrequency;
 		}
@@ -38,8 +41,8 @@ export abstract class AutoControl extends Control {
 	observedValueChanged(paramUri, paramType, value) {
 		if (paramType == AUTO_CONTROL_FREQUENCY) {
 			this.frequency = value;
+			//restart with new frequency if already running
 			if (this.intervalID) {
-				this.reset();
 				this.startUpdate(value);
 			}
 		} else if (paramType == AUTO_CONTROL_TRIGGER) {
