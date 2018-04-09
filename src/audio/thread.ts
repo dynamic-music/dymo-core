@@ -4,9 +4,9 @@ import { DymoStore } from '../io/dymostore';
 import * as uris from '../globals/uris';
 import { DymoNavigator } from '../navigators/navigator';
 import { SequentialNavigator } from '../navigators/sequential';
-import { Scheduler } from './scheduler';
+import { Scheduler } from './scheduler-old';
 import { Schedulo, Time, Playback } from 'schedulo';
-import { ScheduloObjectWrapper } from './wrapper';
+import { ScheduloScheduledObject } from './wrapper';
 import { flattenArray } from 'arrayutils';
 
 interface PlayParams {
@@ -22,12 +22,12 @@ interface PlayParams {
  */
 export class SchedulerThread {
 
-	private dymoUri;
+/*	private dymoUri;
 	private navigator: DymoNavigator;
 	private store: DymoStore;
 
-	private scheduledObjects: ScheduloObjectWrapper[] = [];
-	private playingObjects: ScheduloObjectWrapper[] = [];
+	private scheduledObjects: ScheduloScheduledObject[] = [];
+	private playingObjects: ScheduloScheduledObject[] = [];
 
 	constructor(dymoUri: string, private scheduler: Scheduler, navigator?: DymoNavigator) {
 		this.dymoUri = dymoUri;
@@ -65,9 +65,10 @@ export class SchedulerThread {
 	}
 
 	private recursivePlay() {
+		console.log("RECPLAY")
 		let previousObject = _.last(this.scheduledObjects);
 		let referenceTime = previousObject ? previousObject.getReferenceTime()
-			: this.scheduler.getSchedulo().getCurrentTime()+1;
+			: this.scheduler.getSchedulo().getCurrentTime()+0.5;
 		let currentObjects = this.getNextPlayParams();
 		currentObjects.forEach(o => {
 			let onset = this.store.findParameterValue(o.uri, uris.ONSET);
@@ -79,6 +80,7 @@ export class SchedulerThread {
 			} else {
 				startTime = Time.At(referenceTime);
 			}
+			console.log(startTime, this.scheduler.getSchedulo().getCurrentTime())
 			let loop = this.store.findParameterValue(o.uri, uris.LOOP);
 			//console.log("LOOP", loop)
 			let playbackMode = loop ? Playback.Loop(0, o.start, o.duration) : Playback.Oneshot(o.start, o.duration);
@@ -86,23 +88,31 @@ export class SchedulerThread {
 				[o.sourcePath],
 				startTime,
 				playbackMode,
-			).then(audioObject => {
-				this.scheduledObjects.push(new ScheduloObjectWrapper(o.uri, referenceTime, audioObject[0], this.store, this))
-				if (previousObject) {
-					previousObject.getScheduloObject().on('playing', this.recursivePlay.bind(this));
-				} else {
-					this.recursivePlay();
+				{
+					bufferScheme: 'dynamic',
+					timings: {
+						connectToGraph: {countIn: 2, countOut: 2},
+						loadBuffer: {countIn: 5, countOut: 5}
 				}
+			}).then(audioObject => {
+				console.log("GOT AUDIOOBJ")
+				let newObject = new ScheduloScheduledObject(o.uri, referenceTime, audioObject[0], this.store, null);
+				this.scheduledObjects.push(newObject);
+				newObject.getScheduloObject().on('scheduled', ()=>{
+					console.log("SCHEDULED")
+					//this.recursivePlay();
+				});
+				this.recursivePlay();
 			});
 		});
 	}
 
-	objectStarted(object: ScheduloObjectWrapper) {
+	objectStarted(object: ScheduloScheduledObject) {
 		this.playingObjects.push(object);
 		this.scheduler.objectStarted(object.getUris());
 	}
 
-	objectEnded(object: ScheduloObjectWrapper) {
+	objectEnded(object: ScheduloScheduledObject) {
 		this.removeFrom(object, this.scheduledObjects);
 		if (this.removeFrom(object, this.playingObjects)) {
 			this.scheduler.objectStopped();
@@ -149,7 +159,7 @@ export class SchedulerThread {
 		}
 		//console.log(startTime, maxDuration)
 		return [startTime+maxDuration, longestSource];
-	}*/
+	}*
 
 	private getSourceDuration(params: PlayParams) {
 		let duration = params.duration;
@@ -206,6 +216,6 @@ export class SchedulerThread {
 				return "top";
 			}
 		}));
-	}
+	}*/
 
 }

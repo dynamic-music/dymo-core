@@ -87,6 +87,7 @@ export const HAS_STANDARD_VALUE: string = "http://tiny.cc/dymo-ontology#hasStand
 export const IS_INTEGER: string = "http://tiny.cc/dymo-ontology#isInteger";
 export const PLAY: string = "http://tiny.cc/dymo-ontology#Play";
 export const LOOP: string = "http://tiny.cc/dymo-ontology#Loop";
+export const REPEAT: string = "http://tiny.cc/dymo-ontology#Repeat";
 export const ONSET: string = "http://tiny.cc/dymo-ontology#Onset";
 export const DURATION: string = "http://tiny.cc/dymo-ontology#Duration";
 export const DURATION_RATIO: string = "http://tiny.cc/dymo-ontology#DurationRatio";

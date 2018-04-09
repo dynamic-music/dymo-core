@@ -2,7 +2,7 @@ import 'isomorphic-fetch';
 import { GlobalVars } from '../../src/globals/globals';
 import { DymoStore } from '../../src/io/dymostore';
 import { AudioBank } from '../../src/audio/audio-bank';
-import { Scheduler } from '../../src/audio/scheduler';
+import { Scheduler } from '../../src/audio/scheduler-old';
 import { AudioProcessor } from '../../src/audio/processor';
 import { TIME_STRETCH_RATIO } from '../../src/globals/uris';
 import { SERVER_ROOT, AUDIO_CONTEXT, initSpeaker, endSpeaker } from './server';
@@ -45,7 +45,7 @@ describe("a processor", function() {
 		store.setParameter("dymo1", TIME_STRETCH_RATIO, 2);
 		scheduler.play("dymo1");
 		setTimeout(function() {
-			expect(scheduler.getUrisOfPlayingDymos().getValue()).toEqual(["dymo1"]);
+			expect(scheduler.getUrisOfPlayingDymos()).toEqual(["dymo1"]);
 			//expect(audioContext.activeSourceCount).toBe(1);
 			scheduler.stop("dymo1");
 			done();

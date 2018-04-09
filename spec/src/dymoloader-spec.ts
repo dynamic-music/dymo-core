@@ -1,7 +1,7 @@
 import 'isomorphic-fetch';
 import * as _ from 'lodash';
 import { AudioBank } from '../../src/audio/audio-bank';
-import { Scheduler } from '../../src/audio/scheduler';
+import { Scheduler } from '../../src/audio/scheduler-old';
 import { DymoStore } from '../../src/io/dymostore';
 import { DymoLoader } from '../../src/io/dymoloader';
 import * as u from '../../src/globals/uris';
