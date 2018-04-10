@@ -43,10 +43,6 @@ export class DymoManager {
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
 	constructor(audioContext = createAudioContext(), scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string, fetcher: Fetcher = new FetchFetcher()) {
-		this.store = new DymoStore(fetcher);
-		this.loader = new DymoLoader(this.store, fetcher);
-		this.scheduler = new ScheduloScheduler();
-		this.player = new DymoPlayer(this.store, this.scheduler);
 		if (optimizedMode) {
 			GlobalVars.OPTIMIZED_MODE = true;
 		}
@@ -57,6 +53,10 @@ export class DymoManager {
 			GlobalVars.FADE_LENGTH = fadeLength;
 		}
 		this.reverbFile = reverbFile;
+		this.store = new DymoStore(fetcher);
+		this.loader = new DymoLoader(this.store, fetcher);
+		this.scheduler = new ScheduloScheduler();
+		this.player = new DymoPlayer(this.store, this.scheduler);
 	}
 
 	init(ontologiesPath?: string): Promise<any> {

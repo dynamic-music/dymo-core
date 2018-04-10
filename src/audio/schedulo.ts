@@ -1,4 +1,5 @@
 import { Schedulo, Time, Playback, AudioBank } from 'schedulo';
+import { GlobalVars } from '../globals/globals';
 import * as uris from '../globals/uris';
 import { DymoScheduler } from './scheduler';
 import { ScheduloScheduledObject } from './wrapper';
@@ -9,7 +10,10 @@ export class ScheduloScheduler extends DymoScheduler {
 
   constructor() {
     super();
-    this.schedulo = new Schedulo();
+    this.schedulo = new Schedulo({
+      connectToGraph: {countIn: GlobalVars.SCHEDULE_AHEAD_TIME, countOut: 1},
+      loadBuffer: {countIn: GlobalVars.SCHEDULE_AHEAD_TIME+2, countOut: 5}
+    });
     this.schedulo.start();
   }
 
