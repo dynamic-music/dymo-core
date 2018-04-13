@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
-import { DymoStore } from './dymostore';
+import { DymoStore } from './dymostore-service';
 
 export interface JsonGraph {
   nodes: Object[],

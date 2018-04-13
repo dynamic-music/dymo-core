@@ -1,5 +1,5 @@
 import { VALUE } from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { DymoStore } from '../io/dymostore-service';
 
 /**
  * A control actively changes its value.

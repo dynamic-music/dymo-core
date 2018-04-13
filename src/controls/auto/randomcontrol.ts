@@ -1,5 +1,5 @@
 import { RANDOM, AUTO_CONTROL_TRIGGER } from '../../globals/uris';
-import { DymoStore } from '../../io/dymostore';
+import { DymoStore } from '../../io/dymostore-service';
 import { AutoControl } from '../autocontrol';
 
 /**

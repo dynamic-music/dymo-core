@@ -1,6 +1,6 @@
 import * as math from 'mathjs'
 import * as _ from 'lodash'
-import { uris } from '../index'
+import * as uris from '../globals/uris'
 import { StructureInducer, IterativeSmithWatermanResult, Similarity, Quantizer, SmithWaterman } from 'siafun'
 
 export module DymoStructureInducer {

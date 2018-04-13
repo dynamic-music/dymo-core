@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as math from 'mathjs';
 import * as arrays from 'arrayutils';
 import { VALUE } from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { EasyStore } from '../io/easystore';
 import { MathjsNode } from '../globals/types';
 import { LogicTools } from '../math/logictools';
 
@@ -19,7 +19,7 @@ export class Maintainer {
   private currentValues: {} = {};
   private featureVars: string[];
 
-  constructor(private varsAndUris: Map<string,string>, private expression: MathjsNode, isDirected: boolean, private store: DymoStore) {
+  constructor(private varsAndUris: Map<string,string>, private expression: MathjsNode, isDirected: boolean, private store: EasyStore) {
     //console.log(expression.toString())
     varsAndUris.forEach((u,v) => this.setUriAndVar(u,v));
     varsAndUris.forEach((uri,varName) => {

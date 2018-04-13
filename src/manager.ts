@@ -7,7 +7,7 @@ import * as uris from './globals/uris'
 import { Fetcher, FetchFetcher } from './util/fetcher'
 import { DymoPlayer } from './audio/player';
 import { Rendering } from './model/rendering'
-import { DymoStore } from './io/dymostore'
+import { DymoStore } from './io/dymostore-service';
 import { DymoLoader, LoadedStuff } from './io/dymoloader'
 import { Control } from './model/control'
 import { UIControl } from './controls/uicontrol'
@@ -15,7 +15,8 @@ import { SensorControl } from './controls/sensorcontrol'
 import { JsonGraphSubject, JsonGraph } from './io/jsongraph'
 import { AttributeInfo } from './globals/types';
 
-function createAudioContext(): AudioContext {
+
+/*function createAudioContext(): AudioContext {
 	const audioCtxCtor = typeof AudioContext !== 'undefined' ?
 		AudioContext : null;
 	return new (
@@ -23,7 +24,7 @@ function createAudioContext(): AudioContext {
 		|| (window as any).AudioContext
 		|| (window as any).webkitAudioContext
 	)();
-}
+}*/
 
 /**
  * A class for easy access of all dymo core functionality.
@@ -33,7 +34,6 @@ export class DymoManager {
 	private store: DymoStore;
 	private loader: DymoLoader;
 	private player: DymoPlayer;
-	private scheduler: ScheduloScheduler;
 	private dymoUris: string[] = [];
 	private rendering: Rendering;
 	private uiControls: UIControl[] = [];
@@ -42,7 +42,8 @@ export class DymoManager {
 	private graphs: JsonGraphSubject[] = [];
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
-	constructor(audioContext = createAudioContext(), scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string, fetcher: Fetcher = new FetchFetcher()) {
+	//TODO REMOVE AUDIO CONTEXT
+	constructor(audioContext, scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string, fetcher?: Fetcher) {
 		if (optimizedMode) {
 			GlobalVars.OPTIMIZED_MODE = true;
 		}
@@ -55,8 +56,7 @@ export class DymoManager {
 		this.reverbFile = reverbFile;
 		this.store = new DymoStore(fetcher);
 		this.loader = new DymoLoader(this.store, fetcher);
-		this.scheduler = new ScheduloScheduler();
-		this.player = new DymoPlayer(this.store, this.scheduler);
+		this.player = new DymoPlayer(this.store, new ScheduloScheduler());
 	}
 
 	init(ontologiesPath?: string): Promise<any> {
@@ -85,8 +85,8 @@ export class DymoManager {
 			.then(() => this.loadFromStore());
 	}
 
-	loadFromStore(...uris: string[]): Promise<LoadedStuff> {
-		let loadedStuff = this.loader.loadFromStore(...uris);
+	async loadFromStore(...uris: string[]): Promise<LoadedStuff> {
+		let loadedStuff = await this.loader.loadFromStore(...uris);
 		return this.processLoadedStuff(loadedStuff).then(() => loadedStuff);
 	}
 
@@ -100,7 +100,7 @@ export class DymoManager {
 			this.reverbFile = 'node_modules/dymo-core/audio/impulse_rev.wav';
 		}
 		this.graphs.forEach(g => g.update());
-		this.attributeInfo.next(this.store.getAttributeInfo());
+		this.store.getAttributeInfo().then(info => this.attributeInfo.next(info));
 		//return this.player.init(this.reverbFile, loadedStuff.dymoUris);
 		return Promise.resolve();
 	}
@@ -110,13 +110,13 @@ export class DymoManager {
 			.then(loadedStuff => loadedStuff.dymoUris);
 	}
 
-	replacePartOfTopDymo(index, dymoUri) {
+	/*replacePartOfTopDymo(index, dymoUri) {
 		var oldDymo = this.store.replacePartAt(this.dymoUris[0], this.addContext(dymoUri), index);
 		this.player.stop(oldDymo);
-	}
+	}*/
 
 	getAudioBank() {
-		return this.scheduler.getAudioBank();
+		return this.player.getAudioBank();
 	}
 
 	getPosition(dymoUri: string) {
@@ -164,6 +164,7 @@ export class DymoManager {
 		}
 	}
 
+	//TODO REMOVE THIS FUNCTION SOMETIME!
 	getStore(): DymoStore {
 		return this.store;
 	}

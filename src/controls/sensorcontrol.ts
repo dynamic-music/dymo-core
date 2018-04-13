@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/Rx';
 import { AUTO_CONTROL_FREQUENCY } from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { DymoStore } from '../io/dymostore-service';
 import { Control } from '../model/control';
 import { Ramp } from '../util/ramp';
 
@@ -73,8 +73,8 @@ export class SensorControl extends Control {
 		this.previousValues = [];
 	}
 
-	startUpdate() {
-		var freq = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
+	async startUpdate() {
+		var freq = await this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		if (!freq) freq = 100;
 		if (this.sensor) {
 			this.subscription = this.sensor.watch
@@ -136,8 +136,8 @@ export class SensorControl extends Control {
 		return sum / list.length;
 	}
 
-	private startUpdateRamp(targetValue, duration) {
-		var frequency = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
+	private async startUpdateRamp(targetValue, duration) {
+		var frequency = await this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		this.ramp.startOrUpdate(targetValue, duration, frequency? frequency: 100, value => {
 			//call regular super method
 			this.updateValue(value);

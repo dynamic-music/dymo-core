@@ -1,5 +1,5 @@
 import { RAMP, AUTO_CONTROL_FREQUENCY } from '../../globals/uris';
-import { DymoStore } from '../../io/dymostore';
+import { DymoStore } from '../../io/dymostore-service';
 import { AutoControl } from '../autocontrol';
 
 /**

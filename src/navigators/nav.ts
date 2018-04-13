@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { Time } from 'schedulo';
 import * as uris from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { DymoStore } from '../io/dymostore-service';
 
 export interface SchedulingInstructions {
   uris: string[],
@@ -14,35 +14,31 @@ export abstract class Navigator {
   protected playCount = 0;
   protected parts: string[];
 
-  constructor(protected dymoUri: string, protected store: DymoStore) {
-    //TODO MAKE PARTS REALTIME TOO, GET THEM EVERYTIME NEXT IS CALLED....
-    // (in case they change dynamically as in fast dj)
-    this.parts = this.store.findParts(this.dymoUri);
+  constructor(protected dymoUri: string, protected store: DymoStore) {}
+
+  async hasParts(): Promise<boolean> {
+    return (await this.store.findParts(this.dymoUri)).length > 0;
   }
 
-  hasParts(): boolean {
-    return this.parts.length > 0;
-  }
-
-  next(): SchedulingInstructions {
-    this.parts = this.store.findParts(this.dymoUri);
+  async next(): Promise<SchedulingInstructions> {
+    this.parts = await this.store.findParts(this.dymoUri);
     return undefined;
   }
 
   abstract getPosition(): number;
 
-  protected keepPlaying(): boolean {
-    let keepPlaying = !this.playCount || this.isLoop()
-        || this.repetitions() > this.playCount;
+  protected async keepPlaying(): Promise<boolean> {
+    let keepPlaying = !this.playCount || await this.isLoop()
+        || await this.repetitions() > this.playCount;
     return keepPlaying;
   }
 
-  protected isLoop(): boolean {
-    return this.store.findParameterValue(this.dymoUri, uris.LOOP) || false;
+  private async isLoop(): Promise<boolean> {
+    return await this.store.findParameterValue(this.dymoUri, uris.LOOP) || false;
   }
 
-  protected repetitions(): number {
-    return this.store.findParameterValue(this.dymoUri, uris.REPEAT) || 0;
+  private async repetitions(): Promise<number> {
+    return await this.store.findParameterValue(this.dymoUri, uris.REPEAT) || 0;
   }
 
   protected toArray(s: string): string[] {
@@ -60,17 +56,17 @@ export abstract class IndexedNavigator extends Navigator {
     this.reset();
   }
 
-  next() {
-    super.next();
+  async next() {
+    await super.next();
     //check if another pass appropriate
-    if (this.currentIndex == this.parts.length && this.keepPlaying()) {
+    if (this.currentIndex == this.parts.length && await this.keepPlaying()) {
       this.reset();
     }
     //first next of pass
     if (this.currentIndex == 0) {
       this.playCount++;
     }
-    return this.get();
+    return Promise.resolve(this.get());
   }
 
   getPosition(): number {
@@ -132,11 +128,11 @@ export class OnsetNavigator extends SequentialNavigator {
 
 export abstract class OneshotNavigator extends Navigator {
 
-  next() {
-    super.next();
-    if (this.keepPlaying()) {
+  async next() {
+    await super.next();
+    if (await this.keepPlaying()) {
       this.playCount++;
-      return this.get();
+      return Promise.resolve(this.get());
     }
   }
 
@@ -182,7 +178,7 @@ export class DisjunctionNavigator extends OneshotNavigator {
 
 
 
-export function getNavigator(dymoUri: string, store: DymoStore): Navigator {
+export async function getNavigator(dymoUri: string, store: DymoStore): Promise<Navigator> {
   /*for (var subset of this.subsetNavigators.keys()) {
     if (subset.getValues(this.store).indexOf(dymoUri) >= 0) {
       return this.subsetNavigators.get(subset).getCopy(dymoUri, this.getNavigator.bind(this));
@@ -193,14 +189,14 @@ export function getNavigator(dymoUri: string, store: DymoStore): Navigator {
   } else {
     return new OneShotNavigator(dymoUri);
   }*/
-  let dymoType = store.findObject(dymoUri, uris.CDT);
-  let parts = store.findParts(dymoUri);
+  let dymoType = await store.findObject(dymoUri, uris.CDT);
+  let parts = await store.findParts(dymoUri);
   if (dymoType === uris.CONJUNCTION) {
     return new ConjunctionNavigator(dymoUri, store);
   } else if (dymoType === uris.DISJUNCTION) {
     return new DisjunctionNavigator(dymoUri, store);
   } else if (parts.length > 0) {
-    if (store.findParameterValue(parts[0], uris.ONSET) != null) {
+    if (await store.findParameterValue(parts[0], uris.ONSET) != null) {
       return new OnsetNavigator(dymoUri, store);
     }
     return new SequentialNavigator(dymoUri, store);

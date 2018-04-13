@@ -1,6 +1,6 @@
 import { AudioObject, Parameter, Time, Stop } from 'schedulo';
 import * as uris from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { DymoStore } from '../io/dymostore-service';
 import { DymoPlayer } from './player';
 import { ScheduledObject } from './scheduler';
 
@@ -33,21 +33,25 @@ export class ScheduloScheduledObject extends ScheduledObject {
   constructor(dymoUri: string, private referenceTime: number,
       store: DymoStore, player: DymoPlayer) {
     super(dymoUri, store, player);
+    this.init2();
+  }
+
+  private init2() {
     //TODO SIMPLIFY!!
-    FEATURE_PAIRINGS.forEach((feature, typeUri) => {
-      this.initFeature(dymoUri, typeUri);
+    FEATURE_PAIRINGS.forEach(async (feature, typeUri) => {
+      this.initFeature(this.dymoUri, typeUri);
       //if behavior not independent, observe parents
-      let behavior = this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
+      let behavior = await this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
       this.typeToBehavior.set(typeUri, behavior);
       if (behavior && behavior !== uris.INDEPENDENT) {
         this.parentUris.forEach(p => this.initFeature(p, typeUri));
       }
     });
     FEATURE_PAIRINGS.forEach((feature, typeUri) => this.updateObjectParam(typeUri));
-    PARAM_PAIRINGS.forEach((param, typeUri) => {
-      this.initParam(dymoUri, typeUri);
+    PARAM_PAIRINGS.forEach(async (param, typeUri) => {
+      this.initParam(this.dymoUri, typeUri);
       //if behavior not independent, observe parents
-      let behavior = this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
+      let behavior = await this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
       this.typeToBehavior.set(typeUri, behavior);
       if (behavior && behavior !== uris.INDEPENDENT) {
         this.parentUris.forEach(p => this.initParam(p, typeUri));
@@ -56,18 +60,18 @@ export class ScheduloScheduledObject extends ScheduledObject {
     PARAM_PAIRINGS.forEach((param, typeUri) => this.updateObjectParam(typeUri));
   }
 
-  private initFeature(dymoUri: string, typeUri: string) {
-    let featureUri = this.store.setFeature(dymoUri, typeUri);
-    let value = this.store.findFeatureValue(dymoUri, typeUri);
+  private async initFeature(dymoUri: string, typeUri: string) {
+    let featureUri = await this.store.setFeature(dymoUri, typeUri);
+    let value = await this.store.findFeatureValue(dymoUri, typeUri);
     this.dymoToParam.set(dymoUri, featureUri);
     this.attributeToType.set(featureUri, typeUri);
     this.attributeToValue.set(featureUri, value);
   }
 
 
-  private initParam(dymoUri: string, typeUri: string) {
-    let paramUri = this.store.addParameterObserver(dymoUri, typeUri, this);
-    let value = this.store.findParameterValue(dymoUri, typeUri);
+  private async initParam(dymoUri: string, typeUri: string) {
+    let paramUri = await this.store.addParameterObserver(dymoUri, typeUri, this);
+    let value = await this.store.findParameterValue(dymoUri, typeUri);
     //console.log(dymoUri, typeUri, paramUri, value);
     //TODO ONLY IF PARAM EXISTS AND VALUE NOT NULL!!!!!!
     this.dymoToParam.set(dymoUri, paramUri);

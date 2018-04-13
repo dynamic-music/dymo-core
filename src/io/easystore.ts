@@ -40,11 +40,16 @@ interface ListElement {
 export class EasyStore {
 
 	private store: N3Store = N3.Store();
+	private fetcher: Fetcher = new FetchFetcher();
 	private valueObservers = {};
 	private typeObservers = {};
 	private valueBuffer = {};
 
-  constructor(private fetcher: Fetcher = new FetchFetcher()) {}
+  constructor() {}
+
+	setFetcher(fetcher: Fetcher) {
+		this.fetcher = fetcher;
+	}
 
 	size(): number {
 		return this.store.size;

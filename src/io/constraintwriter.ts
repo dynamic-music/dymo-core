@@ -1,36 +1,54 @@
 import * as _ from 'lodash';
 import * as u from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { EasyStore } from '../io/easystore';
 import { Constraint } from '../model/constraint';
 import { Expression } from '../model/expression';
 import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../model/variable';
 import { ExpressionTools } from '../math/expressiontools';
 import { MathjsNode, OperatorNode, FunctionNode, AccessorNode, ConditionalNode } from '../globals/types';
 
+export interface BoundVariableGhost {
+  name: string,
+  type?: string,
+  typeExpressions?: ExpressionGhost[],
+  set?: string[]
+}
+
+export interface ExpressionGhost {
+  mathjsTree: MathjsNode,
+  isDirected?: boolean
+}
+
+export interface ConstraintGhost {
+  vars: BoundVariableGhost[],
+  expression: ExpressionGhost
+}
+
 export class ConstraintWriter {
 
-  constructor(private store: DymoStore) {}
+  constructor(private store: EasyStore) {}
 
-  addConstraint(ownerUri: string, constraint: Constraint): string {
-    let varUris = constraint.getBoundVariables().map(v => this.addVariable(v));
-    var expressionUri = this.addExpression(constraint.getExpression());
+  addConstraint(ownerUri: string, constraint: ConstraintGhost): string {
+    let varUris = constraint.vars.map(v => this.addVariable(v));
+    var expressionUri = this.addExpression(constraint.expression);
     var expUri = this.recursiveAddUniversalQuantifiers(varUris, expressionUri);
     this.store.addTriple(ownerUri, u.CONSTRAINT, expUri);
     return expUri;
   }
 
-  addVariable(variable: BoundVariable): string {
+  addVariable(variable: BoundVariableGhost): string {
     let varUri = this.store.createBlankNode();
     this.store.addTriple(varUri, u.TYPE, u.VARIABLE);
-    this.store.setValue(varUri, u.VAR_NAME, variable.getName());
-    if (variable instanceof TypedVariable) {
-      this.store.addTriple(varUri, u.VAR_TYPE, variable.getType());
+    this.store.setValue(varUri, u.VAR_NAME, variable.name);
+    if (variable.type) {
+      this.store.addTriple(varUri, u.VAR_TYPE, variable.type);
     }
-    if (variable instanceof ExpressionVariable) {
-      variable.getTypeExpressions().forEach(e => this.store.addTriple(varUri, u.VAR_EXPR, this.addExpression(e)));
+    if (variable.typeExpressions) {
+      variable.typeExpressions.forEach(e =>
+        this.store.addTriple(varUri, u.VAR_EXPR, this.addExpression(e)));
     }
-    if (variable instanceof SetBasedVariable) {
-      variable.getSet().forEach(v => this.store.addTriple(varUri, u.VAR_VALUE, v));
+    if (variable.set) {
+      variable.set.forEach(v => this.store.addTriple(varUri, u.VAR_VALUE, v));
     }
     return varUri;
   }
@@ -46,9 +64,9 @@ export class ConstraintWriter {
     return currentQuantifier;
   }
 
-  private addExpression(expression: Expression): string {
-    let rootUri = this.recursiveAddExpression(expression.getFullTree());
-    this.store.setValue(rootUri, u.DIRECTED, expression.getIsDirected());
+  private addExpression(expression: ExpressionGhost): string {
+    let rootUri = this.recursiveAddExpression(expression.mathjsTree);
+    this.store.setValue(rootUri, u.DIRECTED, expression.isDirected);
     return rootUri;
   }
 

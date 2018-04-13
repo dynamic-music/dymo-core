@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as math from 'mathjs';
 import * as uris from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { EasyStore } from '../io/easystore';
 import { Constraint } from '../model/constraint';
 import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../model/variable';
 import { Expression } from '../model/expression';
@@ -9,7 +9,7 @@ import { ExpressionTools } from '../math/expressiontools';
 
 export class ConstraintLoader {
 
-  constructor(private store: DymoStore) {}
+  constructor(private store: EasyStore) {}
 
   loadConstraints(constraintUris: string[]): Constraint[] {
     let constraints = constraintUris.map(c => this.createConstraint(c));
@@ -55,6 +55,7 @@ export class ConstraintLoader {
   }
 
   private recursiveLoadExpression(expressionUri: string) {
+    console.log("LOADING", expressionUri)
     let expressionType = this.store.findObject(expressionUri, uris.TYPE);
     //console.log(expressionUri, expressionType)
     if (this.store.isSubclassOf(expressionType, uris.BINARY_OPERATOR)) {

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import * as uris from '../globals/uris';
 import { Navigator, getNavigator } from '../navigators/nav';
-import { DymoStore } from '../io/dymostore';
+import { DymoStore } from '../io/dymostore-service';
 import { DymoScheduler, ScheduledObject } from '../audio/scheduler';
 
 export class DymoPlayer {
@@ -22,6 +22,10 @@ export class DymoPlayer {
 
   getStore(): DymoStore {
     return this.store;
+  }
+
+  getAudioBank() {
+    return this.scheduler.getAudioBank();
   }
 
   play(dymoUri: string): Promise<any> {
@@ -83,12 +87,12 @@ export class DymoPlayer {
     return false;
   }
 
-  observedValueChanged(paramUri, paramType, value) {
+  async observedValueChanged(paramUri, paramType, value) {
     if (paramType == uris.LISTENER_ORIENTATION) {
       var angleInRadians = value / 180 * Math.PI;
       this.scheduler.setListenerOrientation(Math.sin(angleInRadians), 0, -Math.cos(angleInRadians), 0, 1, 0);
     } else if (paramType == uris.PLAY) {
-      var dymoUri = this.store.findSubject(uris.HAS_PARAMETER, paramUri);
+      var dymoUri = await this.store.findSubject(uris.HAS_PARAMETER, paramUri);
       if (value > 0) {
         this.play(dymoUri);
       } else {
@@ -138,14 +142,14 @@ export class HierarchicalPlayer {
     //TODO PLAY AND OBSERVE MAIN DURATION ... should override part players...
     //THEN MAKE PLAYER FOR NAVIGATED PART IF THERE IS ONE
     if (!this.navigator) {
-      this.navigator = getNavigator(this.dymoUri, this.store);
+      this.navigator = await getNavigator(this.dymoUri, this.store);
     }
-    let next = this.navigator.next();
+    let next = await this.navigator.next();
 
     let currentReference = this.getLastScheduledObject();
     currentReference = currentReference ? currentReference : this.referenceObject;
 
-    if (this.navigator.hasParts()) {
+    if (await this.navigator.hasParts()) {
       if (next && next.uris) {
         //console.log(next.uris)
         this.partPlayers = next.uris.map(p => new HierarchicalPlayer(

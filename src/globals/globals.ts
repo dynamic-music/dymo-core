@@ -1,5 +1,3 @@
-import { DymoStore } from '../io/dymostore'
-
 export module GlobalVars {
 
   export var OPTIMIZED_MODE: boolean = false;

@@ -1,5 +1,5 @@
 import * as uris from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { DymoStore } from '../io/dymostore-service';
 import { DymoPlayer } from './player';
 
 
@@ -9,7 +9,11 @@ export abstract class ScheduledObject {
 
   constructor(protected dymoUri: string, protected store: DymoStore,
       protected player: DymoPlayer) {
-    this.parentUris = store.findAllParents(this.dymoUri);
+    this.init();
+  }
+
+  private async init() {
+    this.parentUris = await this.store.findAllParents(this.dymoUri);
   }
 
   getUri(): string {
@@ -36,7 +40,7 @@ export class DummyScheduledObject extends ScheduledObject {
   }
 
   getParam(paramUri: string): number {
-    return this.store.findParameterValue(this.dymoUri, paramUri);
+    return 0;//this.store.findParameterValue(this.dymoUri, paramUri);
   }
 
   stop() {
@@ -60,6 +64,8 @@ export abstract class DymoScheduler {
   abstract schedule(dymoUri: string, previousObject: ScheduledObject,
     initRefTime: boolean): Promise<ScheduledObject>;
 
+  abstract getAudioBank(): any;
+
 }
 
 export class DummyScheduler extends DymoScheduler {
@@ -75,6 +81,10 @@ export class DummyScheduler extends DymoScheduler {
         resolve(new DummyScheduledObject(dymoUri, this.store, this.player, this.delay));
       }, this.delay)
     );
+  }
+
+  getAudioBank(): any {
+    return null;
   }
 
 }

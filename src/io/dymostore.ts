@@ -23,11 +23,6 @@ export class DymoStore extends EasyStore {
 	//private dymoSimpleContextPath = "dymo-context-simple";
 	private dymoBasePaths = {};
 
-	//creates the store
-	constructor(fetcher: Fetcher = new FetchFetcher()) {
-		super(fetcher);
-	}
-
 	//loads some basic ontology files
 	loadOntologies(localPath?: string): Promise<any> {
 		let dymoPath, mobilePath, expressionPath;

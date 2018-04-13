@@ -16,4 +16,4 @@ export { DymoGenerator } from './generator/dymo-generator';
 export { DymoTemplates } from './generator/dymo-templates';
 export { ExpressionGenerator, forAll } from './generator/expression-generator';
 //TODO SHOULDN'T BE EXPOSED, REMOVE THIS AGAIN ONCE THINGS SETTLE
-export { DymoStore } from './io/dymostore';
+export { DymoStore } from './io/dymostore-service';

@@ -1,6 +1,6 @@
 import { DATA_CONTROL, AUTO_CONTROL_TRIGGER } from '../globals/uris';
 import { GlobalVars } from '../globals/globals';
-import { DymoStore } from '../io/dymostore';
+import { DymoStore } from '../io/dymostore-service';
 import { AutoControl } from './autocontrol';
 import { Fetcher, FetchFetcher } from '../util/fetcher';
 

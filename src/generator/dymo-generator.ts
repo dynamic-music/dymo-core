@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import { uris, URI_TO_TERM } from '../index';
-import { DymoStore } from '../io/dymostore';
+import * as uris from '../globals/uris';
+import { DymoStore } from '../io/dymostore-service';
 import { ConstraintWriter } from '../io/constraintwriter';
 import { Constraint } from '../model/constraint';
 import { SUMMARY } from './globals';
@@ -19,7 +19,6 @@ interface TimeDymo {
  */
 export class DymoGenerator {
 
-	private constraintWriter: ConstraintWriter;
 	private currentTopDymo; //the top dymo for the current audio file
 	private currentRenderingUri;
 	private summarizingMode = SUMMARY.MEAN;
@@ -27,9 +26,7 @@ export class DymoGenerator {
 	private dymoCount = 0;
 	private renderingCount = 0;
 
-	constructor(private store: DymoStore) {
-		this.constraintWriter = new ConstraintWriter(store);
-	}
+	constructor(private store: DymoStore) {}
 
 	getStore(): DymoStore {
 		return this.store;
@@ -55,38 +52,38 @@ export class DymoGenerator {
 		return this.currentRenderingUri;
 	}
 
-	addConstraint(constraint: Constraint): string {
+	addConstraint(constraint: Constraint): Promise<string> {
 		if (!this.currentRenderingUri) {
 			this.addRendering();
 		}
-		return this.constraintWriter.addConstraint(this.currentRenderingUri, constraint);
+		return this.store.addConstraint(this.currentRenderingUri, constraint);
 	}
 
-	addCustomParameter(typeUri: string, ownerUri?: string, value?: number): string {
-		let uri = this.store.addCustomParameter(ownerUri, typeUri);
+	async addCustomParameter(typeUri: string, ownerUri?: string, value?: number): Promise<string> {
+		let uri = await this.store.addCustomParameter(ownerUri, typeUri);
 		if (!isNaN(value)) {
 			this.store.setValue(uri, uris.VALUE, value);
 		}
 		return uri;
 	}
 
-	addControl(name: string, type: string, uri?: string, initialValue?: number): string {
-		uri = this.store.addControl(name, type, uri);
+	async addControl(name: string, type: string, uri?: string, initialValue?: number): Promise<string> {
+		uri = await this.store.addControl(name, type, uri);
 		if (!isNaN(initialValue)) {
 			this.store.setValue(uri, uris.VALUE, initialValue);
 		}
 		return uri;
 	}
 
-	addRampControl(initialValue: number, duration: number, frequency?: number, name?: string): string {
-		let uri = this.addControl(name, uris.RAMP, null, initialValue);
+	async addRampControl(initialValue: number, duration: number, frequency?: number, name?: string): Promise<string> {
+		let uri = await this.addControl(name, uris.RAMP, null, initialValue);
 		this.getStore().setValue(uri, uris.HAS_DURATION, duration);
 		this.getStore().setValue(uri, uris.AUTO_CONTROL_FREQUENCY, frequency);
 		return uri;
 	}
 
-	addDataControl(url: string, jsonMap: string, uri?: string): string {
-		uri = this.addControl("", uris.DATA_CONTROL, uri);
+	async addDataControl(url: string, jsonMap: string, uri?: string): Promise<string> {
+		uri = await this.addControl("", uris.DATA_CONTROL, uri);
 		this.store.setValue(uri, uris.HAS_URL, url);
 	  this.store.setValue(uri, uris.HAS_JSON_MAP, jsonMap);
 		return uri;
@@ -108,19 +105,19 @@ export class DymoGenerator {
 		this.currentSourcePath = path;
 	}
 
-	addDymo(parentUri?: string, sourcePath?: string, dymoType?: string, dymoUri?: string) {
+	async addDymo(parentUri?: string, sourcePath?: string, dymoType?: string, dymoUri?: string) {
 		if (!dymoUri) {
 			dymoUri = this.getUniqueDymoUri();
 		}
-		this.store.addDymo(dymoUri, parentUri, null, sourcePath, dymoType);
+		dymoUri = await this.store.addDymo(dymoUri, parentUri, null, sourcePath, dymoType);
 		if (!parentUri) {
 			this.currentTopDymo = dymoUri;
 		}
 		return dymoUri;
 	}
 
-	addConjunction(parentUri: string, partUris: string[]): string {
-		var uri = this.addDymo(parentUri, null, uris.CONJUNCTION);
+	async addConjunction(parentUri: string, partUris: string[]): Promise<string> {
+		var uri = await this.addDymo(parentUri, null, uris.CONJUNCTION);
 		partUris.forEach(p => this.store.addPart(uri, p));
 		return uri;
 	}
@@ -137,7 +134,7 @@ export class DymoGenerator {
 		return renderingUri;
 	}
 
-	addFeature(name, data, dymoUri) {
+	async addFeature(name, data, dymoUri) {
 		if (!dymoUri) {
 			dymoUri = this.currentTopDymo;
 		}
@@ -145,10 +142,10 @@ export class DymoGenerator {
 		this.initTopDymoIfNecessary();
 		//var feature = this.getFeature(name);
 		//iterate through all levels and add averages
-		var dymos = this.store.findAllObjectsInHierarchy(dymoUri);
+		var dymos = await this.store.findAllObjectsInHierarchy(dymoUri);
 		for (var i = 0; i < dymos.length; i++) {
-			var currentTime = this.store.findFeatureValue(dymos[i], uris.TIME_FEATURE);
-			var currentDuration = this.store.findFeatureValue(dymos[i], uris.DURATION_FEATURE);
+			var currentTime = await this.store.findFeatureValue(dymos[i], uris.TIME_FEATURE);
+			var currentDuration = await this.store.findFeatureValue(dymos[i], uris.DURATION_FEATURE);
 			var currentValues = data;
 			if (!isNaN(currentTime)) {
 				//only filter data id time given
@@ -211,11 +208,11 @@ export class DymoGenerator {
 		return 0;
 	}
 
-	addSegmentation(segments: Segment[], dymoUri: string): void {
+	async addSegmentation(segments: Segment[], dymoUri: string): Promise<void> {
 		this.initTopDymoIfNecessary();
-		var maxLevel = this.store.findMaxLevel(this.currentTopDymo);
+		var maxLevel = await this.store.findMaxLevel(this.currentTopDymo);
 		if (!dymoUri) dymoUri = this.currentTopDymo;
-		var parentMap = this.recursiveCreateParentMap(dymoUri);
+		var parentMap = await this.recursiveCreateParentMap(dymoUri);
 		//console.log(JSON.stringify(parentMap))
 		for (var i = 0; i < segments.length; i++) {
 			var parent = this.getSuitableParent(segments[i].time.value, parentMap);
@@ -234,7 +231,7 @@ export class DymoGenerator {
 			}
 			//don't want anything with duration 0 (what other feature values would it have?)
 			if (duration > 0) {
-				var newDymoUri = this.addDymo(parent.uri);
+				var newDymoUri = await this.addDymo(parent.uri);
 				this.setDymoFeature(newDymoUri, uris.TIME_FEATURE, startTime);
 				this.setDymoFeature(newDymoUri, uris.DURATION_FEATURE, duration);
 				/*if (segments[i].label && !isNaN(segments[i].label)) {
@@ -245,16 +242,16 @@ export class DymoGenerator {
 		}
 	}
 
-	private recursiveCreateParentMap(topDymoUri: string): TimeDymo {
-		const parts = this.store.findParts(topDymoUri);
+	private async recursiveCreateParentMap(topDymoUri: string): Promise<TimeDymo> {
+		let parts = await this.store.findParts(topDymoUri);
 		/*TODO SORT?? let times = parts.map(p => this.store.findFeatureValue(p, uris.TIME_FEATURE));
 		let sortedTimesAndParts = _.zip(times, parts).sort((p,q) => p[0]-q[0]);
 		[times, parts] = _.unzip(sortedTimesAndParts);*/
 		return {
 			uri: topDymoUri,
-			time: this.store.findFeatureValue(topDymoUri, uris.TIME_FEATURE),
-			duration: this.store.findFeatureValue(topDymoUri, uris.DURATION_FEATURE),
-			parts: parts.length > 0 ? parts.map(p => this.recursiveCreateParentMap(p)) : []
+			time: await this.store.findFeatureValue(topDymoUri, uris.TIME_FEATURE),
+			duration: await this.store.findFeatureValue(topDymoUri, uris.DURATION_FEATURE),
+			parts: parts.length > 0 ? await Promise.all(parts.map(p => this.recursiveCreateParentMap(p))) : []
 		}
 	}
 
@@ -289,9 +286,9 @@ export class DymoGenerator {
 		}
 	}
 
-	setDymoFeature(dymoUri, featureUri, value) {
-		if (!this.store.findObject(featureUri, uris.TYPE)) {
-			this.store.addTriple(featureUri, uris.TYPE, uris.FEATURE_TYPE);
+	async setDymoFeature(dymoUri, featureUri, value) {
+		if (!await this.store.findObject(featureUri, uris.TYPE)) {
+			await this.store.addTriple(featureUri, uris.TYPE, uris.FEATURE_TYPE);
 		}
 		this.store.setFeature(dymoUri, featureUri, value);
 		//this.updateMinMax(featureUri, value);

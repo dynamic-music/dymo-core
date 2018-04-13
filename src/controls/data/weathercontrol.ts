@@ -1,5 +1,5 @@
 import { DataControl } from '../datacontrol';
-import { DymoStore } from '../../io/dymostore';
+import { DymoStore } from '../../io/dymostore-service';
 import { Fetcher } from '../../util/fetcher';
 
 /**

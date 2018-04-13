@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs/Rx';
 import { BUTTON, TOGGLE, AUTO_CONTROL_FREQUENCY } from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { DymoStore } from '../io/dymostore-service';
 import { Control } from '../model/control';
 
 /**
@@ -14,7 +14,11 @@ export class UIControl extends Control {
 
 	constructor(uri: string, name: string, type: string, store: DymoStore) {
 		super(uri, name, type, store);
-		let frequency = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
+		this.init();
+	}
+
+	private async init() {
+		let frequency = await this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		frequency = frequency ? frequency : 100;
 		this.inValueStream
 			.auditTime(frequency)

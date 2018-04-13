@@ -1,7 +1,6 @@
-import { GRAPH_NAVIGATOR } from '../globals/uris'
+import { GRAPH_NAVIGATOR, INDEX_FEATURE } from '../globals/uris'
 import { SequentialNavigator } from './sequential'
 import { DymoStore } from '../io/dymostore';
-import { uris } from '../index';
 
 /**
  * A navigator that probabilistically jumps along directed edges, or moves sequentially if there are none.
@@ -31,7 +30,7 @@ export class GraphNavigator extends SequentialNavigator {
 			var options = this.store.findSuccessors(parts[0]);
 			if (options.length > 0) {
 				var selectedOption = options[Math.floor(Math.random()*options.length)];
-				return this.store.findFeatureValue(selectedOption, uris.INDEX_FEATURE);
+				return this.store.findFeatureValue(selectedOption, INDEX_FEATURE);
 			}
 		}
 		return 0;

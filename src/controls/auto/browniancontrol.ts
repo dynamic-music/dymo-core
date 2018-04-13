@@ -1,5 +1,5 @@
 import { BROWNIAN, BROWNIAN_MAX_STEP_SIZE, AUTO_CONTROL_TRIGGER } from '../../globals/uris';
-import { DymoStore } from '../../io/dymostore';
+import { DymoStore } from '../../io/dymostore-service';
 import { AutoControl } from '../autocontrol';
 
 /**
@@ -23,8 +23,8 @@ export class BrownianControl extends AutoControl {
 		this.updateValue(initialValue);
 	}
 
-	update() {
-		var currentMaxStepSize = Number(this.store.findControlParamValue(this.uri, BROWNIAN_MAX_STEP_SIZE));
+	async update() {
+		var currentMaxStepSize = Number(await this.store.findControlParamValue(this.uri, BROWNIAN_MAX_STEP_SIZE));
 		var currentStep = (2 * currentMaxStepSize * Math.random()) - currentMaxStepSize;
 		var newValue = this.getValue() + currentStep;
 		newValue = Math.min(Math.max(newValue, this.min), this.max);

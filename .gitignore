@@ -30,3 +30,4 @@ dist
 spec/lib
 output
 package-lock.json
+src/io/n3store

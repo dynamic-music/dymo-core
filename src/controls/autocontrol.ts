@@ -1,6 +1,6 @@
 import { AUTO_CONTROL, AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER } from '../globals/uris';
 import { Control } from '../model/control';
-import { DymoStore } from '../io/dymostore';
+import { DymoStore } from '../io/dymostore-service';
 
 /**
  * Autocontrols that use statistics to set their values.
@@ -13,8 +13,12 @@ export abstract class AutoControl extends Control {
 
 	constructor(uri, name, store: DymoStore) {
 		super(uri, name, AUTO_CONTROL, store);
+		this.init();
+	}
+
+	private async init() {
 		this.intervalID = null;
-		this.frequency = this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
+		this.frequency = await this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		if (!this.frequency) this.frequency = 100;
 		this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency, this);
 		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0, this);
@@ -31,7 +35,7 @@ export abstract class AutoControl extends Control {
 		this.intervalID = setInterval(() => this.update(), this.frequency);
 	}
 
-	abstract update();
+	abstract async update();
 
 	reset() {
 		clearInterval(this.intervalID);

@@ -1,7 +1,7 @@
 import * as math from 'mathjs';
 import * as _ from 'lodash';
 import * as u from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { EasyStore } from '../io/easystore';
 import { Expression } from '../model/expression';
 
 export abstract class BoundVariable {
@@ -12,7 +12,7 @@ export abstract class BoundVariable {
     return this.name;
   }
 
-  abstract getValues(store: DymoStore): string[];
+  abstract getValues(store: EasyStore): string[];
 
   toString(): string {
     return '∀ ' + this.name;
@@ -30,7 +30,7 @@ export class TypedVariable extends BoundVariable {
     return this.type;
   }
 
-  getValues(store: DymoStore): string[] {
+  getValues(store: EasyStore): string[] {
     return store.findSubjects(u.TYPE, this.type);
   }
 
@@ -53,7 +53,7 @@ export class ExpressionVariable extends TypedVariable {
     return this.typeExpressions;
   }
 
-  getValues(store: DymoStore): string[] {
+  getValues(store: EasyStore): string[] {
     let values = super.getValues(store);
     this.typeExpressions.forEach(e => values = values.filter(v => e.evaluate(this.createVarsObject(v), store)));
     return values;
@@ -81,7 +81,7 @@ export class SetBasedVariable extends BoundVariable {
     return this.set;
   }
 
-  getValues(store: DymoStore): string[] {
+  getValues(store: EasyStore): string[] {
     return this.set;//.filter(u => store.find(u));
   }
 

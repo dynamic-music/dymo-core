@@ -1,5 +1,5 @@
 import { IterativeSmithWatermanResult } from 'siafun';
-import { uris } from '../index';
+import * as uris from '../globals/uris';
 import { DymoStructureInducer } from './dymo-structure';
 import { DymoGenerator } from './dymo-generator';
 import { FeatureLoader, Segment, Feature } from './feature-loader';
@@ -13,10 +13,10 @@ export module DymoTemplates {
 			.then(r => dymoUri);
 	}
 
-	export function createMultiSourceDymo(generator: DymoGenerator, parentDymo, dymoType, sources, featureUris): Promise<string> {
-		var conjunctionDymo = generator.addDymo(parentDymo, null, dymoType);
-		var loadSources = sources.map((s,i) => {
-			var dymoUri = generator.addDymo(conjunctionDymo, s);
+	export async function createMultiSourceDymo(generator: DymoGenerator, parentDymo, dymoType, sources, featureUris): Promise<string> {
+		var conjunctionDymo = await generator.addDymo(parentDymo, null, dymoType);
+		var loadSources = sources.map(async (s,i) => {
+			var dymoUri = await generator.addDymo(conjunctionDymo, s);
 			return loadMultipleFeatures(generator, dymoUri, featureUris[i], null)
 				.then(fs => fs.forEach(f => generator.addFeature(f.name, f.data, dymoUri)));
 		});
@@ -66,11 +66,11 @@ export module DymoTemplates {
 	}
 
 	//expects featurePaths to contain a bar and beat tracker file, followed by any other features
-	export function createAnnotatedBarAndBeatDymo2(generator: DymoGenerator, sourcePath: string, barsAndBeats: Segment[]): Promise<string> {
-		let dymoUri = generator.addDymo(null, sourcePath);
+	export async function createAnnotatedBarAndBeatDymo2(generator: DymoGenerator, sourcePath: string, barsAndBeats: Segment[]): Promise<string> {
+		let dymoUri = await generator.addDymo(null, sourcePath);
 		let bars = barsAndBeats.filter(b => b['label']['value'] === "1");
-		generator.addSegmentation(bars, dymoUri);
-		generator.addSegmentation(barsAndBeats, dymoUri);
+		await generator.addSegmentation(bars, dymoUri);
+		await generator.addSegmentation(barsAndBeats, dymoUri);
 		return Promise.resolve(dymoUri);
 	}
 

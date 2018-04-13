@@ -1,27 +1,22 @@
 import * as _ from 'lodash';
-import { DymoStore } from '../io/dymostore';
-import { ConstraintWriter } from '../io/constraintwriter';
+import { DymoStore } from '../io/dymostore-service';
 import { BoundVariable, TypedVariable, SetBasedVariable, ExpressionVariable } from '../model/variable';
 import { Constraint } from '../model/constraint';
 import { Expression } from '../model/expression';
 
 export class ExpressionGenerator {
 
-  private writer: ConstraintWriter;
+  constructor(private store: DymoStore) {}
 
-  constructor(store: DymoStore) {
-    this.writer = new ConstraintWriter(store);
+  addVariable(expression: string): Promise<string> {
+    return this.store.addVariable(this.parseVar(expression));
   }
 
-  addVariable(expression: string): string {
-    return this.writer.addVariable(this.parseVar(expression));
-  }
-
-  addConstraint(ownerUri: string, expression: string, isDirected = false): string {
+  addConstraint(ownerUri: string, expression: string, isDirected = false): Promise<string> {
     let parts = expression.split('=>');
     let vars = _.initial(parts).map(v => this.parseVar(v));
     let exp = new Expression(_.trim(_.last(parts)), isDirected);
-    return this.writer.addConstraint(ownerUri, new Constraint(vars, exp));
+    return this.store.addConstraint(ownerUri, new Constraint(vars, exp));
   }
 
   private parseVar(string: string): BoundVariable {
@@ -76,7 +71,7 @@ export function forAll(
 export class IntermediateQuantifier {
 
   constructor(public name: string, private state: BoundVariable[] = []) {}
-  
+
   in(...domain: string[]): ScopedIntermediateQuantifier {
     return new ScopedIntermediateQuantifier(
       new SetBasedVariable(this.name, domain),

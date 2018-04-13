@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as math from 'mathjs';
 import * as u from '../globals/uris';
-import { DymoStore } from '../io/dymostore';
+import { EasyStore } from '../io/easystore';
 import { Maintainer } from './maintainer';
 import { MathjsNode } from '../globals/types';
 
@@ -37,7 +37,7 @@ export class Expression {
     return this.varsAndFuncs;
   }
 
-  evaluate(vars: Object, store: DymoStore): any {
+  evaluate(vars: Object, store: EasyStore): any {
     //first gather all functional values
     let varsAndVals = {};
     this.varsAndFuncs.forEach((f,v) => {
@@ -53,7 +53,7 @@ export class Expression {
     }
   }
 
-  maintain(vars: Object, store: DymoStore) {
+  maintain(vars: Object, store: EasyStore) {
     if (!this.currentMaintainers.has(vars)) {
       let varsAndUris = new Map<string,string>();
       let featureFreeTree = this.treeWithoutFuncs;
@@ -87,12 +87,12 @@ export class Expression {
     return tree.transform(node => node.isSymbolNode && node.name === symbol ? newNode : node);
   }
 
-  private getValue(uri: string, store: DymoStore) {
+  private getValue(uri: string, store: EasyStore) {
     let value = store.findObjectValue(uri, u.VALUE);
     return value != null ? value : uri;
   }
 
-  private getFunctionalObject(expression: MathjsNode, vars: Object, store: DymoStore): any {
+  private getFunctionalObject(expression: MathjsNode, vars: Object, store: EasyStore): any {
     if (expression.isFunctionNode) {
       let arg = this.getFunctionalObject(expression["args"][0], vars, store);
       let name = expression["fn"]["name"];
@@ -123,9 +123,9 @@ export class Expression {
     return vars[expression.name];
   }
 
-  private findOrInitFeatureOrParam(owner: string, type: string, store: DymoStore): string|number {
+  private findOrInitFeatureOrParam(owner: string, type: string, store: EasyStore): string|number {
     //try finding existing attribute
-    let attributeUri = store.findAttributeUri(owner, type);
+    /*let attributeUri = store.findAttributeUri(owner, type);
     if (attributeUri) {
       return attributeUri;
     }
@@ -136,7 +136,8 @@ export class Expression {
       return store.setFeature(owner, type);
     } else if (typeOfType === u.PARAMETER_TYPE || store.isSubclassOf(typeOfType, u.PARAMETER_TYPE)) {
       return store.setParameter(owner, type);
-    }
+    }*/
+    return 'oops'
   }
 
   private replaceFunctionalExpressions(mathjsTree: MathjsNode) {
