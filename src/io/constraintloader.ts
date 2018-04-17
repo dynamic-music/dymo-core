@@ -55,7 +55,6 @@ export class ConstraintLoader {
   }
 
   private recursiveLoadExpression(expressionUri: string) {
-    console.log("LOADING", expressionUri)
     let expressionType = this.store.findObject(expressionUri, uris.TYPE);
     //console.log(expressionUri, expressionType)
     if (this.store.isSubclassOf(expressionType, uris.BINARY_OPERATOR)) {

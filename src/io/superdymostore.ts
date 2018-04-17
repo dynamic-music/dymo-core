@@ -22,7 +22,6 @@ export class SuperDymoStore extends DymoStore {
   activateNewConstraints(constraintUris: string[]): string[] {
     let unloadedUris = _.difference(constraintUris, [...this.activeConstraints.keys()]);
     let constraints = this.constraintLoader.loadConstraints(unloadedUris);
-    console.log(constraints);
     constraints.forEach(c => c.maintain(this));
     unloadedUris.forEach((u,i) => this.activeConstraints.set(u, constraints[i]));
     return unloadedUris;

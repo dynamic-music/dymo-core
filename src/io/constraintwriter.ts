@@ -15,6 +15,7 @@ export interface BoundVariableGhost {
 }
 
 export interface ExpressionGhost {
+  expressionString: string,
   mathjsTree: MathjsNode,
   isDirected?: boolean
 }
@@ -64,9 +65,10 @@ export class ConstraintWriter {
     return currentQuantifier;
   }
 
-  private addExpression(expression: ExpressionGhost): string {
-    let rootUri = this.recursiveAddExpression(expression.mathjsTree);
-    this.store.setValue(rootUri, u.DIRECTED, expression.isDirected);
+  private addExpression(ghost: ExpressionGhost): string {
+    let expression = new Expression(ghost.expressionString, ghost.isDirected);
+    let rootUri = this.recursiveAddExpression(expression.getFullTree());
+    this.store.setValue(rootUri, u.DIRECTED, expression.getIsDirected());
     return rootUri;
   }
 

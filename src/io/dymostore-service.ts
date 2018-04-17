@@ -228,14 +228,6 @@ export class DymoStore {
     return this.worker.postMessage({function:'addTriple', args:[subject, predicate, object]});
   }
 
-  /*removeTriple(subject: string, predicate: string, object?: string): string {
-    return this.worker.postMessage({function:'removeTriple', args:[subject, predicate, object]});
-  }
-
-  createBlankNode(): Promise<string> {
-    return this.worker.postMessage({function:'createBlankNode', args:[]});
-  }*/
-
   loadData(data: string): Promise<any> {
     return this.worker.postMessage({function:'loadData', args:[]});
   }

@@ -1,5 +1,5 @@
 import * as math from 'mathjs';
-import { EasyStore } from '../io/easystore';
+import { DymoStore } from '../io/dymostore';
 import { BoundVariable } from './variable';
 import { Expression } from './expression';
 
@@ -10,7 +10,7 @@ export class Constraint {
 
   constructor(private vars: BoundVariable[], private expression: Expression) {}
 
-  evaluate(store: EasyStore) {
+  evaluate(store: DymoStore) {
     let vals = this.vars.map(v => v.getValues(store));
     let combos = this.cartesianProduct(vals);
     return combos.map(c => {
@@ -20,7 +20,7 @@ export class Constraint {
     })
   }
 
-  maintain(store: EasyStore) {
+  maintain(store: DymoStore) {
     let vals = this.vars.map(v => v.getValues(store));
     let combos = this.cartesianProduct(vals);
     combos.forEach(c => {
