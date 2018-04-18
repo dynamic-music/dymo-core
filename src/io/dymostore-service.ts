@@ -135,6 +135,10 @@ export class DymoStore {
     return this.worker.postMessage({function:'findFeatureValue', args:[ownerUri, featureType]});
   }
 
+  findAttributeValue(ownerUri: string, attributeType: string): Promise<any> {
+    return this.worker.postMessage({function:'findAttributeValue', args:[ownerUri, attributeType]});
+  }
+
   async setControlParam(controlUri: string, parameterType: string, value: any, observer?: Observer): Promise<string> {
     const paramUri = await this.worker.postMessage({function:'setControlParam', args:[controlUri, parameterType, value, observer]});
     if (observer) {

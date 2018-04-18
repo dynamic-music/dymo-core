@@ -4,22 +4,23 @@ import { DymoStore } from '../io/dymostore-service';
 import { DymoPlayer } from './player';
 import { ScheduledObject } from './scheduler';
 
-const FEATURE_PAIRINGS = new Map<string,number>();
-FEATURE_PAIRINGS.set(uris.TIME_FEATURE, Parameter.Offset);
-FEATURE_PAIRINGS.set(uris.DURATION_FEATURE, Parameter.Duration);
+//list of used features to speed up init
+const FEATURES = [uris.TIME_FEATURE, uris.DURATION_FEATURE];
 
-const PARAM_PAIRINGS = new Map<string,number>();
-PARAM_PAIRINGS.set(uris.ONSET, Parameter.StartTime);
-PARAM_PAIRINGS.set(uris.DURATION, Parameter.Duration);
-PARAM_PAIRINGS.set(uris.DURATION_RATIO, Parameter.DurationRatio);
-PARAM_PAIRINGS.set(uris.AMPLITUDE, Parameter.Amplitude);
-PARAM_PAIRINGS.set(uris.PAN, Parameter.Panning);
-PARAM_PAIRINGS.set(uris.DISTANCE, Parameter.Panning);
-PARAM_PAIRINGS.set(uris.HEIGHT, Parameter.Panning);
-PARAM_PAIRINGS.set(uris.REVERB, Parameter.Reverb);
-PARAM_PAIRINGS.set(uris.DELAY, Parameter.Delay);
-//PARAM_PAIRINGS.set(uris.LOOP, Parameter.Loop);
-PARAM_PAIRINGS.set(uris.PLAYBACK_RATE, Parameter.PlaybackRate);
+const PAIRINGS = new Map<string,number>();
+PAIRINGS.set(uris.TIME_FEATURE, Parameter.Offset);
+PAIRINGS.set(uris.DURATION_FEATURE, Parameter.Duration);
+PAIRINGS.set(uris.ONSET, Parameter.StartTime);
+PAIRINGS.set(uris.DURATION, Parameter.Duration);
+PAIRINGS.set(uris.DURATION_RATIO, Parameter.DurationRatio);
+PAIRINGS.set(uris.AMPLITUDE, Parameter.Amplitude);
+PAIRINGS.set(uris.PAN, Parameter.Panning);
+PAIRINGS.set(uris.DISTANCE, Parameter.Panning);
+PAIRINGS.set(uris.HEIGHT, Parameter.Panning);
+PAIRINGS.set(uris.REVERB, Parameter.Reverb);
+PAIRINGS.set(uris.DELAY, Parameter.Delay);
+//PAIRINGS.set(uris.LOOP, Parameter.Loop);
+PAIRINGS.set(uris.PLAYBACK_RATE, Parameter.PlaybackRate);
 
 export class ScheduloScheduledObject extends ScheduledObject {
 
@@ -37,46 +38,31 @@ export class ScheduloScheduledObject extends ScheduledObject {
   }
 
   private init2() {
-    //TODO SIMPLIFY!!
-    FEATURE_PAIRINGS.forEach(async (feature, typeUri) => {
-      this.initFeature(this.dymoUri, typeUri);
-      //if behavior not independent, observe parents
+    PAIRINGS.forEach(async (attribute, typeUri) => {
+      await this.initAttribute(this.dymoUri, typeUri);
+      //if behavior not independent, init parent attributes
       let behavior = await this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
       this.typeToBehavior.set(typeUri, behavior);
       if (behavior && behavior !== uris.INDEPENDENT) {
-        this.parentUris.forEach(p => this.initFeature(p, typeUri));
+        await Promise.all(this.parentUris.map(p => this.initAttribute(p, typeUri)));
       }
+      this.updateObjectParam(typeUri);
     });
-    FEATURE_PAIRINGS.forEach((feature, typeUri) => this.updateObjectParam(typeUri));
-    PARAM_PAIRINGS.forEach(async (param, typeUri) => {
-      this.initParam(this.dymoUri, typeUri);
-      //if behavior not independent, observe parents
-      let behavior = await this.store.findObject(typeUri, uris.HAS_BEHAVIOR);
-      this.typeToBehavior.set(typeUri, behavior);
-      if (behavior && behavior !== uris.INDEPENDENT) {
-        this.parentUris.forEach(p => this.initParam(p, typeUri));
-      }
-    });
-    PARAM_PAIRINGS.forEach((param, typeUri) => this.updateObjectParam(typeUri));
   }
 
-  private async initFeature(dymoUri: string, typeUri: string) {
-    let featureUri = await this.store.setFeature(dymoUri, typeUri);
-    let value = await this.store.findFeatureValue(dymoUri, typeUri);
-    this.dymoToParam.set(dymoUri, featureUri);
-    this.attributeToType.set(featureUri, typeUri);
-    this.attributeToValue.set(featureUri, value);
-  }
-
-
-  private async initParam(dymoUri: string, typeUri: string) {
-    let paramUri = await this.store.addParameterObserver(dymoUri, typeUri, this);
-    let value = await this.store.findParameterValue(dymoUri, typeUri);
-    //console.log(dymoUri, typeUri, paramUri, value);
-    //TODO ONLY IF PARAM EXISTS AND VALUE NOT NULL!!!!!!
-    this.dymoToParam.set(dymoUri, paramUri);
-    this.attributeToType.set(paramUri, typeUri);
-    this.attributeToValue.set(paramUri, value);
+  private async initAttribute(dymoUri: string, typeUri: string) {
+    let attributeUri: string;
+    if (FEATURES.indexOf(typeUri) >= 0) {
+      attributeUri = await this.store.setFeature(dymoUri, typeUri);
+    } else {
+      attributeUri = await this.store.addParameterObserver(dymoUri, typeUri, this);
+    }
+    let value = await this.store.findAttributeValue(dymoUri, typeUri);
+    if (value != null) {
+      this.dymoToParam.set(dymoUri, attributeUri);
+      this.attributeToType.set(attributeUri, typeUri);
+      this.attributeToValue.set(attributeUri, value);
+    }
   }
 
   setScheduloObject(object: AudioObject) {
@@ -103,9 +89,11 @@ export class ScheduloScheduledObject extends ScheduledObject {
     if (this.object) {
       this.object.stop(Time.Immediately, Stop.Immediately);
     }
-    PARAM_PAIRINGS.forEach((param, typeUri) => {
-      this.store.removeParameterObserver(this.dymoUri, typeUri, this);
-      //TODO REMOVE OBSERVERS FOR ALL PARENTS!!!!!!
+    PAIRINGS.forEach((attribute, typeUri) => {
+      if (FEATURES.indexOf(typeUri) >= 0) {
+        this.store.removeParameterObserver(this.dymoUri, typeUri, this);
+        //TODO REMOVE OBSERVERS FOR ALL PARENTS!!!!!!
+      }
     })
   }
 
@@ -155,7 +143,7 @@ export class ScheduloScheduledObject extends ScheduledObject {
 
   private setObjectParam(typeUri: string, value) {
     if (this.object) {
-      const target = PARAM_PAIRINGS.get(typeUri) || FEATURE_PAIRINGS.get(typeUri);
+      const target = PAIRINGS.get(typeUri) || PAIRINGS.get(typeUri);
       this.object.set(target, value);
     }
   }
