@@ -1,3 +1,7 @@
+export interface Observer {
+  observedValueChanged: (paramUri: string, paramType: string, value: number)=>void
+}
+
 export interface AttributeInfo {
   name: string,
   uri: string,

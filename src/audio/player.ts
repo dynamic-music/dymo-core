@@ -17,7 +17,7 @@ export class DymoPlayer {
     scheduler.setPlayer(this);
     this.store.setParameter(null, uris.LISTENER_ORIENTATION, 0);
     this.store.addParameterObserver(null, uris.LISTENER_ORIENTATION, this);
-    this.store.addTypeObserver(uris.PLAY, uris.VALUE, this);
+    this.store.addTypeObserver(uris.PLAY, this);
   }
 
   getStore(): DymoStore {
@@ -151,7 +151,7 @@ export class HierarchicalPlayer {
 
     if (await this.navigator.hasParts()) {
       if (next && next.uris) {
-        //console.log(next.uris)
+        console.log(next.uris)
         this.partPlayers = next.uris.map(p => new HierarchicalPlayer(
           p, this.store, currentReference, this.scheduler,
           next.initRefTime

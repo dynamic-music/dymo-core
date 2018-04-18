@@ -5,30 +5,20 @@ import { JsonGraph } from './jsongraph';
 import { AttributeInfo } from '../globals/types';
 import { BoundVariable } from '../model/variable';
 import { Constraint } from '../model/constraint';
-
-interface Observation {
-  observer: {},
-
-}
+import { Observer } from '../globals/types';
 
 export class DymoStore {
 
   private worker: PromiseWorker;
-  //TODO RENAME TO OBSERVATION (each observer can observe many things..)
-  private observerToKey: Map<{}, number>;
-  private keyToObserver: Map<number, {}>;
-  private nextKey = 0;
+  private observers = new Map<string, Observer[]>();
 
   constructor(fetcher?: Fetcher) {
     this.worker = new PromiseWorker(new SuperDymoStoreWorker());//new Worker(workerPath);
+    this.worker._worker.addEventListener('message', this.notifyObservers.bind(this));
     if (fetcher) {
       this.worker.postMessage({function:'setFetcher', args:[fetcher]});
     }
-    this.observerToKey = new Map<{}, number>();
-    this.keyToObserver = new Map<number, {}>();
   }
-
-
 
   ////// CONSTRAINT FUNCTIONS ///////
 
@@ -60,21 +50,21 @@ export class DymoStore {
     return this.worker.postMessage({function:'addBasePath', args:[dymoUri, path]});
   }
 
-  addParameterObserver(dymoUri: string, parameterType: string, observer: {}) {
-    //TODO IMPLEMENT USING POSTMESSAGE....
-    const key = this.registerObserver(observer);
-    return this.worker.postMessage({function:'addParameterObserver', args:[dymoUri, parameterType, key]});
+  async addParameterObserver(dymoUri: string, parameterType: string, observer: Observer): Promise<string> {
+    const paramUri = await this.worker.postMessage({function:'addParameterObserver', args:[dymoUri, parameterType, null]});
+    this.addObserver(observer, paramUri);
+    return paramUri;
   }
 
-  removeParameterObserver(dymoUri: string, parameterType: string, observer: {}) {
-    const key = this.removeObserver(observer);
-    this.worker.postMessage({function:'removeParameterObserver', args:[dymoUri, parameterType, key]});
+  async removeParameterObserver(dymoUri: string, parameterType: string, observer: Observer): Promise<string> {
+    const paramUri = await this.worker.postMessage({function:'removeParameterObserver', args:[dymoUri, parameterType, null]});
+    this.removeObserver(observer, paramUri);
+    return paramUri;
   }
 
-  addTypeObserver(type: string, predicate: string, observer: {}) {
-    //TODO IMPLEMENT USING POSTMESSAGE....
-    const key = this.registerObserver(observer);
-    return this.worker.postMessage({function:'addTypeObserver', args:[type, predicate, key]});
+  addTypeObserver(type: string, observer: Observer) {
+    this.addObserver(observer, type);
+    return this.worker.postMessage({function:'addTypeObserver', args:[type, null]});
   }
 
   addRendering(renderingUri: string, dymoUri: string) {
@@ -145,9 +135,12 @@ export class DymoStore {
     return this.worker.postMessage({function:'findFeatureValue', args:[ownerUri, featureType]});
   }
 
-  setControlParam(controlUri: string, parameterType: string, value: any, observer?: Object): Promise<string> {
-    //TODO ADD OBSERVER!!!!!!!!!!
-    return this.worker.postMessage({function:'setControlParam', args:[controlUri, parameterType, value, observer]});
+  async setControlParam(controlUri: string, parameterType: string, value: any, observer?: Observer): Promise<string> {
+    const paramUri = await this.worker.postMessage({function:'setControlParam', args:[controlUri, parameterType, value, observer]});
+    if (observer) {
+      this.addObserver(observer, paramUri);
+    }
+    return paramUri;
   }
 
   findControlParamValue(controlUri: string, parameterType: string): Promise<any> {
@@ -179,8 +172,8 @@ export class DymoStore {
 
   ////// EASYSTORE FUNCTIONS /////////
 
-  addValueObserver(subject: string, predicate: string, observer: {}) {
-    const key = this.registerObserver(observer);
+  addValueObserver(subject: string, predicate: string, observer: Observer) {
+    const key = this.addObserver(observer, subject);
     return this.worker.postMessage({function:'addValueObserver', args:[subject, predicate, key]});
   }
 
@@ -236,20 +229,35 @@ export class DymoStore {
 
   ////// PRIVATE FUNCTIONS
 
-  /**registers an observer and returns the new key*/
-  private registerObserver(observer: {}): number {
-    const key = this.nextKey++;
-    this.observerToKey.set({}, key);
-    this.keyToObserver.set(key, {});
-    return key;
+  private addObserver(observer: Observer, uriOrType: string): void {
+    if (!this.observers.has(uriOrType)) {
+      this.observers.set(uriOrType, []);
+    }
+    this.observers.get(uriOrType).push(observer);
   }
 
-  /**removes an observer and returns its key*/
-  private removeObserver(observer: {}): number {
-    const key = this.observerToKey.get(observer);
-    this.observerToKey.delete({});
-    this.keyToObserver.delete(key);
-    return key;
+  private removeObserver(observer: Observer, uriOrType: string): void {
+    const observers = this.observers.get(uriOrType);
+    if (observers) {
+      observers.slice(observers.indexOf(observer), 1);
+      if (observers.length == 0) {
+        this.observers.delete(uriOrType);
+      }
+    }
+  }
+
+  private notifyObservers(event) {
+    if (event.data.paramUri) {
+      let observers = this.getObservers(event.data.paramUri)
+        .concat(this.getObservers(event.data.paramType));
+      //console.log("NOTIFIED", event.data, observers);
+      observers.forEach(o => o.observedValueChanged(event.data.paramUri, event.data.paramType, event.data.value));
+    }
+  }
+
+  private getObservers(uriOrType: string): Observer[] {
+    let observers = this.observers.get(uriOrType);
+    return observers ? observers : [];
   }
 
 }

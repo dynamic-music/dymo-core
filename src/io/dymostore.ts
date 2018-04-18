@@ -7,7 +7,7 @@ import * as uris from '../globals/uris'
 import { DYMO_CONTEXT, DYMO_SIMPLE_CONTEXT } from '../globals/contexts'
 import { URI_TO_TERM } from '../globals/terms'
 import { JsonGraph, JsonEdge } from './jsongraph'
-import { AttributeInfo } from '../globals/types'
+import { AttributeInfo, Observer } from '../globals/types'
 import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 /**
@@ -81,11 +81,11 @@ export class DymoStore extends EasyStore {
 		}
 	}
 
-	addSpecificParameterObserver(parameterUri, observer) {
+	addSpecificParameterObserver(parameterUri: string, observer: Observer) {
 		this.addValueObserver(parameterUri, uris.VALUE, observer);
 	}
 
-	addParameterObserver(dymoUri, parameterType, observer) {
+	addParameterObserver(dymoUri: string, parameterType: string, observer: Observer): string {
 		if (dymoUri && parameterType) {
 			//add parameter if there is none so far and get uri
 			var parameterUri = this.setParameter(dymoUri, parameterType);
@@ -104,11 +104,12 @@ export class DymoStore extends EasyStore {
 		}
 	}
 
-	removeParameterObserver(dymoUri, parameterType, observer) {
+	removeParameterObserver(dymoUri: string, parameterType: string, observer: Observer): string {
 		if (dymoUri && parameterType) {
 			var parameterUri = this.findObjectOfType(dymoUri, uris.HAS_PARAMETER, parameterType);
 			if (parameterUri) {
 				this.removeValueObserver(parameterUri, uris.VALUE, observer);
+				return parameterUri;
 			}
 		}
 	}
@@ -199,7 +200,7 @@ export class DymoStore extends EasyStore {
 		return uri;
 	}
 
-	setControlParam(controlUri: string, parameterType: string, value: any, observer?: Object): string {
+	setControlParam(controlUri: string, parameterType: string, value: any, observer?: Observer): string {
 		//set the new value
 		var parameterUri = this.setObjectValue(controlUri, uris.HAS_CONTROL_PARAM, parameterType, uris.VALUE, value);
 		if (observer) {

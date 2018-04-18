@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import { promises as jsonld } from 'jsonld';
 import { flattenArray, removeDuplicates } from 'arrayutils';
 import { RDFS_URI, TYPE, FIRST, REST, NIL, VALUE, DYMO, RENDERING } from '../globals/uris';
+import { Observer } from '../globals/types';
 import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 //limited interface to ensure optimal use here!
@@ -58,7 +59,7 @@ export class EasyStore {
 
 	///////// OBSERVING FUNCTIONS //////////
 
-	addValueObserver(subject, predicate, observer) {
+	addValueObserver(subject: string, predicate: string, observer: Observer) {
 		//console.log("OBS", subject, predicate, [observer])
 		if (observer) {
 			if (!this.valueObservers[subject]) {
@@ -72,14 +73,14 @@ export class EasyStore {
 		}
 	}
 
-	addTypeObserver(type, predicate, observer) {
+	addTypeObserver(type: string, observer: Observer) {
 		if (!this.typeObservers[type]) {
 			this.typeObservers[type] = [];
 		}
 		this.typeObservers[type].push(observer);
 	}
 
-	removeValueObserver(subject, predicate, observer) {
+	removeValueObserver(subject: string, predicate: string, observer: Observer) {
 		if (this.valueObservers[subject] && this.valueObservers[subject][predicate]) {
 			var index = this.valueObservers[subject][predicate].indexOf(observer);
 			if (index > -1) {
@@ -89,7 +90,7 @@ export class EasyStore {
 		}
 	}
 
-	private cleanUpValueObservers(subject, predicate) {
+	private cleanUpValueObservers(subject: string, predicate: string) {
 		if (this.valueObservers[subject] && this.valueObservers[subject][predicate].length == 0) {
 			delete this.valueObservers[subject][predicate];
 			if (Object.keys(this.valueObservers[subject]).length === 0) {
@@ -98,7 +99,7 @@ export class EasyStore {
 		}
 	}
 
-	removeTypeObserver(type, predicate, observer) {
+	removeTypeObserver(type: string, observer: Observer) {
 		if (this.typeObservers[type]) {
 			var index = this.typeObservers[type].indexOf(observer);
 			if (index > -1) {
@@ -116,7 +117,7 @@ export class EasyStore {
 		return _.flatten(observers).length;
 	}
 
-	getValueObservers(subject, predicate) {
+	getValueObservers(subject: string, predicate: string): Observer[] {
 		if (this.valueObservers[subject]) {
 			if (this.valueObservers[subject][predicate]) {
 				return this.valueObservers[subject][predicate];
