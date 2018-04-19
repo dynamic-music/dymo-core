@@ -211,11 +211,12 @@ export class DymoStore extends EasyStore {
 
 	setParameter(ownerUri: string, parameterType: string, value?: any): string {
 		//initialize in case the parameter doesn't exist yet
-		if (!this.findParameterUri(ownerUri, parameterType) && (value == null || isNaN(value))) {
+		//TODO NO! doesn't work with param behavior!
+		/*if (!this.findParameterUri(ownerUri, parameterType) && (value == null || isNaN(value))) {
 			value = this.findObjectValue(parameterType, uris.HAS_STANDARD_VALUE);
-		}
+		}*/
 		//round if integer parameter
-		if (this.findObject(parameterType, uris.IS_INTEGER)) {
+		if (value != null && this.findObject(parameterType, uris.IS_INTEGER)) {
 			value = Math.round(value);
 		}
 		//set the new value

@@ -58,11 +58,11 @@ export class ScheduloScheduledObject extends ScheduledObject {
       attributeUri = await this.store.addParameterObserver(dymoUri, typeUri, this);
     }
     let value = await this.store.findAttributeValue(dymoUri, typeUri);
-    if (value != null) {
-      this.dymoToParam.set(dymoUri, attributeUri);
-      this.attributeToType.set(attributeUri, typeUri);
+    this.dymoToParam.set(dymoUri, attributeUri);
+    this.attributeToType.set(attributeUri, typeUri);
+    //if (value != null) {
       this.attributeToValue.set(attributeUri, value);
-    }
+    //}
   }
 
   setScheduloObject(object: AudioObject) {
@@ -101,7 +101,7 @@ export class ScheduloScheduledObject extends ScheduledObject {
     //console.log("UPDATE", typeUri)
     //TODO GO THROUGH ALL PARENTS AND PROCESS (* or +...)
     let paramsOfType = [...this.attributeToType.keys()].filter(p => this.attributeToType.get(p) === typeUri);
-    let allValues = paramsOfType.map(p => this.attributeToValue.get(p)).filter(v => !isNaN(v));
+    let allValues = paramsOfType.map(p => this.attributeToValue.get(p)).filter(v => v != null);
 
     //calculate value based on behavior
     let value;
