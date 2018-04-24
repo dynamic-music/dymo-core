@@ -1,10 +1,11 @@
 import * as _ from 'lodash';
+import * as math from 'mathjs';
 import * as uris from '../globals/uris';
 import { DymoStore } from '../io/dymostore-service';
 import { ConstraintWriter } from '../io/constraintwriter';
 import { Constraint } from '../model/constraint';
 import { SUMMARY } from './globals';
-import { Segment } from './feature-loader';
+import { Segment, DataPoint, Signal } from './feature-loader';
 //import { Feature } from './types';
 
 interface TimeDymo {
@@ -12,6 +13,14 @@ interface TimeDymo {
 	time: number,
 	duration: number,
 	parts: TimeDymo[]
+}
+
+export interface Value<T> {
+  value: T;
+}
+export interface Feature {
+	time: Value<number>;
+	value: any;
 }
 
 /**
@@ -77,8 +86,9 @@ export class DymoGenerator {
 
 	async addRampControl(initialValue: number, duration: number, frequency?: number, name?: string): Promise<string> {
 		let uri = await this.addControl(name, uris.RAMP, null, initialValue);
-		this.getStore().setValue(uri, uris.HAS_DURATION, duration);
-		this.getStore().setValue(uri, uris.AUTO_CONTROL_FREQUENCY, frequency);
+		this.getStore().setControlParam(uri, uris.HAS_DURATION, duration);
+		this.getStore().setControlParam(uri, uris.AUTO_CONTROL_FREQUENCY, frequency);
+		this.getStore().findAllObjects(uri, null)
 		return uri;
 	}
 
@@ -134,7 +144,7 @@ export class DymoGenerator {
 		return renderingUri;
 	}
 
-	async addFeature(name, data, dymoUri) {
+	async addFeature(name: string, data: DataPoint[], dymoUri: string) {
 		if (!dymoUri) {
 			dymoUri = this.currentTopDymo;
 		}
@@ -147,7 +157,7 @@ export class DymoGenerator {
 			var currentTime = await this.store.findFeatureValue(dymos[i], uris.TIME_FEATURE);
 			var currentDuration = await this.store.findFeatureValue(dymos[i], uris.DURATION_FEATURE);
 			var currentValues = data;
-			if (!isNaN(currentTime)) {
+			if (!isNaN(currentTime) && currentTime != null) {
 				//only filter data id time given
 				currentValues = currentValues.filter(
 					x => currentTime <= x.time && (isNaN(currentDuration) || x.time < currentTime+currentDuration)
@@ -157,14 +167,14 @@ export class DymoGenerator {
 			if (currentValues.length < 1) {
 				var earlierValues = data.filter(x => x.time.value <= currentTime);
 				if (earlierValues.length > 0) {
-					currentValues = [earlierValues[currentValues.length-1]];
+					currentValues = [_.last(earlierValues)];
 				} else {
 					//set to first value
 					currentValues = [data[0]];
 				}
 			}
-			//Benchmarker.startTask("summarize")
-			var value = this.getSummarizedValues(currentValues);
+
+			var value = this.getSummarizedValues(_.cloneDeep(currentValues));
 			/*if (typeof value == "string") {
 				var labelFeature = getFeature(SEGMENT_LABEL);
 				this.setDymoFeature(dymos[i], getFeature(SEGMENT_LABEL), value);
@@ -174,36 +184,26 @@ export class DymoGenerator {
 	}
 
 	//summarizes the given vectors into one based on summarizingMode
-	private getSummarizedValues(vectors) {
-		var vector = [];
-		if (vectors && vectors.length > 0) {
-			for (var i = 0; i < vectors.length; i++) {
-				if (vectors[i].value && vectors[i].value.constructor !== Array) {
-					//console.log(vectors[i].value)
-					vectors[i].value = [vectors[i].value];
-				}
-			}
-			var dim = vectors[0].value.length;
-			for (var k = 0; k < dim; k++) {
-				if (typeof vectors[0].value[k] == "string") {
-					vector[k] = vectors[0].value[k];
-				} else if (this.summarizingMode == SUMMARY.FIRST) {
-					vector[k] = vectors[0].value[k];
+	private getSummarizedValues(features: any[]) {
+		if (features && features.length > 0) {
+			//get values out, convert to arrays
+			let vectors = features.map(v => v.value.length ? v.value : [v.value]);
+			//summarize dimension by dimension
+			let summary = _.zip(...vectors).map(v => {
+				if (typeof v[0] == "string" || this.summarizingMode == SUMMARY.FIRST) {
+					return v[0];
 				} else if (this.summarizingMode == SUMMARY.MEAN) {
-					vector[k] = vectors.reduce((sum, i) => sum + i.value[k], 0) / vectors.length;
+					return _.mean(v);
 				} else if (this.summarizingMode == SUMMARY.MEDIAN) {
-					vectors.sort((a, b) => a.value[k] - b.value[k]);
-					var middleIndex = Math.floor(vectors.length/2);
-					vector[k] = vectors[middleIndex].value[k];
-					if (vectors.length % 2 == 0) {
-						vector[k] += vectors[middleIndex-1].value[k];
-					}
+					return math.median(v);
+				} else if (this.summarizingMode == SUMMARY.MODE) {
+					return math.mode(v);
 				}
+			});
+			if (summary.length == 1) {
+				return summary[0];
 			}
-			if (vector.length == 1) {
-				return vector[0];
-			}
-			return vector;
+			return summary;
 		}
 		return 0;
 	}

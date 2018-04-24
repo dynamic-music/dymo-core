@@ -3,5 +3,6 @@
 export const SUMMARY = {
 	MEAN: "mean",
 	MEDIAN: "median",
-	FIRST: "first"
+	MODE: "mode",
+	FIRST: "first",
 }
