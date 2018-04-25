@@ -200,6 +200,7 @@ export class DymoGenerator {
 					return math.mode(v);
 				}
 			});
+			summary = summary[0];
 			if (summary.length == 1) {
 				return summary[0];
 			}
