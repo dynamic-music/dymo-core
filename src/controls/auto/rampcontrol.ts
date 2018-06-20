@@ -1,5 +1,5 @@
 import { RAMP, AUTO_CONTROL_FREQUENCY } from '../../globals/uris';
-import { DymoStore } from '../../io/dymostore-service';
+import { SuperDymoStore } from '../../globals/types';
 import { AutoControl } from '../autocontrol';
 
 /**
@@ -11,7 +11,7 @@ export class RampControl extends AutoControl {
 	private currentValue;
 	private isIncreasing;
 
-	constructor(uri: string, duration: number, store: DymoStore, initialValue?: number) {
+	constructor(uri: string, duration: number, store: SuperDymoStore, initialValue?: number) {
 		super(uri, RAMP, store);
 		this.duration = duration ? duration : 10000;
 		this.currentValue = initialValue ? initialValue : 0;

@@ -1,5 +1,5 @@
 import { DataControl } from '../datacontrol';
-import { DymoStore } from '../../io/dymostore-service';
+import { SuperDymoStore } from '../../globals/types';
 import { Fetcher } from '../../util/fetcher';
 
 /**
@@ -7,7 +7,7 @@ import { Fetcher } from '../../util/fetcher';
  */
 export class WeatherControl extends DataControl {
 
-	constructor(uri: string, store: DymoStore, fetcher?: Fetcher) {
+	constructor(uri: string, store: SuperDymoStore, fetcher?: Fetcher) {
 		var WEATHER_KEY = "3d77879a046ee9e970e66bb2f5c5200d";
 		var API_URL = `http://api.openweathermap.org/data/2.5/weather?appid=${WEATHER_KEY}`;
 		super(uri, API_URL+"&q=london", j => j["main"]["temp"], store, fetcher);

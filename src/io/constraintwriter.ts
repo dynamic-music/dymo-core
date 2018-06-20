@@ -5,25 +5,8 @@ import { Constraint } from '../model/constraint';
 import { Expression } from '../model/expression';
 import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../model/variable';
 import { ExpressionTools } from '../math/expressiontools';
-import { MathjsNode, OperatorNode, FunctionNode, AccessorNode, ConditionalNode } from '../globals/types';
-
-export interface BoundVariableGhost {
-  name: string,
-  type?: string,
-  typeExpressions?: ExpressionGhost[],
-  set?: string[]
-}
-
-export interface ExpressionGhost {
-  expressionString: string,
-  mathjsTree: MathjsNode,
-  isDirected?: boolean
-}
-
-export interface ConstraintGhost {
-  vars: BoundVariableGhost[],
-  expression: ExpressionGhost
-}
+import { MathjsNode, OperatorNode, FunctionNode, AccessorNode, ConditionalNode } from '../globals/mathjs-types';
+import { ConstraintGhost, BoundVariableGhost, ExpressionGhost } from '../globals/types';
 
 export class ConstraintWriter {
 

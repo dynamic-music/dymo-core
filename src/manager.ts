@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import * as wl from 'worker-loader';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 import { ScheduloScheduler } from './audio/schedulo';
@@ -7,14 +8,16 @@ import * as uris from './globals/uris'
 import { Fetcher, FetchFetcher } from './util/fetcher'
 import { DymoPlayer } from './audio/player';
 import { Rendering } from './model/rendering'
-import { DymoStore } from './io/dymostore-service';
+//import { SuperStoreService } from './io/superstore-service';
+//import { SuperStorePromiser } from './io/superstore-promiser';
 import { DymoLoader, LoadedStuff } from './io/dymoloader'
 import { Control } from './model/control'
 import { UIControl } from './controls/uicontrol'
 import { SensorControl } from './controls/sensorcontrol'
-import { JsonGraphSubject, JsonGraph } from './io/jsongraph'
-import { AttributeInfo } from './globals/types';
+import { JsonGraphSubject } from './io/jsongraph'
+import { AttributeInfo, JsonGraph, SuperDymoStore } from './globals/types';
 
+console.log("HEEEEY", wl)
 
 /*function createAudioContext(): AudioContext {
 	const audioCtxCtor = typeof AudioContext !== 'undefined' ?
@@ -31,7 +34,7 @@ import { AttributeInfo } from './globals/types';
  */
 export class DymoManager {
 
-	private store: DymoStore;
+	private store: SuperDymoStore;
 	private loader: DymoLoader;
 	private player: DymoPlayer;
 	private dymoUris: string[] = [];
@@ -54,7 +57,8 @@ export class DymoManager {
 			GlobalVars.FADE_LENGTH = fadeLength;
 		}
 		this.reverbFile = reverbFile;
-		this.store = new DymoStore(fetcher);
+		console.log(wl)
+		//this.store = new SuperStorePromiser(fetcher)//wl ? new SuperStoreService(fetcher) : new SuperStorePromiser(fetcher);
 		this.loader = new DymoLoader(this.store, fetcher);
 		this.player = new DymoPlayer(this.store, new ScheduloScheduler());
 	}
@@ -165,7 +169,7 @@ export class DymoManager {
 	}
 
 	//TODO REMOVE THIS FUNCTION SOMETIME!
-	getStore(): DymoStore {
+	getStore(): SuperDymoStore {
 		return this.store;
 	}
 

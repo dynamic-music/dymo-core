@@ -2,7 +2,7 @@ import * as logic from 'logicjs';
 import * as math from 'mathjs';
 import { FunctionTools } from '../math/functiontools';
 import { ExpressionTools } from '../math/expressiontools';
-import { MathjsNode } from '../globals/types';
+import { MathjsNode } from '../globals/mathjs-types';
 
 /**
  * Creates and solves logical constraints.

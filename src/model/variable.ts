@@ -1,12 +1,13 @@
 import * as math from 'mathjs';
 import * as _ from 'lodash';
 import * as u from '../globals/uris';
+import { BoundVariableGhost } from '../globals/types';
 import { DymoStore } from '../io/dymostore';
 import { Expression } from '../model/expression';
 
-export abstract class BoundVariable {
+export abstract class BoundVariable implements BoundVariableGhost {
 
-  constructor(protected name: string) {}
+  constructor(public name: string) {}
 
   getName(): string {
     return this.name;

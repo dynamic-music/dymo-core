@@ -1,7 +1,7 @@
 {
   "spec_dir": "spec",
   "spec_files": [
-    "lib/**/player-spec.js"
+    "lib/**/superstore-spec.js"
   ],
   "helpers": [
     "helpers/**/*.js"

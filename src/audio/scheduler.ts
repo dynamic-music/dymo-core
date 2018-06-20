@@ -1,5 +1,5 @@
 import * as uris from '../globals/uris';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 import { DymoPlayer } from './player';
 
 
@@ -7,7 +7,7 @@ export abstract class ScheduledObject {
 
   protected parentUris;
 
-  constructor(protected dymoUri: string, protected store: DymoStore,
+  constructor(protected dymoUri: string, protected store: SuperDymoStore,
       protected player: DymoPlayer) {
     this.init();
   }
@@ -32,7 +32,7 @@ export abstract class ScheduledObject {
 
 export class DummyScheduledObject extends ScheduledObject {
 
-  constructor(dymoUri: string, store: DymoStore, player: DymoPlayer,
+  constructor(dymoUri: string, store: SuperDymoStore, player: DymoPlayer,
       delay: number) {
     super(dymoUri, store, player);
     this.player.objectStarted(this);
@@ -52,7 +52,7 @@ export class DummyScheduledObject extends ScheduledObject {
 export abstract class DymoScheduler {
 
   protected player: DymoPlayer;
-  protected store: DymoStore;
+  protected store: SuperDymoStore;
 
   setPlayer(player: DymoPlayer) {
     this.player = player;

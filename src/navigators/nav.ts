@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { Time } from 'schedulo';
 import * as uris from '../globals/uris';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 
 export interface SchedulingInstructions {
   uris: string[],
@@ -14,7 +14,7 @@ export abstract class Navigator {
   protected playCount = 0;
   protected parts: string[];
 
-  constructor(protected dymoUri: string, protected store: DymoStore) {}
+  constructor(protected dymoUri: string, protected store: SuperDymoStore) {}
 
   async hasParts(): Promise<boolean> {
     return (await this.store.findParts(this.dymoUri)).length > 0;
@@ -51,7 +51,7 @@ export abstract class IndexedNavigator extends Navigator {
 
   protected currentIndex;
 
-  constructor(dymoUri: string, store: DymoStore) {
+  constructor(dymoUri: string, store: SuperDymoStore) {
     super(dymoUri, store);
     this.reset();
   }
@@ -178,7 +178,7 @@ export class DisjunctionNavigator extends OneshotNavigator {
 
 
 
-export async function getNavigator(dymoUri: string, store: DymoStore): Promise<Navigator> {
+export async function getNavigator(dymoUri: string, store: SuperDymoStore): Promise<Navigator> {
   /*for (var subset of this.subsetNavigators.keys()) {
     if (subset.getValues(this.store).indexOf(dymoUri) >= 0) {
       return this.subsetNavigators.get(subset).getCopy(dymoUri, this.getNavigator.bind(this));

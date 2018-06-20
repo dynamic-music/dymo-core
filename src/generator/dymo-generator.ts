@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as math from 'mathjs';
 import * as uris from '../globals/uris';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 import { ConstraintWriter } from '../io/constraintwriter';
 import { Constraint } from '../model/constraint';
 import { SUMMARY } from './globals';
@@ -35,9 +35,9 @@ export class DymoGenerator {
 	private dymoCount = 0;
 	private renderingCount = 0;
 
-	constructor(private store: DymoStore) {}
+	constructor(private store: SuperDymoStore) {}
 
-	getStore(): DymoStore {
+	getStore(): SuperDymoStore {
 		return this.store;
 	}
 

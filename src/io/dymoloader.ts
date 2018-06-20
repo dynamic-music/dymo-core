@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import * as uris from '../globals/uris'
-import { DymoStore } from '../io/dymostore-service'
+import { SuperDymoStore } from '../globals/types'
+import { SuperStoreService } from '../io/superstore-service'
 import { Rendering } from '../model/rendering'
 import { SequentialNavigator } from '../navigators/sequential'
 import { SimilarityNavigator } from '../navigators/similarity'
@@ -26,18 +27,16 @@ export interface LoadedStuff {
 /**
  * A DymoLoader loads dymos from rdf, jams, or json-ld into the given DymoStore
  * and creates the necessary controls, constraints, and renderings
- * @constructor
- * @param {DymoStore} dymoStore
  */
 export class DymoLoader {
 
-  private store: DymoStore;
+  private store: SuperDymoStore;
   private controls = new Map<string,Control|UIControl>(); //dict with all the controls created
   private renderings = new Map<string,Rendering>();
   private currentBasePath = '';
   private latestLoadedStuff: LoadedStuff;
 
-  constructor(dymoStore: DymoStore, private fetcher: Fetcher = new FetchFetcher()) {
+  constructor(dymoStore: SuperDymoStore, private fetcher: Fetcher = new FetchFetcher()) {
     this.store = dymoStore;
     this.resetLatestLoadedStuff();
   }

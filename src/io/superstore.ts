@@ -1,11 +1,12 @@
 import * as _ from 'lodash';
+import { SuperDymoStore, ConstraintGhost, BoundVariableGhost } from '../globals/types';
 import { DymoStore } from './dymostore';
 import { BoundVariable } from '../model/variable';
 import { Constraint } from '../model/constraint';
-import { ConstraintWriter, ConstraintGhost, BoundVariableGhost } from './constraintwriter';
+import { ConstraintWriter } from './constraintwriter';
 import { ConstraintLoader } from './constraintloader';
 
-export class SuperDymoStore extends DymoStore {
+export class SuperStore extends DymoStore {
 
   private constraintWriter = new ConstraintWriter(this);
   private constraintLoader = new ConstraintLoader(this);

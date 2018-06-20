@@ -1,12 +1,12 @@
 import * as _ from 'lodash';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 import { BoundVariable, TypedVariable, SetBasedVariable, ExpressionVariable } from '../model/variable';
 import { Constraint } from '../model/constraint';
 import { Expression } from '../model/expression';
 
 export class ExpressionGenerator {
 
-  constructor(private store: DymoStore) {}
+  constructor(private store: SuperDymoStore) {}
 
   addVariable(expression: string): Promise<string> {
     return this.store.addVariable(this.parseVar(expression));

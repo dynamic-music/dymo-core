@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/Rx';
 import { AUTO_CONTROL_FREQUENCY } from '../globals/uris';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 import { Control } from '../model/control';
 import { Ramp } from '../util/ramp';
 
@@ -28,7 +28,7 @@ export class SensorControl extends Control {
 
 	private watch;
 
-	constructor(uri: string, typeUri: string, store: DymoStore) {
+	constructor(uri: string, typeUri: string, store: SuperDymoStore) {
 		super(uri, typeUri, typeUri, store);
 	}
 

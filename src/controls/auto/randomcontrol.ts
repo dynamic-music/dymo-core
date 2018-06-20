@@ -1,5 +1,5 @@
 import { RANDOM, AUTO_CONTROL_TRIGGER } from '../../globals/uris';
-import { DymoStore } from '../../io/dymostore-service';
+import { SuperDymoStore } from '../../globals/types';
 import { AutoControl } from '../autocontrol';
 
 /**
@@ -7,7 +7,7 @@ import { AutoControl } from '../autocontrol';
  */
 export class RandomControl extends AutoControl {
 
-	constructor(uri: string, store: DymoStore) {
+	constructor(uri: string, store: SuperDymoStore) {
 		super(uri, RANDOM, store);
 		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 1);
 	}

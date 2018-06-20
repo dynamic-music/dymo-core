@@ -1,6 +1,6 @@
 import { AudioObject, Parameter, Time, Stop } from 'schedulo';
 import * as uris from '../globals/uris';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 import { DymoPlayer } from './player';
 import { ScheduledObject } from './scheduler';
 
@@ -32,7 +32,7 @@ export class ScheduloScheduledObject extends ScheduledObject {
   private object: AudioObject;
 
   constructor(dymoUri: string, private referenceTime: number,
-      store: DymoStore, player: DymoPlayer) {
+      store: SuperDymoStore, player: DymoPlayer) {
     super(dymoUri, store, player);
     this.init2();
   }

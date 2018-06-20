@@ -1,19 +1,16 @@
-import * as SuperDymoStoreWorker from "worker-loader!./superdymostore-worker";
+import * as SuperStoreWorker from "worker-loader!./superstore-worker";
 import * as PromiseWorker from 'promise-worker';
-import { Fetcher, FetchFetcher } from '../util/fetcher';
-import { JsonGraph } from './jsongraph';
+import { Fetcher } from '../util/fetcher';
 import { AttributeInfo } from '../globals/types';
-import { BoundVariable } from '../model/variable';
-import { Constraint } from '../model/constraint';
-import { Observer } from '../globals/types';
+import { Observer, JsonGraph, SuperDymoStore, ConstraintGhost, BoundVariableGhost } from '../globals/types';
 
-export class DymoStore {
+export class SuperStoreService implements SuperDymoStore {
 
   private worker: PromiseWorker;
   private observers = new Map<string, Observer[]>();
 
   constructor(fetcher?: Fetcher) {
-    this.worker = new PromiseWorker(new SuperDymoStoreWorker());//new Worker(workerPath);
+    this.worker = new PromiseWorker(new SuperStoreWorker());//new Worker(workerPath);
     this.worker._worker.addEventListener('message', this.notifyObservers.bind(this));
     if (fetcher) {
       this.worker.postMessage({function:'setFetcher', args:[fetcher]});
@@ -22,11 +19,11 @@ export class DymoStore {
 
   ////// CONSTRAINT FUNCTIONS ///////
 
-  addConstraint(ownerUri: string, constraint: Constraint): Promise<string> {
+  addConstraint(ownerUri: string, constraint: ConstraintGhost): Promise<string> {
     return this.worker.postMessage({function:'addConstraint', args:[ownerUri, constraint]});
   }
 
-  addVariable(variable: BoundVariable): Promise<string> {
+  addVariable(variable: BoundVariableGhost): Promise<string> {
     return this.worker.postMessage({function:'addVariable', args:[variable]});
   }
 

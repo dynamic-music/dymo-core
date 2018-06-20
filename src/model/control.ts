@@ -1,5 +1,5 @@
 import { VALUE } from '../globals/uris';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 
 /**
  * A control actively changes its value.
@@ -8,7 +8,7 @@ export class Control {
 
   private value: number;
 
-  constructor(protected uri: string, private name: string, private type: string, protected store: DymoStore) {
+  constructor(protected uri: string, private name: string, private type: string, protected store: SuperDymoStore) {
     this.store.addValueObserver(this.uri, VALUE, this);
   }
 

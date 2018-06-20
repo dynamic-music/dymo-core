@@ -3,7 +3,7 @@ import * as math from 'mathjs';
 import * as arrays from 'arrayutils';
 import { VALUE } from '../globals/uris';
 import { EasyStore } from '../io/easystore';
-import { MathjsNode } from '../globals/types';
+import { MathjsNode } from '../globals/mathjs-types';
 import { LogicTools } from '../math/logictools';
 
 interface MathjsCompiled {

@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs/Rx';
 import { BUTTON, TOGGLE, AUTO_CONTROL_FREQUENCY } from '../globals/uris';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 import { Control } from '../model/control';
 
 /**
@@ -12,7 +12,7 @@ export class UIControl extends Control {
 	private inValueStream: BehaviorSubject<any> = new BehaviorSubject(null);
 	private outValueStream: BehaviorSubject<any> = new BehaviorSubject(null);
 
-	constructor(uri: string, name: string, type: string, store: DymoStore) {
+	constructor(uri: string, name: string, type: string, store: SuperDymoStore) {
 		super(uri, name, type, store);
 		this.init();
 	}

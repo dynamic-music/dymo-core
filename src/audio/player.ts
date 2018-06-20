@@ -4,7 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import * as uris from '../globals/uris';
 import { Navigator, getNavigator } from '../navigators/nav';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 import { DymoScheduler, ScheduledObject } from '../audio/scheduler';
 
 export class DymoPlayer {
@@ -13,14 +13,14 @@ export class DymoPlayer {
   private playingObjects: ScheduledObject[] = [];
   private playingDymoUris: BehaviorSubject<string[]> = new BehaviorSubject([]);
 
-  constructor(private store: DymoStore, private scheduler: DymoScheduler) {
+  constructor(private store: SuperDymoStore, private scheduler: DymoScheduler) {
     scheduler.setPlayer(this);
     this.store.setParameter(null, uris.LISTENER_ORIENTATION, 0);
     this.store.addParameterObserver(null, uris.LISTENER_ORIENTATION, this);
     this.store.addTypeObserver(uris.PLAY, this);
   }
 
-  getStore(): DymoStore {
+  getStore(): SuperDymoStore {
     return this.store;
   }
 
@@ -110,7 +110,7 @@ export class HierarchicalPlayer {
   private partPlayers: HierarchicalPlayer[] = [];
   private isPlaying: boolean = false;
 
-  constructor(private dymoUri: string, private store: DymoStore,
+  constructor(private dymoUri: string, private store: SuperDymoStore,
     private referenceObject: ScheduledObject, private scheduler: DymoScheduler,
     private initRefTime: boolean
   ) {}

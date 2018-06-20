@@ -1,4 +1,5 @@
 import * as math from 'mathjs';
+import { ConstraintGhost } from '../globals/types';
 import { DymoStore } from '../io/dymostore';
 import { BoundVariable } from './variable';
 import { Expression } from './expression';
@@ -6,9 +7,9 @@ import { Expression } from './expression';
 /**
  *
  */
-export class Constraint {
+export class Constraint implements ConstraintGhost {
 
-  constructor(private vars: BoundVariable[], private expression: Expression) {}
+  constructor(public vars: BoundVariable[], public expression: Expression) {}
 
   evaluate(store: DymoStore) {
     let vals = this.vars.map(v => v.getValues(store));

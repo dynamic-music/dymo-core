@@ -1,6 +1,6 @@
 import { AUTO_CONTROL, AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER } from '../globals/uris';
 import { Control } from '../model/control';
-import { DymoStore } from '../io/dymostore-service';
+import { SuperDymoStore } from '../globals/types';
 
 /**
  * Autocontrols that use statistics to set their values.
@@ -11,7 +11,7 @@ export abstract class AutoControl extends Control {
 	private intervalID;
 	protected frequency;
 
-	constructor(uri, name, store: DymoStore) {
+	constructor(uri, name, store: SuperDymoStore) {
 		super(uri, name, AUTO_CONTROL, store);
 		this.init();
 	}

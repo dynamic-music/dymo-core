@@ -1,5 +1,5 @@
 import { BROWNIAN, BROWNIAN_MAX_STEP_SIZE, AUTO_CONTROL_TRIGGER } from '../../globals/uris';
-import { DymoStore } from '../../io/dymostore-service';
+import { SuperDymoStore } from '../../globals/types';
 import { AutoControl } from '../autocontrol';
 
 /**
@@ -10,7 +10,7 @@ export class BrownianControl extends AutoControl {
 	private min;
 	private max;
 
-	constructor(uri: string, store: DymoStore, initialValue?: number) {
+	constructor(uri: string, store: SuperDymoStore, initialValue?: number) {
 		super(uri, BROWNIAN, store);
 		this.store.setControlParam(this.uri, BROWNIAN_MAX_STEP_SIZE, 0.1, this);
 		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 1);

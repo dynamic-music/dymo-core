@@ -1,7 +1,7 @@
 import * as math from 'mathjs';
 import * as u from '../globals/uris';
 import * as _ from 'lodash';
-import { MathjsNode } from '../globals/types';
+import { MathjsNode } from '../globals/mathjs-types';
 
 export module ExpressionTools {
 

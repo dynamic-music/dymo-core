@@ -8,6 +8,6 @@
         "noImplicitAny": false
     },
     "include": [
-        "src/**/*"
+        "src/**/superstore-spec.ts"
     ]
 }

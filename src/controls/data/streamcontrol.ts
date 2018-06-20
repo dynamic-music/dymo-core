@@ -1,5 +1,5 @@
 import { DataControl } from '../datacontrol';
-import { DymoStore } from '../../io/dymostore-service';
+import { SuperDymoStore } from '../../globals/types';
 import { Fetcher } from '../../util/fetcher';
 
 /**
@@ -9,7 +9,7 @@ export class DataStreamControl extends DataControl {
 
 //Rx.Node.fromReadableStream(fetch('https://stream.meetup.com/2/rsvps').then(r=>{console.log(r.body);return r.body}))
 
-	constructor(uri: string, store: DymoStore, fetcher?: Fetcher) {
+	constructor(uri: string, store: SuperDymoStore, fetcher?: Fetcher) {
 		super(uri, "", "", store, fetcher);
 
 		/*var requestStream = Rx.Observable.just('https://stream.meetup.com/2/open_events');

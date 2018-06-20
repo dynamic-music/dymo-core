@@ -1,9 +1,9 @@
 import * as registerPromiseWorker from 'promise-worker/register';
-import { SuperDymoStore } from './superdymostore';
+import { SuperStore } from './superstore';
 
 declare var self;
 
-const store = new SuperDymoStore();
+const store = new SuperStore();
 
 registerPromiseWorker(message => {
   //console.log(message)

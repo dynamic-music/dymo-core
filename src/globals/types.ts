@@ -1,5 +1,7 @@
+import { MathjsNode } from './mathjs-types';
+
 export interface Observer {
-  observedValueChanged: (paramUri: string, paramType: string, value: number)=>void
+  observedValueChanged(paramUri: string, paramType: string, value: number): void
 }
 
 export interface AttributeInfo {
@@ -9,47 +11,88 @@ export interface AttributeInfo {
   max: number
 }
 
-export interface FunctionNode extends MathjsNode {
-  fn: FunctionDef
+export interface JsonGraph {
+  nodes: Object[],
+  edges: JsonEdge[]
 }
 
-export interface FunctionDef extends MathjsNode {}
-
-export interface AccessorNode extends FunctionDef {
-  object: string,
-  index: string
+export interface JsonEdge {
+  source: Object,
+  target: Object,
+  value: number
 }
 
-export interface OperatorNode extends MathjsNode {
-  fn: string
-}
-
-export interface ConditionalNode extends MathjsNode {
-  condition: MathjsNode;
-  trueExpr: MathjsNode;
-  falseExpr: MathjsNode;
-}
-
-export interface MathjsNode {
-  compile: Function,
-  eval: Function,
-  transform: Function,
-
-  isParenthesisNode: boolean,
-  content?: MathjsNode,
-
-  isFunctionNode: boolean,
-  isAccessorNode: boolean,
-  isConditionalNode: boolean,
-  isOperatorNode: boolean,
-  op?: string,
-  args: MathjsNode[],
-
-  isSymbolNode: boolean,
+/*these ghost types exist so the objects can be passed through a worker
+ *as JSON objects, where they lose their functions */
+export interface BoundVariableGhost {
   name: string,
+  type?: string,
+  typeExpressions?: ExpressionGhost[],
+  set?: string[]
+}
 
-  isConstantNode: boolean,
-  value?: number,
+export interface ExpressionGhost {
+  expressionString: string,
+  mathjsTree: MathjsNode,
+  isDirected?: boolean
+}
 
-  isAssignmentNode: boolean
+export interface ConstraintGhost {
+  vars: BoundVariableGhost[],
+  expression: ExpressionGhost
+}
+
+export interface SuperDymoStore {
+  ////// CONSTRAINT FUNCTIONS ///////
+  addConstraint(ownerUri: string, constraint: ConstraintGhost): Promise<string>,
+  addVariable(variable: BoundVariableGhost): Promise<string>,
+  activateNewConstraints(constraintUris: string[]): Promise<string[]>,
+  deactivateConstraints(constraintUris: string[]),
+
+  ////// DYMOSTORE FUNCTIONS ////////
+  loadOntologies(localPath?: string): Promise<any>,
+  addBasePath(dymoUri: string, path: string),
+  addParameterObserver(dymoUri: string, parameterType: string, observer: Observer): Promise<string>,
+  removeParameterObserver(dymoUri: string, parameterType: string, observer: Observer): Promise<string>,
+  addTypeObserver(type: string, observer: Observer),
+  addRendering(renderingUri: string, dymoUri: string),
+  addDymo(dymoUri: string, parentUri?: string, partUri?: string, sourcePath?: string, type?: string): Promise<string>,
+  findTopDymos(): Promise<string[]>,
+  findAllObjectsInHierarchy(dymoUri: string): Promise<string[]>,
+  addPart(dymoUri: string, partUri: string): Promise<void>,
+  insertPartAt(dymoUri: string, partUri: string, index: number): Promise<void>,
+  removeParts(dymoUri: string, index?: number): Promise<string[]>,
+  findParts(dymoUri: string): Promise<string[]>,
+  findPartAt(dymoUri, index): Promise<string>,
+  findAllParents(dymoUri: string): Promise<string[]>,
+  getSourcePath(dymoUri: string): Promise<string>,
+  addControl(name: string, type: string, uri?: string): Promise<string>,
+  setParameter(ownerUri: string, parameterType: string, value?: any): Promise<string>,
+  findParameterValue(ownerUri: string, parameterType: string): Promise<any>,
+  addCustomParameter(ownerUri: string, paramType: string): Promise<string>,
+  setFeature(ownerUri: string, featureType: string, value?: any): Promise<string>,
+  findFeatureValue(ownerUri: string, featureType: string): Promise<any>,
+  findAttributeValue(ownerUri: string, attributeType: string): Promise<any>,
+  setControlParam(controlUri: string, parameterType: string, value: any, observer?: Observer): Promise<string>,
+  findControlParamValue(controlUri: string, parameterType: string): Promise<any>,
+  addNavigator(renderingUri: string, navigatorType: string, variableUri: string): Promise<string>,
+  getAttributeInfo(): Promise<AttributeInfo[]>,
+  findMaxLevel(dymoUri?: string): Promise<number>,
+  toJsonGraph(nodeClass, edgeProperty, previousGraph?: JsonGraph): Promise<JsonGraph>,
+  uriToJsonld(frameUri: string): Promise<string>,
+
+  ////// EASYSTORE FUNCTIONS /////////
+  addValueObserver(subject: string, predicate: string, observer: Observer),
+  getValueObserverCount(): Promise<number>,
+  size(): Promise<number>,
+  setValue(subject: string, predicate: string, value: any),
+  findSubject(predicate: string, object: any): Promise<string>,
+  findSubjects(predicate: string, object: any): Promise<string[]>,
+  findObject(subject: string, predicate: string): Promise<string>,
+  findAllObjects(subject: string, predicate: string): Promise<string[]>,
+  findObjectValue(subject: string, predicate: string): Promise<any>,
+  isSubclassOf(class1: string, class2: string): Promise<boolean>,
+  recursiveFindAllSubClasses(superclassUri: string): Promise<string[]>,
+  addTriple(subject: string, predicate: string, object: string): Promise<void>,
+  loadData(data: string): Promise<any>
 }

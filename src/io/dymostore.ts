@@ -6,8 +6,7 @@ import { EasyStore } from './easystore'
 import * as uris from '../globals/uris'
 import { DYMO_CONTEXT, DYMO_SIMPLE_CONTEXT } from '../globals/contexts'
 import { URI_TO_TERM } from '../globals/terms'
-import { JsonGraph, JsonEdge } from './jsongraph'
-import { AttributeInfo, Observer } from '../globals/types'
+import { AttributeInfo, Observer, JsonGraph, JsonEdge } from '../globals/types'
 import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 /**

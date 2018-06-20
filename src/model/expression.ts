@@ -1,20 +1,21 @@
 import * as _ from 'lodash';
 import * as math from 'mathjs';
 import * as u from '../globals/uris';
+import { ExpressionGhost } from '../globals/types';
 import { DymoStore } from '../io/dymostore';
 import { Maintainer } from './maintainer';
-import { MathjsNode } from '../globals/types';
+import { MathjsNode } from '../globals/mathjs-types';
 
-export class Expression {
+export class Expression implements ExpressionGhost {
 
-  private isDirected: boolean;
-  private mathjsTree: MathjsNode;
+  public isDirected: boolean;
+  public mathjsTree: MathjsNode;
   private treeWithoutFuncs: MathjsNode;
   private compiledFunction: Object;
   private varsAndFuncs: Map<string,MathjsNode> = new Map<string,MathjsNode>(); //map with vars and funcs
   private currentMaintainers: Map<Object,Maintainer> = new Map<Object,Maintainer>();
 
-  constructor(private expressionString: string, isDirected?: boolean, mathjsTree?: MathjsNode) {
+  constructor(public expressionString: string, isDirected?: boolean, mathjsTree?: MathjsNode) {
     this.expressionString = expressionString;
     this.isDirected = isDirected;
     this.mathjsTree = mathjsTree;
