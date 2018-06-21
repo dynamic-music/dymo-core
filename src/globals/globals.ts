@@ -2,6 +2,7 @@ export module GlobalVars {
 
   export var OPTIMIZED_MODE: boolean = false;
   export var LOGGING_ON: boolean = false;
+  export var USE_WEB_WORKERS: boolean = true;
   export var SCHEDULE_AHEAD_TIME: number = 0.1; //seconds
   export var FADE_LENGTH: number = 0.02; //seconds
 

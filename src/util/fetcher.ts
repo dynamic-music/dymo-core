@@ -42,15 +42,15 @@ export class FetchFetcher implements Fetcher {
       // isomorphic-fetch does not support response.arrayBuffer
       return new Promise((resolve, reject) => {
         let chunks = [];
-        let bytes = 0;
+        //let bytes = 0;
 
         response.body.on('error', err => {
-          reject("invalid audio url");
+          reject("invalid audio url "+err);
         });
 
         response.body.on('data', chunk => {
           chunks.push(chunk);
-          bytes += chunk.length;
+          //bytes += chunk.length;
         });
 
         response.body.on('end', () => {

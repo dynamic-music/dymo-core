@@ -26,8 +26,6 @@ export class SensorControl extends Control {
 	private ramp;
 	private status = UNAVAILABLE;
 
-	private watch;
-
 	constructor(uri: string, typeUri: string, store: SuperDymoStore) {
 		super(uri, typeUri, typeUri, store);
 	}
@@ -153,10 +151,6 @@ export class SensorControl extends Control {
 				this.resetFunction();
 			}*/
 		}
-	}
-
-	private onError() {
-		console.log(this.uri + ' control error!');
 	}
 
 }

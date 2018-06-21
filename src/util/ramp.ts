@@ -17,7 +17,7 @@ export class Ramp {
 		if (duration > frequency) {
 			clearInterval(this.intervalID);
 			this.delta = (targetValue-this.currentValue)/(duration/frequency);
-			this.intervalID = setInterval(function() {
+			this.intervalID = setInterval(() => {
 				var nextValue = this.currentValue+this.delta;
 				if (Math.abs(targetValue-nextValue) < Math.abs(targetValue-this.currentValue)) {
 					this.currentValue = nextValue;

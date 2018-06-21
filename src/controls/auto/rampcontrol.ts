@@ -1,4 +1,4 @@
-import { RAMP, AUTO_CONTROL_FREQUENCY } from '../../globals/uris';
+import { RAMP } from '../../globals/uris';
 import { SuperDymoStore } from '../../globals/types';
 import { AutoControl } from '../autocontrol';
 

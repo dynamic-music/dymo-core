@@ -2,10 +2,9 @@ import * as _ from 'lodash';
 import * as math from 'mathjs';
 import * as uris from '../globals/uris';
 import { SuperDymoStore } from '../globals/types';
-import { ConstraintWriter } from '../io/constraintwriter';
 import { Constraint } from '../model/constraint';
 import { SUMMARY } from './globals';
-import { Segment, DataPoint, Signal } from './feature-loader';
+import { Segment, DataPoint } from './feature-loader';
 //import { Feature } from './types';
 
 interface TimeDymo {

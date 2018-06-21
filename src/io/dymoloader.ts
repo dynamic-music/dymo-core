@@ -1,11 +1,7 @@
 import * as _ from 'lodash';
 import * as uris from '../globals/uris'
 import { SuperDymoStore } from '../globals/types'
-import { SuperStoreService } from '../io/superstore-service'
 import { Rendering } from '../model/rendering'
-import { SequentialNavigator } from '../navigators/sequential'
-import { SimilarityNavigator } from '../navigators/similarity'
-import { GraphNavigator } from '../navigators/graph'
 import { Control } from '../model/control'
 import { UIControl } from '../controls/uicontrol'
 import { DataControl } from '../controls/datacontrol'
@@ -13,8 +9,6 @@ import { SensorControl } from '../controls/sensorcontrol'
 import { RandomControl } from '../controls/auto/randomcontrol'
 import { BrownianControl } from '../controls/auto/browniancontrol'
 import { RampControl } from '../controls/auto/rampcontrol'
-import { ConstraintLoader } from './constraintloader';
-import { Constraint } from '../model/constraint';
 import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 export interface LoadedStuff {

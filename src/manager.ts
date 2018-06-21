@@ -1,33 +1,14 @@
 import * as _ from 'lodash';
-import * as wl from 'worker-loader';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
-import { ScheduloScheduler } from './audio/schedulo';
-import { GlobalVars } from './globals/globals'
-import * as uris from './globals/uris'
-import { Fetcher, FetchFetcher } from './util/fetcher'
-import { DymoPlayer } from './audio/player';
+import { Fetcher } from './util/fetcher'
 import { Rendering } from './model/rendering'
-//import { SuperStoreService } from './io/superstore-service';
-//import { SuperStorePromiser } from './io/superstore-promiser';
+import { SuperStorePromiser } from './io/superstore-promiser';
 import { DymoLoader, LoadedStuff } from './io/dymoloader'
-import { Control } from './model/control'
 import { UIControl } from './controls/uicontrol'
 import { SensorControl } from './controls/sensorcontrol'
 import { JsonGraphSubject } from './io/jsongraph'
 import { AttributeInfo, JsonGraph, SuperDymoStore } from './globals/types';
-
-console.log("HEEEEY", wl)
-
-/*function createAudioContext(): AudioContext {
-	const audioCtxCtor = typeof AudioContext !== 'undefined' ?
-		AudioContext : null;
-	return new (
-		audioCtxCtor
-		|| (window as any).AudioContext
-		|| (window as any).webkitAudioContext
-	)();
-}*/
 
 /**
  * A class for easy access of all dymo core functionality.
@@ -36,42 +17,24 @@ export class DymoManager {
 
 	private store: SuperDymoStore;
 	private loader: DymoLoader;
-	private player: DymoPlayer;
 	private dymoUris: string[] = [];
 	private rendering: Rendering;
 	private uiControls: UIControl[] = [];
 	private sensorControls: SensorControl[] = [];
-	private reverbFile: string;
 	private graphs: JsonGraphSubject[] = [];
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
-	//TODO REMOVE AUDIO CONTEXT
-	constructor(audioContext, scheduleAheadTime?: number, fadeLength?: number, optimizedMode?: boolean, reverbFile?: string, fetcher?: Fetcher) {
-		if (optimizedMode) {
-			GlobalVars.OPTIMIZED_MODE = true;
+	constructor(dymoStore: SuperDymoStore, fetcher?: Fetcher) {
+		if (dymoStore == null) {
+			this.store = new SuperStorePromiser(fetcher);
 		}
-		if (!isNaN(scheduleAheadTime)) {
-			GlobalVars.SCHEDULE_AHEAD_TIME = scheduleAheadTime;
-		}
-		if (!isNaN(fadeLength)) {
-			GlobalVars.FADE_LENGTH = fadeLength;
-		}
-		this.reverbFile = reverbFile;
-		console.log(wl)
-		//this.store = new SuperStorePromiser(fetcher)//wl ? new SuperStoreService(fetcher) : new SuperStorePromiser(fetcher);
-		this.loader = new DymoLoader(this.store, fetcher);
-		this.player = new DymoPlayer(this.store, new ScheduloScheduler());
 	}
 
 	init(ontologiesPath?: string): Promise<any> {
-		return new Promise((resolve, reject) => {
+		return new Promise(resolve => {
 			this.store.loadOntologies(ontologiesPath)
-				.then(r => resolve());
+				.then(() => resolve());
 		});
-	}
-
-	getPlayingDymoUris(): Observable<string[]> {
-		return this.player.getPlayingDymoUris();
 	}
 
 	getJsonGraph(nodeClass, edgeProperty, cacheNodes?: boolean): Observable<JsonGraph> {
@@ -100,12 +63,8 @@ export class DymoManager {
 		this.uiControls = <UIControl[]>(_.values(loadedStuff.controls)).filter(c => c instanceof UIControl);
 		this.sensorControls = <SensorControl[]>_.values(loadedStuff.controls).filter(c => c instanceof SensorControl);
 
-		if (!this.reverbFile) {
-			this.reverbFile = 'node_modules/dymo-core/audio/impulse_rev.wav';
-		}
 		this.graphs.forEach(g => g.update());
 		this.store.getAttributeInfo().then(info => this.attributeInfo.next(info));
-		//return this.player.init(this.reverbFile, loadedStuff.dymoUris);
 		return Promise.resolve();
 	}
 
@@ -114,63 +73,13 @@ export class DymoManager {
 			.then(loadedStuff => loadedStuff.dymoUris);
 	}
 
-	/*replacePartOfTopDymo(index, dymoUri) {
-		var oldDymo = this.store.replacePartAt(this.dymoUris[0], this.addContext(dymoUri), index);
-		this.player.stop(oldDymo);
-	}*/
-
-	getAudioBank() {
-		return this.player.getAudioBank();
-	}
-
-	getPosition(dymoUri: string) {
-		return this.player.getPosition(dymoUri);
-	}
-
-	/*updateNavigatorPosition(dymoUri, level, position) {
-		this.player.updateNavigatorPosition(this.addContext(dymoUri), level, position);
-	}*/
-
-	/*getNavigatorPosition(dymoUri): number {
-		return this.player.getNavigatorPosition(this.addContext(dymoUri));
-	}*/
-
-	/*//sync the first navigator for syncDymo to the position of the first for goalDymo on the given level
-	syncNavigators(syncDymo, goalDymo, level) {
-		this.scheduler.syncNavigators(this.addContext(syncDymo), this.addContext(goalDymo), level);
-	}*/
-
-	startPlayingUri(dymoUri) {
-		this.player.play(this.addContext(dymoUri));
-	}
-
-	stopPlayingUri(dymoUri) {
-		this.player.stop(this.addContext(dymoUri));
-	}
-
-	private addContext(uri: string): string {
-		return uri.indexOf(uris.CONTEXT_URI) < 0 ? uris.CONTEXT_URI + uri : uri;
-	}
-
-	startPlaying() {
-		if (this.rendering) {
-			this.rendering.play();
-		} else {
-			this.dymoUris.forEach(d => this.player.play(d));
-		}
-	}
-
-	stopPlaying() {
-		if (this.rendering) {
-			this.rendering.stop();
-		} else {
-			this.dymoUris.forEach(d => this.player.stop(d));
-		}
-	}
-
 	//TODO REMOVE THIS FUNCTION SOMETIME!
 	getStore(): SuperDymoStore {
 		return this.store;
+	}
+
+	getLoadedDymoUris(): string[] {
+		return this.dymoUris;
 	}
 
 	getTopDymo(): string {

@@ -1,9 +1,5 @@
 import { SuperDymoStore } from '../globals/types';
-import { PLAY } from '../globals/uris'
-import { DymoNavigator } from '../navigators/navigator'
-import { SubsetNavigator } from '../navigators/subsetnav'
-import { SequentialNavigator } from '../navigators/sequential'
-import { BoundVariable } from '../model/variable';
+import { PLAY } from '../globals/uris';
 
 /**
  * A rendering defines how a given dymo is played back.
@@ -11,7 +7,7 @@ import { BoundVariable } from '../model/variable';
 export class Rendering {
 
 	private dymoUri;
-	private navigator: DymoNavigator;
+	//private navigator: DymoNavigator;
 
 	constructor(dymoUri: string, private store: SuperDymoStore) {
 		this.dymoUri = dymoUri;
@@ -30,12 +26,12 @@ export class Rendering {
 		}
 	}
 
-	addSubsetNavigator(boundVar: BoundVariable, nav: SubsetNavigator) {
+	/*addSubsetNavigator(boundVar: BoundVariable, nav: SubsetNavigator) {
 		this.navigator.addSubsetNavigator(boundVar, nav);
 	}
 
 	getNavigator(): DymoNavigator {
 		return this.navigator;
-	}
+	}*/
 
 }
