@@ -35,41 +35,21 @@
   "homepage": "https://github.com/florianthalmann/dymo-core#readme",
   "dependencies": {
     "arrayutils": "*",
-    "file-loader": "^1.1.11",
     "jsonld": "^0.4.12",
-    "kali": "github:LucasThompson/Kali#b8c0f3f57d7e4d54117fe25ef862edbee9417a81",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.10",
     "logicjs": "git://github.com/florianthalmann/LogicJS.git",
     "mathjs": "*",
     "n3": "^0.11.2",
-    "natsort": "^1.0.6",
-    "promise-worker": "^1.1.1",
     "rxjs": "^5.4.0",
-    "schedulo": "git://github.com/dynamic-music/schedulo.git",
-    "siafun": "0.0.3",
-    "soundtouch-js": "git://github.com/florianthalmann/soundtouch-js.git",
-    "worker-loader": "^1.1.1"
+    "siafun": "0.0.3"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.110",
     "@types/jasmine": "^2.5.41",
-    "@types/lodash": "^4.14.51",
     "@types/node": "^8.0.19",
-    "babel-preset-es2015": "^6.18.0",
-    "babelify": "^7.3.0",
-    "browserify": "^13.3.0",
-    "express": "^4.14.0",
-    "gulp": "github:gulpjs/gulp#4.0",
-    "gulp-sourcemaps": "^2.4.0",
-    "gulp-uglify": "^2.0.0",
     "isomorphic-fetch": "^2.2.1",
     "jasmine": "^2.8.0",
     "jasmine-core": "^2.4.1",
-    "speaker": "^0.3.1",
-    "tsify": "^3.0.0",
-    "typescript": "^2.9.2",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.8.0",
-    "web-audio-api": "git://github.com/florianthalmann/web-audio-api.git"
+    "typescript": "^2.9.2"
   }
 }
