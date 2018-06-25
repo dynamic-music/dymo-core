@@ -82,7 +82,9 @@ export class DymoLoader {
     }
     this.addLatestLoadedStuff("dymoUris", await this.loadDymos(...dymoUris));
     this.addLatestLoadedStuff("controls", await this.loadControls(...controlUris));
-    this.latestLoadedStuff.rendering = await this.loadRendering(renderingUri);
+    if (renderingUri) {
+      this.latestLoadedStuff.rendering = await this.loadRendering(renderingUri);
+    }
     this.addLatestLoadedStuff("constraintUris", await this.store.activateNewConstraints(constraintUris));
     return this.resetLatestLoadedStuff();
   }
@@ -97,9 +99,9 @@ export class DymoLoader {
     return dymoUris;
   }
 
-  private async loadRendering(renderingUri?: string): Promise<Rendering> {
+  private async loadRendering(renderingUri: string): Promise<Rendering> {
     var dymoUri = await this.store.findObject(renderingUri, uris.HAS_DYMO);
-    if (!this.renderings.has(renderingUri)) {
+    if (renderingUri && !this.renderings.has(renderingUri)) {
       var rendering = new Rendering(dymoUri, this.store);
       this.addLatestLoadedStuff("controls", await this.createControls());
       this.addLatestLoadedStuff("constraintUris", await this.activateConstraintsOfOwner(renderingUri));

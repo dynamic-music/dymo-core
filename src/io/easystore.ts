@@ -624,7 +624,7 @@ export class EasyStore {
 
 	///////// LOADING FUNCTIONS //////////
 
-	loadData(data): Promise<any> {
+	loadData(data: string): Promise<any> {
 		//TODO NOT SURE IF THIS WORKS...
 		return new Promise((resolve, reject) =>
 			this.jsonldToNquads(data)

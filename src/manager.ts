@@ -24,10 +24,9 @@ export class DymoManager {
 	private graphs: JsonGraphSubject[] = [];
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
-	constructor(dymoStore: SuperDymoStore, fetcher?: Fetcher) {
-		if (dymoStore == null) {
-			this.store = new SuperStorePromiser(fetcher);
-		}
+	constructor(dymoStore?: SuperDymoStore, fetcher?: Fetcher) {
+		this.store = dymoStore ? dymoStore : new SuperStorePromiser(fetcher);
+		this.loader = new DymoLoader(this.store, fetcher);
 	}
 
 	init(ontologiesPath?: string): Promise<any> {
@@ -52,12 +51,21 @@ export class DymoManager {
 			.then(() => this.loadFromStore());
 	}
 
-	async loadFromStore(...uris: string[]): Promise<LoadedStuff> {
-		let loadedStuff = await this.loader.loadFromStore(...uris);
-		return this.processLoadedStuff(loadedStuff).then(() => loadedStuff);
+	async loadIntoStoreFromString(rdf: string): Promise<LoadedStuff> {
+		return this.processLoadedStuff(await this.loader.loadFromString(rdf));
 	}
 
-	private processLoadedStuff(loadedStuff: LoadedStuff): Promise<any> {
+	loadDymoFromJson(fileUri: string): Promise<LoadedStuff> {
+		return this.loader.loadFromFiles(fileUri)
+			.then(loadedStuff => this.processLoadedStuff(loadedStuff));
+	}
+
+	async loadFromStore(...uris: string[]): Promise<LoadedStuff> {
+		let loadedStuff = await this.loader.loadFromStore(...uris);
+		return this.processLoadedStuff(loadedStuff);
+	}
+
+	private async processLoadedStuff(loadedStuff: LoadedStuff): Promise<LoadedStuff> {
 		this.dymoUris = this.dymoUris.concat(loadedStuff.dymoUris);
 		this.rendering = loadedStuff.rendering;
 		this.uiControls = <UIControl[]>(_.values(loadedStuff.controls)).filter(c => c instanceof UIControl);
@@ -65,12 +73,7 @@ export class DymoManager {
 
 		this.graphs.forEach(g => g.update());
 		this.store.getAttributeInfo().then(info => this.attributeInfo.next(info));
-		return Promise.resolve();
-	}
-
-	loadDymoFromJson(fileUri: string): Promise<string[]> {
-		return this.loader.loadFromFiles(fileUri)
-			.then(loadedStuff => loadedStuff.dymoUris);
+		return loadedStuff;
 	}
 
 	//TODO REMOVE THIS FUNCTION SOMETIME!
