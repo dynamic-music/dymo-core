@@ -5,6 +5,7 @@ import { SuperDymoStore } from '../globals/types';
 import { Constraint } from '../model/constraint';
 import { SUMMARY } from './globals';
 import { Segment, DataPoint } from './feature-loader';
+import { DymoManager } from '../manager';
 //import { Feature } from './types';
 
 interface TimeDymo {
@@ -27,6 +28,7 @@ export interface Feature {
  */
 export class DymoGenerator {
 
+	private store: SuperDymoStore;
 	private currentTopDymo; //the top dymo for the current audio file
 	private currentRenderingUri;
 	private summarizingMode = SUMMARY.MEAN;
@@ -34,7 +36,9 @@ export class DymoGenerator {
 	private dymoCount = 0;
 	private renderingCount = 0;
 
-	constructor(private store: SuperDymoStore) {}
+	constructor(store?: SuperDymoStore) {
+		this.store = store ? store : new DymoManager().getStore();
+	}
 
 	getStore(): SuperDymoStore {
 		return this.store;
@@ -98,7 +102,7 @@ export class DymoGenerator {
 		return uri;
 	}
 
-	addNavigator(navigatorType, variableUri: string) {
+	addNavigator(navigatorType: string, variableUri: string) {
 		this.store.addNavigator(this.currentRenderingUri, navigatorType, variableUri);
 	}
 
@@ -106,11 +110,11 @@ export class DymoGenerator {
 		return this.currentTopDymo;
 	}
 
-	setSummarizingMode(mode) {
+	setSummarizingMode(mode: string) {
 		this.summarizingMode = mode;
 	}
 
-	setCurrentSourcePath(path) {
+	setCurrentSourcePath(path: string) {
 		this.currentSourcePath = path;
 	}
 
@@ -286,7 +290,7 @@ export class DymoGenerator {
 		}
 	}
 
-	async setDymoFeature(dymoUri, featureUri, value) {
+	async setDymoFeature(dymoUri: string, featureUri: string, value: string | number | number[]) {
 		if (!await this.store.findObject(featureUri, uris.TYPE)) {
 			await this.store.addTriple(featureUri, uris.TYPE, uris.FEATURE_TYPE);
 		}
@@ -294,7 +298,7 @@ export class DymoGenerator {
 		//this.updateMinMax(featureUri, value);
 	}
 
-	setDymoParameter(dymoUri, parameterUri, value) {
+	setDymoParameter(dymoUri: string, parameterUri: string, value: string | number | number[]) {
 		this.store.setParameter(dymoUri, parameterUri, value);
 		//this.updateMinMax(featureUri, value);
 	}
