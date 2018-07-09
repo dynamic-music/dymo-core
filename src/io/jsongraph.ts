@@ -1,11 +1,11 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Observable } from 'rxjs/Observable';
 import { JsonGraph, SuperDymoStore } from '../globals/types';
 
 export class JsonGraphSubject extends BehaviorSubject<JsonGraph> {
 
   constructor(private nodeClass: string, private edgeProperty: string, private store: SuperDymoStore, private cacheNodes?: boolean) {
     super({nodes:[], edges:[]});
+    this.update();
   }
 
   update() {

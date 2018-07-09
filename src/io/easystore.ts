@@ -647,7 +647,7 @@ export class EasyStore {
 	}
 
 	loadFileIntoStore(path): Promise<any> {
-		return this.fetcher.fetchText(path)
+		return this.fetcher.fetchText(path.replace('http:', 'https:'))
 			.then(data => this.loadData(data))
 			.catch(err => console.log(err));
 	}

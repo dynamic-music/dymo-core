@@ -14,7 +14,7 @@ import { Fetcher, FetchFetcher } from '../util/fetcher';
  */
 export class DymoStore extends EasyStore {
 
-	private onlinePath = "https://tiny.cc/";
+	private onlinePath = "http://tiny.cc/";
 	private dymoOntologyPath = "dymo-ontology";
 	private mobileOntologyPath = "mobile-audio-ontology";
 	private expressionOntologyPath = "expression-ontology";
