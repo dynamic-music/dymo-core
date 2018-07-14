@@ -14,7 +14,7 @@ import { Fetcher, FetchFetcher } from '../util/fetcher';
  */
 export class DymoStore extends EasyStore {
 
-	private onlinePath = "http://tiny.cc/";
+	private onlinePath = "https://tiny.cc/";
 	private dymoOntologyPath = "dymo-ontology";
 	private mobileOntologyPath = "mobile-audio-ontology";
 	private expressionOntologyPath = "expression-ontology";
@@ -437,6 +437,7 @@ export class DymoStore extends EasyStore {
 							//compact local uris
 							var result = JSON.stringify(compacted);
 							result = result.replace(new RegExp(this.dymoContextPath+'/', 'g'), "");
+							result = result.replace(new RegExp(this.dymoContextPath.replace('https','http')+'/', 'g'), "");
 							resolve(result);
 						});
 					});
