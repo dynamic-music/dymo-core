@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
-import { SuperDymoStore, ConstraintGhost, BoundVariableGhost } from '../globals/types';
+import { ConstraintGhost, BoundVariableGhost } from '../globals/types';
 import { DymoStore } from './dymostore';
-import { BoundVariable } from '../model/variable';
 import { Constraint } from '../model/constraint';
 import { ConstraintWriter } from './constraintwriter';
 import { ConstraintLoader } from './constraintloader';

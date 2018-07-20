@@ -214,4 +214,8 @@ export class SuperStorePromiser implements SuperDymoStore {
     return Promise.resolve(this.superStore.loadData(data));
   }
 
+  logData() {
+    this.superStore.logData();
+  }
+
 }

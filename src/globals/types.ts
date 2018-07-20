@@ -94,5 +94,6 @@ export interface SuperDymoStore {
   isSubclassOf(class1: string, class2: string): Promise<boolean>,
   recursiveFindAllSubClasses(superclassUri: string): Promise<string[]>,
   addTriple(subject: string, predicate: string, object: string): Promise<void>,
-  loadData(data: string): Promise<any>
+  loadData(data: string): Promise<any>,
+  logData(): void
 }
