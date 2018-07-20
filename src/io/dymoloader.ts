@@ -157,8 +157,9 @@ export class DymoLoader {
     }*/ else if (type == uris.SLIDER || type == uris.TOGGLE || type == uris.BUTTON || type == uris.CUSTOM_CONTROL) {
       control = new UIControl(uri, name, type, this.store);
       var init = await this.store.findObjectValue(uri, uris.VALUE);
-      control.value = init;
-      control.update();
+      //control.value = init;
+      //control.update();
+      control.updateValue(init);
     } else if (type == uris.RANDOM) {
       control = new RandomControl(uri, this.store);
     } else if (type == uris.BROWNIAN) {
