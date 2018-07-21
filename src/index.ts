@@ -2,7 +2,6 @@
 import * as uris from './globals/uris';
 export { uris };
 export { URI_TO_TERM } from './globals/terms';
-export { GlobalVars } from './globals/globals';
 export { JsonGraph, JsonEdge, AttributeInfo, Observer, ConstraintGhost,
   BoundVariableGhost } from './globals/types';
 export { DymoManager } from './manager';

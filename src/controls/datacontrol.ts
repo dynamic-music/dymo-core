@@ -1,5 +1,4 @@
 import { DATA_CONTROL, AUTO_CONTROL_TRIGGER } from '../globals/uris';
-import { GlobalVars } from '../globals/globals';
 import { SuperDymoStore } from '../globals/types';
 import { AutoControl } from './autocontrol';
 import { Fetcher, FetchFetcher } from '../util/fetcher';
@@ -24,9 +23,7 @@ export class DataControl extends AutoControl {
 		this.fetcher.fetchJson(this.url)
 		.then(json => this.jsonMap(json))
 		.then(mapped => {
-			if (GlobalVars.LOGGING_ON) {
-				console.log("data received:", mapped);
-			}
+			console.log("data received:", mapped);
 			this.updateValue(mapped)
 		})
 		.catch(e => console.log(e));
