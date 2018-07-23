@@ -63,11 +63,20 @@ export class DymoStore extends EasyStore {
 		}
 	}
 
+	getAllSourcePaths() {
+		var sourcePathTriples = this.find(null, uris.HAS_SOURCE);
+		return sourcePathTriples.map(t => {
+			const basePath = this.getBasePath(t.subject);
+			const sourcePath = this.getLiteralValue(t.object);
+			return basePath ? basePath+sourcePath : sourcePath;
+		});
+	}
+
 	getSourcePath(dymoUri) {
 		var sourcePath = this.findObjectValue(dymoUri, uris.HAS_SOURCE);
 		if (sourcePath) {
 			var basePath = this.getBasePath(dymoUri);
-			return basePath? basePath+sourcePath: sourcePath;
+			return basePath ? basePath+sourcePath : sourcePath;
 		}
 		var parentUris = this.findParents(dymoUri);
 		if (parentUris.length > 0) {

@@ -73,6 +73,7 @@ export interface SuperDymoStore {
   findParts(dymoUri: string): Promise<string[]>,
   findPartAt(dymoUri, index): Promise<string>,
   findAllParents(dymoUri: string): Promise<string[]>,
+  getAllSourcePaths(): Promise<string[]>,
   getSourcePath(dymoUri: string): Promise<string>,
   addControl(name: string, type: string, uri?: string): Promise<string>,
   setParameter(ownerUri: string, parameterType: string, value?: any): Promise<string>,

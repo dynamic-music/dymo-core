@@ -107,6 +107,10 @@ export class SuperStorePromiser implements SuperDymoStore {
     return Promise.resolve(this.superStore.findAllParents(dymoUri));
   }
 
+  getAllSourcePaths(): Promise<string[]> {
+    return Promise.resolve(this.superStore.getAllSourcePaths());
+  }
+
   getSourcePath(dymoUri: string): Promise<string> {
     return Promise.resolve(this.superStore.getSourcePath(dymoUri));
   }
