@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import { promises as jsonld } from 'jsonld';
 import { flattenArray, removeDuplicates } from 'arrayutils';
 import { RDFS_URI, TYPE, FIRST, REST, NIL, VALUE, DYMO, RENDERING } from '../globals/uris';
-import { Observer } from '../globals/types';
+import { ValueObserver } from '../globals/types';
 import { Fetcher, FetchFetcher } from '../util/fetcher';
 
 //limited interface to ensure optimal use here!
@@ -59,7 +59,7 @@ export class EasyStore {
 
 	///////// OBSERVING FUNCTIONS //////////
 
-	addValueObserver(subject: string, predicate: string, observer: Observer) {
+	addValueObserver(subject: string, predicate: string, observer: ValueObserver) {
 		//console.log("OBS", subject, predicate, [observer])
 		if (observer) {
 			if (!this.valueObservers[subject]) {
@@ -73,14 +73,14 @@ export class EasyStore {
 		}
 	}
 
-	addTypeObserver(type: string, observer: Observer) {
+	addTypeObserver(type: string, observer: ValueObserver) {
 		if (!this.typeObservers[type]) {
 			this.typeObservers[type] = [];
 		}
 		this.typeObservers[type].push(observer);
 	}
 
-	removeValueObserver(subject: string, predicate: string, observer: Observer) {
+	removeValueObserver(subject: string, predicate: string, observer: ValueObserver) {
 		if (this.valueObservers[subject] && this.valueObservers[subject][predicate]) {
 			var index = this.valueObservers[subject][predicate].indexOf(observer);
 			if (index > -1) {
@@ -99,7 +99,7 @@ export class EasyStore {
 		}
 	}
 
-	removeTypeObserver(type: string, observer: Observer) {
+	removeTypeObserver(type: string, observer: ValueObserver) {
 		if (this.typeObservers[type]) {
 			var index = this.typeObservers[type].indexOf(observer);
 			if (index > -1) {
@@ -117,7 +117,7 @@ export class EasyStore {
 		return _.flatten(observers).length;
 	}
 
-	getValueObservers(subject: string, predicate: string): Observer[] {
+	getValueObservers(subject: string, predicate: string): ValueObserver[] {
 		if (this.valueObservers[subject]) {
 			if (this.valueObservers[subject][predicate]) {
 				return this.valueObservers[subject][predicate];

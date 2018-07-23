@@ -6,8 +6,7 @@ import { EasyStore } from './easystore'
 import * as uris from '../globals/uris'
 import { DYMO_CONTEXT, DYMO_SIMPLE_CONTEXT } from '../globals/contexts'
 import { URI_TO_TERM } from '../globals/terms'
-import { AttributeInfo, Observer, JsonGraph, JsonEdge } from '../globals/types'
-import { Fetcher, FetchFetcher } from '../util/fetcher';
+import { AttributeInfo, ValueObserver, PartsObserver, JsonGraph, JsonEdge } from '../globals/types'
 
 /**
  * A graph store for dymos based on EasyStore.
@@ -21,6 +20,7 @@ export class DymoStore extends EasyStore {
 	private dymoContextPath = this.onlinePath+"dymo-context";
 	//private dymoSimpleContextPath = "dymo-context-simple";
 	private dymoBasePaths = {};
+	private partsObservers = new Map<string, PartsObserver[]>();
 
 	//loads some basic ontology files
 	loadOntologies(localPath?: string): Promise<any> {
@@ -80,11 +80,11 @@ export class DymoStore extends EasyStore {
 		}
 	}
 
-	addSpecificParameterObserver(parameterUri: string, observer: Observer) {
+	addSpecificParameterObserver(parameterUri: string, observer: ValueObserver) {
 		this.addValueObserver(parameterUri, uris.VALUE, observer);
 	}
 
-	addParameterObserver(dymoUri: string, parameterType: string, observer: Observer): string {
+	addParameterObserver(dymoUri: string, parameterType: string, observer: ValueObserver): string {
 		if (dymoUri && parameterType) {
 			//add parameter if there is none so far and get uri
 			var parameterUri = this.setParameter(dymoUri, parameterType);
@@ -103,7 +103,7 @@ export class DymoStore extends EasyStore {
 		}
 	}
 
-	removeParameterObserver(dymoUri: string, parameterType: string, observer: Observer): string {
+	removeParameterObserver(dymoUri: string, parameterType: string, observer: ValueObserver): string {
 		if (dymoUri && parameterType) {
 			var parameterUri = this.findObjectOfType(dymoUri, uris.HAS_PARAMETER, parameterType);
 			if (parameterUri) {
@@ -111,6 +111,31 @@ export class DymoStore extends EasyStore {
 				return parameterUri;
 			}
 		}
+	}
+
+	addPartsObserver(dymoUri: string, observer: PartsObserver) {
+		if (dymoUri) {
+			if (!this.partsObservers.has(dymoUri)) {
+				this.partsObservers.set(dymoUri, []);
+			}
+			this.partsObservers.get(dymoUri).push(observer);
+		}
+	}
+
+	private getPartsObservers(dymoUri: string): PartsObserver[] {
+		const observers = this.partsObservers.get(dymoUri);
+		return observers ? observers : [];
+	}
+
+	removePartsObserver(dymoUri: string, observer: PartsObserver) {
+		const index = this.getPartsObservers(dymoUri).indexOf(observer);
+		if (index >= 0) {
+			this.partsObservers.get(dymoUri).splice(index, 1);
+		}
+	}
+
+	notifyPartsObservers(dymoUri: string) {
+		this.getPartsObservers(dymoUri).forEach(o => o.observedPartsChanged(dymoUri));
 	}
 
 	///////// ADDING FUNCTIONS //////////
@@ -145,6 +170,7 @@ export class DymoStore extends EasyStore {
 		let parentLevel = this.findFeatureValue(dymoUri, uris.LEVEL_FEATURE);
 		this.setFeature(partUri, uris.INDEX_FEATURE, index);
 		this.setFeature(partUri, uris.LEVEL_FEATURE, parentLevel+1);
+		this.notifyPartsObservers(dymoUri);
 	}
 
 	insertPartAt(dymoUri: string, partUri: string, index: number): void {
@@ -155,6 +181,7 @@ export class DymoStore extends EasyStore {
 		//update index feature of all later elements
 		let tail = this.findParts(dymoUri).slice(index+1);
 		tail.forEach((p,i) => this.setFeature(partUri, uris.INDEX_FEATURE, index+i+1));
+		this.notifyPartsObservers(dymoUri);
 	}
 
 	/**really slow, use sparingly*/
@@ -165,12 +192,16 @@ export class DymoStore extends EasyStore {
 
 	/**really slow, use sparingly. removes all parts after the given index*/
 	removeParts(dymoUri: string, index?: number): string[] {
-		return this.deleteListFrom(dymoUri, uris.HAS_PART, index);
+		const removed = this.deleteListFrom(dymoUri, uris.HAS_PART, index);
+		this.notifyPartsObservers(dymoUri);
+		return removed;
 	}
 
 	replacePartAt(dymoUri, partUri, index) {
 		if (dymoUri != partUri) {//avoid circular dymos
-			return this.replaceObjectInList(dymoUri, uris.HAS_PART, partUri, index);
+			const replaced = this.replaceObjectInList(dymoUri, uris.HAS_PART, partUri, index);
+			this.notifyPartsObservers(dymoUri);
+			return replaced;
 		}
 	}
 
@@ -199,7 +230,7 @@ export class DymoStore extends EasyStore {
 		return uri;
 	}
 
-	setControlParam(controlUri: string, parameterType: string, value: any, observer?: Observer): string {
+	setControlParam(controlUri: string, parameterType: string, value: any, observer?: ValueObserver): string {
 		//set the new value
 		var parameterUri = this.setObjectValue(controlUri, uris.HAS_CONTROL_PARAM, parameterType, uris.VALUE, value);
 		if (observer) {

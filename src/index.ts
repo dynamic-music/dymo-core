@@ -2,8 +2,8 @@
 import * as uris from './globals/uris';
 export { uris };
 export { URI_TO_TERM } from './globals/terms';
-export { JsonGraph, JsonEdge, AttributeInfo, Observer, ConstraintGhost,
-  BoundVariableGhost } from './globals/types';
+export { JsonGraph, JsonEdge, AttributeInfo, Observer, ValueObserver,
+  PartsObserver, ConstraintGhost, BoundVariableGhost } from './globals/types';
 export { DymoManager } from './manager';
 export { UIControl } from './controls/uicontrol';
 export { SensorControl, Sensor } from './controls/sensorcontrol';

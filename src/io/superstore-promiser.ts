@@ -1,6 +1,7 @@
 import { Fetcher } from '../util/fetcher';
 import { AttributeInfo } from '../globals/types';
-import { Observer, JsonGraph, SuperDymoStore, ConstraintGhost, BoundVariableGhost } from '../globals/types';
+import { ValueObserver, PartsObserver, JsonGraph, SuperDymoStore,
+  ConstraintGhost, BoundVariableGhost } from '../globals/types';
 import { SuperStore } from './superstore';
 
 /** This class simply forwards everything to the super store and wraps results
@@ -46,16 +47,24 @@ export class SuperStorePromiser implements SuperDymoStore {
     return Promise.resolve(this.superStore.addBasePath(dymoUri, path));
   }
 
-  addParameterObserver(dymoUri: string, parameterType: string, observer: Observer): Promise<string> {
+  addParameterObserver(dymoUri: string, parameterType: string, observer: ValueObserver): Promise<string> {
     return Promise.resolve(this.superStore.addParameterObserver(dymoUri, parameterType, observer));
   }
 
-  removeParameterObserver(dymoUri: string, parameterType: string, observer: Observer): Promise<string> {
+  removeParameterObserver(dymoUri: string, parameterType: string, observer: ValueObserver): Promise<string> {
     return Promise.resolve(this.superStore.removeParameterObserver(dymoUri, parameterType, observer));
   }
 
-  addTypeObserver(type: string, observer: Observer) {
+  addTypeObserver(type: string, observer: ValueObserver) {
     return Promise.resolve(this.superStore.addTypeObserver(type, observer));
+  }
+
+  addPartsObserver(dymoUri: string, observer: PartsObserver) {
+    return Promise.resolve(this.superStore.addPartsObserver(dymoUri, observer));
+  }
+
+  removePartsObserver(dymoUri: string, observer: PartsObserver) {
+    return Promise.resolve(this.superStore.removePartsObserver(dymoUri, observer));
   }
 
   addRendering(renderingUri: string, dymoUri: string) {
@@ -130,7 +139,7 @@ export class SuperStorePromiser implements SuperDymoStore {
     return Promise.resolve(this.superStore.findAttributeValue(ownerUri, attributeType));
   }
 
-  setControlParam(controlUri: string, parameterType: string, value: any, observer?: Observer): Promise<string> {
+  setControlParam(controlUri: string, parameterType: string, value: any, observer?: ValueObserver): Promise<string> {
     return Promise.resolve(this.superStore.setControlParam(controlUri, parameterType, value, observer));
   }
 
@@ -162,7 +171,7 @@ export class SuperStorePromiser implements SuperDymoStore {
 
   ////// EASYSTORE FUNCTIONS /////////
 
-  addValueObserver(subject: string, predicate: string, observer: Observer) {
+  addValueObserver(subject: string, predicate: string, observer: ValueObserver) {
     return Promise.resolve(this.superStore.addValueObserver(subject, predicate, observer));
   }
 

@@ -1,9 +1,7 @@
 import * as _ from 'lodash';
 import * as u from '../globals/uris';
 import { EasyStore } from '../io/easystore';
-import { Constraint } from '../model/constraint';
 import { Expression } from '../model/expression';
-import { BoundVariable, TypedVariable, ExpressionVariable, SetBasedVariable } from '../model/variable';
 import { ExpressionTools } from '../math/expressiontools';
 import { MathjsNode, OperatorNode, FunctionNode, AccessorNode, ConditionalNode } from '../globals/mathjs-types';
 import { ConstraintGhost, BoundVariableGhost, ExpressionGhost } from '../globals/types';

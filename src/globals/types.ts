@@ -1,7 +1,13 @@
 import { MathjsNode } from './mathjs-types';
 
-export interface Observer {
-  observedValueChanged(paramUri: string, paramType: string, value: number): void
+export interface Observer {}
+
+export interface PartsObserver extends Observer {
+  observedPartsChanged(dymoUri: string): void
+}
+
+export interface ValueObserver extends Observer {
+  observedValueChanged(uri: string, type: string, value: number): void
 }
 
 export interface AttributeInfo {
@@ -52,9 +58,11 @@ export interface SuperDymoStore {
   ////// DYMOSTORE FUNCTIONS ////////
   loadOntologies(localPath?: string): Promise<any>,
   addBasePath(dymoUri: string, path: string),
-  addParameterObserver(dymoUri: string, parameterType: string, observer: Observer): Promise<string>,
-  removeParameterObserver(dymoUri: string, parameterType: string, observer: Observer): Promise<string>,
-  addTypeObserver(type: string, observer: Observer),
+  addParameterObserver(dymoUri: string, parameterType: string, observer: ValueObserver): Promise<string>,
+  removeParameterObserver(dymoUri: string, parameterType: string, observer: ValueObserver): Promise<string>,
+  addTypeObserver(type: string, observer: ValueObserver),
+  addPartsObserver(dymoUri: string, observer: PartsObserver),
+  removePartsObserver(dymoUri: string, observer: PartsObserver),
   addRendering(renderingUri: string, dymoUri: string),
   addDymo(dymoUri: string, parentUri?: string, partUri?: string, sourcePath?: string, type?: string): Promise<string>,
   findTopDymos(): Promise<string[]>,
@@ -73,7 +81,7 @@ export interface SuperDymoStore {
   setFeature(ownerUri: string, featureType: string, value?: any): Promise<string>,
   findFeatureValue(ownerUri: string, featureType: string): Promise<any>,
   findAttributeValue(ownerUri: string, attributeType: string): Promise<any>,
-  setControlParam(controlUri: string, parameterType: string, value: any, observer?: Observer): Promise<string>,
+  setControlParam(controlUri: string, parameterType: string, value: any, observer?: ValueObserver): Promise<string>,
   findControlParamValue(controlUri: string, parameterType: string): Promise<any>,
   addNavigator(renderingUri: string, navigatorType: string, variableUri: string): Promise<string>,
   getAttributeInfo(): Promise<AttributeInfo[]>,
@@ -82,7 +90,7 @@ export interface SuperDymoStore {
   uriToJsonld(frameUri: string): Promise<string>,
 
   ////// EASYSTORE FUNCTIONS /////////
-  addValueObserver(subject: string, predicate: string, observer: Observer),
+  addValueObserver(subject: string, predicate: string, observer: ValueObserver),
   getValueObserverCount(): Promise<number>,
   size(): Promise<number>,
   setValue(subject: string, predicate: string, value: any),
