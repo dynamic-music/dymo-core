@@ -30,8 +30,8 @@ export class FetchFetcher implements Fetcher {
     });
   }
 
-  private fetch(url: string): Promise<Response> {
-    return fetch(url, { mode:'cors' })
+  private fetch(url: string, options: RequestInit = {mode:'cors'}): Promise<Response> {
+    return fetch(url, options)
       .catch(e => Promise.reject(e));
   }
 

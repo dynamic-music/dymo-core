@@ -654,6 +654,8 @@ export class EasyStore {
 
 	private jsonldToNquads(data: string): Promise<string> {
 		if (data[0] === '{') {
+			//TODO VERY HACKY WAY TO DEAL WITH TINY.CC NOT SETTING HEADERS ON REDIRECT! BUT WORKS!!
+			data = data.replace('https://tiny.cc/dymo-context', 'https://raw.githubusercontent.com/dynamic-music/dymo-core/master/ontologies/dymo-context.json')
 			return jsonld.toRDF(JSON.parse(data), {format: 'application/nquads'});
 		}
 		return Promise.resolve(data);
