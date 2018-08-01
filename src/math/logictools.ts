@@ -12,7 +12,7 @@ export module LogicTools {
 	let created = {};
 	let varCount = 0;
 
-	export function createConstraint(body) {
+	export function createConstraint(body: string) {
 		if (!created[body]) {
 			created[body] = createGoal(toEquation(body));
 		}
@@ -26,7 +26,7 @@ export module LogicTools {
 		return result.filter(r => isFinite(r));
 	}
 
-	function createGoal(returnValue) {
+	function createGoal(returnValue: string) {
 		var currentNode;
 		try {
 			currentNode = math.parse(returnValue);
@@ -43,8 +43,8 @@ export module LogicTools {
 	}
 
 	export function createGoalFunction(mathjsTree: MathjsNode): Function {
-		var vars = [];
-		var localVars = [];
+		var vars: string[] = [];
+		var localVars: string[] = [];
 		//write return string
 		var goalString = recursiveCreateGoalString(mathjsTree, vars, localVars);
 		if (goalString) {
@@ -62,7 +62,7 @@ export module LogicTools {
 		}
 	}
 
-	function recursiveCreateGoalString(currentNode, mainVars, localVars, currentString?: string, parentVar?: string) {
+	function recursiveCreateGoalString(currentNode: MathjsNode, mainVars: string[], localVars: string[], currentString?: string, parentVar?: string) {
 		if (!currentString) currentString = "";
 		var rec = recursiveCreateGoalString;
 		if (currentNode.isParenthesisNode) {
@@ -80,7 +80,7 @@ export module LogicTools {
 						//unsolvable with logicjs if one variable occurs multiple times
 						return;
 					}
-				} else if (currentNode.args[i].isConstantNode && currentNode.args[i].valueType == "number") {
+				} else if (currentNode.args[i].isConstantNode && typeof currentNode.args[i].value == "number") {
 					opString += currentNode.args[i].value;
 				} else {
 					let varName = "w" + varCount++;
@@ -105,7 +105,7 @@ export module LogicTools {
 		}
 	}
 
-	function toEquation(functionString) {
+	function toEquation(functionString: string) {
 		//remove return string
 		var scIndex = functionString.indexOf(";");
 		if (scIndex >= 0) {
