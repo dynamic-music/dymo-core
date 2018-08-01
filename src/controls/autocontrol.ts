@@ -22,6 +22,7 @@ export abstract class AutoControl extends Control {
 		if (!this.frequency) this.frequency = 100;
 		this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency, this);
 		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0, this);
+		this.startUpdate();
 	}
 
 	startUpdate(newFrequency?: number) {

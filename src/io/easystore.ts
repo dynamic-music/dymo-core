@@ -49,7 +49,7 @@ export class EasyStore {
   constructor() {}
 
 	setFetcher(fetcher: Fetcher) {
-		this.fetcher = fetcher;
+		//this.fetcher = fetcher;
 	}
 
 	size(): number {

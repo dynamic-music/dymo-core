@@ -211,6 +211,10 @@ export class SuperStorePromiser implements SuperDymoStore {
     return Promise.resolve(this.superStore.findObjectValue(subject, predicate));
   }
 
+  findAllObjectValues(subject: string, predicate: string): Promise<any[]> {
+    return Promise.resolve(this.superStore.findAllObjectValues(subject, predicate));
+  }
+
   isSubclassOf(class1: string, class2: string): Promise<boolean> {
     return Promise.resolve(this.superStore.isSubclassOf(class1, class2));
   }
