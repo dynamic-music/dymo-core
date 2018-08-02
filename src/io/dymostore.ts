@@ -127,7 +127,10 @@ export class DymoStore extends EasyStore {
 			if (!this.partsObservers.has(dymoUri)) {
 				this.partsObservers.set(dymoUri, []);
 			}
-			this.partsObservers.get(dymoUri).push(observer);
+			const observers = this.partsObservers.get(dymoUri);
+			if (observers.indexOf(observer) < 0) {
+				observers.push(observer);
+			}
 		}
 	}
 
@@ -137,9 +140,10 @@ export class DymoStore extends EasyStore {
 	}
 
 	removePartsObserver(dymoUri: string, observer: PartsObserver) {
-		const index = this.getPartsObservers(dymoUri).indexOf(observer);
+		const observers = this.getPartsObservers(dymoUri);
+		const index = observers.indexOf(observer);
 		if (index >= 0) {
-			this.partsObservers.get(dymoUri).splice(index, 1);
+			observers.splice(index, 1);
 		}
 	}
 

@@ -44,7 +44,6 @@ export class EasyStore {
 	private fetcher: Fetcher = new FetchFetcher();
 	private valueObservers = {};
 	private typeObservers = {};
-	private valueBuffer = {};
 
   constructor() {}
 
@@ -68,8 +67,11 @@ export class EasyStore {
 			if (!this.valueObservers[subject][predicate]) {
 				this.valueObservers[subject][predicate] = [];
 			}
-			this.valueObservers[subject][predicate].push(observer);
-			//notifyObservers(subject, predicate, this.findObjectValue(subject, predicate));
+			const observers = this.valueObservers[subject][predicate];
+			if (observers.indexOf(observer) < 0) {
+				observers.push(observer);
+				//notifyObservers(subject, predicate, this.findObjectValue(subject, predicate));
+			}
 		}
 	}
 
@@ -77,34 +79,37 @@ export class EasyStore {
 		if (!this.typeObservers[type]) {
 			this.typeObservers[type] = [];
 		}
-		this.typeObservers[type].push(observer);
+		const observers = this.typeObservers[type];
+		if (observers.indexOf(observer) < 0) {
+			observers.push(observer);
+		}
 	}
 
 	removeValueObserver(subject: string, predicate: string, observer: ValueObserver) {
 		if (this.valueObservers[subject] && this.valueObservers[subject][predicate]) {
-			var index = this.valueObservers[subject][predicate].indexOf(observer);
+			const observers = this.valueObservers[subject][predicate];
+			var index = observers.indexOf(observer);
 			if (index > -1) {
-				this.valueObservers[subject][predicate].splice(index, 1);
-				this.cleanUpValueObservers(subject, predicate);
-			}
-		}
-	}
-
-	private cleanUpValueObservers(subject: string, predicate: string) {
-		if (this.valueObservers[subject] && this.valueObservers[subject][predicate].length == 0) {
-			delete this.valueObservers[subject][predicate];
-			if (Object.keys(this.valueObservers[subject]).length === 0) {
-				delete this.valueObservers[subject];
+				observers.splice(index, 1);
+				//cleanup
+				if (observers.length == 0) {
+					delete this.valueObservers[subject][predicate];
+					if (Object.keys(this.valueObservers[subject]).length === 0) {
+						delete this.valueObservers[subject];
+					}
+				}
 			}
 		}
 	}
 
 	removeTypeObserver(type: string, observer: ValueObserver) {
 		if (this.typeObservers[type]) {
-			var index = this.typeObservers[type].indexOf(observer);
+			const observers = this.typeObservers[type];
+			var index = observers.indexOf(observer);
 			if (index > -1) {
-				this.typeObservers[type].splice(index, 1);
-				if (this.typeObservers[type].length == 0) {
+				observers.splice(index, 1);
+				//cleanup
+				if (observers.length == 0) {
 					delete this.typeObservers[type];
 				}
 			}
