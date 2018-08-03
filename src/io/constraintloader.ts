@@ -74,7 +74,10 @@ export class ConstraintLoader {
     } else if (expressionType === uris.ACCESSOR) {
       let object = this.store.findObjectValue(expressionUri, uris.OBJECT);
       let property = this.store.findObjectValue(expressionUri, uris.PROPERTY);
-      return new math.expression.node.AccessorNode(object, property);
+      let objectNode = new math.expression.node.SymbolNode(object);
+      let indexName = new math.expression.node.ConstantNode(property);
+      let indexNode = new math.expression.node.IndexNode([indexName], true);
+      return new math.expression.node.AccessorNode(objectNode, indexNode);
     } else if (expressionType === uris.VARIABLE) {
       let name = this.store.findObjectValue(expressionUri, uris.VAR_NAME);
       return new math.expression.node.SymbolNode(name);

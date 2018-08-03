@@ -71,9 +71,8 @@ export class ConstraintWriter {
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.FUNCTIONAL_TERM);
       let func;
-      if (fnNode.fn.name) {
+      if (fnNode.fn.isSymbolNode) {
         func = this.store.createBlankNode();
-        this.store.addTriple(currentNodeUri, u.FUNC, func);
         this.store.addTriple(func, u.TYPE, u.NAMED_FUNCTION);
         this.setValue(func, u.NAME, fnNode.fn.name);
       } else {
@@ -98,8 +97,8 @@ export class ConstraintWriter {
       let accNode = <AccessorNode>mathjsTree;
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.ACCESSOR);
-      this.setValue(currentNodeUri, u.OBJECT, accNode.object);
-      this.setValue(currentNodeUri, u.PROPERTY, accNode.index);
+      this.setValue(currentNodeUri, u.OBJECT, accNode.object.name);
+      this.setValue(currentNodeUri, u.PROPERTY, accNode.name);
     } else if (mathjsTree.isSymbolNode) {
       currentNodeUri = this.store.findSubject(u.VAR_NAME, mathjsTree.name);
     } else if (mathjsTree.isConstantNode) {

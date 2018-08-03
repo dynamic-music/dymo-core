@@ -11,7 +11,6 @@ export class Expression implements ExpressionGhost {
   public isDirected: boolean;
   public mathjsTree: MathjsNode;
   private treeWithoutFuncs: MathjsNode;
-  private compiledFunction: Object;
   private varsAndFuncs: Map<string,MathjsNode> = new Map<string,MathjsNode>(); //map with vars and funcs
   private currentMaintainers: Map<Object,Maintainer> = new Map<Object,Maintainer>();
 
@@ -152,7 +151,9 @@ export class Expression implements ExpressionGhost {
   private replaceFunctionalExpressions(mathjsTree: MathjsNode) {
     let varCount = 0;
     return mathjsTree.transform(node => {
-      if (node.isFunctionNode || node.isSymbolNode) {
+      //replace only non-js functions (predicates or charm attributes)
+      //TODO name length is a temporary trick (js func rarely have such short names...)
+      if ((node.isFunctionNode && node["fn"].isSymbolNode) || (node.isSymbolNode && node["name"].length == 1)) {
         let currentVarname = "v"+varCount++;
         this.varsAndFuncs.set(currentVarname, node);
         return new math.expression.node.SymbolNode(currentVarname);

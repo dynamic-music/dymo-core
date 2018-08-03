@@ -5,8 +5,12 @@ export interface FunctionNode extends MathjsNode {
 export interface FunctionDef extends MathjsNode {}
 
 export interface AccessorNode extends FunctionDef {
-  object: string,
+  object: SymbolNode,
   index: string
+}
+
+export interface SymbolNode extends MathjsNode {
+  name: string
 }
 
 export interface OperatorNode extends MathjsNode {

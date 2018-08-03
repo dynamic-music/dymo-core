@@ -62,6 +62,8 @@ export class Maintainer {
       && ((undefVars.length === 1 && undefVars[0] === this.allVarNames[0])
         //all vars defined and changed vars dont contain goal var
         || (undefVars.length === 0 && (!changedVars || changedVars.indexOf(this.allVarNames[0]) < 0)))) {
+      this.currentValues["Math"] = Math;
+      this.currentValues["math"] = math;
       let newValue = this.mathjsCompiledExpression.eval(this.currentValues);
       this.store.setValue(this.varsAndUris.get(this.allVarNames[0]), VALUE, newValue);
       //console.log("SET", this.varsAndUris.get(this.allVarNames[0]), VALUE, newValue)
