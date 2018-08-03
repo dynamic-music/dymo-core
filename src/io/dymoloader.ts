@@ -102,7 +102,7 @@ export class DymoLoader {
   private async loadRendering(renderingUri: string): Promise<Rendering> {
     var dymoUri = await this.store.findObject(renderingUri, uris.HAS_DYMO);
     if (renderingUri && !this.renderings.has(renderingUri)) {
-      var rendering = new Rendering(dymoUri, this.store);
+      var rendering = new Rendering(dymoUri);
       this.addLatestLoadedStuff("controls", await this.createControls());
       this.addLatestLoadedStuff("constraintUris", await this.activateConstraintsOfOwner(renderingUri));
       this.loadNavigators(renderingUri, rendering);
