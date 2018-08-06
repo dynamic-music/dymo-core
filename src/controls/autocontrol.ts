@@ -20,9 +20,9 @@ export abstract class AutoControl extends Control {
 		this.intervalID = null;
 		this.frequency = await this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		if (!this.frequency) this.frequency = 100;
-		this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency, this);
-		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0, this);
-		this.startUpdate();
+		await this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency, this);
+		await this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0, this);
+		//CANNOT START UPDATE HERE! NEEDS TO BE STARTED FROM UI! this.startUpdate();
 	}
 
 	startUpdate(newFrequency?: number) {

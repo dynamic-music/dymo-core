@@ -82,28 +82,27 @@ export class DymoGenerator {
 	async addControl(name: string, type: string, uri?: string, initialValue?: number): Promise<string> {
 		uri = await this.store.addControl(name, type, uri);
 		if (!isNaN(initialValue)) {
-			this.store.setValue(uri, uris.VALUE, initialValue);
+			await this.store.setValue(uri, uris.VALUE, initialValue);
 		}
 		return uri;
 	}
 
 	async addRampControl(initialValue: number, duration: number, frequency?: number, name?: string): Promise<string> {
 		let uri = await this.addControl(name, uris.RAMP, null, initialValue);
-		this.getStore().setControlParam(uri, uris.HAS_DURATION, duration);
-		this.getStore().setControlParam(uri, uris.AUTO_CONTROL_FREQUENCY, frequency);
-		this.getStore().findAllObjects(uri, null)
+		await this.store.setValue(uri, uris.HAS_DURATION, duration);
+		await this.store.setControlParam(uri, uris.AUTO_CONTROL_FREQUENCY, frequency);
 		return uri;
 	}
 
 	async addDataControl(url: string, jsonMap: string, uri?: string): Promise<string> {
 		uri = await this.addControl("", uris.DATA_CONTROL, uri);
-		this.store.setValue(uri, uris.HAS_URL, url);
-	  this.store.setValue(uri, uris.HAS_JSON_MAP, jsonMap);
+		await this.store.setValue(uri, uris.HAS_URL, url);
+		await this.store.setValue(uri, uris.HAS_JSON_MAP, jsonMap);
 		return uri;
 	}
 
 	addNavigator(navigatorType: string, variableUri: string) {
-		this.store.addNavigator(this.currentRenderingUri, navigatorType, variableUri);
+		return this.store.addNavigator(this.currentRenderingUri, navigatorType, variableUri);
 	}
 
 	getCurrentTopDymo() {
@@ -131,7 +130,7 @@ export class DymoGenerator {
 
 	async addConjunction(parentUri: string, partUris: string[]): Promise<string> {
 		var uri = await this.addDymo(parentUri, null, uris.CONJUNCTION);
-		partUris.forEach(p => this.store.addPart(uri, p));
+		await Promise.all(partUris.map(p => this.store.addPart(uri, p)));
 		return uri;
 	}
 
@@ -214,7 +213,7 @@ export class DymoGenerator {
 
 	async addSegmentation(segments: Segment[], dymoUri: string): Promise<void> {
 		this.initTopDymoIfNecessary();
-		var maxLevel = await this.store.findMaxLevel(this.currentTopDymo);
+		//var maxLevel = await this.store.findMaxLevel(this.currentTopDymo);
 		if (!dymoUri) dymoUri = this.currentTopDymo;
 		var parentMap = await this.recursiveCreateParentMap(dymoUri);
 		//console.log(JSON.stringify(parentMap))
@@ -294,12 +293,12 @@ export class DymoGenerator {
 		if (!await this.store.findObject(featureUri, uris.TYPE)) {
 			await this.store.addTriple(featureUri, uris.TYPE, uris.FEATURE_TYPE);
 		}
-		this.store.setFeature(dymoUri, featureUri, value);
+		return this.store.setFeature(dymoUri, featureUri, value);
 		//this.updateMinMax(featureUri, value);
 	}
 
 	setDymoParameter(dymoUri: string, parameterUri: string, value: string | number | number[]) {
-		this.store.setParameter(dymoUri, parameterUri, value);
+		return this.store.setParameter(dymoUri, parameterUri, value);
 		//this.updateMinMax(featureUri, value);
 	}
 
