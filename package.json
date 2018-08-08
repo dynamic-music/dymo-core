@@ -41,12 +41,14 @@
     "mathjs": "*",
     "n3": "^0.11.2",
     "rxjs": "^5.4.0",
-    "siafun": "0.0.3"
+    "siafun": "0.0.3",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.110",
     "@types/jasmine": "^2.5.41",
+    "@types/lodash": "^4.14.110",
     "@types/node": "^8.0.19",
+    "@types/uuid": "^3.4.3",
     "isomorphic-fetch": "^2.2.1",
     "jasmine": "^2.8.0",
     "jasmine-core": "^2.4.1",

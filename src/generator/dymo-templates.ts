@@ -9,8 +9,8 @@ export module DymoTemplates {
 	export function createSingleSourceDymoFromFeatures(generator, source, featureUris, conditions): Promise<string> {
 		var dymoUri = generator.addDymo(undefined, source);
 		return loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
-			.then(r => generator.getManager().reloadFromStore())
-			.then(r => dymoUri);
+			.then(() => generator.getManager().reloadFromStore())
+			.then(() => dymoUri);
 	}
 
 	export async function createMultiSourceDymo(generator: DymoGenerator, parentDymo, dymoType, sources, featureUris): Promise<string> {
@@ -21,13 +21,13 @@ export module DymoTemplates {
 				.then(fs => fs.forEach(f => generator.addFeature(f.name, f.data, dymoUri)));
 		});
 		return Promise.all(loadSources)
-			.then(r => conjunctionDymo);
+			.then(() => conjunctionDymo);
 	}
 
 	export function createSimilarityDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold) {
 		var dymoUri = generator.addDymo(undefined, source);
 		loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
-			.then(r => {
+			.then(() => {
 				DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 				generator.addRendering();
 				generator.addNavigator(uris.SIMILARITY_NAVIGATOR, {"d":uris.LEVEL_FEATURE}, "return d == 0");
@@ -37,12 +37,12 @@ export module DymoTemplates {
 	export function createStructuredDymoFromFeatures(generator, options): Promise<IterativeSmithWatermanResult> {
 		DymoStructureInducer.flattenStructure(generator.getCurrentTopDymo(), generator.getManager().getStore());
 		return generator.getManager().reloadFromStore()
-			.then(r => {
+			.then(() => {
 				let result = DymoStructureInducer.testSmithWaterman(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
 				//DymoStructureInducer.addStructureToDymo2(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
 				generator.addRendering();
 				return generator.getManager().reloadFromStore()
-				 .then(r => result);
+				 .then(() => result);
 			});
 	}
 

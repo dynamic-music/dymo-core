@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as math from 'mathjs';
+import * as uuidv4 from 'uuid/v4';
 import * as uris from '../globals/uris';
 import { SuperDymoStore } from '../globals/types';
 import { Constraint } from '../model/constraint';
@@ -28,7 +29,6 @@ export interface Feature {
  */
 export class DymoGenerator {
 
-	private store: SuperDymoStore;
 	private currentTopDymo; //the top dymo for the current audio file
 	private currentRenderingUri;
 	private summarizingMode = SUMMARY.MEAN;
@@ -36,8 +36,7 @@ export class DymoGenerator {
 	private dymoCount = 0;
 	private renderingCount = 0;
 
-	constructor(store?: SuperDymoStore) {
-		this.store = store ? store : new DymoManager().getStore();
+	constructor(private useUuids = true, private store = new DymoManager().getStore()) {
 	}
 
 	getStore(): SuperDymoStore {
@@ -132,18 +131,6 @@ export class DymoGenerator {
 		var uri = await this.addDymo(parentUri, null, uris.CONJUNCTION);
 		await Promise.all(partUris.map(p => this.store.addPart(uri, p)));
 		return uri;
-	}
-
-	private getUniqueDymoUri() {
-		var dymoUri = uris.CONTEXT_URI + "dymo" + this.dymoCount;
-		this.dymoCount++;
-		return dymoUri;
-	}
-
-	private getUniqueRenderingUri() {
-		var renderingUri = uris.CONTEXT_URI + "rendering" + this.renderingCount;
-		this.renderingCount++;
-		return renderingUri;
 	}
 
 	async addFeature(name: string, data: DataPoint[], dymoUri: string) {
@@ -302,47 +289,22 @@ export class DymoGenerator {
 		//this.updateMinMax(featureUri, value);
 	}
 
-	/*private updateMinMax(featureUri, value) {
-		if (!isNaN(value)) {
-			this.helpUpdateMinMax(this.getFeature(null, featureUri), value);
-		} else if (value instanceof Array) {
-			//it's an array
-			for (var i = 0; i < value.length; i++) {
-				this.helpUpdateMinMax(this.getFeature(null, featureUri), value[i]);
-			}
+	private getUniqueDymoUri() {
+		if (this.useUuids) {
+			return uris.CONTEXT_URI + uuidv4();
 		}
+		var dymoUri = uris.CONTEXT_URI + "dymo" + this.dymoCount;
+		this.dymoCount++;
+		return dymoUri;
 	}
 
-	private helpUpdateMinMax(feature, value) {
-		if (feature.max == undefined) {
-			feature.min = value;
-			feature.max = value;
-		} else {
-			feature.min = Math.min(value, feature.min);
-			feature.max = Math.max(value, feature.max);
+	private getUniqueRenderingUri() {
+		if (this.useUuids) {
+			return uris.CONTEXT_URI + uuidv4();
 		}
+		var renderingUri = uris.CONTEXT_URI + "rendering" + this.renderingCount;
+		this.renderingCount++;
+		return renderingUri;
 	}
-
-	private getFeature(name, uri?: string): Feature {
-		let match = this.features.getValue().filter(f => f.name == name || f.uri == uri);
-		return match.length > 0 ? match[0] : this.internalAddFeature(name, uri);
-	}
-
-	private internalAddFeature(name, uri, min?: number, max?: number): Feature {
-		//complete attributes if necessary
-		name = !name && uri ? URI_TO_TERM[uri] : name;
-		uri = name && !uri ? uris.CONTEXT_URI+name : uri;
-		min = min != null ? min : 1000;
-		max = max != null ? max : 0;
-		//create feature object and push
-		let feature = {name:name, uri:uri, min:min, max:max};
-		let features = _.clone(this.features.getValue());
-		features.length < 2 ? features.push(feature) : features.splice(features.length-2, 0, feature);
-		if (!this.store.findObject(uri, uris.TYPE)) {
-			this.store.addTriple(uri, uris.TYPE, uris.FEATURE_TYPE);
-		}
-		this.features.next(features);
-		return feature;
-	}*/
 
 }
