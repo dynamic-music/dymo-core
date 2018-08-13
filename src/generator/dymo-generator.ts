@@ -116,6 +116,29 @@ export class DymoGenerator {
 		this.currentSourcePath = path;
 	}
 
+	async addDeepCopy(dymoUri: string, parentUri?: string) {
+		const source = await this.store.getSourcePath(dymoUri);
+		const type = await this.store.findObject(dymoUri, uris.TYPE);
+		const copyUri = await this.addDymo(parentUri, source, type);
+		const features = await this.store.findAllObjects(dymoUri, uris.HAS_FEATURE);
+		await Promise.all(features.map(async f => {
+			const type = await this.store.findObject(f, uris.TYPE);
+			const value = await this.store.findObjectValue(f, uris.VALUE);
+			await this.setDymoFeature(copyUri, type, value);
+		}));
+		const params = await this.store.findAllObjects(dymoUri, uris.HAS_PARAMETER);
+		await Promise.all(params.map(async p => {
+			const type = await this.store.findObject(p, uris.TYPE);
+			const value = await this.store.findObjectValue(p, uris.VALUE);
+			await this.setDymoParameter(copyUri, type, value);
+		}));
+		const parts = await this.store.findParts(dymoUri);
+		await Promise.all(parts.map(async p => {
+			await this.addDeepCopy(p, copyUri);
+		}));
+		return copyUri;
+	}
+
 	async addDymo(parentUri?: string, sourcePath?: string, dymoType?: string, dymoUri?: string) {
 		if (!dymoUri) {
 			dymoUri = this.getUniqueDymoUri();
