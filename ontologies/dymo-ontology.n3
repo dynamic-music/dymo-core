@@ -20,6 +20,7 @@ dy:DymoType a owl:Class;
 dy:Conjunction a dy:DymoType.
 dy:Disjunction a dy:DymoType.
 dy:Sequence a dy:DymoType.
+dy:Event a dy:DymoType.
 dy:Feature a owl:Class;
     rdfs:subClassOf ch:Attribute;
     rdfs:comment "A feature is an immutable attribute of a Dymo".
@@ -130,3 +131,6 @@ dy:hasFirst a owl:ObjectProperty;
 dy:hasSecond a owl:ObjectProperty;
     rdfs:domain dy:Dymo;
     rdfs:range dy:Dymo.
+dy:hasTarget a owl:ObjectProperty;
+    rdfs:domain dy:Event;
+    rdfs:range <Target>.

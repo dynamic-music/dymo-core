@@ -156,6 +156,13 @@ export class DymoGenerator {
 		return uri;
 	}
 
+	async addEvent(parentUri: string, targetUri: string, value: string | number): Promise<string> {
+		const uri = await this.addDymo(parentUri, null, uris.EVENT);
+		await this.store.addTriple(uri, uris.HAS_TARGET, targetUri);
+		await this.store.setValue(uri, uris.VALUE, value);
+		return uri;
+	}
+
 	async addFeature(name: string, data: DataPoint[], dymoUri: string) {
 		if (!dymoUri) {
 			dymoUri = this.currentTopDymo;

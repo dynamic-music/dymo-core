@@ -149,6 +149,7 @@ function createDymoOntology(path) {
 	addIndividual("Conjunction", "DymoType");
 	addIndividual("Disjunction", "DymoType");
 	addIndividual("Sequence", "DymoType");
+	addIndividual("Event", "DymoType");
 	//parameters, features, and their types
 	addClass("Feature", prefixes["ch"]+"Attribute", "A feature is an immutable attribute of a Dymo");
 	addClass("Parameter", prefixes["ch"]+"Attribute", "A parameter is a mutable attribute of a Dymo");
@@ -204,6 +205,8 @@ function createDymoOntology(path) {
 	addIndividual("PartCount", "StructuralParameter");
 	addIndividual("PartDurationRatio", "StructuralParameter");
 	addIndividual("PartProportion", "StructuralParameter");
+	//events
+
 	//dymo properties
 	addProperty({term:"source", iri:"hasSource", type:"xsd:string"}, "Dymo", prefixes["xsd"]+"string", false);
 	addProperty({term:"parameters", iri:"hasParameter", type:"@vocab"}, "Dymo", "Parameter", true);
@@ -212,7 +215,8 @@ function createDymoOntology(path) {
 	addProperty({term:"successors", iri:"hasSuccessor"}, "Dymo", "Dymo", true);
 	addProperty({term:"fst", iri:"hasFirst"}, "Dymo", "Dymo", true);
 	addProperty({term:"snd", iri:"hasSecond"}, "Dymo", "Dymo", true);
-
+	//event properties
+	addProperty({term:"target", iri:"hasTarget"}, "Event", "Target", true);
 	writeN3ToFile(path);
 }
 
