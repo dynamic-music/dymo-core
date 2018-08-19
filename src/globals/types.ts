@@ -82,7 +82,7 @@ export interface SuperDymoStore {
   setFeature(ownerUri: string, featureType: string, value?: any): Promise<string>,
   findFeatureValue(ownerUri: string, featureType: string): Promise<any>,
   findAttributeValue(ownerUri: string, attributeType: string): Promise<any>,
-  setControlParam(controlUri: string, parameterType: string, value: any, observer?: ValueObserver): Promise<string>,
+  setControlParam(controlUri: string, parameterType: string, value: any): Promise<string>,
   findControlParamValue(controlUri: string, parameterType: string): Promise<any>,
   addNavigator(renderingUri: string, navigatorType: string, variableUri: string): Promise<string>,
   getAttributeInfo(): Promise<AttributeInfo[]>,

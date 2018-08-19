@@ -143,8 +143,8 @@ export class SuperStorePromiser implements SuperDymoStore {
     return Promise.resolve(this.superStore.findAttributeValue(ownerUri, attributeType));
   }
 
-  setControlParam(controlUri: string, parameterType: string, value: any, observer?: ValueObserver): Promise<string> {
-    return Promise.resolve(this.superStore.setControlParam(controlUri, parameterType, value, observer));
+  setControlParam(controlUri: string, parameterType: string, value: any): Promise<string> {
+    return Promise.resolve(this.superStore.setControlParam(controlUri, parameterType, value));
   }
 
   findControlParamValue(controlUri: string, parameterType: string): Promise<any> {

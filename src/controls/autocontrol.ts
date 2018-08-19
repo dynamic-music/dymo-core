@@ -1,4 +1,4 @@
-import { AUTO_CONTROL, AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER } from '../globals/uris';
+import { AUTO_CONTROL, AUTO_CONTROL_FREQUENCY, AUTO_CONTROL_TRIGGER, VALUE } from '../globals/uris';
 import { Control } from '../model/control';
 import { SuperDymoStore } from '../globals/types';
 
@@ -16,12 +16,14 @@ export abstract class AutoControl extends Control {
 		this.init();
 	}
 
-	private async init() {
+	protected async init() {
 		this.intervalID = null;
 		this.frequency = await this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		if (!this.frequency) this.frequency = 100;
-		await this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency, this);
-		await this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0, this);
+		const freqUri = await this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency);
+		this.store.addValueObserver(freqUri, VALUE, this);
+		const triggUri = await this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 0);
+		this.store.addValueObserver(triggUri, VALUE, this);
 		//CANNOT START UPDATE HERE! NEEDS TO BE STARTED FROM UI! this.startUpdate();
 	}
 
@@ -43,7 +45,7 @@ export abstract class AutoControl extends Control {
 		this.intervalID = null;
 	}
 
-	observedValueChanged(paramUri, paramType, value) {
+	observedValueChanged(paramUri: string, paramType: string, value) {
 		if (paramType == AUTO_CONTROL_FREQUENCY) {
 			this.frequency = value;
 			//restart with new frequency if already running

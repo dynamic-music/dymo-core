@@ -243,13 +243,8 @@ export class DymoStore extends EasyStore {
 		return uri;
 	}
 
-	setControlParam(controlUri: string, parameterType: string, value: any, observer?: ValueObserver): string {
-		//set the new value
-		var parameterUri = this.setObjectValue(controlUri, uris.HAS_CONTROL_PARAM, parameterType, uris.VALUE, value);
-		if (observer) {
-			this.addValueObserver(parameterUri, uris.VALUE, observer);
-		}
-		return parameterUri;
+	setControlParam(controlUri: string, parameterType: string, value: any): string {
+		return this.setObjectValue(controlUri, uris.HAS_CONTROL_PARAM, parameterType, uris.VALUE, value);
 	}
 
 	setParameter(ownerUri: string, parameterType: string, value?: any): string {

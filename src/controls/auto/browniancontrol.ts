@@ -1,4 +1,4 @@
-import { BROWNIAN, BROWNIAN_MAX_STEP_SIZE, AUTO_CONTROL_TRIGGER } from '../../globals/uris';
+import { BROWNIAN, BROWNIAN_MAX_STEP_SIZE, AUTO_CONTROL_TRIGGER, VALUE } from '../../globals/uris';
 import { SuperDymoStore } from '../../globals/types';
 import { AutoControl } from '../autocontrol';
 
@@ -12,8 +12,6 @@ export class BrownianControl extends AutoControl {
 
 	constructor(uri: string, store: SuperDymoStore, initialValue?: number) {
 		super(uri, BROWNIAN, store);
-		this.store.setControlParam(this.uri, BROWNIAN_MAX_STEP_SIZE, 0.1, this);
-		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 1);
 		//init values and parameters
 		if (!initialValue) {
 			initialValue = 0.5;
@@ -21,6 +19,14 @@ export class BrownianControl extends AutoControl {
 		this.min = 0;
 		this.max = 1;
 		this.updateValue(initialValue);
+	}
+
+	protected async init() {
+		await super.init();
+		const stepSizeUri = await this.store.setControlParam(this.uri, BROWNIAN_MAX_STEP_SIZE, 0.1);
+		this.store.addValueObserver(stepSizeUri, VALUE, this);
+		const triggUri = await this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 1);
+		this.store.addValueObserver(triggUri, VALUE, this);
 	}
 
 	async update() {
