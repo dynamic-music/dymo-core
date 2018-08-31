@@ -51,10 +51,10 @@ export class UIControl extends Control {
 	}
 
 	//for use outside of ui (simulation and tests)
-	updateValue(value) {
+	/*updateValue(value) {
 		this.uiValue = value;
 		this.update();
-	}
+	}*/
 
 	//called from above when the Control's value changes
 	protected setValue(newValue): boolean {

@@ -29,7 +29,7 @@ export class Control {
   }
 
   updateValue(newValue) {
-    if (!isNaN(newValue)) {
+    if (newValue != null) {
       this.setValue(newValue);
     }
   }
@@ -40,10 +40,12 @@ export class Control {
   }
 
   protected setValue(newValue): boolean {
-    if (this.value == undefined || Math.abs(newValue - this.value) > 0.000001) { //deal with floating point errors
-      this.value = newValue;
-      this.store.setValue(this.uri, VALUE, newValue);
-      return true;
+    if (newValue != null) {
+      if (this.value == undefined || Math.abs(newValue - this.value) > 0.000001) { //deal with floating point errors
+        this.value = newValue;
+        this.store.setValue(this.uri, VALUE, newValue);
+        return true;
+      }
     }
   }
 
