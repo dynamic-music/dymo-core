@@ -65,6 +65,7 @@ export interface SuperDymoStore {
   removePartsObserver(dymoUri: string, observer: PartsObserver),
   addRendering(renderingUri: string, dymoUri: string),
   addDymo(dymoUri: string, parentUri?: string, partUri?: string, sourcePath?: string, type?: string): Promise<string>,
+  removeDymo(dymoUri: string): Promise<void>,
   findTopDymos(): Promise<string[]>,
   findAllObjectsInHierarchy(dymoUri: string): Promise<string[]>,
   addPart(dymoUri: string, partUri: string): Promise<void>,

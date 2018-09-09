@@ -75,6 +75,10 @@ export class SuperStorePromiser implements SuperDymoStore {
     return Promise.resolve(this.superStore.addDymo(dymoUri, parentUri, partUri, sourcePath, type));
   }
 
+  removeDymo(dymoUri: string): Promise<void> {
+    return Promise.resolve(this.superStore.removeDymo(dymoUri));
+  }
+
   findTopDymos(): Promise<string[]> {
     return Promise.resolve(this.superStore.findTopDymos());
   }

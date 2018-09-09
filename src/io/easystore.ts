@@ -494,7 +494,7 @@ export class EasyStore {
 
 	/** return all triples about the given uri and its affiliated objects, stops at objects of the given type, or
 		at the given predicates */
-	recursiveFindAllTriples(uri, type?: string, predicates?: string[]) {
+	recursiveFindAllTriples(uri: string, type?: string, predicates?: string[]): N3Triple[] {
 		//find all triples for given uri
 		let triples = this.store.getTriplesByIRI(uri, null, null);
 		if (predicates) {
@@ -507,17 +507,27 @@ export class EasyStore {
 		return triples.concat(subTriples);
 	}
 
-	/** removes all triples about the given uri and its affiliated objects, stops at objects of the given type */
-	recursiveDeleteAllTriples(uri, type?: string) {
-		var allTriples = this.recursiveFindAllTriples(uri, type);
-		for (var i = 0; i < allTriples.length; i++) {
-			var currenSubject = allTriples[i].subject;
-			this.removeTriple(currenSubject, allTriples[i].predicate, allTriples[i].object);
-			var allRefsToSubject = this.find(null, null, currenSubject);
-			for (var j = 0; j < allRefsToSubject.length; j++) {
-				this.removeTriple(allRefsToSubject[j].subject, allRefsToSubject[j].predicate, allRefsToSubject[j].object);
-			}
-		}
+	/** finds all triples, stops at rdf:type */
+	recursiveFindAllTriplesSimple(uri: string, visited: string[] = [], triples: N3Triple[] = []): N3Triple[] {
+		visited.push(uri);
+		//find all triples for given uri
+		const current = this.store.getTriplesByIRI(uri, null, null);
+		triples.push(...current);
+		//only pursue further objects that are not types
+		let further = current.filter(t => t.predicate != TYPE);
+		further = further.filter(t => visited.indexOf(t.object) < 0);
+		further.forEach(t => this.recursiveFindAllTriplesSimple(t.object, visited, triples));
+		return triples;
+	}
+
+	/** removes all given triples and the references pointing at them */
+	deleteAllTriplesWithRefs(triples: N3Triple[]) {
+		triples.forEach(t => {
+			this.removeTriple(t.subject, t.predicate, t.object);
+			var allRefsToSubject = this.find(null, null, t.subject);
+			allRefsToSubject.forEach(r =>
+				this.removeTriple(r.subject, r.predicate, r.object));
+		});
 	}
 
 	recursiveFindAllSubClasses(superclassUri) {

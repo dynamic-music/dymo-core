@@ -172,10 +172,9 @@ export class DymoStore extends EasyStore {
 		return dymoUri;
 	}
 
-	//removes a dymo and its part relations (TODO REMOVE EVERYTHING ELSE TOO!)
-	removeDymo(dymoUri) {
-		this.removeTriple(dymoUri, uris.TYPE, uris.DYMO);
-		this.removeParts(dymoUri);
+	/**removes a dymo and any recursive parts (beware if parts are shared with other dymos)*/
+	removeDymo(dymoUri: string) {
+		this.deleteAllTriplesWithRefs(this.recursiveFindAllTriplesSimple(dymoUri));
 	}
 
 	addPart(dymoUri: string, partUri: string): void {
