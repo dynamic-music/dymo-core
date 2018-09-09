@@ -26,7 +26,6 @@ export class RampControl extends AutoControl {
 			delta *= -1;
 		}
 		this.currentValue += delta;
-		console.log("RAMP", this.currentValue)
 		if (0 < this.currentValue && this.currentValue < 1) {
 			this.updateValue(this.currentValue);
 		} else if (this.currentValue >= 1) {
