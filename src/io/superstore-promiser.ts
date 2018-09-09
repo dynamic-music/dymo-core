@@ -35,6 +35,10 @@ export class SuperStorePromiser implements SuperDymoStore {
     return Promise.resolve(this.superStore.deactivateConstraints(constraintUris));
   }
 
+  getActiveConstraintCount() {
+    return Promise.resolve(this.superStore.getActiveConstraintCount());
+  }
+
 
 
   ////// DYMOSTORE FUNCTIONS ////////

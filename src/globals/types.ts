@@ -53,7 +53,8 @@ export interface SuperDymoStore {
   addConstraint(ownerUri: string, constraint: ConstraintGhost): Promise<string>,
   addVariable(variable: BoundVariableGhost): Promise<string>,
   activateNewConstraints(constraintUris: string[]): Promise<string[]>,
-  deactivateConstraints(constraintUris: string[]),
+  deactivateConstraints(constraintUris: string[]): Promise<void>,
+  getActiveConstraintCount(): Promise<number>,
 
   ////// DYMOSTORE FUNCTIONS ////////
   loadOntologies(localPath?: string): Promise<any>,

@@ -69,11 +69,12 @@ export class DymoLoader {
   }
 
   async loadFromStore(...objectUris: string[]): Promise<LoadedStuff> {
-    let controlUris = [], dymoUris, renderingUri, constraintUris = [], navigatorUris = [];
+    let controlUris: string[] = [], dymoUris: string[], renderingUri: string,
+      constraintUris: string[] = [], navigatorUris: string[] = [];
     if (objectUris.length > 0) {
       let types = await Promise.all(objectUris.map(u => this.store.findObject(u, uris.TYPE)));
       dymoUris = objectUris.filter((u,i) => types[i] === uris.DYMO);
-      renderingUri = objectUris.filter((u,i) => types[i] === uris.RENDERING);
+      renderingUri = objectUris.filter((u,i) => types[i] === uris.RENDERING)[0];
       let isControlType = await Promise.all(types.map(t => this.store.isSubclassOf(t, uris.MOBILE_CONTROL)));
       controlUris = objectUris.filter((u,i) => isControlType[i]);
       constraintUris = objectUris.filter((u,i) => types[i] === uris.FOR_ALL); //that's what constraints are currently

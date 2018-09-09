@@ -30,6 +30,11 @@ export class SuperStore extends DymoStore {
   deactivateConstraints(constraintUris: string[]) {
     let constraints = constraintUris.map(c => this.activeConstraints.get(c));
     constraints.forEach(c => c ? c.stopMaintaining() : null);
+    constraintUris.forEach(c => this.activeConstraints.delete(c));
+  }
+
+  getActiveConstraintCount() {
+    return this.activeConstraints.size;
   }
 
 }
