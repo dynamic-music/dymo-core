@@ -29,6 +29,7 @@ export class DymoLoader {
   private renderings = new Map<string,Rendering>();
   private currentBasePath = '';
   private latestLoadedStuff: LoadedStuff;
+  private loadedDymos = [];
 
   constructor(dymoStore: SuperDymoStore, private fetcher: Fetcher = new FetchFetcher()) {
     this.store = dymoStore;
@@ -90,13 +91,14 @@ export class DymoLoader {
   }
 
   private async loadDymos(...dymoUris: string[]): Promise<string[]> {
-    var loadedDymos = [];
-    await Promise.all(dymoUris.map(async u => {
+    const unloadedDymos = _.difference(dymoUris, this.loadedDymos);
+    await Promise.all(unloadedDymos.map(async u => {
       this.store.addBasePath(u, this.currentBasePath);
       //create all dymo constraints
       this.addLatestLoadedStuff("constraintUris", await this.activateConstraintsOfOwner(u));
     }));
-    return dymoUris;
+    this.loadedDymos = this.loadedDymos.concat(unloadedDymos);
+    return unloadedDymos;
   }
 
   private async loadRendering(renderingUri: string): Promise<Rendering> {
@@ -139,7 +141,7 @@ export class DymoLoader {
       var controlType = await this.store.findObject(u, uris.TYPE);
       this.controls.set(u, await this.getControl(u, currentName, controlType));
     }));
-    return controlUris.map(u => this.controls.get(u));
+    return unloadedControls.map(u => this.controls.get(u));
   }
 
   private async getControl(uri: string, name: string, type: string): Promise<Control|UIControl> {
