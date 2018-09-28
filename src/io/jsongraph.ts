@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { JsonGraph, SuperDymoStore } from '../globals/types';
 
 export class JsonGraphSubject extends BehaviorSubject<JsonGraph> {

@@ -1,4 +1,5 @@
-import { BehaviorSubject } from 'rxjs/Rx';
+import { BehaviorSubject } from 'rxjs';
+import { auditTime } from 'rxjs/operators';
 import { BUTTON, TOGGLE, AUTO_CONTROL_FREQUENCY } from '../globals/uris';
 import { SuperDymoStore } from '../globals/types';
 import { Control } from '../model/control';
@@ -21,7 +22,7 @@ export class UIControl extends Control {
 		let frequency = await this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		frequency = frequency ? frequency : 100;
 		this.inValueStream
-			.auditTime(frequency)
+			.pipe(auditTime(frequency))
 			.subscribe(v => this.setValue(v));
 	}
 

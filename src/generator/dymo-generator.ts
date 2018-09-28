@@ -233,7 +233,6 @@ export class DymoGenerator {
 		//var maxLevel = await this.store.findMaxLevel(this.currentTopDymo);
 		if (!dymoUri) dymoUri = this.currentTopDymo;
 		var parentMap = await this.recursiveCreateParentMap(dymoUri);
-		//console.log(JSON.stringify(parentMap))
 		for (var i = 0; i < segments.length; i++) {
 			var parent = this.getSuitableParent(segments[i].time.value, parentMap);
 			var startTime = segments[i].time.value;

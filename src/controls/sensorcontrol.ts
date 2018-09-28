@@ -1,4 +1,5 @@
-import { Observable } from 'rxjs/Rx';
+import { Observable } from 'rxjs';
+import { auditTime } from 'rxjs/operators';
 import { AUTO_CONTROL_FREQUENCY } from '../globals/uris';
 import { SuperDymoStore } from '../globals/types';
 import { Control } from '../model/control';
@@ -76,7 +77,7 @@ export class SensorControl extends Control {
 		if (!freq) freq = 100;
 		if (this.sensor) {
 			this.subscription = this.sensor.watch
-				.auditTime(freq)
+				.pipe(auditTime(freq))
 				.subscribe(data => this.setValue(data));
 		} else {
 			console.log(this.uri + " " + UNAVAILABLE);

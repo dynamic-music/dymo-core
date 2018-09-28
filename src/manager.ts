@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Fetcher } from './util/fetcher'
 import { Rendering } from './model/rendering'
 import { SuperStorePromiser } from './io/superstore-promiser';
