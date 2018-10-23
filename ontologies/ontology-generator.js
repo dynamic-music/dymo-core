@@ -197,9 +197,9 @@ function createDymoOntology(path) {
 	setProperty("Distance", "hasBehavior", "Additive");
 	addIndividual("Height", "AudioParameter", {"hasStandardValue": 0});
 	setProperty("Height", "hasBehavior", "Additive");
-	addIndividual("Reverb", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("Reverb", "AudioParameter", {"hasStandardValue": 0});
 	setProperty("Reverb", "hasBehavior", "Multiplicative");
-	addIndividual("Delay", "AudioParameter", {"hasStandardValue": 1});
+	addIndividual("Delay", "AudioParameter", {"hasStandardValue": 0});
 	setProperty("Delay", "hasBehavior", "Multiplicative");
 	addIndividual("Filter", "AudioParameter", {"hasStandardValue": 20000});
 	//structural parameters
