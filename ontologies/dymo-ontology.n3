@@ -20,6 +20,8 @@ dy:DymoType a owl:Class;
 dy:Conjunction a dy:DymoType.
 dy:Disjunction a dy:DymoType.
 dy:Sequence a dy:DymoType.
+dy:Selection a dy:DymoType.
+dy:MultiSelection a dy:DymoType.
 dy:Event a dy:DymoType.
 dy:Feature a owl:Class;
     rdfs:subClassOf ch:Attribute;
@@ -98,10 +100,10 @@ dy:Height a dy:AudioParameter;
     dy:hasStandardValue "0"^^xsd:integer;
     dy:hasBehavior dy:Additive.
 dy:Reverb a dy:AudioParameter;
-    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasStandardValue "1"^^xsd:integer;
     dy:hasBehavior dy:Multiplicative.
 dy:Delay a dy:AudioParameter;
-    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasStandardValue "1"^^xsd:integer;
     dy:hasBehavior dy:Multiplicative.
 dy:Filter a dy:AudioParameter;
     dy:hasStandardValue "20000"^^xsd:integer.

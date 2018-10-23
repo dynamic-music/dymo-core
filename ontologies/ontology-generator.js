@@ -149,6 +149,8 @@ function createDymoOntology(path) {
 	addIndividual("Conjunction", "DymoType");
 	addIndividual("Disjunction", "DymoType");
 	addIndividual("Sequence", "DymoType");
+	addIndividual("Selection", "DymoType");
+	addIndividual("MultiSelection", "DymoType");
 	addIndividual("Event", "DymoType");
 	//parameters, features, and their types
 	addClass("Feature", prefixes["ch"]+"Attribute", "A feature is an immutable attribute of a Dymo");
@@ -195,9 +197,9 @@ function createDymoOntology(path) {
 	setProperty("Distance", "hasBehavior", "Additive");
 	addIndividual("Height", "AudioParameter", {"hasStandardValue": 0});
 	setProperty("Height", "hasBehavior", "Additive");
-	addIndividual("Reverb", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Reverb", "AudioParameter", {"hasStandardValue": 1});
 	setProperty("Reverb", "hasBehavior", "Multiplicative");
-	addIndividual("Delay", "AudioParameter", {"hasStandardValue": 0});
+	addIndividual("Delay", "AudioParameter", {"hasStandardValue": 1});
 	setProperty("Delay", "hasBehavior", "Multiplicative");
 	addIndividual("Filter", "AudioParameter", {"hasStandardValue": 20000});
 	//structural parameters

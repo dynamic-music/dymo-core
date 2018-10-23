@@ -65,6 +65,8 @@
 		"Conjunction": "dy:Conjunction",
 		"Disjunction": "dy:Disjunction",
 		"Sequence": "dy:Sequence",
+		"Selection": "dy:Selection",
+		"MultiSelection": "dy:MultiSelection",
 		"Event": "dy:Event",
 		"Feature": "dy:Feature",
 		"Parameter": "dy:Parameter",
