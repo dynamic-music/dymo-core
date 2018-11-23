@@ -87,10 +87,18 @@ export module DymoTemplates {
 
 	function loadMultipleFeatures(generator: DymoGenerator, dymoUri: string, featureUris: string[], conditions: string[]): Promise<Feature[]> {
 		var loader = new FeatureLoader();
-		var loadFeatures = featureUris.map((f,i) =>
-			loader.loadFeature(f, conditions ? conditions[i] : null)
-		);
-		return Promise.all(loadFeatures);
+		var loadFeatures = mapSeries(featureUris, async (f,i) => {
+			return loader.loadFeature(f, conditions ? conditions[i] : null)
+		});
+		return loadFeatures;
+	}
+
+	async function mapSeries<T,S>(array: T[], func: (arg: T, i: number) => Promise<S>): Promise<S[]> {
+		let result = [];
+		for (let i = 0; i < array.length; i++) {
+			result.push(await func(array[i], i));
+		}
+		return result;
 	}
 
 	/*export function createPitchHelixDmo() {

@@ -56,7 +56,7 @@ export class Maintainer {
   private maintain(changedVars?: string[]) {
     let defVarNames = _.keys(this.currentValues).sort();
     let undefVars = _.difference(this.allVarNames, defVarNames);
-    //console.log(this.currentValues, undefVars, this.expression.toString())
+    //console.log(changedVars, undefVars, this.currentValues, this.expression.toString())
     if (this.mathjsCompiledExpression
       //goalvar is the only still undefined var
       && ((undefVars.length === 1 && undefVars[0] === this.allVarNames[0])
@@ -83,8 +83,10 @@ export class Maintainer {
         index = this.getIndexOfLeastObserved(this.allVarNames, changedVars);
       }
       let solutions = LogicTools.solveConstraint(this.logicjsGoalFunction, _.clone(values), index);
+      //console.log(index, solutions, solutions.indexOf(values[index]))
       //only update if changed
       if (solutions.indexOf(values[index]) < 0) {
+        //console.log(this.varsAndUris, this.allVarNames[index], solutions[0])
         this.store.setValue(this.varsAndUris.get(this.allVarNames[index]), VALUE, solutions[0]);
       }
     }

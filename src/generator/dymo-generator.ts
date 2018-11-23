@@ -73,7 +73,7 @@ export class DymoGenerator {
 	async addCustomParameter(typeUri: string, ownerUri?: string, value?: number): Promise<string> {
 		let uri = await this.store.addCustomParameter(ownerUri, typeUri);
 		if (!isNaN(value)) {
-			this.store.setValue(uri, uris.VALUE, value);
+			await this.store.setValue(uri, uris.VALUE, value);
 		}
 		return uri;
 	}
@@ -164,6 +164,7 @@ export class DymoGenerator {
 	}
 
 	async addFeature(name: string, data: DataPoint[], dymoUri: string) {
+		name = name.replace(/-/g, '');
 		if (!dymoUri) {
 			dymoUri = this.currentTopDymo;
 		}

@@ -49,7 +49,7 @@ export class Control {
     }
   }
 
-  observedValueChanged(uri: string, type: string, value: number | string) {
+  observedValueChanged(uri: string, _type: string, value: number | string) {
     if (uri === this.uri) {
       this.setValue(value);
     }

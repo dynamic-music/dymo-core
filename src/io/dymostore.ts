@@ -249,7 +249,7 @@ export class DymoStore extends EasyStore {
 	setParameter(ownerUri: string, parameterType: string, value?: any): string {
 		//initialize in case the parameter doesn't exist yet
 		//TODO NO! doesn't work with param behavior!
-		/*if (!this.findParameterUri(ownerUri, parameterType) && (value == null || isNaN(value))) {
+		/*if (!this.findParameterUri(ownerUri, parameterType) && value == null) {
 			value = this.findObjectValue(parameterType, uris.HAS_STANDARD_VALUE);
 		}*/
 		//round if integer parameter
@@ -463,9 +463,9 @@ export class DymoStore extends EasyStore {
 			rdf = rdf.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
 			fromRDF(rdf, {format: 'application/nquads'}, (err, doc) => {
 			  if (err) { console.log(err, rdf); reject(err); }
-				frame(doc, {"@id":frameId}, (err, framed) => {
+				//frame(doc, {"@id":frameId}, (err, framed) => {
 					//console.log(frameId, JSON.stringify(framed))
-					compact(framed, DYMO_CONTEXT, (err, compacted) => {
+					compact(doc, DYMO_CONTEXT, (err, compacted) => {
 						//deal with imperfections of jsonld.js compaction algorithm to make it reeaally nice
 						compact(compacted, DYMO_SIMPLE_CONTEXT, (err, compacted) => {
 							//make it even nicer by removing blank nodes
@@ -479,7 +479,7 @@ export class DymoStore extends EasyStore {
 							resolve(result);
 						});
 					});
-				});
+				//});
 			});
 		});
 	}

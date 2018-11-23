@@ -1,4 +1,3 @@
-import * as math from 'mathjs';
 import { ConstraintGhost } from '../globals/types';
 import { DymoStore } from '../io/dymostore';
 import { BoundVariable } from './variable';

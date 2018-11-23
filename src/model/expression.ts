@@ -126,6 +126,7 @@ export class Expression implements ExpressionGhost {
       if (result == null && customName) {
         result = this.findOrInitFeatureOrParam(arg, customName, store);
       }
+      //console.log(expression, result, name, officialName, customName)
       return result;
     }
     //it's the innermost symbol node
