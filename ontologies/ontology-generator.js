@@ -149,9 +149,15 @@ function createDymoOntology(path) {
 	addIndividual("Conjunction", "DymoType");
 	addIndividual("Disjunction", "DymoType");
 	addIndividual("Sequence", "DymoType");
-	addIndividual("Selection", "DymoType");
-	addIndividual("MultiSelection", "DymoType");
+	addIndividual("Reverse", "DymoType");
+	addIndividual("Permutation", "DymoType");
+	addIndividual("OnsetSequence", "DymoType");
+	addIndividual("Subset", "DymoType");
+	addClass("Selection", "DymoType");
+	addClass("MultiSelection", "DymoType");
+	addClass("MultiRandom", "DymoType");
 	addIndividual("Event", "DymoType");
+	addProperty({term:"typeParam", iri:"hasTypeParam", type:"@vocab"}, "DymoType", prefixes["rdf"]+"Resource", true);
 	//parameters, features, and their types
 	addClass("Feature", prefixes["ch"]+"Attribute", "A feature is an immutable attribute of a Dymo");
 	addClass("Parameter", prefixes["ch"]+"Attribute", "A parameter is a mutable attribute of a Dymo");
@@ -273,7 +279,7 @@ function createMobileAudioOntology(path) {
 	addClass("GraphNavigator", "Navigator");
 	//rendering and constraints
 	addProperty({term:"dymo", iri:"hasDymo", type: "@id"}, "Rendering", "Dymo", true, true);
-	addUnionClass("ConstraintOwners", ["Dymo", "Rendering"]);
+	addUnionClass("ConstraintOwners", ["Dymo", "Rendering", "DymoType"]);
 	addProperty({term:"constraint", iri:"constraint"}, "ConstraintOwners", "Expression", true);
 	//control properties
 	addProperty({term:"controlParam", iri:"hasControlParam"}, "MobileControl", "MobileParameter", true);

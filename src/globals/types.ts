@@ -104,8 +104,11 @@ export interface SuperDymoStore {
   findObjectValue(subject: string, predicate: string): Promise<any>,
   findAllObjectValues(subject: string, predicate: string): Promise<any[]>,
   isSubclassOf(class1: string, class2: string): Promise<boolean>,
+  isSubtypeOf(type1: string, type2: string): Promise<boolean>,
   recursiveFindAllSubClasses(superclassUri: string): Promise<string[]>,
-  addTriple(subject: string, predicate: string, object: string): Promise<void>,
+  createBlankNode(): Promise<string>,
+  addTriple(subject: string, predicate: string, object: string): Promise<string>,
+  setTriple(subject: string, predicate: string, object: string): Promise<void>;
   loadData(data: string): Promise<any>,
   logData(): void
 }

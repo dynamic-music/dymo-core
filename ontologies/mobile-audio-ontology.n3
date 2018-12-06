@@ -84,7 +84,7 @@ mb:hasDymo a owl:ObjectProperty, owl:FunctionalProperty;
     rdfs:domain mb:Rendering;
     rdfs:range dy:Dymo.
 mb:ConstraintOwners a owl:Class;
-    owl:unionOf (dy:Dymo mb:Rendering).
+    owl:unionOf (dy:Dymo mb:Rendering dy:DymoType).
 mb:constraint a owl:ObjectProperty;
     rdfs:domain mb:ConstraintOwners;
     rdfs:range ex:Expression.
