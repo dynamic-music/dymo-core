@@ -150,6 +150,17 @@ export class DymoGenerator {
 		return dymoUri;
 	}
 
+	async setDymoType(dymoUri: string, typeUri: string, paramValue?: number | number[]) {
+		let type = typeUri;
+		if (paramValue != null) {
+			const param = await this.store.createBlankNode();
+			await this.store.setValue(param, uris.VALUE, paramValue);
+			type = await this.store.addTriple(null, uris.TYPE, typeUri);
+			await this.store.addTriple(type, uris.HAS_TYPE_PARAM, param);
+		}
+		await this.store.setTriple(dymoUri, uris.CDT, type);
+	}
+
 	async addConjunction(parentUri: string, partUris: string[]): Promise<string> {
 		var uri = await this.addDymo(parentUri, null, uris.CONJUNCTION);
 		await Promise.all(partUris.map(p => this.store.addPart(uri, p)));

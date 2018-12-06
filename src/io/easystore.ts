@@ -162,9 +162,15 @@ export class EasyStore {
 
 	///////// ADDING AND REPLACING FUNCTIONS //////////
 
+	/** adds the specified triple to the store. 
+		* adds a blank node if the subject is null */
 	addTriple(subject: string, predicate: string, object: string) {
-		if (subject != null && predicate != null && object != null) {
-			return this.store.addTriple(subject, predicate, object);
+		if (predicate != null && object != null) {
+			if (subject == null) { //creates a blank node 
+				subject = this.createBlankNode();
+			}
+			this.store.addTriple(subject, predicate, object);
+			return subject;
 		}
 	}
 
@@ -541,7 +547,7 @@ export class EasyStore {
 		return subClasses;
 	}
 
-	isSubclassOf(class1, class2) {
+	isSubclassOf(class1: string, class2: string) {
 		var superClass = this.findObject(class1, RDFS_URI+"subClassOf");
 		while (superClass) {
 			if (superClass == class2) {
@@ -552,7 +558,7 @@ export class EasyStore {
 		return false;
 	}
 
-	isSubtypeOf(type1, type2) {
+	isSubtypeOf(type1: string, type2: string) {
 		var superType = this.findObject(type1, TYPE);
 		while (superType) {
 			if (superType == type2) {

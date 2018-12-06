@@ -226,13 +226,25 @@ export class SuperStorePromiser implements SuperDymoStore {
   isSubclassOf(class1: string, class2: string): Promise<boolean> {
     return Promise.resolve(this.superStore.isSubclassOf(class1, class2));
   }
+  
+  isSubtypeOf(type1: string, type2: string): Promise<boolean> {
+    return Promise.resolve(this.superStore.isSubtypeOf(type1, type2));
+  }
 
   recursiveFindAllSubClasses(superclassUri: string): Promise<string[]> {
     return Promise.resolve(this.superStore.recursiveFindAllSubClasses(superclassUri));
   }
+  
+  createBlankNode(): Promise<string> {
+    return Promise.resolve(this.superStore.createBlankNode());
+  }
 
-  addTriple(subject: string, predicate: string, object: string): Promise<void> {
+  addTriple(subject: string, predicate: string, object: string): Promise<string> {
     return Promise.resolve(this.superStore.addTriple(subject, predicate, object));
+  }
+  
+  setTriple(subject: string, predicate: string, object: string): Promise<void> {
+    return Promise.resolve(this.superStore.setTriple(subject, predicate, object));
   }
 
   loadData(data: string): Promise<any> {
