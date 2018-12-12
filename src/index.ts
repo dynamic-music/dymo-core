@@ -15,6 +15,7 @@ import * as globals from './generator/globals';
 export { globals };
 export { DymoGenerator } from './generator/dymo-generator';
 export { DymoTemplates } from './generator/dymo-templates';
+export { DymoStructureInducer } from './generator/dymo-structure';
 export { ExpressionGenerator, forAll } from './generator/expression-generator';
 export { SuperStore } from './io/superstore';
 //TODO SHOULDN'T BE EXPOSED, REMOVE THIS AGAIN ONCE THINGS SETTLE

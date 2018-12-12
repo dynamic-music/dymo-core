@@ -6,10 +6,10 @@ import { FeatureLoader, Segment, Feature } from './feature-loader';
 
 export module DymoTemplates {
 
-	export function createSingleSourceDymoFromFeatures(generator, source, featureUris, conditions): Promise<string> {
-		var dymoUri = generator.addDymo(undefined, source);
+	export async function createSingleSourceDymoFromFeatures(generator: DymoGenerator, source, featureUris, conditions): Promise<string> {
+		var dymoUri = await generator.addDymo(undefined, source);
 		return loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
-			.then(() => generator.getManager().reloadFromStore())
+			//.then(() => generator.getManager().reloadFromStore())
 			.then(() => dymoUri);
 	}
 
@@ -24,42 +24,42 @@ export module DymoTemplates {
 			.then(() => conjunctionDymo);
 	}
 
-	export function createSimilarityDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold) {
-		var dymoUri = generator.addDymo(undefined, source);
+	export async function createSimilarityDymoFromFeatures(generator: DymoGenerator, source, featureUris, conditions, similarityThreshold) {
+		var dymoUri = await generator.addDymo(undefined, source);
 		loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
 			.then(() => {
 				DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 				generator.addRendering();
-				generator.addNavigator(uris.SIMILARITY_NAVIGATOR, {"d":uris.LEVEL_FEATURE}, "return d == 0");
+				//generator.addNavigator(uris.SIMILARITY_NAVIGATOR, {"d":uris.LEVEL_FEATURE}, "return d == 0");
 			});
 	}
 
-	export function createStructuredDymoFromFeatures(generator, options): Promise<IterativeSmithWatermanResult> {
-		DymoStructureInducer.flattenStructure(generator.getCurrentTopDymo(), generator.getManager().getStore());
-		return generator.getManager().reloadFromStore()
-			.then(() => {
-				let result = DymoStructureInducer.testSmithWaterman(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
+	export async function createStructuredDymoFromFeatures(generator: DymoGenerator, options): Promise<IterativeSmithWatermanResult> {
+		DymoStructureInducer.flattenStructure(generator.getCurrentTopDymo(), generator.getStore());
+		/*return generator.getManager().reloadFromStore()
+			.then(() => {*/
+				return DymoStructureInducer.testSmithWaterman(generator.getCurrentTopDymo(), generator.getStore(), options);
 				//DymoStructureInducer.addStructureToDymo2(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
-				generator.addRendering();
+				/*generator.addRendering();
 				return generator.getManager().reloadFromStore()
 				 .then(() => result);
-			});
+			});*/
 	}
 
-	export function testSmithWatermanComparison(generator, options, uri1, uri2): Promise<void> {
-		DymoStructureInducer.compareSmithWaterman(uri1, uri2, generator.getManager().getStore(), options);
+	export function testSmithWatermanComparison(generator: DymoGenerator, options, uri1, uri2) {
+		DymoStructureInducer.compareSmithWaterman(uri1, uri2, generator.getStore(), options);
 		//DymoStructureInducer.addStructureToDymo2(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
 		generator.addRendering();
-		return generator.getManager().reloadFromStore();
+		//return generator.getManager().reloadFromStore();
 	}
 
-	export function createSimilaritySuccessorDymoFromFeatures(generator, source, featureUris, conditions, similarityThreshold, onLoad) {
-		var dymoUri = generator.addDymo(undefined, source);
+	export async function createSimilaritySuccessorDymoFromFeatures(generator: DymoGenerator, source, featureUris, conditions, similarityThreshold, onLoad) {
+		var dymoUri = await generator.addDymo(undefined, source);
 		loadMultipleFeatures(generator, dymoUri, featureUris, conditions).then(() => {
 			DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 			DymoStructureInducer.addSuccessionGraphTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
 			generator.addRendering();
-			generator.addNavigator(uris.GRAPH_NAVIGATOR, {"d":uris.LEVEL_FEATURE}, "return d == 0");
+			//generator.addNavigator(uris.GRAPH_NAVIGATOR, {"d":uris.LEVEL_FEATURE}, "return d == 0");
 			//generator.updateGraphs();
 			onLoad();
 		});
@@ -75,7 +75,7 @@ export module DymoTemplates {
 	}
 
 	//expects featurePaths to contain a bar and beat tracker file, followed by any other features
-	export function createAnnotatedBarAndBeatDymo(generator, featureUris, onLoad) {
+	export function createAnnotatedBarAndBeatDymo(generator: DymoGenerator, featureUris, onLoad) {
 		var uris = [featureUris[0], featureUris[0]];
 		var conditions = ['1',''];
 		for (var i = 1; i < featureUris.length; i++) {
@@ -86,7 +86,7 @@ export module DymoTemplates {
 	}
 
 	function loadMultipleFeatures(generator: DymoGenerator, dymoUri: string, featureUris: string[], conditions: string[]): Promise<Feature[]> {
-		var loader = new FeatureLoader();
+		var loader = new FeatureLoader(generator.getFetcher());
 		var loadFeatures = mapSeries(featureUris, async (f,i) => {
 			return loader.loadFeature(f, conditions ? conditions[i] : null)
 		});

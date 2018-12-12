@@ -5,6 +5,7 @@ import * as uris from '../globals/uris';
 import { SuperDymoStore } from '../globals/types';
 import { Constraint } from '../model/constraint';
 import { SUMMARY } from './globals';
+import { Fetcher, FetchFetcher } from '../util/fetcher';
 import { Segment, DataPoint } from './feature-loader';
 import { DymoManager } from '../manager';
 //import { Feature } from './types';
@@ -36,11 +37,16 @@ export class DymoGenerator {
 	private dymoCount = 0;
 	private renderingCount = 0;
 
-	constructor(private useUuids = true, private store = new DymoManager().getStore()) {
+	constructor(private useUuids = true, private store?: SuperDymoStore, private fetcher: Fetcher = new FetchFetcher()) {
+		this.store = store || new DymoManager(null, fetcher).getStore();
 	}
 
 	getStore(): SuperDymoStore {
 		return this.store;
+	}
+	
+	getFetcher() {
+		return this.fetcher;
 	}
 
 	getTopDymoJsonld(): Promise<string> {
