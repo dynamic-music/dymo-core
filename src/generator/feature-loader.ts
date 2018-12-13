@@ -9,20 +9,17 @@ export interface Feature {
 };
 
 export interface DataPoint {
-	time: Value<number>,
-	label?: Value<string>
+	time: number,
+	value?: any
 }
 
 export interface Segment extends DataPoint {
-	duration?: Value<number>
+	duration?: number,
+	value?: string
 }
 
 export interface Signal extends DataPoint {
 	value: number[]
-}
-
-export interface Value<T> {
-	value: T
 }
 
 export class FeatureLoader {
@@ -63,9 +60,9 @@ export class FeatureLoader {
 		return this.parseN3(rdf).then(store => {
 				let results = this.loadSegmentationFeatureFromRdf(store);
 				if (results.data.length > 0) {
-					results.data.sort((a,b) => a.time.value - b.time.value);
-					if (labelCondition) {
-						results.data = results.data.filter(x => x.label.value == labelCondition);
+					results.data.sort((a,b) => a.time - b.time);
+					if (labelCondition && results.data[0].value) {
+						results.data = results.data.filter(x => x.value == labelCondition);
 					}
 				} else {
 					results = this.loadSignalFeatureFromRdf(store);
@@ -183,6 +180,8 @@ export class FeatureLoader {
 		if (outputId == "beats" || outputId == "onsets" || outputId == "segmentation") {
 			if (labelCondition && data[0].label) {
 				data = data.filter(x => x.label.value === labelCondition);
+			} else if (labelCondition && data[0].value) {//newer sonic annotator
+				data = data.filter(x => x.value === labelCondition);
 			}
 		}
 		return {

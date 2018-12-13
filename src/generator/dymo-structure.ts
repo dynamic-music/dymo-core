@@ -111,7 +111,7 @@ export class DymoStructureInducer {
   }
 
   private async updateAverageFeatures(parent: string, children: string[], features: string[]) {
-    var avgFeatureVals = await Promise.all(children.map(d => features.map(f => this.store.findFeatureValue(d, f))));
+    var avgFeatureVals = await Promise.all(children.map(d => Promise.all(features.map(f => this.store.findFeatureValue(d, f)))));
     //remove multidimensional features
     features = features.filter((f,i) => avgFeatureVals[0][i] != null && avgFeatureVals[0][i].constructor !== Array);
     avgFeatureVals = avgFeatureVals.map(vs => vs.filter(v => v != null && v.constructor !== Array));

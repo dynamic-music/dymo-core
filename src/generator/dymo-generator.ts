@@ -8,6 +8,7 @@ import { SUMMARY } from './globals';
 import { Fetcher, FetchFetcher } from '../util/fetcher';
 import { Segment, DataPoint } from './feature-loader';
 import { DymoManager } from '../manager';
+import { mapSeries } from '../util/util';
 //import { Feature } from './types';
 
 interface TimeDymo {
@@ -202,7 +203,7 @@ export class DymoGenerator {
 			}
 			//event-based feature:
 			if (currentValues.length < 1) {
-				var earlierValues = data.filter(x => x.time.value <= currentTime);
+				var earlierValues = data.filter(x => x.time <= currentTime);
 				if (earlierValues.length > 0) {
 					currentValues = [_.last(earlierValues)];
 				} else {
@@ -237,7 +238,7 @@ export class DymoGenerator {
 					return math.mode(v);
 				}
 			});
-			summary = summary[0];
+			//summary = summary[0];
 			if (summary.length == 1) {
 				return summary[0];
 			}
@@ -251,14 +252,14 @@ export class DymoGenerator {
 		//var maxLevel = await this.store.findMaxLevel(this.currentTopDymo);
 		if (!dymoUri) dymoUri = this.currentTopDymo;
 		var parentMap = await this.recursiveCreateParentMap(dymoUri);
-		for (var i = 0; i < segments.length; i++) {
-			var parent = this.getSuitableParent(segments[i].time.value, parentMap);
-			var startTime = segments[i].time.value;
+		await mapSeries(segments, async (s,i) => {
+			var parent = this.getSuitableParent(s.time, parentMap);
+			var startTime = s.time;
 			var duration;
-			if (segments[i].duration) {
-				duration = segments[i].duration.value;
+			if (s.duration) {
+				duration = s.duration;
 			} else if (segments[i+1]) {
-				duration = segments[i+1].time.value - startTime;
+				duration = segments[i+1].time - startTime;
 			} else {
 				var parentTime = parent.time;
 				var parentDuration = parent.duration;
@@ -269,14 +270,14 @@ export class DymoGenerator {
 			//don't want anything with duration 0 (what other feature values would it have?)
 			if (duration > 0) {
 				var newDymoUri = await this.addDymo(parent.uri);
-				this.setDymoFeature(newDymoUri, uris.TIME_FEATURE, startTime);
-				this.setDymoFeature(newDymoUri, uris.DURATION_FEATURE, duration);
-				/*if (segments[i].label && !isNaN(segments[i].label)) {
-					this.setDymoFeature(newDymoUri, SEGMENT_LABEL_FEATURE, segments[i].label);
+				await this.setDymoFeature(newDymoUri, uris.TIME_FEATURE, startTime);
+				await this.setDymoFeature(newDymoUri, uris.DURATION_FEATURE, duration);
+				/*if (s.label && !isNaN(s.label)) {
+					this.setDymoFeature(newDymoUri, SEGMENT_LABEL_FEATURE, s.label);
 				}*/
-				this.updateParentDuration(parent, { uri: newDymoUri, time: startTime, duration: duration, parts:[] });
+				await this.updateParentDuration(parent, { uri: newDymoUri, time: startTime, duration: duration, parts:[] });
 			}
-		}
+		});
 	}
 
 	private async recursiveCreateParentMap(topDymoUri: string): Promise<TimeDymo> {
@@ -312,14 +313,14 @@ export class DymoGenerator {
 		return suitableParent;
 	}
 
-	private updateParentDuration(parent: TimeDymo, newDymo: TimeDymo) {
+	private async updateParentDuration(parent: TimeDymo, newDymo: TimeDymo) {
 		if (isNaN(parent.time) || Array.isArray(parent.time) || newDymo.time < parent.time) {
 			parent.time = newDymo.time;
-			this.setDymoFeature(parent.uri, uris.TIME_FEATURE, parent.time);
+			await this.setDymoFeature(parent.uri, uris.TIME_FEATURE, parent.time);
 		}
 		if (isNaN(parent.duration) || Array.isArray(parent.duration) || parent.time+parent.duration < newDymo.time+newDymo.duration) {
 			parent.duration = newDymo.time + newDymo.duration - parent.time;
-			this.setDymoFeature(parent.uri, uris.DURATION_FEATURE, parent.duration);
+			await this.setDymoFeature(parent.uri, uris.DURATION_FEATURE, parent.duration);
 		}
 	}
 

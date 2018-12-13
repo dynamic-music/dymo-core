@@ -221,7 +221,7 @@ export class DymoStore extends EasyStore {
 		this.addTriple(dymoUri, uris.HAS_SIMILAR, similarUri);
 	}
 
-	addSuccessor(dymoUri, successorUri) {
+	addSuccessor(dymoUri: string, successorUri: string) {
 		this.addTriple(dymoUri, uris.HAS_SUCCESSOR, successorUri);
 	}
 
