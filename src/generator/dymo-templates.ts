@@ -27,18 +27,20 @@ export module DymoTemplates {
 	export async function createSimilarityDymoFromFeatures(generator: DymoGenerator, source, featureUris, conditions, similarityThreshold) {
 		var dymoUri = await generator.addDymo(undefined, source);
 		loadMultipleFeatures(generator, dymoUri, featureUris, conditions)
-			.then(() => {
-				DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
+			.then(async () => {
+				await new DymoStructureInducer(generator.getStore())
+					.addSimilaritiesTo(generator.getCurrentTopDymo(), similarityThreshold);
 				generator.addRendering();
 				//generator.addNavigator(uris.SIMILARITY_NAVIGATOR, {"d":uris.LEVEL_FEATURE}, "return d == 0");
 			});
 	}
 
 	export async function createStructuredDymoFromFeatures(generator: DymoGenerator, options): Promise<IterativeSmithWatermanResult> {
-		DymoStructureInducer.flattenStructure(generator.getCurrentTopDymo(), generator.getStore());
+		const inducer = new DymoStructureInducer(generator.getStore())
+		await inducer.flattenStructure(generator.getCurrentTopDymo());
 		/*return generator.getManager().reloadFromStore()
 			.then(() => {*/
-				return DymoStructureInducer.testSmithWaterman(generator.getCurrentTopDymo(), generator.getStore(), options);
+				return inducer.testSmithWaterman(generator.getCurrentTopDymo(), options);
 				//DymoStructureInducer.addStructureToDymo2(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
 				/*generator.addRendering();
 				return generator.getManager().reloadFromStore()
@@ -46,8 +48,9 @@ export module DymoTemplates {
 			});*/
 	}
 
-	export function testSmithWatermanComparison(generator: DymoGenerator, options, uri1, uri2) {
-		DymoStructureInducer.compareSmithWaterman(uri1, uri2, generator.getStore(), options);
+	export async function testSmithWatermanComparison(generator: DymoGenerator, options, uri1, uri2) {
+		await new DymoStructureInducer(generator.getStore())
+			.compareSmithWaterman(uri1, uri2, options);
 		//DymoStructureInducer.addStructureToDymo2(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
 		generator.addRendering();
 		//return generator.getManager().reloadFromStore();
@@ -55,9 +58,10 @@ export module DymoTemplates {
 
 	export async function createSimilaritySuccessorDymoFromFeatures(generator: DymoGenerator, source, featureUris, conditions, similarityThreshold, onLoad) {
 		var dymoUri = await generator.addDymo(undefined, source);
-		loadMultipleFeatures(generator, dymoUri, featureUris, conditions).then(() => {
-			DymoStructureInducer.addSimilaritiesTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
-			DymoStructureInducer.addSuccessionGraphTo(generator.getCurrentTopDymo(), generator.getStore(), similarityThreshold);
+		const inducer = new DymoStructureInducer(generator.getStore());
+		loadMultipleFeatures(generator, dymoUri, featureUris, conditions).then(async () => {
+			await inducer.addSimilaritiesTo(generator.getCurrentTopDymo(), similarityThreshold);
+			await inducer.addSuccessionGraphTo(generator.getCurrentTopDymo(), similarityThreshold);
 			generator.addRendering();
 			//generator.addNavigator(uris.GRAPH_NAVIGATOR, {"d":uris.LEVEL_FEATURE}, "return d == 0");
 			//generator.updateGraphs();

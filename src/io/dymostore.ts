@@ -197,7 +197,7 @@ export class DymoStore extends EasyStore {
 	}
 
 	/**really slow, use sparingly*/
-	setParts(dymoUri, partUris) {
+	setParts(dymoUri: string, partUris: string[]) {
 		this.removeParts(dymoUri);
 		partUris.forEach(p => this.addPart(dymoUri, p))
 	}
@@ -385,7 +385,7 @@ export class DymoStore extends EasyStore {
 		return this.findObjectValueOfType(dymoUri, uris.HAS_FEATURE, featureType, uris.VALUE);
 	}
 
-	findAllFeatureValues(dymoUri: string) {
+	findAllFeatureValues(dymoUri: string): any[] {
 		return this.findAllObjectValuesOfType(dymoUri, uris.HAS_FEATURE, uris.VALUE)
 	}
 

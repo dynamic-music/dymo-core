@@ -102,6 +102,10 @@ export class SuperStorePromiser implements SuperDymoStore {
   removeParts(dymoUri: string, index?: number): Promise<string[]> {
     return Promise.resolve(this.superStore.removeParts(dymoUri, index));
   }
+  
+  setParts(dymoUri: string, partUris: string[]): Promise<any> {
+    return Promise.resolve(this.superStore.setParts(dymoUri, partUris));
+  }
 
   findParts(dymoUri: string): Promise<string[]> {
     return Promise.resolve(this.superStore.findParts(dymoUri));
@@ -138,6 +142,10 @@ export class SuperStorePromiser implements SuperDymoStore {
   addCustomParameter(ownerUri: string, paramType: string): Promise<string> {
     return Promise.resolve(this.superStore.addCustomParameter(ownerUri, paramType));
   }
+  
+  addSuccessor(dymoUri: string, successorUri: string): Promise<any> {
+    return Promise.resolve(this.superStore.addSuccessor(dymoUri, successorUri));
+  }
 
   setFeature(ownerUri: string, featureType: string, value?: any): Promise<string> {
     return Promise.resolve(this.superStore.setFeature(ownerUri, featureType, value));
@@ -145,6 +153,10 @@ export class SuperStorePromiser implements SuperDymoStore {
 
   findFeatureValue(ownerUri: string, featureType: string): Promise<any> {
     return Promise.resolve(this.superStore.findFeatureValue(ownerUri, featureType));
+  }
+  
+  findAllFeatureValues(dymoUri: string): Promise<any[]> {
+    return Promise.resolve(this.superStore.findAllFeatureValues(dymoUri));
   }
 
   findAttributeValue(ownerUri: string, attributeType: string): Promise<any> {
