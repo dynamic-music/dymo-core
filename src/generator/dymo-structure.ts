@@ -3,6 +3,7 @@ import * as _ from 'lodash'
 import * as uris from '../globals/uris'
 import { SuperDymoStore } from '../index';
 import { StructureInducer, IterativeSmithWatermanResult, Similarity, Quantizer, SmithWaterman } from 'siafun'
+import { mapSeries } from '../util/util';
 
 export class DymoStructureInducer {
   
@@ -35,22 +36,22 @@ export class DymoStructureInducer {
 
   private async createStructure(occurrences: number[][][], dymoUri, surfaceDymos) {
     var patternDymos = [];
-    for (var i = 0; i < occurrences.length; i++) {
+    await mapSeries(occurrences, async (os,i) => {
       var currentPatternDymo = await this.store.addDymo((uris.CONTEXT_URI+"pattern"+i), dymoUri);
       patternDymos.push(currentPatternDymo);
-      var dymoUris = occurrences[i].map(occ => occ.map(index => surfaceDymos[index]));
+      var dymoUris = os.map(o => o.map(index => surfaceDymos[index]));
       var features = await this.store.findAllObjects(dymoUris[0][0], uris.HAS_FEATURE)
       features = await Promise.all(features.map(f => this.store.findObject(f, uris.TYPE)));
       var occDymos = [];
-      for (var j = 0; j < dymoUris.length; j++) {
+      await mapSeries(dymoUris, async (ds,j) => {
         var currentOccDymo = await this.store.addDymo((uris.CONTEXT_URI+"occurrence"+i)+j, currentPatternDymo);
         occDymos.push(currentOccDymo);
         //console.log(dymoUris[j], occurrences[j])
-        await Promise.all(dymoUris[j].map(d => this.store.addPart(currentOccDymo, d)));
+        await Promise.all(ds.map(d => this.store.addPart(currentOccDymo, d)));
         await this.updateAverageFeatures(currentOccDymo, dymoUris[j], features);
-      }
+      });
       await this.updateAverageFeatures(currentPatternDymo, occDymos, features);
-    }
+    })
     await this.store.setParts(dymoUri, patternDymos);
     var freeSurfaceDymos = _.intersection(await this.store.findTopDymos(), surfaceDymos);
     await Promise.all(freeSurfaceDymos.map(d => this.store.addPart(dymoUri, d)));

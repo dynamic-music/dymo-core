@@ -1,4 +1,3 @@
-import { IterativeSmithWatermanResult } from 'siafun';
 import * as uris from '../globals/uris';
 import { DymoStructureInducer } from './dymo-structure';
 import { DymoGenerator } from './dymo-generator';
@@ -37,18 +36,18 @@ export module DymoTemplates {
     //generator.addNavigator(uris.SIMILARITY_NAVIGATOR, {"d":uris.LEVEL_FEATURE}, "return d == 0");
   }
 
-  export async function createStructuredDymoFromFeatures(generator: DymoGenerator, options): Promise<IterativeSmithWatermanResult> {
+  /*export async function createStructuredDymoFromFeatures(generator: DymoGenerator, options): Promise<IterativeSmithWatermanResult> {
     const inducer = new DymoStructureInducer(generator.getStore())
     await inducer.flattenStructure(generator.getCurrentTopDymo());
     /*return generator.getManager().reloadFromStore()
-      .then(() => {*/
+      .then(() => {*
         return inducer.testSmithWaterman(generator.getCurrentTopDymo(), options);
         //DymoStructureInducer.addStructureToDymo2(generator.getCurrentTopDymo(), generator.getManager().getStore(), options);
         /*generator.addRendering();
         return generator.getManager().reloadFromStore()
          .then(() => result);
-      });*/
-  }
+      });*
+  }*/
 
   export async function testSmithWatermanComparison(generator: DymoGenerator, options, uri1, uri2) {
     await new DymoStructureInducer(generator.getStore())
