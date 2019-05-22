@@ -4,12 +4,20 @@ import * as uuidv4 from 'uuid/v4';
 import * as uris from '../globals/uris';
 import { SuperDymoStore } from '../globals/types';
 import { Constraint } from '../model/constraint';
-import { SUMMARY } from './globals';
 import { Fetcher, FetchFetcher } from '../util/fetcher';
 import { Segment, DataPoint } from './feature-loader';
 import { DymoManager } from '../manager';
 import { mapSeries } from '../util/util';
 //import { Feature } from './types';
+
+// feature summarizing modes
+export const SUMMARY = {
+	MEAN: "mean",
+	MEDIAN: "median",
+	MODE: "mode",
+	FIRST: "first",
+	LONGEST: "longest"
+}
 
 interface TimeDymo {
 	uri: string,

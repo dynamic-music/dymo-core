@@ -11,9 +11,7 @@ export { SensorControl, Sensor } from './controls/sensorcontrol';
 export { Fetcher } from './util/fetcher';
 
 //generator
-import * as globals from './generator/globals';
-export { globals };
-export { DymoGenerator } from './generator/dymo-generator';
+export { DymoGenerator, SUMMARY } from './generator/dymo-generator';
 export { DymoTemplates } from './generator/dymo-templates';
 //export { DymoStructureInducer } from './generator/dymo-structure';
 export { ExpressionGenerator, forAll } from './generator/expression-generator';

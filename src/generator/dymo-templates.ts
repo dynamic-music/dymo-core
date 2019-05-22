@@ -72,7 +72,7 @@ export module DymoTemplates {
   //expects featurePaths to contain a bar and beat tracker file, followed by any other features
   export async function createAnnotatedBarAndBeatDymo2(generator: DymoGenerator, sourcePath: string, barsAndBeats: Segment[]): Promise<string> {
     let dymoUri = await generator.addDymo(null, sourcePath);
-    let bars = barsAndBeats.filter(b => b['label']['value'] === "1");
+    let bars = barsAndBeats.filter(b => b.value === "1");
     await generator.addSegmentation(bars, dymoUri);
     await generator.addSegmentation(barsAndBeats, dymoUri);
     return Promise.resolve(dymoUri);
