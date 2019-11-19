@@ -1,6 +1,6 @@
 {
   "name": "dymo-core",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "description": "package that manages and plays back dynamic music objects and their renderings",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -36,9 +36,9 @@
   "dependencies": {
     "arrayutils": "*",
     "jsonld": "^0.4.12",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.15",
     "logicjs": "git://github.com/florianthalmann/LogicJS.git",
-    "mathjs": "*",
+    "mathjs": "^4.4.2",
     "n3": "^0.11.2",
     "rxjs": "^6.3.3",
     "siafun": "0.0.3",
