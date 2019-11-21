@@ -266,6 +266,9 @@ function createMobileAudioOntology(path) {
 	addClass("GlobalParameter", "MobileParameter");
 	addClass("ControlParameter", "MobileParameter");
 	addIndividual("ListenerOrientation", "GlobalParameter");
+	addIndividual("ListenerPositionX", "GlobalParameter");
+	addIndividual("ListenerPositionY", "GlobalParameter");
+	addIndividual("ListenerPositionZ", "GlobalParameter");
 	addIndividual("AutoControlFrequency", "ControlParameter");
 	addIndividual("AutoControlTrigger", "ControlParameter");
 	addIndividual("BrownianMaxStepSize", "ControlParameter");

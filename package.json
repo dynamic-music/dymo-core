@@ -1,6 +1,6 @@
 {
   "name": "dymo-core",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "description": "package that manages and plays back dynamic music objects and their renderings",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -13,7 +13,8 @@
     "pretest": "tsc -p spec/ && node spec/lib/spec/src/examples-generator.js",
     "test": "jasmine",
     "build": "tsc",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "ontologies": "node ontologies/ontology-generator.js"
   },
   "repository": {
     "type": "git",

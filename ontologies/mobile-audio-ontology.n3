@@ -66,6 +66,9 @@ mb:GlobalParameter a owl:Class;
 mb:ControlParameter a owl:Class;
     rdfs:subClassOf mb:MobileParameter.
 mb:ListenerOrientation a mb:GlobalParameter.
+mb:ListenerPositionX a mb:GlobalParameter.
+mb:ListenerPositionY a mb:GlobalParameter.
+mb:ListenerPositionZ a mb:GlobalParameter.
 mb:AutoControlFrequency a mb:ControlParameter.
 mb:AutoControlTrigger a mb:ControlParameter.
 mb:BrownianMaxStepSize a mb:ControlParameter.
