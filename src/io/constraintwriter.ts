@@ -55,6 +55,7 @@ export class ConstraintWriter {
 
   private recursiveAddExpression(mathjsTree: MathjsNode): string {
     let currentNodeUri;
+    if (!mathjsTree) return;
     if (mathjsTree.isAssignmentNode) {
       currentNodeUri = this.store.createBlankNode();
       this.store.addTriple(currentNodeUri, u.TYPE, u.EQUAL_TO);

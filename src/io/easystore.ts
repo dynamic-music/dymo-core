@@ -144,6 +144,7 @@ export class EasyStore {
 	}
 
 	private notifyObservers(subject, predicate, value) {
+		//console.log("NOTIFY", subject, predicate, value, this.valueObservers)
 		var observerList = [];
 		if (this.valueObservers[subject] && this.valueObservers[subject][predicate]) {
 			observerList = observerList.concat(this.valueObservers[subject][predicate]);

@@ -93,10 +93,11 @@ export class DymoStore extends EasyStore {
 		this.addValueObserver(parameterUri, uris.VALUE, observer);
 	}
 
-	addParameterObserver(dymoUri: string, parameterType: string, observer: ValueObserver): string {
-		if (dymoUri && parameterType) {
+	//if ownerUri 0, adds global param
+	addParameterObserver(ownerUri: string, parameterType: string, observer: ValueObserver): string {
+		if (parameterType) {
 			//add parameter if there is none so far and get uri
-			var parameterUri = this.setParameter(dymoUri, parameterType);
+			var parameterUri = this.setParameter(ownerUri, parameterType);
 			//add observer
 			this.addValueObserver(parameterUri, uris.VALUE, observer);
 			return parameterUri;
@@ -463,7 +464,7 @@ export class DymoStore extends EasyStore {
 			rdf = rdf.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
 			fromRDF(rdf, {format: 'application/nquads'}, (err, doc) => {
 			  if (err) { console.log(err, rdf); reject(err); }
-				//frame(doc, {"@id":frameId}, (err, framed) => {
+				frame(doc, {"@id":frameId}, (err, framed) => {
 					//console.log(frameId, JSON.stringify(framed))
 					compact(doc, DYMO_CONTEXT, (err, compacted) => {
 						//deal with imperfections of jsonld.js compaction algorithm to make it reeaally nice
@@ -479,7 +480,7 @@ export class DymoStore extends EasyStore {
 							resolve(result);
 						});
 					});
-				//});
+				});
 			});
 		});
 	}
