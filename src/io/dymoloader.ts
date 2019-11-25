@@ -157,7 +157,8 @@ export class DymoLoader {
       var major = this.store.findObjectValue(uri, uris.HAS_MAJOR);
       var minor = this.store.findObjectValue(uri, uris.HAS_MINOR);
       control = new BeaconControl(uuid, major, minor, this.store);
-    }*/ else if (type == uris.SLIDER || type == uris.TOGGLE || type == uris.BUTTON || type == uris.CUSTOM_CONTROL) {
+    }*/ else if (type == uris.SLIDER || type == uris.TOGGLE || type == uris.BUTTON
+        || type == uris.AREA_X || type == uris.AREA_Y || type == uris.CUSTOM_CONTROL) {
       control = new UIControl(uri, name, type, this.store);
       var init = await this.store.findObjectValue(uri, uris.VALUE);
       //control.value = init;

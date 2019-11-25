@@ -51,6 +51,10 @@ mb:Toggle a owl:Class;
     rdfs:subClassOf mb:UiControl.
 mb:Button a owl:Class;
     rdfs:subClassOf mb:UiControl.
+mb:AreaX a owl:Class;
+    rdfs:subClassOf mb:UiControl.
+mb:AreaY a owl:Class;
+    rdfs:subClassOf mb:UiControl.
 mb:CustomControl a owl:Class;
     rdfs:subClassOf mb:UiControl.
 mb:Random a owl:Class;

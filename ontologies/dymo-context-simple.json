@@ -143,6 +143,8 @@
 		"Slider": "mb:Slider",
 		"Toggle": "mb:Toggle",
 		"Button": "mb:Button",
+		"AreaX": "mb:AreaX",
+		"AreaY": "mb:AreaY",
 		"CustomControl": "mb:CustomControl",
 		"Random": "mb:Random",
 		"Brownian": "mb:Brownian",
