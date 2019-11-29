@@ -258,6 +258,7 @@ function createMobileAudioOntology(path) {
 	addClass("Button", "UiControl");
 	addClass("AreaX", "UiControl");
 	addClass("AreaY", "UiControl");
+	addClass("AreaA", "UiControl");
 	addClass("CustomControl", "UiControl");
 	//auto controls
 	addClass("Random", "AutoControl");

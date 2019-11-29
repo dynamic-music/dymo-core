@@ -145,6 +145,7 @@
 		"Button": "mb:Button",
 		"AreaX": "mb:AreaX",
 		"AreaY": "mb:AreaY",
+		"AreaA": "mb:AreaA",
 		"CustomControl": "mb:CustomControl",
 		"Random": "mb:Random",
 		"Brownian": "mb:Brownian",
