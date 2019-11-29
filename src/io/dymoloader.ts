@@ -147,18 +147,14 @@ export class DymoLoader {
 
   private async getControl(uri: string, name: string, type: string): Promise<Control|UIControl> {
     var control;
-    if (type == uris.ACCELEROMETER_X || type == uris.ACCELEROMETER_Y || type == uris.ACCELEROMETER_Z
-      || type == uris.TILT_X || type == uris.TILT_Y
-      || type == uris.GEOLOCATION_LATITUDE || type == uris.GEOLOCATION_LONGITUDE
-      || type == uris.GEOLOCATION_DISTANCE || type == uris.COMPASS_HEADING) {
+    if (await this.store.isSubclassOf(type, uris.SENSOR_CONTROL)) {
       control = new SensorControl(uri, type, this.store);
     } /* else if (type == uris.BEACON) {
       var uuid = this.store.findObjectValue(uri, uris.HAS_UUID);
       var major = this.store.findObjectValue(uri, uris.HAS_MAJOR);
       var minor = this.store.findObjectValue(uri, uris.HAS_MINOR);
       control = new BeaconControl(uuid, major, minor, this.store);
-    }*/ else if (type == uris.SLIDER || type == uris.TOGGLE || type == uris.BUTTON
-        || type == uris.AREA_X || type == uris.AREA_Y || type == uris.CUSTOM_CONTROL) {
+    }*/ else if (await this.store.isSubclassOf(type, uris.UI_CONTROL) || type == uris.CUSTOM_CONTROL) {
       control = new UIControl(uri, name, type, this.store);
       var init = await this.store.findObjectValue(uri, uris.VALUE);
       //control.value = init;

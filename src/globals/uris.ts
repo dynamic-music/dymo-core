@@ -143,6 +143,7 @@ export const TOGGLE: string = "http://tiny.cc/mobile-audio-ontology#Toggle";
 export const BUTTON: string = "http://tiny.cc/mobile-audio-ontology#Button";
 export const AREA_X: string = "http://tiny.cc/mobile-audio-ontology#AreaX";
 export const AREA_Y: string = "http://tiny.cc/mobile-audio-ontology#AreaY";
+export const AREA_A: string = "http://tiny.cc/mobile-audio-ontology#AreaA";
 export const CUSTOM_CONTROL: string = "http://tiny.cc/mobile-audio-ontology#CustomControl";
 export const RANDOM: string = "http://tiny.cc/mobile-audio-ontology#Random";
 export const BROWNIAN: string = "http://tiny.cc/mobile-audio-ontology#Brownian";
