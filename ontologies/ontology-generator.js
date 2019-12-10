@@ -207,7 +207,12 @@ function createDymoOntology(path) {
 	setProperty("Reverb", "hasBehavior", "Multiplicative");
 	addIndividual("Delay", "AudioParameter", {"hasStandardValue": 0});
 	setProperty("Delay", "hasBehavior", "Multiplicative");
-	addIndividual("Filter", "AudioParameter", {"hasStandardValue": 20000});
+	addIndividual("Lowpass", "AudioParameter", {"hasStandardValue": 0});
+	setProperty("Lowpass", "hasBehavior", "Multiplicative");
+	addIndividual("Highpass", "AudioParameter", {"hasStandardValue": 0});
+	setProperty("Highpass", "hasBehavior", "Multiplicative");
+	addIndividual("Distortion", "AudioParameter", {"hasStandardValue": 0});
+	setProperty("Distortion", "hasBehavior", "Multiplicative");
 	//structural parameters
 	addClass("StructuralParameter", "ParameterType");
 	addIndividual("PartCount", "StructuralParameter");
@@ -272,6 +277,8 @@ function createMobileAudioOntology(path) {
 	addIndividual("ListenerPositionX", "GlobalParameter");
 	addIndividual("ListenerPositionY", "GlobalParameter");
 	addIndividual("ListenerPositionZ", "GlobalParameter");
+	addIndividual("LowpassCutoff", "GlobalParameter");
+	addIndividual("HighpassCutoff", "GlobalParameter");
 	addIndividual("AutoControlFrequency", "ControlParameter");
 	addIndividual("AutoControlTrigger", "ControlParameter");
 	addIndividual("BrownianMaxStepSize", "ControlParameter");

@@ -116,8 +116,15 @@ dy:Reverb a dy:AudioParameter;
 dy:Delay a dy:AudioParameter;
     dy:hasStandardValue "0"^^xsd:integer;
     dy:hasBehavior dy:Multiplicative.
-dy:Filter a dy:AudioParameter;
-    dy:hasStandardValue "20000"^^xsd:integer.
+dy:Lowpass a dy:AudioParameter;
+    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasBehavior dy:Multiplicative.
+dy:Highpass a dy:AudioParameter;
+    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasBehavior dy:Multiplicative.
+dy:Distortion a dy:AudioParameter;
+    dy:hasStandardValue "0"^^xsd:integer;
+    dy:hasBehavior dy:Multiplicative.
 dy:StructuralParameter a owl:Class;
     rdfs:subClassOf dy:ParameterType.
 dy:PartCount a dy:StructuralParameter.
