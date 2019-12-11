@@ -91,9 +91,10 @@ export module DymoTemplates {
 
   async function loadMultipleFeatures(generator: DymoGenerator, dymoUri: string, featureUris: string[], conditions: string[]): Promise<Feature[]> {
     var loader = new FeatureLoader(generator.getFetcher());
-    return mapSeries(featureUris, (f,i) =>
+    const features = await mapSeries(featureUris, (f,i) =>
       loader.loadFeature(f, conditions ? conditions[i] : null)
     );
+    return features.filter(f => f);
   }
 
   /*export function createPitchHelixDmo() {

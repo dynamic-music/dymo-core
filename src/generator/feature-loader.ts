@@ -46,7 +46,13 @@ export class FeatureLoader {
 					if (fileExtension == 'n3') {
 						//this.loadFeatureFromRdf(uriOrJson, labelCondition);
 					} else if (fileExtension == 'json') {
-						return this.loadFeatureFromJson(JSON.parse(text), labelCondition);
+						let parsed: string;
+						try {
+							parsed = JSON.parse(text);
+							return this.loadFeatureFromJson(parsed, labelCondition);
+						} catch (e) {
+							console.log("failed to parse", uriOrJson);
+						}
 					}
 				})
 		}
