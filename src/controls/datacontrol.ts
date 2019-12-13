@@ -8,25 +8,30 @@ import { Fetcher, FetchFetcher } from '../util/fetcher';
  */
 export class DataControl extends AutoControl {
 
-	private url;
-	private jsonMap;
+	private url: string;
+	private jsonMap: (json: {}) => number;
 
-	constructor(uri, url, jsonMap, store: SuperDymoStore, private fetcher: Fetcher = new FetchFetcher()) {
+	constructor(uri, url: string, jsonMap: (json: {}) => number,
+			store: SuperDymoStore, private fetcher: Fetcher = new FetchFetcher()) {
 		super(uri, DATA_CONTROL, store);
 		this.frequency = 60000;
 		this.url = url;
 		this.jsonMap = jsonMap;
 		this.store.setControlParam(this.uri, AUTO_CONTROL_TRIGGER, 1);
 	}
+	
+	setUrl(url: string) {
+		this.url = url;
+	}
 
-	update() {
-		this.fetcher.fetchJson(this.url)
-		.then(json => this.jsonMap(json))
-		.then(mapped => {
-			console.log("data received:", mapped);
-			this.updateValue(mapped)
-		})
-		.catch(e => console.log(e));
+	async update() {
+		try {
+			const data = this.jsonMap(await this.fetcher.fetchJson(this.url));
+			console.log("data received:", data);
+			this.updateValue(data);
+		} catch(e) {
+			console.log(e);
+		}
 	}
 
 }

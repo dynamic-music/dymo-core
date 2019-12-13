@@ -2,15 +2,22 @@ import { DataControl } from '../datacontrol';
 import { SuperDymoStore } from '../../globals/types';
 import { Fetcher } from '../../util/fetcher';
 
+const WEATHER_KEY = "3d77879a046ee9e970e66bb2f5c5200d";
+const API_URL = `http://api.openweathermap.org/data/2.5/weather?appid=${WEATHER_KEY}`;
+
 /**
  * A control based on weather data
  */
 export class WeatherControl extends DataControl {
 
-	constructor(uri: string, store: SuperDymoStore, fetcher?: Fetcher) {
-		var WEATHER_KEY = "3d77879a046ee9e970e66bb2f5c5200d";
-		var API_URL = `http://api.openweathermap.org/data/2.5/weather?appid=${WEATHER_KEY}`;
-		super(uri, API_URL+"&q=london", j => j["main"]["temp"], store, fetcher);
+	constructor(uri: string, jsonMap: (json: {}) => number, store: SuperDymoStore, fetcher?: Fetcher) {
+		super(uri, API_URL+"&q=london", jsonMap, store, fetcher);
+	}
+	
+	setLocation(latitude: number, longitude: number) {
+		console.log("LOCATION SET", latitude, longitude)
+		this.setUrl(API_URL+"&lat="+latitude+"&lon="+longitude);
+		this.startUpdate();
 	}
 
 	/*constructor(uri) {

@@ -10,7 +10,7 @@ export class DataStreamControl extends DataControl {
 //Rx.Node.fromReadableStream(fetch('https://stream.meetup.com/2/rsvps').then(r=>{console.log(r.body);return r.body}))
 
 	constructor(uri: string, store: SuperDymoStore, fetcher?: Fetcher) {
-		super(uri, "", "", store, fetcher);
+		super(uri, "", ()=>0, store, fetcher);
 
 		/*var requestStream = Rx.Observable.just('https://stream.meetup.com/2/open_events');
 

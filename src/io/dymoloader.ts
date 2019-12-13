@@ -5,6 +5,7 @@ import { Rendering } from '../model/rendering'
 import { Control } from '../model/control'
 import { UIControl } from '../controls/uicontrol'
 import { DataControl } from '../controls/datacontrol'
+import { WeatherControl } from '../controls/data/weathercontrol'
 import { SensorControl } from '../controls/sensorcontrol'
 import { RandomControl } from '../controls/auto/randomcontrol'
 import { BrownianControl } from '../controls/auto/browniancontrol'
@@ -147,6 +148,7 @@ export class DymoLoader {
 
   private async getControl(uri: string, name: string, type: string): Promise<Control|UIControl> {
     var control;
+    console.log(uri, type)
     if (await this.store.isSubclassOf(type, uris.SENSOR_CONTROL)) {
       control = new SensorControl(uri, type, this.store);
     } /* else if (type == uris.BEACON) {
@@ -172,8 +174,12 @@ export class DymoLoader {
     } else if (type == uris.DATA_CONTROL) {
       var url = await this.store.findObjectValue(uri, uris.HAS_URL);
       var jsonMapString = String(await this.store.findObjectValue(uri, uris.HAS_JSON_MAP));
-      var jsonMap = new Function("json", jsonMapString);
+      var jsonMap: any = new Function("json", jsonMapString);
       control = new DataControl(uri, url, jsonMap, this.store, this.fetcher);
+    } else if (type == uris.WEATHER_CONTROL) {
+      var jsonMapString = String(await this.store.findObjectValue(uri, uris.HAS_JSON_MAP));
+      var jsonMap: any = new Function("json", jsonMapString);
+      control = new WeatherControl(uri, jsonMap, this.store, this.fetcher);
     }
     //TODO implement in better way (only works for sensor controls)
     if ((await this.store.findObjectValue(uri, uris.IS_SMOOTH)) && control.setSmooth) {

@@ -244,6 +244,7 @@ function createMobileAudioOntology(path) {
 	addClass("SensorControl", "MobileControl");
 	addClass("UiControl", "MobileControl");
 	addClass("DataControl", "MobileControl");
+	addClass("WeatherControl", "DataControl");
 	addClass("AutoControl", "MobileControl");
 	//sensor controls
 	addClass("AccelerometerX", "SensorControl");

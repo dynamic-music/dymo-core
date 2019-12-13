@@ -21,6 +21,8 @@ mb:UiControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
 mb:DataControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
+mb:WeatherControl a owl:Class;
+    rdfs:subClassOf mb:DataControl.
 mb:AutoControl a owl:Class;
     rdfs:subClassOf mb:MobileControl.
 mb:AccelerometerX a owl:Class;

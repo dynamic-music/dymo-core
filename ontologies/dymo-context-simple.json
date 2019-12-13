@@ -130,6 +130,7 @@
 		"SensorControl": "mb:SensorControl",
 		"UiControl": "mb:UiControl",
 		"DataControl": "mb:DataControl",
+		"WeatherControl": "mb:WeatherControl",
 		"AutoControl": "mb:AutoControl",
 		"AccelerometerX": "mb:AccelerometerX",
 		"AccelerometerY": "mb:AccelerometerY",

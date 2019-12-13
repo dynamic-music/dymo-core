@@ -1,13 +1,14 @@
 import * as _ from 'lodash';
 import { BehaviorSubject } from 'rxjs';
 import { Observable } from 'rxjs';
-import { Fetcher } from './util/fetcher'
-import { Rendering } from './model/rendering'
+import { Fetcher } from './util/fetcher';
+import { Rendering } from './model/rendering';
 import { SuperStorePromiser } from './io/superstore-promiser';
-import { DymoLoader, LoadedStuff } from './io/dymoloader'
-import { UIControl } from './controls/uicontrol'
-import { SensorControl } from './controls/sensorcontrol'
-import { JsonGraphSubject } from './io/jsongraph'
+import { DymoLoader, LoadedStuff } from './io/dymoloader';
+import { UIControl } from './controls/uicontrol';
+import { SensorControl } from './controls/sensorcontrol';
+import { WeatherControl } from './controls/data/weathercontrol';
+import { JsonGraphSubject } from './io/jsongraph';
 import { AttributeInfo, JsonGraph, SuperDymoStore } from './globals/types';
 
 /**
@@ -21,6 +22,7 @@ export class DymoManager {
 	private rendering: Rendering;
 	private uiControls: UIControl[] = [];
 	private sensorControls: SensorControl[] = [];
+	private weatherControls: WeatherControl[] = [];
 	private graphs: JsonGraphSubject[] = [];
 	private attributeInfo: BehaviorSubject<AttributeInfo[]> = new BehaviorSubject([]);
 
@@ -70,7 +72,7 @@ export class DymoManager {
 		this.rendering = loadedStuff.rendering;
 		this.uiControls = <UIControl[]>(_.values(loadedStuff.controls)).filter(c => c instanceof UIControl);
 		this.sensorControls = <SensorControl[]>_.values(loadedStuff.controls).filter(c => c instanceof SensorControl);
-
+		this.weatherControls = <WeatherControl[]>_.values(loadedStuff.controls).filter(c => c instanceof WeatherControl);
 		this.graphs.forEach(g => g.update());
 		this.store.getAttributeInfo().then(info => this.attributeInfo.next(info));
 		return loadedStuff;
@@ -99,6 +101,10 @@ export class DymoManager {
 
 	getSensorControls() {
 		return this.sensorControls;
+	}
+	
+	getWeatherControls() {
+		return this.weatherControls;
 	}
 
 }

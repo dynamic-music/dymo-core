@@ -128,6 +128,7 @@ export const MOBILE_CONTROL: string = "http://tiny.cc/mobile-audio-ontology#Mobi
 export const SENSOR_CONTROL: string = "http://tiny.cc/mobile-audio-ontology#SensorControl";
 export const UI_CONTROL: string = "http://tiny.cc/mobile-audio-ontology#UiControl";
 export const DATA_CONTROL: string = "http://tiny.cc/mobile-audio-ontology#DataControl";
+export const WEATHER_CONTROL: string = "http://tiny.cc/mobile-audio-ontology#WeatherControl";
 export const AUTO_CONTROL: string = "http://tiny.cc/mobile-audio-ontology#AutoControl";
 export const ACCELEROMETER_X: string = "http://tiny.cc/mobile-audio-ontology#AccelerometerX";
 export const ACCELEROMETER_Y: string = "http://tiny.cc/mobile-audio-ontology#AccelerometerY";

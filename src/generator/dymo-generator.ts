@@ -114,6 +114,12 @@ export class DymoGenerator {
 		await this.store.setValue(uri, uris.HAS_JSON_MAP, jsonMap);
 		return uri;
 	}
+	
+	async addWeatherControl(jsonMap: string, uri?: string): Promise<string> {
+		uri = await this.addControl("", uris.WEATHER_CONTROL, uri);
+		await this.store.setValue(uri, uris.HAS_JSON_MAP, jsonMap);
+		return uri;
+	}
 
 	addNavigator(navigatorType: string, variableUri: string) {
 		return this.store.addNavigator(this.currentRenderingUri, navigatorType, variableUri);
