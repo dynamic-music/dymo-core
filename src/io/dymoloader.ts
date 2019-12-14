@@ -148,7 +148,6 @@ export class DymoLoader {
 
   private async getControl(uri: string, name: string, type: string): Promise<Control|UIControl> {
     var control;
-    console.log(uri, type)
     if (await this.store.isSubclassOf(type, uris.SENSOR_CONTROL)) {
       control = new SensorControl(uri, type, this.store);
     } /* else if (type == uris.BEACON) {

@@ -112,12 +112,14 @@ export class DymoGenerator {
 		uri = await this.addControl("", uris.DATA_CONTROL, uri);
 		await this.store.setValue(uri, uris.HAS_URL, url);
 		await this.store.setValue(uri, uris.HAS_JSON_MAP, jsonMap);
+		await this.store.setControlParam(uri, uris.AUTO_CONTROL_FREQUENCY, 60000);
 		return uri;
 	}
 	
 	async addWeatherControl(jsonMap: string, uri?: string): Promise<string> {
 		uri = await this.addControl("", uris.WEATHER_CONTROL, uri);
 		await this.store.setValue(uri, uris.HAS_JSON_MAP, jsonMap);
+		await this.store.setControlParam(uri, uris.AUTO_CONTROL_FREQUENCY, 60000);
 		return uri;
 	}
 

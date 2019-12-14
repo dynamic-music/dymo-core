@@ -15,7 +15,6 @@ export class WeatherControl extends DataControl {
 	}
 	
 	setLocation(latitude: number, longitude: number) {
-		console.log("LOCATION SET", latitude, longitude)
 		this.setUrl(API_URL+"&lat="+latitude+"&lon="+longitude);
 		this.startUpdate();
 	}

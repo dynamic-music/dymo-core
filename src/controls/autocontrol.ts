@@ -18,7 +18,7 @@ export abstract class AutoControl extends Control {
 
 	protected async init() {
 		this.intervalID = null;
-		this.frequency = await this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
+		if (!this.frequency) this.frequency = await this.store.findControlParamValue(this.uri, AUTO_CONTROL_FREQUENCY);
 		if (!this.frequency) this.frequency = 100;
 		const freqUri = await this.store.setControlParam(this.uri, AUTO_CONTROL_FREQUENCY, this.frequency);
 		this.store.addValueObserver(freqUri, VALUE, this);
