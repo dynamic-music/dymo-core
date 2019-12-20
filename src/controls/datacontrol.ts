@@ -27,7 +27,7 @@ export class DataControl extends AutoControl {
 	async update() {
 		try {
 			const data = this.jsonMap(await this.fetcher.fetchJson(this.url));
-			console.log("data received:", data, JSON.stringify(this.jsonMap));
+			console.log("data received:", data, JSON.stringify(this.jsonMap.toString()));
 			this.updateValue(data);
 		} catch(e) {
 			console.log("unable to get data", e);

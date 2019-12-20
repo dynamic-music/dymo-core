@@ -463,8 +463,9 @@ export class DymoStore extends EasyStore {
 		return new Promise((resolve, reject) => {
 			rdf = rdf.split('_b').join('b'); //rename blank nodes (jsonld.js can't handle the n3.js nomenclature)
 			fromRDF(rdf, {format: 'application/nquads'}, (err, doc) => {
+				console.log("fromRDF")
 			  if (err) { console.log(err, rdf); reject(err); }
-				frame(doc, {"@id":frameId}, (err, framed) => {
+				//frame(doc, {"@id":frameId}, (err, framed) => {
 					//console.log(frameId, JSON.stringify(framed))
 					compact(doc, DYMO_CONTEXT, (err, compacted) => {
 						//deal with imperfections of jsonld.js compaction algorithm to make it reeaally nice
@@ -480,7 +481,7 @@ export class DymoStore extends EasyStore {
 							resolve(result);
 						});
 					});
-				});
+				//});
 			});
 		});
 	}

@@ -33,7 +33,7 @@ export class FeatureLoader {
 	constructor(private fetcher: Fetcher = new FetchFetcher()) {}
 
 
-	loadFeature(uriOrJson, labelCondition): Promise<Feature> {
+	async loadFeature(uriOrJson, labelCondition): Promise<Feature> {
 		if (uriOrJson.constructor == Object) {
 			//it's a json!
 			return Promise.resolve(this.loadFeatureFromJson(uriOrJson, labelCondition));
@@ -41,20 +41,18 @@ export class FeatureLoader {
 			//just a uri..
 			var fileExtension = uriOrJson.split('.');
 			fileExtension = fileExtension[fileExtension.length-1];
-			return this.fetcher.fetchText(uriOrJson)
-				.then(text => {
-					if (fileExtension == 'n3') {
-						//this.loadFeatureFromRdf(uriOrJson, labelCondition);
-					} else if (fileExtension == 'json') {
-						let parsed: string;
-						try {
-							parsed = JSON.parse(text);
-							return this.loadFeatureFromJson(parsed, labelCondition);
-						} catch (e) {
-							console.log("failed to parse", uriOrJson);
-						}
-					}
-				})
+			const text = await this.fetcher.fetchText(uriOrJson);
+			if (fileExtension == 'n3') {
+				//return this.loadFeatureFromRdf(uriOrJson, labelCondition);
+			} else if (fileExtension == 'json') {
+				let parsed: string;
+				try {
+					parsed = JSON.parse(text);
+					return this.loadFeatureFromJson(parsed, labelCondition);
+				} catch (e) {
+					console.log("failed to parse", uriOrJson);
+				}
+			}
 		}
 	}
 
