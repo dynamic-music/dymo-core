@@ -17,13 +17,13 @@ export module DymoTemplates {
     return dymoUri;
   }
 
-  export async function createMultiSourceDymo(generator: DymoGenerator, parentDymo, dymoType, sources, featureUris): Promise<string> {
+  export async function createMultiSourceDymo(generator: DymoGenerator, parentDymo, dymoType, sources: string[], featureUris): Promise<string> {
     var conjunctionDymo = await generator.addDymo(parentDymo, null, dymoType);
-    await Promise.all(sources.map(async (s,i) => {
+    await mapSeries(sources, async (s,i) => {
       var dymoUri = await generator.addDymo(conjunctionDymo, s);
       const fs = await loadMultipleFeatures(generator, dymoUri, featureUris[i], null);
       return Promise.all(fs.map(f => generator.addFeature(f.name, f.data, dymoUri)));
-    }));
+    });
     return conjunctionDymo;
   }
 
